@@ -1,0 +1,266 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#e2e1e3">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="400dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="210dp"
+                android:background="@color/colorPrimary"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/TVType"
+                    android:gravity="center"
+                    android:paddingBottom="5dp"
+                    android:paddingTop="10dp"
+                    android:text="Latest"
+                    android:textColor="#ffffff"
+                    android:textSize="21dp" />
+
+                <TextView
+                    android:id="@+id/TVCategory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Short Story,Romance"
+                    android:textColor="#ffffff"
+                    android:textSize="18dp" />
+            </LinearLayout>
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="300dip"
+                android:layout_centerInParent="true"
+                android:layout_marginLeft="20sp"
+                android:layout_marginRight="20sp"
+                android:layout_marginTop="160sp"
+                android:elevation="5dp"
+                android:background="#e8e9ea">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/image"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="8dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/defaulta"
+                    app:civ_border_width="0dp"
+                    app:civ_border_color="@color/colorBlack" />
+
+                <ImageView
+                    android:id="@+id/drawer"
+                    android:layout_width="20dp"
+                    android:layout_height="40dp"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="3dp"
+                    android:onClick="onHelp"
+                    android:src="@drawable/drawer" />
+
+                <TextView
+                    android:id="@+id/TVWriterName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/image"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="3dp"
+                    android:text="Mindy Cailing"
+                    android:textSize="16dp" />
+
+                <TextView
+                    android:id="@+id/TVTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/TVWriterName"
+                    android:layout_centerHorizontal="true"
+                    android:maxLines="2"
+                    android:padding="7dp"
+                    android:layout_marginTop="2dp"
+                    android:text="Why Not Me ?"
+                    android:textSize="20dp" />
+
+
+                <TextView
+                    android:id="@+id/shortDesc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/TVTitle"
+                    android:layout_centerHorizontal="true"
+
+                    android:maxLines="2"
+                    android:padding="7dp"
+                    android:text="This Is Short Description This is Vasdajsd s sanj sadWhy Not Me ? "
+                    android:textSize="16dp" />
+
+
+                <Button
+                    android:id="@+id/BTReadOn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginLeft="4dp"
+                    android:background="@color/colorPrimary"
+                    android:text="READ ON"
+                    android:textColor="#ffffff"
+                    android:textSize="12dp" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="15dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginBottom="14dp"
+                    android:layout_marginLeft="10dp"
+                    android:src="@drawable/bookmark" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/TVbookmarkCount"
+                    android:layout_gravity="bottom"
+                    android:layout_marginBottom="6.5dp"
+                    android:layout_marginLeft="0dp"
+                    android:text="0" />
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginLeft="22dp"
+                    android:src="@drawable/speechb" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/TVCommentCount"
+                    android:layout_gravity="bottom"
+                    android:layout_marginBottom="6.5dp"
+                    android:layout_marginLeft="4dp"
+                    android:text="0" />
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginBottom="6.5dp"
+                    android:layout_marginLeft="22dp"
+                    android:src="@drawable/newstar" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/TVRating"
+                    android:layout_gravity="bottom"
+                    android:layout_marginBottom="6.5dp"
+                    android:layout_marginLeft="4dp"
+                    android:text="0.0" />
+            </LinearLayout>
+
+        </RelativeLayout>
+        <RatingBar
+            android:id="@+id/ratingBar1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="center"
+            android:layout_centerHorizontal="true" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginLeft="10dp"
+                        android:padding="4dp"
+                        android:src="@drawable/speechb" />
+
+                    <TextView
+                        android:id="@+id/TVBloggerName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="2dp"
+                        android:layout_marginRight="10dp"
+                        android:text=""
+
+                        android:textSize="16dp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/TVComment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="20dp"
+                    android:layout_marginRight="20dp"
+                    android:layout_marginTop="8dp"
+                    android:text="Be the first to comment"
+                    android:textSize="14dp" />
+
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/btnDiscuss"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_alignParentBottom="true"
+                android:layout_below="@+id/no_of_follower"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginTop="5dp"
+                android:background="@color/colorPrimary"
+                android:text="DISCUSS"
+                android:textColor="@color/colorWhite"
+                android:textSize="12dp" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

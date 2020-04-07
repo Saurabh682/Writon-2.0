@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_feed"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    app:cardCornerRadius="10dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="@color/colorWhite"
+    android:layout_margin="10dp"
+    android:padding="10dp"
+    tools:context="com.ibitvalley.writon.Feed">
+
+
+
+        <RelativeLayout
+            android:layout_width="fill_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:layout_margin="10dp">
+
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="30dp"
+                android:background="#eff3f5"
+                android:visibility="gone"
+                android:gravity="center">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:id="@+id/TVHeader1"
+                    android:gravity="left"
+                    android:visibility="visible"
+                    android:textColor="@color/colorPrimary"
+                    android:text="TRENDING"/>
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="50dp"
+                    android:src="@drawable/right_arrow"
+                    android:tint="@color/colorPrimary" />
+
+            </RelativeLayout>
+            <!--  ListRow Left sied Thumbnail image -->
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                app:cardElevation="0dp"
+                android:id="@+id/thumbnail"
+                app:cardCornerRadius="40dp"
+                android:innerRadius="0dp"
+                android:layout_marginTop="5dp"
+                android:shape="ring"
+                android:layout_alignParentLeft="true"
+                android:layout_marginLeft="10dp">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/list_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_margin="5dp"
+                    app:civ_border_color="@color/colorBlack"
+                    app:civ_border_width="0dp"
+                    android:src="@drawable/userprofilepic"></de.hdodenhof.circleimageview.CircleImageView>
+
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- Title Of Song-->
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="25dp"
+                android:layout_marginRight="30dp"
+                android:layout_alignLeft="@+id/tv_user_followers_count"
+                android:text="Mindy Kaling"
+                android:textColor="#404041"
+                android:textSize="17dip"
+                android:textStyle="bold"/>
+
+            <!-- Artist Name -->
+            <TextView
+                android:id="@+id/tv_user_followers_count"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="@id/thumbnail"
+                android:textColor="#6D6E70"
+                android:textSize="12dip"
+                android:layout_marginTop="25dp"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@+id/thumbnail"
+                android:text="0 followers" />
+
+
+
+
+            <Button
+                android:id="@+id/TVFollow"
+                android:layout_width="90dp"
+                android:layout_height="25dp"
+                android:layout_below="@id/tv_user_followers_count"
+                android:layout_alignLeft="@id/tv_user_followers_count"
+                android:text="Follow"
+                android:textSize="10dp"
+
+                android:background="@drawable/rounded_button_blue"
+                android:padding="1dp"
+                android:layout_marginTop="2dp"
+                android:textColor="@color/colorWhite"
+                android:layout_marginLeft="-4dp"
+                />
+
+
+
+
+            <!-- Rightend Duration -->
+
+            <ImageView
+                android:id="@+id/IVBookmarked"
+                android:layout_width="15dp"
+                android:layout_height="22dp"
+                android:layout_alignParentRight="true"
+                android:layout_alignTop="@id/name"
+                android:gravity="right"
+                android:src="@drawable/bookmark_linemdpi"
+                android:layout_marginTop="4dp"
+                android:layout_marginRight="10dip"/>
+
+            <LinearLayout
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:gravity="right"
+                android:id="@+id/ll_FArrow"
+                android:layout_alignParentRight="true"
+                android:layout_centerInParent="true">
+
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:visibility="gone"
+                    android:src="@drawable/right_arrow"
+                    android:tint="@color/colorPrimary" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/LLContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/thumbnail"
+                android:layout_marginTop="20dp"
+                android:layout_marginRight="30dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/TVTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:fontFamily="sans-serif"
+                    android:maxLines="1"
+                    android:text="Why Not Me?"
+                    android:textColor="#404041"
+                    android:textSize="18dip"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/TVShortDesc"
+                    android:layout_width="match_parent"
+                    android:layout_height="85dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:letterSpacing="0.05"
+                    android:maxLines="4"
+                    android:text="Amazing how time captures the best moments. And i want to be captured in time with you. All the beautiful things, your intelligence. And your smiling face in the nights..."
+                    android:textColor="#6D6E70"
+                    android:textSize="14dip"
+                    android:alpha=".8"/>
+
+                <TextView
+                    android:id="@+id/TVCategory"
+                    android:layout_width="match_parent"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="-1dp"
+                    android:text="Short Story, Romance (English)"
+                    android:textColor="#7E72B3"
+                    android:textSize="12dip" />
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:id="@+id/LLContent2"
+                android:layout_below="@+id/LLContent"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_gravity="center"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_eye"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:id="@+id/TVViewCount"
+                            android:layout_marginLeft="5dp"
+                            android:textSize="12dip"
+                            android:textColor="#959FC4"
+                            android:text="24k"/>
+                    </LinearLayout>
+
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="15dp">
+                        <ImageView
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_marginTop="2dp"
+                            android:src="@drawable/ic_chat"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:id="@+id/TVCommentCount"
+                            android:layout_marginLeft="5dp"
+                            android:textSize="12dip"
+                            android:textColor="#959FC4"
+                            android:text="52"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="15dp">
+                        <ImageView
+                            android:layout_width="15dp"
+                            android:layout_height="15dp"
+                            android:layout_marginTop="1dp"
+                            android:src="@drawable/ic_star"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:id="@+id/TVRating"
+                            android:layout_marginLeft="5dp"
+                            android:textColor="#959FC4"
+                            android:textSize="12dip"
+                            android:text="406"/>
+                    </LinearLayout>
+
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:visibility="visible"
+                            android:id="@+id/img_Option"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_alignParentRight="true"
+                            android:layout_marginRight="20dp"
+                            android:src="@drawable/ic_share"/>
+
+                    </RelativeLayout>
+
+                </LinearLayout>
+            </LinearLayout>
+
+
+
+
+        </RelativeLayout>
+
+</androidx.cardview.widget.CardView>
+

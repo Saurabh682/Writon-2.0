@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorWhite">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_marginLeft="5dp"
+            android:layout_centerVertical="true"
+            app:srcCompat="@drawable/appcon" />
+
+
+        <androidx.appcompat.widget.AppCompatTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="WritOn - Write and Read"
+            android:layout_marginLeft="55dp"
+            android:textColor="@color/newColorGrey"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/IVSync16"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="2dp"
+            android:layout_marginRight="45dp"
+            android:padding="5dp"
+            android:src="@drawable/ic_autorenew_black_24dp"
+            android:tint="@color/colorPrimary"
+            android:visibility="gone" />
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:orientation="horizontal"
+            android:layout_alignParentEnd="true">
+
+
+            <ImageView
+                android:id="@+id/ivSearch"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginRight="20dp"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_search_black_24dp"
+                android:tint="@color/colorPrimary"
+                android:visibility="visible"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="20dp" />
+
+
+            <ImageView
+                android:id="@+id/ivSearch1"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="2dp"
+                android:layout_marginRight="10dp"
+                android:padding="5dp"
+                android:src="@drawable/notification"
+                android:visibility="visible"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="10dp" />
+
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+
+<androidx.viewpager.widget.ViewPager
+    android:id="@+id/pager"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1"
+    >
+
+
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorWhite"
+        android:overScrollMode="always"
+        app:tabMode="scrollable"
+        app:tabRippleColor="@color/colorPrimary"
+        app:tabSelectedTextColor="@color/newBlue"
+        app:layout_collapseMode="pin"
+        app:tabTextColor="@color/colorGrey"
+        app:tabIndicatorHeight="3dp" />
+
+
+</androidx.viewpager.widget.ViewPager>
+
+</LinearLayout>

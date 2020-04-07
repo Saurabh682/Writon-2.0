@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:fillViewport="true"
+    android:scrollbars = "vertical"
+    android:scrollbarStyle="insideInset"
+    android:background="@color/bgColor">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="50dp"
+        android:background="@color/bgColor"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18dp"
+            android:textColor="#263238"
+            android:text="Which feature you like the most?"/>
+
+        <EditText
+            android:id="@+id/tv_creatorName"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:textSize="18dp"
+            android:layout_marginTop="5dp"
+            android:textColor="#263238"
+            android:padding="2dp"
+            android:background="@color/textViewBg"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textSize="18dp"
+            android:textColor="#263238"
+            android:text="Which feature you dislike the most?"/>
+
+        <EditText
+            android:id="@+id/tv_categoryName"
+            android:layout_width="fill_parent"
+            android:layout_height="40dp"
+            android:textSize="18dp"
+            android:layout_marginTop="5dp"
+            android:textColor="#263238"
+            android:padding="2dp"
+            android:background="@color/textViewBg"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textSize="18dp"
+            android:textColor="#263238"
+            android:text="Is there a feature you would like to see in WriteOn?"/>
+
+        <EditText
+            android:id="@+id/tv_shortDesc"
+            android:layout_width="fill_parent"
+            android:layout_height="60dp"
+            android:textSize="18dp"
+            android:layout_marginTop="5dp"
+            android:textColor="#263238"
+            android:padding="2dp"
+            android:background="@color/textViewBg"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textSize="18dp"
+            android:textColor="#263238"
+            android:text="Anything else you want us to know?"/>
+
+        <EditText
+            android:id="@+id/tv_elase"
+            android:layout_width="fill_parent"
+            android:layout_height="60dp"
+            android:textSize="18dp"
+            android:layout_marginTop="5dp"
+            android:textColor="#263238"
+            android:padding="2dp"
+            android:background="@color/textViewBg"/>
+
+
+
+        <!--android:hint="This will be required at the time of publishing you may fill it later at that time."-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center">
+            <Button
+                android:id="@+id/BtnStart"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_alignParentBottom="true"
+                android:layout_below="@+id/no_of_follower"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp"
+
+                android:layout_marginTop="5dp"
+                android:background="@color/colorPrimary"
+                android:text="SUBMIT"
+                android:textColor="#ffffff"
+                android:textSize="12dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

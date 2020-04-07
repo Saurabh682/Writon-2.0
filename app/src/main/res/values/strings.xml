@@ -1,0 +1,350 @@
+<resources>
+    <string name="app_name">WritOn</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string-array name="array_mainCategory">
+        <item>Select Main Category</item>
+        <item>Short Stories</item>
+        <item>Poetry</item>
+        <item>Shayari</item>
+        <item>Songs/ Jingles</item>
+        <item>Jokes</item>
+        <item>Reviews</item>
+        <item>Blog</item>
+        <item>Journalism</item>
+    </string-array>
+
+
+    <string-array name="array_searchmainCategory">
+        <item>All Category</item>
+        <item>Short Stories</item>
+        <item>Poetry</item>
+        <item>Shayari</item>
+        <item>Songs/ Jingles</item>
+        <item>Jokes</item>
+        <item>Reviews</item>
+        <item>Blog</item>
+        <item>Journalism</item>
+    </string-array>
+
+    <string-array name="report_reason">
+        <item>Sexually Inappropriate</item>
+        <item>Offensive</item>
+        <item>Violence</item>
+        <item>Prohibited Content</item>
+        <item>Spam</item>
+        <item>False News</item>
+        <item>Misleading or Scam</item>
+        <item>Political Candidate Or Issue</item>
+    </string-array>
+
+    <string-array name="array_subCategory">
+        <item>Select SubCategory</item>
+    </string-array>
+
+    <string-array name="array_searchsubCategory">
+        <item>All SubCategory</item>
+    </string-array>
+
+    <string-array name="array_category">
+        <item>Select Category</item>
+        <item>Poem</item>
+        <item>Dark Fantasy</item>
+        <item>Fan Fiction</item>
+        <item>Fantasy</item>
+        <item>General Literary</item>
+        <item>Biography/ Autobiography</item>
+        <item>Essay</item>
+        <item>Narrative nonfiction/ Personal narrative</item>
+        <item>Memoir</item>
+        <item>Speech</item>
+        <item>Drama</item>
+        <item>Classic</item>
+        <item>Comic/ Graphic novel</item>
+        <item>Crime/Detective</item>
+        <item>Epic poetry</item>
+        <item>Dramatic poetry</item>
+        <item>Satirical poetry</item>
+        <item>Light poetry</item>
+        <item>Sufi</item>
+        <item>Travel</item>
+        <item>TV Story</item>
+    </string-array>
+
+    <string-array name="array_category1">
+        <item>All Category</item>
+        <item>Crime(Short Stories)</item>
+        <item>Dark Fantasy(Short Stories)</item>
+        <item>Fan Fiction(Short Stories)</item>
+        <item>Fantasy(Short Stories)</item>
+        <item>General Literary(Short Stories)</item>
+        <item>Ghost Stories(Short Stories)</item>
+        <item>Historical Fiction(Short Stories)</item>
+        <item>Horror(Short Stories)</item>
+        <item>Humour and Comedy(Short Stories)</item>
+        <item>Macabre(Short Stories)</item>
+        <item>Mystery(Short Stories)</item>
+        <item>Romance(Short Stories)</item>
+        <item>Scifi(Short Stories)</item>
+        <item>Spy stories(Short Stories)</item>
+        <item>Supernatural(Short Stories)</item>
+        <item>Thriller(Short Stories)</item>
+        <item>Travel(Short Stories)</item>
+        <item>True Stories(Short Stories)</item>
+        <item>War Stories(Short Stories)</item>
+        <item>Young Adults(Short Stories)</item>
+        <item>Biography/ Autobiography(Novels)</item>
+        <item>Essay(Novels)</item>
+        <item>Narrative nonfiction/ Personal narrative(Novels)</item>
+        <item>Memoir(Novels)</item>
+        <item>Speech(Novels)</item>
+        <item>Drama(Novels)</item>
+        <item>Classic(Novels)</item>
+        <item>Comic/ Graphic novel(Novels)</item>
+        <item>Crime/Detective(Novels)</item>
+        <item>Fable(Novels)</item>
+        <item>Fairy tale(Novels)</item>
+        <item>Fanfiction(Novels)</item>
+        <item>Fantasy(Novels)</item>
+        <item>Fiction narrative(Novels)</item>
+        <item>Fiction in verse(Novels)</item>
+        <item>Folklore(Novels)</item>
+        <item>Historical fiction(Novels)</item>
+        <item>Horror</item>
+        <item>Humour(Novels)</item>
+        <item>Legend(Novels)</item>
+        <item>Magical realism(Novels)</item>
+        <item>Metafiction(Novels)</item>
+        <item>Mystery(Novels)</item>
+        <item>Mythology(Novels)</item>
+        <item>Mythopoeia(Novels)</item>
+        <item>Realistic fiction(Novels)</item>
+        <item>Science fiction(Novels)</item>
+        <item>Suspense/Thriller(Novels)</item>
+        <item>Tall tale(Novels)</item>
+        <item>Western(Novels)</item>
+
+
+    </string-array>
+
+    <string-array name="array_language">
+        <item>Select Language</item>
+        <item>Hindi</item>
+        <item>English</item>
+        <item>Arabic</item>
+        <item>Bengali</item>
+        <item>Chinese</item>
+        <item>French</item>
+        <item>German</item>
+        <item>Italian</item>
+        <item>Japanese</item>
+        <item>Javanese</item>
+        <item>Korean</item>
+        <item>Lahnda</item>
+        <item>Malay</item>
+        <item>Marathi</item>
+        <item>Portuguese</item>
+        <item>Persian</item>
+        <item>Punjabi</item>
+        <item>Russian</item>
+        <item>Spanish</item>
+        <item>Swahili</item>
+        <item>Teluge</item>
+        <item>Turkish</item>
+        <item>Tamil</item>
+        <item>Urdu</item>
+        <item>Vietnamese</item>
+    </string-array>
+
+    <string-array name="array_Searchlanguage">
+        <item>All Language</item>
+        <item>Hindi</item>
+        <item>English</item>
+        <item>Arabic</item>
+        <item>Bengali</item>
+        <item>Chinese</item>
+        <item>French</item>
+        <item>German</item>
+        <item>Italian</item>
+        <item>Japanese</item>
+        <item>Javanese</item>
+        <item>Korean</item>
+        <item>Lahnda</item>
+        <item>Malay</item>
+        <item>Marathi</item>
+        <item>Portuguese</item>
+        <item>Persian</item>
+        <item>Punjabi</item>
+        <item>Russian</item>
+        <item>Spanish</item>
+        <item>Swahili</item>
+        <item>Teluge</item>
+        <item>Turkish</item>
+        <item>Tamil</item>
+        <item>Urdu</item>
+        <item>Vietnamese</item>
+    </string-array>
+
+
+    <string-array name="array_subCategory1">
+        <item>Select Category</item>
+        <item>Crime</item>
+        <item>Children</item>
+        <item>Dark Fantasy</item>
+        <item>Fan Fiction</item>
+        <item>Fantasy</item>
+        <item>General Literary</item>
+        <item>Ghost Stories</item>
+        <item>Historical Fiction</item>
+        <item>Horror</item>
+        <item>Humour and Comedy</item>
+        <item>Macabre</item>
+        <item>Mystery</item>
+        <item>Romance</item>
+        <item>Scifi</item>
+        <item>Spy stories</item>
+        <item>Supernatural</item>
+        <item>Thriller</item>
+        <item>Travel</item>
+        <item>True Stories</item>
+        <item>War Stories</item>
+        <item>Young Adults</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="array_subCategory2">
+        <item>Select Category</item>
+        <item>Dramatic</item>
+        <item>Children Rhymes</item>
+        <item>Elegy</item>
+        <item>Epic</item>
+        <item>Light</item>
+        <item>Lyric</item>
+        <item>Narrative</item>
+        <item>Prose</item>
+        <item>Satirical</item>
+        <item>Speculative</item>
+        <item>Verse fable</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="array_subCategory3">
+        <item>Select Category</item>
+        <item>2 Line Shayari</item>
+        <item>Attitude</item>
+        <item>Birthday</item>
+        <item>Festival</item>
+        <item>Friendship</item>
+        <item>Funny</item>
+        <item>Greetings</item>
+        <item>Heart Ache</item>
+        <item>Life</item>
+        <item>Miss You</item>
+        <item>Rain</item>
+        <item>Romantic</item>
+        <item>Sad</item>
+        <item>Valentines Day</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="array_subCategory4">
+        <item>Select Category</item>
+        <item>Avant-Garde</item>
+        <item>Blues</item>
+        <item>Celebration</item>
+        <item>Children</item>
+        <item>Classical</item>
+        <item>Comedy/ Spoken</item>
+        <item>Country</item>
+        <item>Folk</item>
+        <item>Festival</item>
+        <item>Holiday</item>
+        <item>New Age</item>
+        <item>Pop/ Rock</item>
+        <item>R and B</item>
+        <item>Rap</item>
+        <item>Reggae</item>
+        <item>Religious</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="array_subCategory5">
+        <item>Select Category</item>
+        <item>Blond</item>
+        <item>Family</item>
+        <item>Marriage</item>
+        <item>One line</item>
+        <item>Profession</item>
+        <item>Religion</item>
+        <item>School/ College</item>
+        <item>Sarcastic</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="array_subCategory6">
+        <item>Select Category</item>
+        <item>Movies</item>
+        <item>Travel</item>
+        <item>Cars</item>
+        <item>Food</item>
+        <item>Games</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="array_subCategory7">
+        <item>Select Category</item>
+        <item>Personal</item>
+        <item>Other</item>
+    </string-array>
+
+    <string-array name="array_subCategory8">
+        <item>Select Category</item>
+        <item>Business</item>
+        <item>Environmental</item>
+        <item>Fashion</item>
+        <item>News</item>
+        <item>Science</item>
+        <item>Sports</item>
+        <item>Supernatural</item>
+        <item>Technology</item>
+        <item>Other</item>
+    </string-array>
+
+
+    <!--  The property id associated with this analytics tracker -->
+    <string name="ga_trackingId">UA-90643573-1</string>
+    <string name="facebook_app_id">697436403776745</string>
+    <string name="fb_login_protocol_scheme">fb697436403776745</string>
+
+
+    <!-- Google -->
+
+    <string name="server_client_id">AIzaSyD1P6SOyWRC3pAbG48EQyR8EdFGuKOVAdM</string>
+
+
+    <string name="title_activity_welcome">Home Screen</string>
+    <string name="next">NEXT</string>
+    <string name="skip">SKIP</string>
+    <string name="start">GOT IT</string>
+
+    <string name="slide_1_title">Write!</string>
+    <string name="slide_1_desc">Write Short Story/ Poetry/ Reviews/ Shayari/ Jokes</string>
+
+    <string name="slide_2_title">Bookmark!</string>
+    <string name="slide_2_desc">Bookmark your favorite post to save it or read it later!</string>
+
+    <string name="slide_3_title">Rate/Comment</string>
+    <string name="slide_3_desc">Rate/Comment the post you liked to encourage the writer!</string>
+
+    <string name="slide_4_title">Share!</string>
+    <string name="slide_4_desc">Share your own writeup or the post you liked with your friends and family or on social media!</string>
+
+    <string name="play_again_desc">To see the welcome slider again, goto Settings -> apps -> welcome slider -> clear data</string>
+    <string name="play_again">Play Again</string>
+    <string name="default_notification_channel_id" />
+    <string name="fcm_message" >WritOn</string>
+    <string name="fcm_token" >FCM Token: %s</string>
+
+</resources>

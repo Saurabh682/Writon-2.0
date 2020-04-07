@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:fillViewport="true"
+    android:id="@+id/TVFirst"
+    android:background="@color/bgColor">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="50dp"
+        android:background="@color/bgColor"
+        android:orientation="vertical">
+
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textSize="18dp"-->
+            <!--android:textColor="#263238"-->
+            <!--android:text="Name of the Creation"/>-->
+
+        <!--<EditText-->
+            <!--android:id="@+id/tv_creatorName"-->
+            <!--android:layout_width="fill_parent"-->
+            <!--android:hint="80 Character"-->
+            <!--android:layout_height="40dp"-->
+            <!--android:textSize="18dp"-->
+            <!--android:layout_marginTop="5dp"-->
+            <!--android:textColor="#263238"-->
+            <!--android:padding="2dp"-->
+            <!--android:singleLine="true"-->
+            <!--android:background="@color/textViewBg"/>-->
+
+        <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_marginTop="20dp"-->
+        <!--android:textSize="18dp"-->
+        <!--android:textColor="#263238"-->
+        <!--android:text="Category of the creation"/>-->
+
+        <!--<EditText-->
+        <!--android:id="@+id/tv_categoryName"-->
+        <!--android:layout_width="fill_parent"-->
+        <!--android:layout_height="40dp"-->
+        <!--android:textSize="18dp"-->
+        <!--android:layout_marginTop="5dp"-->
+        <!--android:textColor="#263238"-->
+        <!--android:padding="2dp"-->
+        <!--android:background="@color/textViewBg"/>-->
+
+
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:spinnerMode="dropdown"
+            android:textSize="18dp"
+            android:layout_marginTop="15dp"
+            android:entries="@array/array_mainCategory"
+            android:textColor="#263238"
+            android:padding="2dp"
+
+            android:background="@color/textViewBg"
+            style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+            android:id="@+id/tv_categoryName">
+        </Spinner>
+
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:spinnerMode="dropdown"
+            android:textSize="18dp"
+            android:layout_marginTop="15dp"
+            android:entries="@array/array_subCategory"
+            android:textColor="#263238"
+            android:padding="2dp"
+            android:background="@color/textViewBg"
+            style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+            android:id="@+id/tv_categoryL2">
+        </Spinner>
+
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:spinnerMode="dropdown"
+            android:textSize="18dp"
+            android:layout_marginTop="15dp"
+            android:entries="@array/array_language"
+            android:textColor="#263238"
+            android:padding="2dp"
+            android:background="@color/textViewBg"
+            style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+            android:id="@+id/SPLanguage">
+        </Spinner>
+
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:textSize="18dp"
+            android:textColor="#263238"
+            android:text="Short Description"/>
+
+        <EditText
+            android:id="@+id/tv_shortDesc"
+            android:layout_width="fill_parent"
+            android:layout_height="60dp"
+            android:textSize="18dp"
+            android:layout_marginTop="5dp"
+            android:textColor="#263238"
+            android:padding="2dp"
+            android:background="@color/textViewBg"/>
+
+        <!--android:hint="This will be required at the time of publishing you may fill it later at that time."-->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:gravity="center">
+            <!--<TextView-->
+                <!--android:layout_width="150dp"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:textAlignment="center"-->
+                <!--android:id="@+id/BtnStart"-->
+                <!--android:padding="10dp"-->
+                <!--android:background="#0277bd"-->
+                <!--android:textColor="#FFFFFF"-->
+                <!--android:textSize="21dp"-->
+                <!--android:text="Start"/>-->
+
+            <Button
+                android:id="@+id/BtnStart"
+                android:layout_width="wrap_content"
+                android:layout_height="35dp"
+                android:layout_alignParentBottom="true"
+
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginTop="5dp"
+                android:background="@color/colorPrimary"
+                android:text="  Start  "
+                android:textColor="@color/colorWhite"
+                android:textSize="12dp" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"></LinearLayout>
+    </LinearLayout>
+    </ScrollView>
+</LinearLayout>

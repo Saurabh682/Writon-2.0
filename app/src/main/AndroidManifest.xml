@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.ibitvalley.writon">
+
+
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <permission
+        android:name="com.ibitvalley.writon.permission.C2D_MESSAGE"
+        android:protectionLevel="signature" />
+
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
+    <uses-permission android:name="com.ibitvalley.writon.permission.C2D_MESSAGE" /> <!-- This app has permission to register and receive data message. -->
+    <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission android:name="com.google.android.c2dm.permission.SEND" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <application
+        android:name=".GoogleAnalytics.MyApplication"
+        android:allowBackup="true"
+        android:icon="@drawable/appcon"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".WelcomeActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppThemeOne"
+            tools:ignore="LockedOrientationActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter> <!-- https://goo.gl/Cx4oPk -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://www.example.com/gizmos” -->
+                <data
+                    android:host="https://goo.gl"
+                    android:pathPrefix="/Cx4oPk"
+                    android:scheme="http" />
+                <!-- note that the leading "/" is required for pathPrefix -->
+                <!-- Accepts URIs that begin with "example://gizmos” -->
+                <data
+                    android:host="cx4opk"
+                    android:scheme="goo" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".Splash" android:theme="@style/AppThemeOne" />
+        <activity
+            android:name=".LoginActivity"
+            android:theme="@style/AppThemeOne"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Home_Activity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Blog_Profile"
+            android:parentActivityName=".Blog_Profile"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".WriteBlog"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateHidden" />
+        <activity
+            android:name="com.facebook.FacebookActivity"
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <meta-data
+            android:name="com.facebook.sdk.ApplicationId"
+            android:value="@string/facebook_app_id"
+            tools:replace="android:value" />
+
+        <activity
+            android:name=".Draft"
+            android:parentActivityName=".Draft"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".AllBlogActivity"
+            android:parentActivityName=".AllBlogActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".MyBlog"
+            android:parentActivityName=".MyBlog"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ActivityCategoryBlogs"
+            android:parentActivityName=".ActivityCategoryBlogs"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".writeblogstepone"
+            android:parentActivityName=".writeblogstepone"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ShowBlog"
+            android:parentActivityName=".ShowBlog"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Signup"
+
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ShowBlogDetails"
+            android:parentActivityName=".ShowBlogDetails"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".ActivityBlogComments"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Feedback"
+            android:parentActivityName=".Feedback"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Report"
+            android:parentActivityName=".Report"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".CategoryBlogList"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".discus"
+            android:parentActivityName=".discus"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".BlogSearch"
+            android:parentActivityName=".BlogSearch"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".FBLogin"
+            android:screenOrientation="portrait" /> <!-- Defining Services -->
+        <service
+            android:name=".utils.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+        <!--<service
+            android:name=".utils.MyFirebaseInstanceIDService"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND">
+            <intent-filter>
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+
+
+                <category android:name="com.fc.debug" />
+            </intent-filter>
+        </service>-->
+
+        <activity
+            android:name=".EditProfile"
+            android:label="Edit Profile"
+            android:screenOrientation="portrait" />
+        <activity android:name=".NotificationActivity" />
+        <activity android:name=".WriterBlog" />
+        <!--
+          Optionally, register AnalyticsReceiver and AnalyticsService to support background
+          dispatching on non-Google Play devices
+        -->
+        <receiver
+            android:name="com.google.android.gms.analytics.AnalyticsReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="com.google.android.gms.analytics.ANALYTICS_DISPATCH" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name="com.google.android.gms.analytics.AnalyticsService"
+            android:enabled="true"
+            android:exported="false" />
+        <!--
+             Optionally, register CampaignTrackingReceiver and CampaignTrackingService to enable
+             installation campaign reporting
+        -->
+        <receiver
+            android:name="com.google.android.gms.analytics.CampaignTrackingReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.vending.INSTALL_REFERRER" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name="com.google.android.gms.analytics.CampaignTrackingService" />
+
+        <activity android:name=".Feed" />
+
+
+
+    </application>
+
+    <meta-data
+        android:name="firebase_messaging_auto_init_enabled"
+        android:value="false" />
+    <meta-data
+        android:name="firebase_analytics_collection_enabled"
+        android:value="false" />
+
+</manifest>

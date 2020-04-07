@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_feed"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context="com.ibitvalley.writon.Feed">
+
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:background="#f4f8f8"
+        android:orientation="horizontal">
+
+        <!--  ListRow Left sied Thumbnail image -->
+        <LinearLayout android:id="@+id/thumbnail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="3dip"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="5dp"
+            android:layout_alignParentLeft="true"
+            android:layout_marginRight="5dip">
+
+            <ImageView
+                android:id="@+id/list_image"
+                android:layout_width="70dip"
+                android:layout_height="70dip"
+                android:src="@drawable/userprofilepic"/>
+
+        </LinearLayout>
+
+        <!-- Title Of Song-->
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/thumbnail"
+            android:layout_toRightOf="@+id/thumbnail"
+            android:text="Mindy Kaling"
+            android:layout_marginTop="10dp"
+            android:textColor="#263238"
+            android:typeface="sans"
+            android:textSize="17dip"
+            android:textStyle="bold"/>
+
+        <!-- Artist Name -->
+        <TextView
+            android:id="@+id/artist"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/title"
+            android:textColor="#78909c"
+            android:textSize="12dip"
+            android:layout_marginTop="3dip"
+            android:layout_toRightOf="@+id/thumbnail"
+            android:text="14k FOLLOWERS" />
+
+
+        <TextView
+            android:id="@+id/TVFollow"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/artist"
+            android:textColor="@color/colorPrimary"
+            android:textSize="12dip"
+            android:layout_marginTop="1dip"
+            android:layout_toRightOf="@+id/thumbnail"
+            android:text="Follow++" />
+
+
+        <!-- Rightend Duration -->
+
+        <ImageView
+            android:id="@+id/duration"
+            android:layout_width="15dp"
+            android:layout_height="22dp"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@id/title"
+            android:gravity="right"
+            android:src="@drawable/nbookmark"
+            android:layout_marginRight="10dip"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/LLContent"
+            android:layout_below="@+id/thumbnail"
+            android:layout_marginRight="6dp"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/TVTitle"
+                android:layout_marginLeft="10dp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif"
+                android:textColor="#263238"
+                android:textSize="18dip"
+                android:text="Why Not Me?"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/TVCategory"
+                android:layout_marginTop="-1dp"
+                android:layout_marginLeft="10dp"
+                android:textSize="14dip"
+                android:textColor="#263238"
+
+                android:text="Short Story, Romance (English)"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/TVShortDesc"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="10dp"
+                android:textSize="14dip"
+                android:textColor="#263238"
+                android:letterSpacing="0.05"
+                android:text="In Why Not Me?, Kaling shares her ongoing journey to find contentment and excitement..."/>
+        </LinearLayout>
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:id="@+id/VBorder"
+            android:layout_marginTop="10dp"
+            android:background="#b3b6b7"
+            android:layout_below="@+id/LLContent"/>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:id="@+id/LLContent2"
+            android:layout_below="@+id/VBorder"
+            android:background="#e0e3e5"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_gravity="center"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:src="@drawable/viewcount"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:id="@+id/TVViewCount"
+                        android:layout_marginLeft="5dp"
+                        android:textSize="12dip"
+                        android:textColor="#78909c"
+                        android:text="24k"/>
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="15dp">
+                    <ImageView
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
+                        android:layout_marginTop="2dp"
+                        android:src="@drawable/commentcount"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:id="@+id/TVCommentCount"
+                        android:layout_marginLeft="5dp"
+                        android:textSize="12dip"
+                        android:textColor="#78909c"
+                        android:text="52"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="15dp">
+                    <ImageView
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
+                        android:layout_marginTop="1dp"
+                        android:src="@drawable/ratecount"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:id="@+id/TVRatingCount"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="#78909c"
+                        android:textSize="12dip"
+                        android:text="406"/>
+                </LinearLayout>
+
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+                    <ImageView
+                        android:id="@+id/productPriceTextView1"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginRight="65dp"
+                        android:src="@drawable/discussion"/>
+                    <ImageView
+                        android:id="@+id/buyNowButton1"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginRight="20dp"
+                        android:src="@drawable/shareblog"/>
+                </RelativeLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </RelativeLayout>
+
+    <!--<RelativeLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="250dp"-->
+        <!--android:id="@+id/RLBigBaner"-->
+        <!--android:background="@drawable/welcomemobiledevelopmentweek">-->
+    <!--</RelativeLayout>-->
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:id="@+id/RLSmallBaner"
+        android:background="@drawable/unnamed">
+    </RelativeLayout>
+
+</LinearLayout>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AllBlogActivity">
+
+
+    <RelativeLayout
+        android:id="@+id/rlLatest"
+        android:layout_width="match_parent"
+        android:layout_marginTop="0dp"
+        android:layout_height="wrap_content">
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:background="#eff3f5"
+            android:visibility="visible"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:id="@+id/TVHeader1"
+                android:gravity="left"
+                android:textColor="@color/colorPrimary"
+                android:text="LATEST"/>
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentRight="true"
+                android:tint="@color/colorPrimary"
+                android:visibility="gone"
+                android:src="@drawable/right_arrow"/>
+
+
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="20dp"
+                android:id="@+id/tvViewAll"
+                android:layout_marginRight="5dp"
+                android:layout_alignParentRight="true"
+                android:textColor="@color/colorPrimary"
+                android:visibility="gone"
+                android:text="View All"/>
+
+        </RelativeLayout>
+
+
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/swipeToRefresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="35dp">
+
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                tools:ignore="RedundantNamespace">
+
+
+            <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerViewDataShow"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#F4F4F4"
+                    android:clipToPadding="false"
+                    android:paddingBottom="@dimen/spacing_15"
+                    android:scrollbars="vertical"
+                    android:elevation="10dp" />
+
+
+            </RelativeLayout>
+
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+
+
+
+    </RelativeLayout>
+
+
+</LinearLayout>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="#FFFFFF"
+    android:orientation="horizontal"
+    android:layout_marginTop="5dp"
+    android:padding="5dip" >
+
+    <!--  ListRow Left sied Thumbnail image -->
+    <LinearLayout android:id="@+id/thumbnail2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="3dip"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="5dip">
+
+        <ImageView
+            android:id="@+id/list_image2"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:layout_marginTop="3dp"
+            android:src="@drawable/defaulta"/>
+
+    </LinearLayout>
+
+    <!-- Title Of Song-->
+    <TextView
+        android:id="@+id/TVTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:maxLength="25"
+        android:layout_alignTop="@+id/thumbnail2"
+        android:layout_toRightOf="@+id/thumbnail2"
+        android:text="My Little Sunshine"
+
+        android:typeface="sans"
+        android:textSize="17dip" />
+
+    <!-- Artist Name -->
+    <TextView
+        android:id="@+id/TVWrite"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/TVTitle"
+
+        android:textSize="12dip"
+        android:layout_marginTop="1dip"
+        android:layout_toRightOf="@+id/thumbnail2"
+        android:text="Mirinda Kerr (Short Story, Romance)" />
+
+    <!-- Rightend Duration -->
+    <!--<TextView-->
+    <!--android:id="@+id/duration2"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_alignTop="@id/title2"-->
+    <!--android:gravity="right"-->
+    <!--android:text="19-08-2016"-->
+    <!--android:layout_marginRight="5dip"-->
+    <!--android:textSize="10dip"-->
+    <!--android:textColor="#10bcc9"-->
+    <!--android:textStyle="bold"/>-->
+
+    <!--<ImageView android:layout_width="20dp"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:src="@drawable/drawer"-->
+        <!--android:layout_marginTop="-10dp"-->
+        <!--android:layout_alignTop="@id/TVTitle"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--android:layout_centerVertical="true"-->
+        <!--android:id="@+id/imageView3" />-->
+
+    <!-- Rightend Arrow -->
+    <!--<ImageView android:layout_width="20dp"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:src="@drawable/drawer"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_centerVertical="true"/>-->
+
+
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@+id/LlB"-->
+        <!--android:gravity="right"-->
+        <!--android:layout_toRightOf="@+id/thumbnail2">-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/duration"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_below="@id/artist2"-->
+            <!--android:text="19-08-2016"-->
+            <!--android:layout_marginRight="5dip"-->
+            <!--android:textSize="10dip"-->
+            <!--android:textColor="#263238"-->
+            <!--android:textStyle="bold"/>-->
+    <!--</LinearLayout>-->
+
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:id="@+id/LlB"-->
+        <!--android:layout_alignParentRight="true"-->
+        <!--android:layout_alignParentEnd="true"-->
+        <!--android:layout_below="@+id/imageView3">-->
+        <!--<ImageView-->
+            <!--android:layout_width="18dp"-->
+            <!--android:layout_height="15dp"-->
+            <!--android:layout_gravity="bottom"-->
+            <!--android:layout_marginBottom="14dp"-->
+            <!--android:src="@drawable/bookmark" />-->
+
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textColor="#263238"-->
+            <!--android:layout_gravity="bottom"-->
+            <!--android:layout_marginBottom="6.5dp"-->
+            <!--android:layout_marginLeft="0dp"-->
+            <!--android:text="6.5K" />-->
+
+        <!--<ImageView-->
+            <!--android:layout_width="14dp"-->
+            <!--android:layout_height="30dp"-->
+            <!--android:layout_gravity="bottom"-->
+            <!--android:layout_marginBottom="8dp"-->
+            <!--android:layout_marginLeft="22dp"-->
+            <!--android:src="@drawable/speechb" />-->
+
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textColor="#263238"-->
+            <!--android:layout_gravity="bottom"-->
+            <!--android:layout_marginBottom="6.5dp"-->
+            <!--android:layout_marginLeft="4dp"-->
+            <!--android:text="521" />-->
+
+        <!--<ImageView-->
+            <!--android:layout_width="14dp"-->
+            <!--android:layout_height="30dp"-->
+            <!--android:layout_gravity="bottom"-->
+            <!--android:layout_marginBottom="6.5dp"-->
+            <!--android:layout_marginLeft="22dp"-->
+            <!--android:src="@drawable/newstar" />-->
+
+        <!--<TextView-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:textColor="#263238"-->
+            <!--android:layout_gravity="bottom"-->
+            <!--android:layout_marginBottom="6.5dp"-->
+            <!--android:layout_marginLeft="4dp"-->
+            <!--android:text="4.9" />-->
+    <!--</LinearLayout>-->
+
+    </RelativeLayout>

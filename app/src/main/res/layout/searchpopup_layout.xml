@@ -1,0 +1,114 @@
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/searchpopup_element"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:background="#FFFFFF"
+        android:orientation="vertical"
+        android:elevation="25dp"
+        android:padding="10sp">
+
+        <!--<View-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_marginTop="30dp"-->
+            <!--android:layout_height="1dp"-->
+            <!--android:background="#000000">-->
+
+        <!--</View>-->
+        <EditText
+            android:id="@+id/tv_Title"
+            android:layout_width="fill_parent"
+            android:layout_height="45dp"
+            android:hint="Title"
+            android:textSize="18dp"
+            android:layout_marginTop="15dp"
+
+            android:padding="2dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"/>
+
+        <EditText
+            android:id="@+id/tv_Writer"
+            android:layout_width="fill_parent"
+            android:layout_height="45dp"
+            android:hint="Writer Name"
+            android:textSize="18dp"
+            android:layout_marginTop="15dp"
+
+            android:padding="2dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"/>
+
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:focusable="true"
+            android:spinnerMode="dropdown"
+            android:textSize="18dp"
+            android:layout_marginTop="15dp"
+            android:entries="@array/array_searchmainCategory"
+
+            android:padding="2dp"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+            android:id="@+id/SP_categoryName">
+        </Spinner>
+
+
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:spinnerMode="dropdown"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:textSize="18dp"
+            android:layout_marginTop="15dp"
+            android:entries="@array/array_searchsubCategory"
+
+            android:padding="2dp"
+            style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+            android:id="@+id/tv_categoryL2">
+        </Spinner>
+
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="45dp"
+            android:spinnerMode="dropdown"
+            android:layout_marginLeft="5dp"
+            android:layout_marginRight="5dp"
+            android:textSize="18dp"
+            android:layout_marginTop="15dp"
+            android:entries="@array/array_Searchlanguage"
+            android:padding="2dp"
+            style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+            android:id="@+id/SPLanguage">
+        </Spinner>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/BTNSearch1"
+                android:layout_width="wrap_content"
+                android:layout_height="30dp"
+                android:layout_alignParentBottom="true"
+                android:layout_below="@+id/no_of_follower"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="4dp"
+                android:layout_marginTop="5dp"
+                android:background="@color/colorPrimary"
+                android:text="Apply"
+                android:textColor="@color/colorWhite"
+                android:textSize="12dp" />
+        </LinearLayout>
+
+    </LinearLayout>

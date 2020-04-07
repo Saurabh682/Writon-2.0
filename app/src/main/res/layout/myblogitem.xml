@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#FFFFFF"
+    android:elevation="5dp"
+    android:orientation="horizontal"
+    android:layout_marginTop="5dp"
+    android:padding="5dip">
+
+    <!--  ListRow Left sied Thumbnail image -->
+    <LinearLayout android:id="@+id/thumbnail2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="3dip"
+        android:layout_alignParentLeft="true"
+        android:layout_marginRight="5dip">
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/list_image2"
+            android:layout_width="50dip"
+            android:layout_height="50dip"
+            android:layout_marginTop="8dp"
+            app:civ_border_width="0dp"
+            app:civ_border_color="@color/colorBlack"
+            android:src="@drawable/defaulta"/>
+
+    </LinearLayout>
+
+    <!-- Title Of Song-->
+    <TextView
+        android:id="@+id/TVTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:maxLength="30"
+        android:layout_alignTop="@+id/thumbnail2"
+        android:layout_toRightOf="@+id/thumbnail2"
+        android:text="My Little Sunshine"
+
+        android:typeface="sans"
+        android:textSize="17dip" />
+
+    <!-- Artist Name -->
+    <TextView
+        android:id="@+id/TVWrite"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/TVTitle"
+        android:textColor="#7E72B3"
+        android:textSize="13dip"
+        android:layout_marginTop="1dip"
+        android:layout_toRightOf="@+id/thumbnail2"
+        android:text="Mirinda Kerr (Short Story, Romance)" />
+
+    <!-- Rightend Duration -->
+    <!--<TextView-->
+    <!--android:id="@+id/duration2"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_alignParentRight="true"-->
+    <!--android:layout_alignTop="@id/title2"-->
+    <!--android:gravity="right"-->
+    <!--android:text="19-08-2016"-->
+    <!--android:layout_marginRight="5dip"-->
+    <!--android:textSize="10dip"-->
+    <!--android:textColor="#10bcc9"-->
+    <!--android:textStyle="bold"/>-->
+
+<!--    <ImageView android:layout_width="20dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:id="@+id/IMOption"-->
+<!--        android:src="@drawable/drawer"-->
+<!--        android:layout_marginTop="-10dp"-->
+<!--        android:layout_alignTop="@id/TVTitle"-->
+<!--        android:layout_alignParentRight="true"-->
+<!--        android:visibility="gone"-->
+<!--        android:layout_centerVertical="true"/>-->
+
+    <!-- Rightend Arrow -->
+
+    <ImageView
+        android:id="@+id/IMOption"
+        android:layout_width="20dp"
+        android:layout_height="wrap_content"
+        android:src="@drawable/delete"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"/>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:id="@+id/LlB"
+        android:layout_toRightOf="@+id/thumbnail2"
+        android:layout_below="@id/TVWrite"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0dp"
+            android:layout_gravity="center"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_eye"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:id="@+id/TVViewCount"
+                    android:layout_marginLeft="5dp"
+                    android:textSize="12dip"
+                    android:textColor="#959FC4"
+                    android:text="0"/>
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp">
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_marginTop="2dp"
+                    android:src="@drawable/ic_chat"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:id="@+id/TVCommentCount"
+                    android:layout_marginLeft="5dp"
+                    android:textSize="12dip"
+                    android:textColor="#959FC4"
+                    android:text="0"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp">
+                <ImageView
+                    android:layout_width="15dp"
+                    android:layout_height="15dp"
+                    android:layout_marginTop="1dp"
+                    android:src="@drawable/ic_star"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:id="@+id/TVRating"
+                    android:layout_marginLeft="5dp"
+                    android:textColor="#959FC4"
+                    android:textSize="12dip"
+                    android:text="0"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+
+
+
+
+
+    </LinearLayout>
+
+    <!--<LinearLayout-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:layout_below="@+id/LlB"-->
+        <!--android:gravity="right"-->
+        <!--android:layout_toRightOf="@+id/thumbnail2">-->
+
+        <!--<TextView-->
+            <!--android:id="@+id/duration"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+
+
+            <!--android:text="19-08-2016"-->
+            <!--android:layout_marginRight="5dip"-->
+            <!--android:textSize="10dip"-->
+            <!--android:textColor="#263238"-->
+            <!--android:textStyle="bold"/>-->
+    <!--</LinearLayout>-->
+
+
+</RelativeLayout>

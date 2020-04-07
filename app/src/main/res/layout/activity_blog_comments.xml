@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:orientation="horizontal"
+        android:paddingBottom="5dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingTop="5dp">
+
+
+        <ImageView
+            android:id="@+id/backbutton"
+            android:layout_width="40dip"
+            android:layout_height="60dip"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:tint="@color/colorWhite"
+            android:src="@drawable/left_arrow"></ImageView>
+
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/list_image"
+            android:layout_width="60dip"
+            android:layout_height="60dip"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            app:civ_border_width="0dp"
+            app:civ_border_color="@color/colorBlack"
+            android:src="@drawable/userprofilepic"></de.hdodenhof.circleimageview.CircleImageView>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/TVTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:text="Why Not Me ?"
+                android:textColor="@color/colorWhite"
+                android:layout_marginLeft="15dp"
+                android:textSize="18dp" />
+
+            <TextView
+                android:id="@+id/TVUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="14dp"
+                android:singleLine="true"
+                android:text="Mindy Kaling"
+                android:textColor="@color/colorWhite"
+                android:textSize="14dp" />
+
+            <TextView
+                android:id="@+id/TVCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:singleLine="true"
+                android:text="Short Story Romance"
+                android:textColor="@color/colorWhite"
+                android:textSize="14dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/rlBottomView"
+        android:layout_below="@+id/header"
+        android:elevation="10dp" />
+
+    <LinearLayout
+        android:id="@+id/rlBottomView"
+        android:layout_width="match_parent"
+        android:layout_height="50sp"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorLightGrey"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <EditText
+                android:id="@+id/ETWriteComment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="45dp"
+                android:background="@android:color/transparent"
+                android:hint="Write your thoughts"
+                android:minHeight="50dp"
+                android:padding="10dp"
+                android:textSize="14dp" />
+
+            <View
+                android:layout_width=".1sp"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/IVSend"
+                android:background="@color/colorPrimary"></View>
+
+            <ImageView
+                android:id="@+id/IVSend"
+                android:layout_width="44sp"
+                android:layout_height="44sp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:padding="10dp"
+                android:src="@drawable/send_button"
+                android:tint="@color/colorPrimary" />
+        </RelativeLayout>
+    </LinearLayout>
+</RelativeLayout>
