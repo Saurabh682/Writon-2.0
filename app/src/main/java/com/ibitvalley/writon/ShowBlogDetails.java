@@ -127,15 +127,15 @@ public class ShowBlogDetails extends AppCompatActivity {
             blogID = cuuBlog.getBlogId();
 
             if (cuuBlog.isBookMark()) {
-                img_bookmark.setImageResource(R.drawable.bookmarknew);
+                img_bookmark.setImageResource(R.drawable.bookmarkyellow);
             } else {
-                img_bookmark.setImageResource(R.drawable.unbookmark);
+                img_bookmark.setImageResource(R.drawable.bookmarkblue);
             }
 
             if (cuuBlog.isIs_rated()) {
-                img_rating.setImageResource(R.drawable.starnewselected);
+                img_rating.setImageResource(R.drawable.staryellow);
             } else {
-                img_rating.setImageResource(R.drawable.starnew);
+                img_rating.setImageResource(R.drawable.starblue);
             }
 
 
@@ -203,11 +203,11 @@ public class ShowBlogDetails extends AppCompatActivity {
                     if (cuuBlog.isIs_rated()) {
                         addRating(blogID, userData.getId(), "0");
                         cuuBlog.setIs_rated(false);
-                        img_rating.setImageResource(R.drawable.starnew);
+                        img_rating.setImageResource(R.drawable.starblue);
                     } else {
                         addRating(blogID, userData.getId(), "1");
                         cuuBlog.setIs_rated(true);
-                        img_rating.setImageResource(R.drawable.starnewselected);
+                        img_rating.setImageResource(R.drawable.staryellow);
                     }
                 }
             });
@@ -278,7 +278,7 @@ public class ShowBlogDetails extends AppCompatActivity {
 
 
             if(trendingPost_model.isIs_followed()) {
-                TVFollow.setText("UN FOLLOW");
+                TVFollow.setText("UNFOLLOW");
             } else {
                 TVFollow.setText("FOLLOW");
             }

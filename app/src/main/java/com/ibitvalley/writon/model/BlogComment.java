@@ -7,11 +7,30 @@ package com.ibitvalley.writon.model;
 public class BlogComment {
     private String Id;
     private String Comment;
-    private String UserName;
+    private String username;
+
+    public String getTitle() {
+        return Title;
+    }
+
+    public void setTitle(String title) {
+        Title = title;
+    }
+
     private String Title;
     private String CreationDate;
     private String UserId;
     private String name;
+
+    public String getBlogId() {
+        return BlogId;
+    }
+
+    public void setBlogId(String blogId) {
+        BlogId = blogId;
+    }
+
+    private String BlogId;
 
 
 
@@ -24,20 +43,14 @@ public class BlogComment {
     }
 
     public String getUserName() {
-        return UserName;
+        return username;
     }
 
     public void setUserName(String userName) {
-        UserName = userName;
+        username = userName;
     }
 
-    public String getTitle() {
-        return Title;
-    }
 
-    public void setTitle(String title) {
-        Title = title;
-    }
 
     public String getDateTime() {
         return CreationDate;

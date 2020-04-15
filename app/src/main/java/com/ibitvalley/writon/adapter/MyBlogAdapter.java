@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +15,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.VolleyError;
+import com.ibitvalley.writon.Constants;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.ShowBlogDetails;
 import com.ibitvalley.writon.model.Blog;
@@ -31,6 +35,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -43,7 +48,8 @@ import static android.content.Context.MODE_PRIVATE;
 public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.ImagecategoryViewHolder> {
     private Context curr_context;
     private Activity curr_activity;
-    ArrayList<Blog> arrappliedjob;
+    private ArrayList<Blog> arrappliedjob;
+    private SharedPreferences preferences;
     //SharedPreferences preferences;
     Typeface tf;
     String Title= "";
@@ -58,17 +64,25 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
 
     @Override
     public MyBlogAdapter.ImagecategoryViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.myblogitem, parent, false);
-        ImageView iV = 
+
+        /*ImageView iV = (ImageView) curr_activity.findViewById(R.id.IMOption);
+        iV.setVisibility(View.GONE);*/
         return new ImagecategoryViewHolder(itemView);
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onBindViewHolder(final MyBlogAdapter.ImagecategoryViewHolder holder, final int position) {
         System.out.println("Entering onbind");
 
         final Blog show = arrappliedjob.get(position);
+        preferences = Objects.requireNonNull(curr_context).getSharedPreferences(Constants.PREFREFRENCE, MODE_PRIVATE);
+
+        final String UserId = preferences.getString(Constants.KEY_PREF_USERID, "0");
+        //final String UserName = preferences.getString(Constants.KEY_PREF_DISPLAY_NAME, "0");
 
 
         holder.TVWrite.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
@@ -84,7 +98,12 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
         if(this.Title == "Bookmarked"){
             holder.IMOption.setVisibility(View.GONE);
         }
+        /*SharedPreferences sharedPref = Current().getPreferences(Context.MODE_PRIVATE);
+        String highScore = sharedPref.getString("PenName", defaultValue);*/
 
+       if(show.getUser_id() == UserId) {
+            holder.IMOption.setVisibility(View.VISIBLE);
+        }
     }
 
 

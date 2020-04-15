@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="15dp"
+    android:layout_marginLeft="@dimen/size_10"
+    android:layout_marginRight="@dimen/size_10"
+    app:cardElevation="10dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_marginTop="10dp"
+    android:outlineAmbientShadowColor="@color/purpleLight"
+    android:outlineSpotShadowColor="@color/purple"
+
+    >
+
+<RelativeLayout
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -59,7 +74,11 @@
         android:src="@drawable/delete"
         android:layout_marginRight="@dimen/spacing_15"
         android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"/>
+        android:layout_centerVertical="true"
+        android:visibility="invisible"
+        />
+
+
 
 
 
@@ -91,7 +110,116 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height=".1dp"
+        android:layout_height="0dp"
         android:layout_marginLeft="20dp"
-        android:background="@color/colorGrey"></View>
+        android:background="@color/colorGrey"
+        android:layout_marginStart="20dp" />
+
+   <!-- <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="120dp"
+        android:layout_alignBaseline="@+id/ll_One"
+        >
+
+
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            app:cardElevation="0dp"
+            android:id="@+id/thumbnail"
+            app:cardCornerRadius="40dp"
+            android:innerRadius="0dp"
+            android:layout_marginTop="5dp"
+            android:shape="ring"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="0dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/list_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_margin="5dp"
+                app:civ_border_width="0dp"
+                app:civ_border_color="@color/colorBlack"
+                android:src="@drawable/userprofilepic"/>
+
+
+        </androidx.cardview.widget.CardView>
+
+        &lt;!&ndash; Title Of Song&ndash;&gt;
+
+        <TextView
+            android:id="@+id/TVWriterName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignLeft="@+id/tv_user_followers_count"
+            android:text="Mindy Kaling"
+            android:textColor="#404041"
+            android:textSize="17dip"
+            android:textStyle="bold"/>
+
+        &lt;!&ndash; Artist Name &ndash;&gt;
+        <TextView
+            android:id="@+id/tv_user_followers_count"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="@id/thumbnail"
+            android:textColor="#6D6E70"
+            android:textSize="12dip"
+            android:layout_marginTop="25dp"
+            android:layout_marginLeft="20dp"
+            android:layout_toRightOf="@+id/thumbnail"
+            android:text="0 followers" />
+
+
+
+
+        <Button
+            android:id="@+id/TVFollow"
+            android:layout_width="90dp"
+            android:layout_height="25dp"
+            android:layout_below="@id/tv_user_followers_count"
+            android:layout_alignLeft="@id/tv_user_followers_count"
+            android:text="Follow"
+            android:textSize="10dp"
+
+            android:background="@drawable/rounded_button_blue"
+            android:padding="1dp"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/colorWhite"
+            android:layout_marginLeft="-4dp" />
+
+        <ImageView
+            android:id="@+id/img_bookmark"
+            android:layout_width="17dp"
+            android:layout_height="22dp"
+            android:layout_centerHorizontal="@+id/img_rating"
+            android:layout_centerVertical="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginRight="24dp"
+            android:layout_toStartOf="@+id/img_rating"
+            android:layout_toLeftOf="@+id/img_rating"
+            android:src="@drawable/bookmarkblue" />
+
+        <ImageView
+            android:id="@+id/img_rating"
+            android:layout_width="25dp"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/thumbnail"
+            android:layout_alignRight="@+id/thumbnail"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="-294dp"
+            android:layout_marginRight="-294dp"
+            android:src="@drawable/starblue" />
+
+    </RelativeLayout>-->
+
+
 </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

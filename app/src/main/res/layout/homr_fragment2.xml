@@ -1,36 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bgColor"
-    android:scrollbars="none">
-    <RelativeLayout
+    android:layout_width="match_parent"
+    android:background="@color/colorWhite"
+    >
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appbar05"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/bgColor">
-
-
-        <LinearLayout
+        android:layout_height="wrap_content"
+        android:scrollbarAlwaysDrawVerticalTrack="true"
+        android:background="@color/colorWhite"
+        >
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true">
+            android:layout_height="wrap_content"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap"
+            android:fitsSystemWindows="true"
+            app:scrimAnimationDuration="300"
+            android:background="@drawable/scrim"
+            app:titleEnabled="false"
+            app:expandedTitleGravity="bottom|center_horizontal"
+            >
 
             <RelativeLayout
+                android:gravity="start"
                 android:layout_width="match_parent"
-                android:layout_height="235dip"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="15dp"
+                android:layout_marginTop="1dp"
                 android:background="@color/colorWhite">
 
                 <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:id="@+id/image"
-                    android:layout_width="60dp"
-                    android:layout_height="60dp"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
                     android:layout_centerHorizontal="true"
                     android:layout_margin="15dp"
                     android:layout_marginTop="5dp"
@@ -58,7 +64,7 @@
                     android:layout_alignParentRight="true"
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="5dp"
-                    android:src="@drawable/ic_settings_applications_black_24dp" />
+                    app:srcCompat="@drawable/ic_settings_applications_black_24dp" />
 
                 <EditText
                     android:id="@+id/TVname"
@@ -311,8 +317,82 @@
                 </LinearLayout>
 
             </RelativeLayout>
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:gravity="left"
+                app:layout_collapseMode="pin"
+                android:background="@drawable/scrim"
+                app:layout_collapseParallaxMultiplier=".6"
+                >
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="80dp"
+                android:padding="@dimen/spacing_10"
+                android:foregroundGravity="fill_horizontal"
+                android:animateLayoutChanges="true"
+
+                >
+
+                <de.hdodenhof.circleimageview.CircleImageView
+
+                    android:id="@+id/image6"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_margin="10dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/appcon"
+                    app:civ_border_color="@color/newBlue"
+                    app:civ_border_width=".5dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+
+                    />
+
+                <TextView
+                    android:id="@+id/Text6"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="2"
+                    android:text="User"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginLeft="@dimen/spacing_10"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/image6"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.appcompat.widget.Toolbar>
 
 
+
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
+        >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            >
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -540,54 +620,53 @@
 
 
             </RelativeLayout>
-
-
             <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="25dp"
-                android:background="@color/colorWhite"
-                android:layout_weight="1">
-
-
-                <LinearLayout
-                    android:id="@+id/ll_contactus"
                     android:layout_width="match_parent"
-                    android:layout_height="50dp"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginLeft="20dp"
-                    android:layout_marginRight="20dp"
-                    android:layout_marginTop="10dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="25dp"
                     android:background="@color/colorWhite"
-                    android:orientation="horizontal"
-                    android:padding="5dp">
+                    android:layout_weight="1">
 
-                    <ImageView
-                        android:layout_width="50dp"
-                        android:layout_height="match_parent"
-                        android:visibility="gone"
-                        app:srcCompat="@drawable/ic_contact_mail_black_24dp" />
 
-                    <TextView
+                    <LinearLayout
+                        android:id="@+id/ll_contactus"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:textStyle="bold"
-                        android:text="Contact Us"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="20dp" />
+                        android:layout_height="50dp"
+                        android:layout_marginBottom="5dp"
+                        android:layout_marginLeft="20dp"
+                        android:layout_marginRight="20dp"
+                        android:layout_marginTop="10dp"
+                        android:background="@color/colorWhite"
+                        android:orientation="horizontal"
+                        android:padding="5dp">
 
-                </LinearLayout>
+                        <ImageView
+                            android:layout_width="50dp"
+                            android:layout_height="match_parent"
+                            android:visibility="gone"
+                            app:srcCompat="@drawable/ic_contact_mail_black_24dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:textStyle="bold"
+                            android:text="Contact Us"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="20dp" />
+
+                    </LinearLayout>
 
 
-            </RelativeLayout>
+                </RelativeLayout>
 
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="100dp"></LinearLayout>
         </LinearLayout>
 
 
-    </RelativeLayout>
-</ScrollView>
+
+
+
+
+
+    </androidx.core.widget.NestedScrollView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

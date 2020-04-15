@@ -6,8 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    app:cardCornerRadius="10dp"
-    app:cardElevation="1dp"
+    app:cardCornerRadius="15dp"
+    app:cardElevation="10dp"
     app:cardBackgroundColor="@color/colorWhite"
     android:layout_margin="10dp"
     android:padding="10dp"
@@ -59,7 +59,9 @@
                 android:layout_marginTop="5dp"
                 android:shape="ring"
                 android:layout_alignParentLeft="true"
-                android:layout_marginLeft="10dp">
+                android:layout_marginLeft="10dp"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="10dp">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/list_image"
@@ -70,7 +72,7 @@
                     android:layout_margin="5dp"
                     app:civ_border_color="@color/colorBlack"
                     app:civ_border_width="0dp"
-                    android:src="@drawable/userprofilepic"></de.hdodenhof.circleimageview.CircleImageView>
+                    android:src="@drawable/userprofilepic" />
 
 
             </androidx.cardview.widget.CardView>
@@ -132,7 +134,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_alignTop="@id/name"
                 android:gravity="right"
-                android:src="@drawable/bookmark_linemdpi"
+                android:src="@drawable/bookmarkblue"
                 android:layout_marginTop="4dp"
                 android:layout_marginRight="10dip"/>
 

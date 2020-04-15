@@ -17,7 +17,8 @@
         android:paddingBottom="@dimen/activity_vertical_margin"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin">
+        android:paddingTop="@dimen/activity_vertical_margin"
+        >
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -291,30 +292,39 @@
                 android:textColor="@color/colorWhite"
                 android:layout_marginLeft="-4dp" />
 
-        </RelativeLayout>
-
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
             <ImageView
                 android:id="@+id/img_bookmark"
-                android:layout_width="15dp"
+                android:layout_width="17dp"
                 android:layout_height="22dp"
-                android:layout_alignParentRight="true"
-                android:src="@drawable/unbookmark"
-                android:layout_marginTop="4dp"
-                android:layout_marginRight="30dip"/>
+                android:layout_centerHorizontal="@+id/img_rating"
+                android:layout_centerVertical="true"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="24dp"
+                android:layout_marginRight="24dp"
+                android:layout_toStartOf="@+id/img_rating"
+                android:layout_toLeftOf="@+id/img_rating"
+                android:src="@drawable/bookmarkblue" />
 
             <ImageView
                 android:id="@+id/img_rating"
-                android:layout_width="15dp"
-                android:layout_height="22dp"
-                android:layout_alignParentRight="true"
-                android:src="@drawable/starnew"
-                android:layout_marginTop="4dp"
-                android:layout_marginRight="0dip"/>
+                android:layout_width="25dp"
+                android:layout_height="wrap_content"
+                android:layout_alignEnd="@+id/thumbnail"
+                android:layout_alignRight="@+id/thumbnail"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="-294dp"
+                android:layout_marginRight="-294dp"
+                android:src="@drawable/starblue" />
+
+        </RelativeLayout>
+
+
+        <!--<RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="43dp"
+            android:orientation="horizontal">
+
+
 
 
             <ImageView
@@ -322,12 +332,12 @@
                 android:layout_width="15dp"
                 android:layout_height="22dp"
                 android:layout_alignParentRight="true"
-                android:src="@drawable/shareblog"
                 android:layout_marginTop="4dp"
-                android:visibility="gone"
-                android:layout_marginRight="0dip"/>
+                android:layout_marginRight="0dip"
+                android:src="@drawable/shareblue"
+                android:visibility="gone" />
 
-        </RelativeLayout>
+        </RelativeLayout>-->
 
 
 
@@ -354,28 +364,30 @@
            <LinearLayout
                android:id="@+id/ll_Discuss"
                android:layout_width="match_parent"
-               android:layout_height="wrap_content"
+               android:layout_height="50dp"
                android:orientation="horizontal"
-               android:gravity="center">
+               android:gravity="center"
+               android:background="@color/purpleLight"
+               >
 
                <TextView
                    android:id="@+id/tv_comment"
                    android:layout_width="wrap_content"
                    android:layout_height="wrap_content"
-                   android:layout_centerInParent="true"
-                   android:text="Comment"
-                   android:textColor="#404041"
-                   android:textSize="17dip"
-                   android:textStyle="bold"/>
+                   android:layout_centerHorizontal="true"
+                   android:layout_centerVertical="true"
+                   android:text="Discuss"
+                   android:textColor="@color/purple"
+                   android:textSize="26dip"
+                   android:textStyle="bold" />
 
                <ImageView
                    android:id="@+id/img_comment"
-                   android:layout_width="15dp"
-                   android:layout_height="22dp"
+                   android:layout_width="wrap_content"
+                   android:layout_height="25dp"
                    android:layout_alignRight="@+id/tv_comment"
-                   android:src="@drawable/ic_chat"
-                   android:layout_marginTop="4dp"
-                   android:layout_marginLeft="10dp"/>
+                   android:layout_marginLeft="10dp"
+                   android:src="@drawable/discussblue" />
 
            </LinearLayout>
 

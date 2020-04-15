@@ -1,6 +1,8 @@
 package com.ibitvalley.writon.Fragment;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -42,6 +44,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -57,6 +61,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -114,15 +120,16 @@ import com.squareup.picasso.Picasso;
 public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
     private View rootView;
-    private TextView  TVPubCount, TVFollowers, TVFollowing, tv_about, tv_posted, tv_discussion;
+    private TextView  TVPubCount, TVFollowers, TVFollowing, tv_about, tv_posted, tv_discussion,Text6;
     private EditText TVname, ETQofDay, ETIntro, ETWorkiingon;
     private SharedPreferences preferences;
-    private CircleImageView image;
+    private CircleImageView image, image6;
     private ImageView IVEdit;
     private ImageView TVCi;
-    int isEdit = 0;
-    Context curr_context;
+    private int isEdit = 0;
+    private Context curr_context;
     private Typeface tf;
+    Toolbar toolbar;
 
     private RecyclerView recyclerView1, recview_discussion;
     private LinearLayout ll_about, ll_posted, ll_discussion, ll_contactus;
@@ -130,12 +137,14 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
     private User userData;
     private String [] permissions = {"android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.ACCESS_FINE_LOCATION", "android.permission.SYSTEM_ALERT_WINDOW","android.permission.CAMERA"};
-
+   // private CollapsingToolbarLayout collapsingToolbarLayout;
 
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        //setContentView(R.layout.activity_blog__profile);
 
         if (rootView != null) {
             ViewGroup parent = (ViewGroup) rootView.getParent();
@@ -158,14 +167,21 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             preferences = Objects.requireNonNull(getContext()).getSharedPreferences(Constants.PREFREFRENCE, MODE_PRIVATE);
 
             final String UserId = preferences.getString(Constants.KEY_PREF_USERID, "0");
+            SharedPreferences sharedPref = Objects.requireNonNull(getActivity()).getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString("PenName", userData.getUsername());
+            editor.apply();
 
-            TVname = (EditText) rootView.findViewById(R.id.TVname);
+            toolbar = rootView.findViewById(R.id.toolbar);
+            TVname = rootView.findViewById(R.id.TVname);
             TVname.setTypeface(tf);
-            ETQofDay = (EditText) rootView.findViewById(R.id.ETQofDay);
+            Text6  = rootView.findViewById(R.id.Text6);
+            Text6.setTypeface(tf);
+            ETQofDay = rootView.findViewById(R.id.ETQofDay);
             ETQofDay.setTypeface(tf);
-            ETIntro = (EditText) rootView.findViewById(R.id.ETIntro);
+            ETIntro = rootView.findViewById(R.id.ETIntro);
             ETIntro.setTypeface(tf);
-            ETWorkiingon = (EditText) rootView.findViewById(R.id.ETWorkiingon);
+            ETWorkiingon = rootView.findViewById(R.id.ETWorkiingon);
             ETWorkiingon.setTypeface(tf);
             TVname.setEnabled(false);
             ETQofDay.setEnabled(false);
@@ -173,23 +189,26 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             ETWorkiingon.setEnabled(false);
 
 
-            tv_about = (TextView) rootView.findViewById(R.id.tv_about);
-            tv_posted = (TextView) rootView.findViewById(R.id.tv_posted);
-            tv_discussion = (TextView) rootView.findViewById(R.id.tv_discussion);
+            tv_about = rootView.findViewById(R.id.tv_about);
+            tv_posted = rootView.findViewById(R.id.tv_posted);
+            tv_discussion = rootView.findViewById(R.id.tv_discussion);
 
-            ll_about = (LinearLayout) rootView.findViewById(R.id.ll_about);
-            ll_posted = (LinearLayout) rootView.findViewById(R.id.ll_posted);
-            ll_discussion = (LinearLayout) rootView.findViewById(R.id.ll_discussion);
-            ll_contactus = (LinearLayout) rootView.findViewById(R.id.ll_contactus);
+            ll_about = rootView.findViewById(R.id.ll_about);
+            ll_posted = rootView.findViewById(R.id.ll_posted);
+            ll_discussion = rootView.findViewById(R.id.ll_discussion);
+            ll_contactus = rootView.findViewById(R.id.ll_contactus);
 
-            recyclerView1 = (RecyclerView) rootView.findViewById(R.id.recyclerView1);
-            recview_discussion = (RecyclerView) rootView.findViewById(R.id.recview_discussion);
-            TVCi = (ImageView) rootView.findViewById(R.id.TVCi);
+            recyclerView1 = rootView.findViewById(R.id.recyclerView1);
+            recview_discussion = rootView.findViewById(R.id.recview_discussion);
+            TVCi = rootView.findViewById(R.id.TVCi);
 
 
 
             tv_about.setTextColor(Color.parseColor("#2196f3"));
             tv_about.setText(Html.fromHtml("<u>About</u>"));
+
+
+            //collapsingToolbarLayout = rootView.findViewById(R.id.collapsing_toolbar);
 
 
             tv_about.setOnClickListener(new View.OnClickListener() {
@@ -220,6 +239,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                     tv_posted.setTextColor(Color.parseColor("#2196f3"));
                     tv_posted.setText(Html.fromHtml("<u>Posted</u>"));
 
+
                     //
                     tv_about.setTextColor(Color.parseColor("#5c5c5c"));
                     tv_about.setText(Html.fromHtml("About"));
@@ -232,10 +252,10 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                     ll_discussion.setVisibility(View.GONE);
                     ll_posted.setVisibility(View.VISIBLE);
 
+
                     loadTrendingPost();
                 }
             });
-
             tv_discussion.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -259,13 +279,14 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             });
 
 
-            Button btnLogout = (Button) rootView.findViewById(R.id.btnLogout);
+            Button btnLogout = rootView.findViewById(R.id.btnLogout);
             btnLogout.setTypeface(tf);
-            TVPubCount = (TextView) rootView.findViewById(R.id.TVPubCount);
-            TVFollowers = (TextView) rootView.findViewById(R.id.TVFollowers);
-            TVFollowing = (TextView) rootView.findViewById(R.id.TVFollowing);
-            image = (CircleImageView) rootView.findViewById(R.id.image);
-            IVEdit = (ImageView) rootView.findViewById(R.id.IVEdit);
+            TVPubCount = rootView.findViewById(R.id.TVPubCount);
+            TVFollowers = rootView.findViewById(R.id.TVFollowers);
+            TVFollowing = rootView.findViewById(R.id.TVFollowing);
+            image = rootView.findViewById(R.id.image);
+            IVEdit = rootView.findViewById(R.id.IVEdit);
+            image6 = rootView.findViewById(R.id.image6);
             IVEdit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -273,8 +294,9 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                     //startActivity(intentSearch);
                     if(isEdit ==0) {
                         IVEdit.setImageResource(R.drawable.ic_check_black_24dp);
+
                         isEdit = 1;
-                        //TVname.setEnabled(true);
+                        TVname.setEnabled(true);
 
                         ETQofDay.setEnabled(true);
                         ETIntro.setEnabled(true);
@@ -292,7 +314,8 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                     } else if(isEdit ==1)
                     {
                         IVEdit.setImageResource(R.drawable.ic_edit);
-                        //TVname.setEnabled(false);
+
+                        TVname.setEnabled(false);
                         ETQofDay.setEnabled(false);
                         ETIntro.setEnabled(false);
                         ETWorkiingon.setEnabled(false);
@@ -303,7 +326,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
                 }
             });
-            ImageView IVSeeting = (ImageView) rootView.findViewById(R.id.IVSeeting);
+            ImageView IVSeeting = rootView.findViewById(R.id.IVSeeting);
             IVSeeting.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -328,6 +351,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
 
 
+
         ll_contactus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -339,7 +363,6 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             }
         });
 
-
         TVCi.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -347,10 +370,52 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             }
         });
 
+        AppBarLayout appBarLayout;
+        appBarLayout = rootView.findViewById(R.id.appbar05);
+        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
 
+                if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0)
+                {
+                    //  Collapsed
+                    //toolbar.setAlpha(1f);
+                    toolbar.setAlpha(0f);
+                    toolbar.setVisibility(View.VISIBLE);
+                    toolbar.animate()
+                            .alpha(1f)
+                            .setDuration(200)
+                            .setListener(null);
+
+                }
+                else
+                {
+                    //Expanded
+                    /*AlphaAnimation animation1 = new AlphaAnimation(1f, 0f);
+                    animation1.setDuration(100);
+                    animation1.setStartOffset(1000);
+                    animation1.setFillAfter(true);
+                    toolbar.startAnimation(animation1);*/
+                    toolbar.setAlpha(1f);
+                    toolbar.animate()
+                            .alpha(0f)
+                            .setDuration(200)
+                            .setListener(new AnimatorListenerAdapter() {
+                                @Override
+                                public void onAnimationEnd(Animator animation) {
+                                    toolbar.setVisibility(View.GONE);
+                                }
+                            });
+                    //toolbar.setAlpha(0f);
+
+                }
+            }
+        });
 
         return rootView;
     }
+
+
 
 
     private void loadTrendingPost() {
@@ -359,26 +424,29 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         hmHomeParam.put("page", "1");
         hmHomeParam.put("UserID", userData.getId());
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.published_Post, curr_context, false, hmHomeParam, new OnResponseListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
-                            JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
-                            Type type = new TypeToken<ArrayList<Blog>>() {}.getType();
-                            ArrayList<Blog> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                            displayLTrendingPost(trending_post);
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
+                        JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
+                        Type type = new TypeToken<ArrayList<Blog>>() {}.getType();
+                        assert arrMainCategoryJson != null;
+                        ArrayList<Blog> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        displayLTrendingPost(trending_post);
+
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+
+
             }
             @Override
             public void onError(VolleyError error) {
@@ -390,8 +458,9 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
 
     MyBlogAdapter myBlogAdapter;
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void displayLTrendingPost(ArrayList<Blog> trendingBlog){
-        myBlogAdapter = new MyBlogAdapter(getActivity(), getContext(), trendingBlog, "Latest");
+        myBlogAdapter = new MyBlogAdapter(getActivity(), Objects.requireNonNull(getContext()), trendingBlog, "Latest");
         LinearLayoutManager layoutManager = new LinearLayoutManager(curr_context);
         recyclerView1.setLayoutManager(layoutManager);
         recyclerView1.setAdapter(myBlogAdapter);
@@ -409,6 +478,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         HashMap<String, String> hmHomeParam = new HashMap <>();
         hmHomeParam.put("userid", userData.getId());
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.discussions_action, curr_context, false, hmHomeParam, new OnResponseListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onSuccess(Object result) {
                 try {
@@ -438,8 +508,9 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void setAdapterData(ArrayList<BlogComment> blogComment){
-        adapter = new DiscusListAdapter(getActivity(), getContext(), blogComment);
+        adapter = new DiscusListAdapter(getActivity(), Objects.requireNonNull(getContext()), blogComment);
         recview_discussion.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(curr_context);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -447,6 +518,9 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         recview_discussion.setItemAnimator(new DefaultItemAnimator());
         recview_discussion.setAdapter(adapter);
         adapter.notifyDataSetChanged();
+        //Activity curre_activity = getActivity().get;
+        //ImageView iV = getActivity().findViewById(R.id.IMOption);
+        //iV.setVisibility(View.VISIBLE);
 
     }
 
@@ -455,23 +529,22 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         HashMap<String, String> hmUserProfileParams = WebApiParams.getyserProfileParam(userData.getId());
 
             SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.user_profile, curr_context, false, hmUserProfileParams, new OnResponseListener() {
+                @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                 @Override
                 public void onSuccess(Object result) {
                     try {
                         JSONObject jsonResponse = new JSONObject(result.toString());
-                        if (jsonResponse != null) {
-                            Integer status = jsonResponse.getInt("success");
-                            if (status == 1) {
-                                JSONObject userData = jsonResponse.getJSONObject("data");
+                        int status = jsonResponse.getInt("success");
+                        if (status == 1) {
+                            JSONObject userData = jsonResponse.getJSONObject("data");
 
-                                setUserData(userData);
+                            setUserData(userData);
 
-                            }else{
-                                String message = jsonResponse.getString("message");
-                                Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
-                                if(status == -1){
-                                    logout();
-                                }
+                        }else{
+                            String message = jsonResponse.getString("message");
+                            Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
+                            if(status == -1){
+                                logout();
                             }
                         }
                     } catch (JSONException e) {
@@ -491,7 +564,9 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
     private void setUserData(JSONObject jsonobject) throws JSONException {
 
         //JSONObject jsonobject= (JSONObject) userData.get(0);
-        TVname.setText(jsonobject.get("name").toString());
+        //TVname.setText(jsonobject.get("name").toString());
+        TVname.setText(jsonobject.get("username").toString());
+        Text6.setText(jsonobject.get("username").toString());
         TVPubCount.setText(jsonobject.get("published_count").toString());
         TVFollowers.setText(jsonobject.get("followers_count").toString());
         TVFollowing.setText(jsonobject.get("following_count").toString());
@@ -514,13 +589,19 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             ETWorkiingon.setText("");
         }
 
-        int aCode = Integer.parseInt(jsonobject.get("AvatorCode").toString());
-        selectedAvtarType = aCode;
+        selectedAvtarType = Integer.parseInt(jsonobject.get("AvatorCode").toString());
         //image.setImageResource(AvtarUtil.getAvtarDrawableByType(aCode));
 
         if (!jsonobject.get("image_url").toString().equals("null")) {
             Picasso.get().load(jsonobject.get("image_url").toString()).placeholder(R.drawable.usermale).into(image);
+            Picasso.get().load(jsonobject.get("image_url").toString()).placeholder(R.drawable.usermale).into(image6);
         }
+
+         
+        /*collapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
+        collapsingToolbarLayout.setCollapsedTitleTypeface(tf);
+        collapsingToolbarLayout.setTitle(jsonobject.get("username").toString()+"  "+ jsonobject.get("published_count").toString() + "  "+ jsonobject.get("followers_count").toString()+ "  "+jsonobject.get("following_count").toString());*/
+
     }
 
 
@@ -549,8 +630,9 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         builder.show();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void logout() {
-        SharedPreferences preferences = getActivity().getSharedPreferences("mPrefs", MODE_PRIVATE);
+        SharedPreferences preferences = Objects.requireNonNull(getActivity()).getSharedPreferences("mPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString(Constants.KEY_PREF_USERID, "");
         editor.putString(Constants.KEY_PREF_U_NAME, "");
@@ -581,15 +663,16 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
     private void initilize() {
     }
 
-    @Override
+   /* @Override
     public void onClick(View v) {
-    }
+    }*/
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                getActivity().onBackPressed();
+                Objects.requireNonNull(getActivity()).onBackPressed();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -621,6 +704,11 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
     }
 
+    @Override
+    public void onClick(View v) {
+
+    }
+
 
     /**
      * Click listener for popup menu items
@@ -633,6 +721,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             //this.blog = blog;
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.KITKAT)
         @Override
         public boolean onMenuItemClick(MenuItem menuItem) {
             switch (menuItem.getItemId()) {
@@ -663,6 +752,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         requestQueue = Volley.newRequestQueue(curr_context);
         StringRequest jor = new StringRequest(Request.Method.POST, String.format("%s%s", Const.BASE_URL, "UpdateProfile"),
                 new Response.Listener<String>() {
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
                     public void onResponse(String response) {
                         dialog.dismiss();
@@ -676,14 +766,14 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                                 editor.putString(Constants.KEY_PREF_WORKINGON, WorkingOn);
                                 editor.putString(Constants.KEY_PREF_INTRO, Introducation);
                                 editor.putString(Constants.KEY_PREF_U_AVATOR_CODE, String.valueOf(selectedAvtarType));
-                                editor.commit();
+                                editor.apply();
 
                             } else {
                                 Toast.makeText(curr_context, "" + jsonObject.get("message"), Toast.LENGTH_LONG).show();
                             }
                         } catch (JSONException ex) {
                             //progress.dismiss();
-                            Log.d("JSON Exception", ex.getMessage());
+                            Log.d("JSON Exception", Objects.requireNonNull(ex.getMessage()));
                         }
                     }
                 },
@@ -717,21 +807,20 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         HashMap<String, String> hmUserProfileParams = WebApiParams.getyserProfileParam(userData.getId());
 
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.user_update_profile, curr_context, false, hmUserProfileParams, new OnResponseListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            JSONObject userData = jsonResponse.getJSONObject("data");
-                            setUserData(userData);
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
-                            if(status == -1){
-                                logout();
-                            }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        JSONObject userData = jsonResponse.getJSONObject("data");
+                        setUserData(userData);
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
+                        if(status == -1){
+                            logout();
                         }
                     }
                 } catch (JSONException e) {
@@ -752,9 +841,10 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
     int selectedAvtarType = 0;
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void showAvtarSelectorPopup() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(curr_context);
-        final View dialogVIew = getActivity().getLayoutInflater().inflate(R.layout.dialog_avtar_view, null);
+        final View dialogVIew = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.dialog_avtar_view, null);
         builder.setView(dialogVIew);
         GridView gridView = (GridView) dialogVIew.findViewById(R.id.gridView);
         GridViewAdapter gridAdapter = new GridViewAdapter(curr_context, R.layout.list_item_avtargrid, getAvtarData());
@@ -789,6 +879,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                 dialog.dismiss();
                 selectedAvtarType = position;
                 image.setImageResource(getAvtarDrawableByType(selectedAvtarType));
+                image6.setImageResource(getAvtarDrawableByType(selectedAvtarType));
 
             }
         });
@@ -797,9 +888,10 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
     // Change Password Dialog..........................
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void showAlertDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(curr_context);
-        View dialogView = getActivity().getLayoutInflater().inflate(R.layout.dialog_changepassword, null);
+        View dialogView = Objects.requireNonNull(getActivity()).getLayoutInflater().inflate(R.layout.dialog_changepassword, null);
         TextView btnOk = (TextView) dialogView.findViewById(R.id.btnOk);
         TextView btnCancel = (TextView) dialogView.findViewById(R.id.btnCancel);
         final EditText et_oldpassword = (EditText) dialogView.findViewById(R.id.et_oldpassword);
@@ -833,17 +925,15 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                         public void onSuccess(Object result) {
                             try {
                                 JSONObject jsonResponse = new JSONObject(result.toString());
-                                if (jsonResponse != null) {
-                                    Integer status = jsonResponse.getInt("success");
-                                    if (status == 1) {
-                                        Intent home = new Intent(curr_context, LoginActivity.class);
-                                        home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                        startActivity(home);
+                                int status = jsonResponse.getInt("success");
+                                if (status == 1) {
+                                    Intent home = new Intent(curr_context, LoginActivity.class);
+                                    home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                                    startActivity(home);
 
-                                    }else{
-                                        String message = jsonResponse.getString("message");
-                                        Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
-                                    }
+                                }else{
+                                    String message = jsonResponse.getString("message");
+                                    Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
                                 }
                             } catch (JSONException e) {
                                 e.printStackTrace();
@@ -888,6 +978,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                     if (resultCode == RESULT_OK && data != null) {
                         Bitmap selectedImage = (Bitmap) data.getExtras().get("data");
                         image.setImageBitmap(selectedImage);
+                        image6.setImageBitmap(selectedImage);
                         uploadBitmap(selectedImage);
                     }
 
@@ -909,6 +1000,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                                     Options.inSampleSize = 4;
                                     Options.inJustDecodeBounds = false;
                                     image.setImageBitmap(BitmapFactory.decodeFile(picturePath, Options));
+                                    image6.setImageBitmap(BitmapFactory.decodeFile(picturePath, Options));
                                     cursor.close();
                                     uploadBitmap(BitmapFactory.decodeFile(picturePath));
                                 }

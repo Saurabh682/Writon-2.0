@@ -346,5 +346,6 @@
     <string name="default_notification_channel_id" />
     <string name="fcm_message" >WritOn</string>
     <string name="fcm_token" >FCM Token: %s</string>
+    <string name="user_name"> </string>
 
 </resources>

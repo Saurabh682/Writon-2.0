@@ -4,7 +4,9 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.se.omapi.SEService;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -13,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -50,6 +53,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -75,6 +79,7 @@ public class ActivityBlogComments extends AppCompatActivity {
     User userData;
 
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,6 +107,7 @@ public class ActivityBlogComments extends AppCompatActivity {
             currBlog = (Blog) getIntent().getSerializableExtra("BlogObject");
             categoryValue = String.format("%s, %s (%s)", currBlog.getCategory(), currBlog.getSubCat(), currBlog.getLanguage());
             createdByValue = currBlog.getUser_name();
+
             blogTitleValie = currBlog.getTitle();
             blogIDValue = currBlog.getBlogId();
             if(currBlog.getUser_image() != null) {
@@ -124,8 +130,12 @@ public class ActivityBlogComments extends AppCompatActivity {
         TVUserName.setText(createdByValue);
         TVTitle.setText(blogTitleValie);
 
-        getSupportActionBar().hide();
+        Objects.requireNonNull(getSupportActionBar()).hide();
         arrComments = new ArrayList<>();
+
+        //System.out.println("CommentUsername"+createdByValue);
+       // System.out.println("LoginUsername"+userData.getUsername());
+
 
 
         //LinearLayoutManager layoutManager = new LinearLayoutManager(this);
@@ -173,23 +183,21 @@ public class ActivityBlogComments extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            BlogComment comment = new BlogComment();
-                            comment.setComment(ETWriteComment.getText().toString());
-                            comment.setUserId(userData.getId());
-                            comment.setName(userData.getUsername());
-                            comment.setDateTime("Now");
-                            trending_post.add(comment);
-                            adapter.notifyDataSetChanged();
-                            ETWriteComment.setText("");
-                            IVSend.setVisibility(View.VISIBLE);
-                        }else{
-                            IVSend.setVisibility(View.VISIBLE);
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
-                        }
+                    Integer status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        BlogComment comment = new BlogComment();
+                        comment.setComment(ETWriteComment.getText().toString());
+                        comment.setUserId(userData.getId());
+                        comment.setName(userData.getUsername());
+                        comment.setDateTime("Now");
+                        trending_post.add(comment);
+                        adapter.notifyDataSetChanged();
+                        ETWriteComment.setText("");
+                        IVSend.setVisibility(View.VISIBLE);
+                    }else{
+                        IVSend.setVisibility(View.VISIBLE);
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     IVSend.setVisibility(View.VISIBLE);
@@ -264,6 +272,7 @@ public class ActivityBlogComments extends AppCompatActivity {
         System.out.println("BLOG COMMENT ID : " + loginURL);
         JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, loginURL, null,
                 new Response.Listener<JSONObject>() {
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("True", "");
@@ -284,7 +293,7 @@ public class ActivityBlogComments extends AppCompatActivity {
                         } catch (JSONException ex) {
                             if (progress != null && progress.isShowing())
                                 progress.dismiss();
-                            Log.d("JSON Exception", ex.getMessage());
+                            Log.d("JSON Exception", Objects.requireNonNull(ex.getMessage()));
                         }
                     }
                 },
@@ -313,17 +322,15 @@ public class ActivityBlogComments extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
-                            Type type = new TypeToken <ArrayList<BlogComment>>() {}.getType();
-                            trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                            setAdapterData(trending_post);
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
-                        }
+                    Integer status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
+                        Type type = new TypeToken <ArrayList<BlogComment>>() {}.getType();
+                        trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        setAdapterData(trending_post);
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -342,11 +349,14 @@ public class ActivityBlogComments extends AppCompatActivity {
         adapter = new DiscusListAdapter(curr_activity, curr_context, blogComment);
         recyclerView1.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(curr_context);
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        //layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView1.setLayoutManager(layoutManager);
         recyclerView1.setItemAnimator(new DefaultItemAnimator());
         recyclerView1.setAdapter(adapter);
+        recyclerView1.getRootView();
         adapter.notifyDataSetChanged();
 
     }
+
+
 }

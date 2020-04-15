@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,7 +26,9 @@ import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.BlogComment;
+import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
+import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
@@ -46,6 +49,7 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
     private Activity curr_activity;
     ArrayList<BlogComment> arrappliedjob;
     Typeface tf;
+    User userData;
     public DiscusListAdapter(Activity curr_activity, Context curr_context, ArrayList<BlogComment> arrappliedjob) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
@@ -54,20 +58,16 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
         tf = Typeface.createFromAsset(curr_context.getAssets(),"Lato-Regular.ttf");
     }
 
+    @NonNull
     @Override
     public ImagecategoryViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.discusitemitem, parent, false);
+        userData = WritOnPreference.getInstance(curr_context).getUserDetails();
         return new ImagecategoryViewHolder(itemView);
+
     }
 
-    @Override
-    public void onBindViewHolder(final ImagecategoryViewHolder holder, final int position) {
-        System.out.println("Entering onbind");
-        final BlogComment show = arrappliedjob.get(position);
-        holder.TVComment.setText("\" " + show.getComment() + " \"");
-        holder.TVUsername.setText(show.getName());
-        holder.TVTime.setText("" + show.getDateTime());
-    }
+
 
 
     @Override
@@ -76,6 +76,24 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
             return arrappliedjob.size();
         } else {
             return 0;
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(final ImagecategoryViewHolder holder, final int position) {
+        System.out.println("Entering onbind");
+
+        final BlogComment show = arrappliedjob.get(position);
+
+        /*System.out.println("CommentUsername"+show.getUserName());
+        System.out.println("CommentUsername"+show.getName());
+        System.out.println("CommentUsername"+show.getComment());
+        System.out.println("LoginUsername"+userData.getUsername());*/
+        holder.TVComment.setText(show.getComment());
+        holder.TVUsername.setText(show.getTitle());
+        holder.TVTime.setText(show.getDateTime());
+        if(userData.getUsername().equals(show.getUserName())){
+            holder.IMOption.setVisibility(View.VISIBLE);
         }
     }
 
@@ -95,6 +113,7 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
             this.IMOption = (ImageView) view.findViewById(R.id.IMOption);
             this.TVUsername = (TextView) view.findViewById(R.id.TVUsername);
             this.TVUsername.setTypeface(tf);
+
 
             this.IMOption.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -144,7 +163,7 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
+                        int status = jsonResponse.getInt("success");
                         if (status == 1) {
                             String message = jsonResponse.getString("message");
                             Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();

@@ -7,7 +7,7 @@
     android:background="#e8e8e8"
     tools:context="com.ibitvalley.writon.NotificationActivity">
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

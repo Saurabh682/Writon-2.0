@@ -116,12 +116,12 @@
         <EditText
             android:id="@+id/tv_shortDesc"
             android:layout_width="fill_parent"
-            android:layout_height="60dp"
-            android:textSize="18dp"
+            android:layout_height="133dp"
             android:layout_marginTop="5dp"
-            android:textColor="#263238"
+            android:background="@color/textViewBg"
             android:padding="2dp"
-            android:background="@color/textViewBg"/>
+            android:textColor="#263238"
+            android:textSize="18dp" />
 
         <!--android:hint="This will be required at the time of publishing you may fill it later at that time."-->
 
@@ -143,14 +143,14 @@
 
             <Button
                 android:id="@+id/BtnStart"
-                android:layout_width="wrap_content"
-                android:layout_height="35dp"
+                android:layout_width="152dp"
+                android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
 
                 android:layout_centerHorizontal="true"
-                android:layout_marginBottom="10dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginTop="5dp"
+                android:layout_marginBottom="10dp"
                 android:background="@color/colorPrimary"
                 android:text="  Start  "
                 android:textColor="@color/colorWhite"

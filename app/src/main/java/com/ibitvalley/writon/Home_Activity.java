@@ -12,6 +12,12 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.iid.FirebaseInstanceId;
@@ -46,12 +52,14 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
                     public void onComplete(@NonNull Task<InstanceIdResult> task) {
                         if (!task.isSuccessful()) {
 //To do//
+
                             return;
                         }
 
                         // Get the Instance ID token//
                         String token = task.getResult().getToken();
                         String msg = getString(R.string.fcm_token, token);
+                        registerFcm(token);
                         Log.d(TAG, msg);
 
                     }
@@ -65,6 +73,7 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
         initilize(pageActionValue);
         MyApplication.getInstance().trackEvent("Home Screen", "HomeScreen Active", "Home screen load successfully.");
         MyApplication.getInstance().trackScreenView("HomeScreen");
+        replaceFragment(new CollectionDemoFragment());
     }
 
     public void runtimeEnableAutoInit() {
@@ -72,6 +81,34 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
         FirebaseMessaging.getInstance().setAutoInitEnabled(true);
         // [END fcm_runtime_enable_auto_init]
     }
+
+
+    public void registerFcm(String token){
+        // ...
+
+                // Instantiate the RequestQueue.
+                    RequestQueue queue = Volley.newRequestQueue(this);
+                    String url ="http://192.168.1.2/rest/api/addFCMid.php?id=68&fcmid=\""+token+"\"";
+
+                 // Request a string response from the provided URL.
+                    StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                            new Response.Listener<String>() {
+                                @Override
+                                public void onResponse(String response) {
+                                    // Display the first 500 characters of the response string.
+                                    System.out.println("Response is: "+ response);
+                                }
+                            }, new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            System.out.println("That didn't work!");
+                        }
+                    });
+
+                // Add the request to the RequestQueue.
+                    queue.add(stringRequest);
+    }
+
 
     private void initilize(int pageActionValue) {
         layout_home = (RelativeLayout) findViewById(R.id.layout_home);
@@ -134,6 +171,8 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
                 replaceFragment(fragment);
                 pageAction(4);
                 break;
+
+
 
         }
     }

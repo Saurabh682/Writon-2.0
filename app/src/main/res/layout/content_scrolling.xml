@@ -28,7 +28,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_phone_black_24dp" />
+                app:srcCompat="@drawable/ic_phone_black_24dp" />
 
             <TextView
                 android:id="@+id/tvNumber1"
@@ -86,7 +86,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_phone_black_24dp"
+                app:srcCompat="@drawable/ic_phone_black_24dp"
                 android:visibility="invisible" />
 
             <TextView
@@ -147,7 +147,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_email_black_24dp" />
+                app:srcCompat="@drawable/ic_email_black_24dp" />
 
             <TextView
                 android:id="@+id/tvNumber3"
@@ -209,7 +209,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_email_black_24dp"
+                app:srcCompat="@drawable/ic_email_black_24dp"
                 android:visibility="invisible" />
 
             <TextView
@@ -273,7 +273,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_location_on_black_24dp" />
+                app:srcCompat="@drawable/ic_location_on_black_24dp" />
 
             <TextView
                 android:id="@+id/tvNumber5"
@@ -335,7 +335,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginRight="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_email_black_24dp"
+                app:srcCompat="@drawable/ic_email_black_24dp"
                 android:visibility="invisible" />
 
             <TextView

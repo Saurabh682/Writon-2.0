@@ -315,7 +315,7 @@ public class LoginActivity extends AppCompatActivity {
                                     editor.putString(Constants.KEY_PREF_BLOGPUBLISHCOUNT, response.get("BlogPublishCount").toString());
                                     editor.putString(Constants.KEY_PREF_U_AVATOR_CODE, response.get("AvatorCode").toString());
 //
-                                    editor.commit();
+                                    editor.apply();
                                     Intent home = new Intent(LoginActivity.this, Home_Activity.class);
                                     startActivity(home);
                                     finish();
