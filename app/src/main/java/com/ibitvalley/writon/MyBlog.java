@@ -2,9 +2,11 @@ package com.ibitvalley.writon;
 
 import android.app.ProgressDialog;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -26,6 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class MyBlog extends AppCompatActivity {
 
@@ -62,13 +65,14 @@ public class MyBlog extends AppCompatActivity {
         String loginURL = String.format("http://blog.ibitvalley.com/api/BlogListByUserId?UserID=%s", UserId);
         JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, loginURL, null,
                 new Response.Listener<JSONObject>() {
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("True", "");
                         try {
                             if (progress != null && progress.isShowing())
                                 progress.dismiss();
-                            if (response.get("success").toString() == "true") {
+                            if (response.get("success").toString().equals("true")) {
                                 System.out.println("Json == > " + response.toString());
                                 JSONObject obj = new JSONObject(response.toString());
                                 JSONArray arr = obj.getJSONArray("Result");
@@ -82,7 +86,7 @@ public class MyBlog extends AppCompatActivity {
                         } catch (JSONException ex) {
                             if (progress != null && progress.isShowing())
                                 progress.dismiss();
-                            Log.d("JSON Exception", ex.getMessage());
+                            Log.d("JSON Exception", Objects.requireNonNull(ex.getMessage()));
                         }
                     }
                 },

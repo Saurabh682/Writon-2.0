@@ -18,8 +18,10 @@ import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.adapter.DiscusListAdapter;
+import com.ibitvalley.writon.adapter.DiscussListPersonalAdapter;
 import com.ibitvalley.writon.adapter.TopFollowersAdapter;
 import com.ibitvalley.writon.model.BlogComment;
+import com.ibitvalley.writon.model.BlogCommentPersonal;
 import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
@@ -40,8 +42,8 @@ public class discus extends AppCompatActivity {
 
 
     RecyclerView recyclerView1;
-    DiscusListAdapter adapter;
-    ArrayList<BlogComment> arrComments;
+    DiscussListPersonalAdapter adapter;
+    ArrayList<BlogCommentPersonal> arrComments;
     User userData;
 
 
@@ -72,17 +74,16 @@ public class discus extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
-                            Type type = new TypeToken<ArrayList<BlogComment>>() {}.getType();
-                            ArrayList<BlogComment> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                            setAdapterData(trending_post);
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(discus.this, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
+                        Type type = new TypeToken<ArrayList<BlogComment>>() {}.getType();
+                        assert arrMainCategoryJson != null;
+                        ArrayList<BlogCommentPersonal> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        setAdapterData(trending_post);
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(discus.this, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -97,8 +98,8 @@ public class discus extends AppCompatActivity {
     }
 
 
-    private void setAdapterData(ArrayList<BlogComment> blogComment){
-        adapter = new DiscusListAdapter(this, this, blogComment);
+    private void setAdapterData(ArrayList<BlogCommentPersonal> blogComment){
+        adapter = new DiscussListPersonalAdapter(this, this, blogComment);
         recyclerView1.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);

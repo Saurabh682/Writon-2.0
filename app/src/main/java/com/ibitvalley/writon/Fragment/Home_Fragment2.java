@@ -72,6 +72,7 @@ import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.LoginActivity;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.adapter.DiscusListAdapter;
+import com.ibitvalley.writon.adapter.DiscussListPersonalAdapter;
 import com.ibitvalley.writon.adapter.GridViewAdapter;
 import com.ibitvalley.writon.adapter.MyBlogAdapter;
 import com.ibitvalley.writon.adapter.ShortStoryAdapter;
@@ -80,6 +81,7 @@ import com.ibitvalley.writon.discus;
 import com.ibitvalley.writon.model.AvtarUtil;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.BlogComment;
+import com.ibitvalley.writon.model.BlogCommentPersonal;
 import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.Const;
@@ -133,7 +135,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
     private RecyclerView recyclerView1, recview_discussion;
     private LinearLayout ll_about, ll_posted, ll_discussion, ll_contactus;
-    private DiscusListAdapter adapter;
+    private DiscussListPersonalAdapter adapter;
 
     private User userData;
     private String [] permissions = {"android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.ACCESS_FINE_LOCATION", "android.permission.SYSTEM_ALERT_WINDOW","android.permission.CAMERA"};
@@ -457,7 +459,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
     }
 
 
-    MyBlogAdapter myBlogAdapter;
+    private MyBlogAdapter myBlogAdapter;
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void displayLTrendingPost(ArrayList<Blog> trendingBlog){
         myBlogAdapter = new MyBlogAdapter(getActivity(), Objects.requireNonNull(getContext()), trendingBlog, "Latest");
@@ -483,17 +485,16 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
-                            Type type = new TypeToken<ArrayList<BlogComment>>() {}.getType();
-                            ArrayList<BlogComment> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                            setAdapterData(trending_post);
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
+                        Type type = new TypeToken<ArrayList<BlogComment>>() {}.getType();
+                        assert arrMainCategoryJson != null;
+                        ArrayList<BlogCommentPersonal> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        setAdapterData(trending_post);
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -509,8 +510,8 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    private void setAdapterData(ArrayList<BlogComment> blogComment){
-        adapter = new DiscusListAdapter(getActivity(), Objects.requireNonNull(getContext()), blogComment);
+    private void setAdapterData(ArrayList<BlogCommentPersonal> blogComment){
+        adapter = new DiscussListPersonalAdapter(getActivity(), Objects.requireNonNull(getContext()), blogComment);
         recview_discussion.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(curr_context);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);

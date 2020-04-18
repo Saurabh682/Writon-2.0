@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -46,6 +48,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -226,6 +229,7 @@ public class BlogBlogAdapter extends RecyclerView.Adapter<BlogBlogAdapter.Imagec
                         blog.setBookMark(false);
                         IVBookmarked.setColorFilter(ContextCompat.getColor(curr_activity, R.color.colorGrey));
                     } else {
+
                         blog.setBookMark(true);
                         IVBookmarked.setColorFilter(ContextCompat.getColor(curr_activity, R.color.colorGreen));
                     }
@@ -242,6 +246,7 @@ public class BlogBlogAdapter extends RecyclerView.Adapter<BlogBlogAdapter.Imagec
         requestQueue = Volley.newRequestQueue(curr_context);
         StringRequest jor = new StringRequest(Request.Method.POST, String.format("%s%s", Const.BASE_URL, "/BookMark"),
                 new Response.Listener<String>() {
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
                     public void onResponse(String response) {
                         dialog.dismiss();
@@ -255,7 +260,7 @@ public class BlogBlogAdapter extends RecyclerView.Adapter<BlogBlogAdapter.Imagec
                             }
                         } catch (JSONException ex) {
                             //progress.dismiss();
-                            Log.d("JSON Exception", ex.getMessage());
+                            Log.d("JSON Exception", Objects.requireNonNull(ex.getMessage()));
                         }
                     }
                 },
@@ -278,6 +283,8 @@ public class BlogBlogAdapter extends RecyclerView.Adapter<BlogBlogAdapter.Imagec
         jor.setRetryPolicy(new DefaultRetryPolicy(20000, 0, 0.0f));
         requestQueue.add(jor);
     }
+
+
 
 }
 

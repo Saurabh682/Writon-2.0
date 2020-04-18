@@ -28,13 +28,20 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.classes.UserInfo;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.TrendingPost_Model;
+import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.Const;
 import com.ibitvalley.writon.utils.VolleySingleton;
+import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
@@ -211,6 +218,7 @@ public class WriteBlog extends AppCompatActivity {
     public void hideSoftKeyboard() {
         if (getCurrentFocus() != null) {
             InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            assert inputMethodManager != null;
             inputMethodManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
         }
     }
@@ -325,20 +333,19 @@ public class WriteBlog extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            if (IsDraft.equals("1")) {
-                                Toast.makeText(WriteBlog.this, "Draft saved Successfully", Toast.LENGTH_LONG).show();
-                                callIntent();
-                            } else {
-                                //Toast.makeText(WriteBlog.this, "Blog Published SuccessFully.", Toast.LENGTH_LONG).show();
-                                askforShare();
-                            }
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(WriteBlog.this, message, Toast.LENGTH_LONG).show();
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        if (IsDraft.equals("1")) {
+                            Toast.makeText(WriteBlog.this, "Draft saved Successfully", Toast.LENGTH_LONG).show();
+                            callIntent();
+                        } else {
+                            //Toast.makeText(WriteBlog.this, "Blog Published SuccessFully.", Toast.LENGTH_LONG).show();
+
+                            askforShare();
                         }
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(WriteBlog.this, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -350,6 +357,34 @@ public class WriteBlog extends AppCompatActivity {
             }
         });
         VolleySingleton.getInstance().addToRequestQueue(mainCategory);
+    }
+
+    private void fcmNotifyAll() {
+        User userData = WritOnPreference.getInstance(getApplicationContext()).getUserDetails();
+        final String Category = getIntent().getStringExtra("Category");
+        final String SubCat = getIntent().getStringExtra("SubCat");
+        // Instantiate the RequestQueue.
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url ="https://www.writon.co/Mine/fcm_noti_multiuser.php?id="+userData.getId()+"&sp="+SubCat+" in "+Category+"&tp= has posted - "+tv_creatorName.getText().toString();
+        System.out.println(url);
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        System.out.println("Response is: "+ response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("That didn't work!");
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
     }
 
 
@@ -379,6 +414,7 @@ public class WriteBlog extends AppCompatActivity {
     }
 
     private void askforShare(){
+        fcmNotifyAll();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View dialogView = getLayoutInflater().inflate(R.layout.afterblogpostdialog, null);
         TextView btnOk = (TextView) dialogView.findViewById(R.id.btnOk);
@@ -425,9 +461,10 @@ public class WriteBlog extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+        super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1) {
-            if(resultCode == Activity.RESULT_OK){
-                String result=data.getStringExtra("result");
+            if (resultCode == Activity.RESULT_OK) {
+                String result = data.getStringExtra("result");
                 callIntent();
             }
             if (resultCode == Activity.RESULT_CANCELED) {

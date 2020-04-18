@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.ibitvalley.writon.R;
@@ -34,6 +35,7 @@ public class BlogSearchAdapter extends RecyclerView.Adapter<BlogSearchAdapter.Im
         System.out.println("Array Size In Adapter : " + arrappliedjob.size());
     }
 
+    @NonNull
     @Override
     public BlogSearchAdapter.ImagecategoryViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.searchblogitem, parent, false);

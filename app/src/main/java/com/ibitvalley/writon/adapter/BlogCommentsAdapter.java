@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.ibitvalley.writon.R;
 //import com.ibitvalley.writon.model.BlogComment;
+import com.ibitvalley.writon.model.BlogComment;
 import com.ibitvalley.writon.model.BlogCommentPersonal;
 
 import java.util.ArrayList;
@@ -24,10 +25,10 @@ import java.util.ArrayList;
 public class BlogCommentsAdapter extends RecyclerView.Adapter<BlogCommentsAdapter.ImagecategoryViewHolder> {
     private Context curr_context;
     private Activity curr_activity;
-    ArrayList<BlogCommentPersonal> arrappliedjob;
-    Typeface tf;
+    private ArrayList<BlogComment> arrappliedjob;
+    private Typeface tf;
 
-    public BlogCommentsAdapter(Activity curr_activity, Context curr_context, ArrayList<BlogCommentPersonal> arrappliedjob) {
+    public BlogCommentsAdapter(Activity curr_activity, Context curr_context, ArrayList<BlogComment> arrappliedjob) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
@@ -55,11 +56,11 @@ public class BlogCommentsAdapter extends RecyclerView.Adapter<BlogCommentsAdapte
     public void onBindViewHolder(final ImagecategoryViewHolder holder, final int position) {
         //System.out.println("Entering onbind");
         //final BlogComment show = arrappliedjob.get(position);
-        final BlogCommentPersonal show = arrappliedjob.get(position);
+        final BlogComment show = arrappliedjob.get(position);
         holder.TVComment.setText("\" " + show.getComment() + " \"");
-        holder.TVUsername.setText(show.getTitle());
+        holder.TVUsername.setText(show.getUserName()+" says ");
         System.out.println("Need This: "+show.getComment());
-        holder.TVTime.setText("" + show.getCreationDate());
+        holder.TVTime.setText("" + show.getDateTime());
     }
 
 

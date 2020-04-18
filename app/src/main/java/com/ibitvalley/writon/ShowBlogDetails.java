@@ -25,11 +25,17 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.TrendingPost_Model;
@@ -98,122 +104,125 @@ public class ShowBlogDetails extends AppCompatActivity {
         TVFollow = findViewById(R.id.TVFollow);
         img_rating = findViewById(R.id.img_rating);
 
-        String screenName = getIntent().getStringExtra("boxTitle");
+         String screenName = getIntent().getStringExtra("boxTitle");
 
+        assert screenName != null;
         if(screenName.equals("Latest") || screenName.equals("Bookmarked") || screenName.equals("Recent Read")) {
-            cuuBlog = (Blog) getIntent().getSerializableExtra("BlogObject");
-            TVTitle.setText(cuuBlog.getTitle());
-            TVTitle.setTextSize(26);
-            TVWriterName.setText(String.format("%s", cuuBlog.getUser_name()));
-            //this.setTitle(cuuBlog.getTitle());
-            if(cuuBlog.getLongDescripton() != null){
-                TVDescription.setText(Html.fromHtml(cuuBlog.getLongDescripton()));
-            }else if(cuuBlog.getShortDescription() != null){
-                TVDescription.setText(Html.fromHtml(cuuBlog.getShortDescription()));
-            }
+                cuuBlog = (Blog) getIntent().getSerializableExtra("BlogObject");
+                assert cuuBlog != null;
+                TVTitle.setText(cuuBlog.getTitle());
+                TVTitle.setTextSize(26);
+                TVWriterName.setText(String.format("%s", cuuBlog.getUser_name()));
+                //this.setTitle(cuuBlog.getTitle());
+                if(cuuBlog.getLongDescripton() != null){
+                    TVDescription.setText(Html.fromHtml(cuuBlog.getLongDescripton()));
+                }else if(cuuBlog.getShortDescription() != null){
+                    TVDescription.setText(Html.fromHtml(cuuBlog.getShortDescription()));
+                }
 
-            /*tv_Category.setText(cuuBlog.getCategory());
-            tv_subCategory.setText(cuuBlog.getSubCat());
-            tv_language.setText(cuuBlog.getLanguage());*/
+                /*tv_Category.setText(cuuBlog.getCategory());
+                tv_subCategory.setText(cuuBlog.getSubCat());
+                tv_language.setText(cuuBlog.getLanguage());*/
 
-            tv_Category.setText(String.format("%s, %s (%s)", cuuBlog.getCategory(), cuuBlog.getSubCat(), cuuBlog.getLanguage()));
+                tv_Category.setText(String.format("%s, %s (%s)", cuuBlog.getCategory(), cuuBlog.getSubCat(), cuuBlog.getLanguage()));
 
-            tv_user_followers_count.setText(String.format("%s FOLLOWERS", cuuBlog.getUser_followers_count()));
+                tv_user_followers_count.setText(String.format("%s FOLLOWERS", cuuBlog.getUser_followers_count()));
 
-            if(cuuBlog.getUser_image() != null){
-                Picasso.get().load(cuuBlog.getUser_image()).placeholder(R.drawable.usermale).into(list_image);
-            }
+                if(cuuBlog.getUser_image() != null){
+                    Picasso.get().load(cuuBlog.getUser_image()).placeholder(R.drawable.usermale).into(list_image);
+                }
 
-            blogID = cuuBlog.getBlogId();
+                blogID = cuuBlog.getBlogId();
 
-            if (cuuBlog.isBookMark()) {
-                img_bookmark.setImageResource(R.drawable.bookmarkyellow);
-            } else {
-                img_bookmark.setImageResource(R.drawable.bookmarkblue);
-            }
+                if (cuuBlog.isBookMark()) {
+                    img_bookmark.setImageResource(R.drawable.bookmarkyellow);
+                } else {
+                    img_bookmark.setImageResource(R.drawable.bookmarkblue);
+                }
 
-            if (cuuBlog.isIs_rated()) {
-                img_rating.setImageResource(R.drawable.staryellow);
-            } else {
-                img_rating.setImageResource(R.drawable.starblue);
-            }
+                if (cuuBlog.isIs_rated()) {
+                    img_rating.setImageResource(R.drawable.staryellow);
+                } else {
+                    img_rating.setImageResource(R.drawable.starblue);
+                }
 
 
-            img_bookmark.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(cuuBlog.isBookMark()){
-                        unbookmarkRequest(userData.getId(), blogID, cuuBlog.isBookMark());
-                    }else {
-                        bookmarkRequest(userData.getId(), blogID, cuuBlog.isBookMark());
+                img_bookmark.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(cuuBlog.isBookMark()){
+                            unbookmarkRequest(userData.getId(), blogID, cuuBlog.isBookMark());
+                        }else {
+                            bookmarkRequest(userData.getId(), blogID, cuuBlog.isBookMark());
+                        }
                     }
-                }
-            });
+                });
 
-            this.img_Option.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Blog blog = cuuBlog;
-                    String shareContent = String.format("\"%s\" by %s \n\n %s \n Read more %s @WritOn %s", blog.getTitle(), blog.getUser_name(),  Html.fromHtml(blog.getLongDescripton()), blog.getCategory(), "https://goo.gl/Cx4oPk");
-                    //if (!blog.getUserID().equals(UserId)) {
-                    String[] arrString = {"Report", "Share"};
-                    showPopupMenu(arrString, shareContent);
-                }
-            });
-
-            TVViewCount.setText(cuuBlog.getView_count());
-            TVCommentCount.setText(cuuBlog.getComments_count());
-            TVRating.setText(cuuBlog.getVotes_count());
-            ll_Discuss.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intentShowBlogDetails = new Intent(ShowBlogDetails.this, ActivityBlogComments.class);
-                    intentShowBlogDetails.putExtra("BlogObject", cuuBlog);
-                    intentShowBlogDetails.putExtra("BlogType", "cuuBlog");
-                    startActivity(intentShowBlogDetails);
-                }
-            });
-
-            TVFollow.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //final String followUserID, final String userID
-                    if(cuuBlog.isIs_followed()) {
-                        TVFollow.setText("FOLLOW");
-                        cuuBlog.setIs_followed(false);
-                        unFollowUser(cuuBlog.getUser_id(), userData.getId());
-                    } else {
-                        TVFollow.setText("UN FOLLOW");
-                        cuuBlog.setIs_followed(true);
-                        followUser(cuuBlog.getUser_id(), userData.getId());
+                this.img_Option.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Blog blog = cuuBlog;
+                        String shareContent = String.format("\"%s\" by %s \n\n %s \n Read more %s @WritOn %s", blog.getTitle(), blog.getUser_name(),  Html.fromHtml(blog.getLongDescripton()), blog.getCategory(), "https://goo.gl/Cx4oPk");
+                        //if (!blog.getUserID().equals(UserId)) {
+                        String[] arrString = {"Report", "Share"};
+                        showPopupMenu(arrString, shareContent);
                     }
-                }
-            });
+                });
 
-
-            if(cuuBlog.isIs_followed()) {
-                TVFollow.setText("UN FOLLOW");
-            } else {
-                TVFollow.setText("FOLLOW");
-            }
-
-            img_rating.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (cuuBlog.isIs_rated()) {
-                        addRating(blogID, userData.getId(), "0");
-                        cuuBlog.setIs_rated(false);
-                        img_rating.setImageResource(R.drawable.starblue);
-                    } else {
-                        addRating(blogID, userData.getId(), "1");
-                        cuuBlog.setIs_rated(true);
-                        img_rating.setImageResource(R.drawable.staryellow);
+                TVViewCount.setText(cuuBlog.getView_count());
+                TVCommentCount.setText(cuuBlog.getComments_count());
+                TVRating.setText(cuuBlog.getVotes_count());
+                ll_Discuss.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intentShowBlogDetails = new Intent(ShowBlogDetails.this, ActivityBlogComments.class);
+                        intentShowBlogDetails.putExtra("BlogObject", cuuBlog);
+                        intentShowBlogDetails.putExtra("BlogType", "cuuBlog");
+                        startActivity(intentShowBlogDetails);
                     }
+                });
+
+                TVFollow.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //final String followUserID, final String userID
+                        if(cuuBlog.isIs_followed()) {
+                            TVFollow.setText("FOLLOW");
+                            cuuBlog.setIs_followed(false);
+                            unFollowUser(cuuBlog.getUser_id(), userData.getId());
+                        } else {
+                            TVFollow.setText("UN FOLLOW");
+                            cuuBlog.setIs_followed(true);
+                            followUser(cuuBlog.getUser_id(), userData.getId());
+                        }
+                    }
+                });
+
+
+                if(cuuBlog.isIs_followed()) {
+                    TVFollow.setText("UN FOLLOW");
+                } else {
+                    TVFollow.setText("FOLLOW");
                 }
-            });
+
+                img_rating.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (cuuBlog.isIs_rated()) {
+                            addRating(blogID, userData.getId(), "0");
+                            cuuBlog.setIs_rated(false);
+                            img_rating.setImageResource(R.drawable.starblue);
+                        } else {
+                            addRating(blogID, userData.getId(), "1");
+                            cuuBlog.setIs_rated(true);
+                            img_rating.setImageResource(R.drawable.staryellow);
+                        }
+                    }
+                });
 
         }else if(screenName.equals("Trending")) {
             trendingPost_model = (TrendingPost_Model) getIntent().getSerializableExtra("BlogObject");
+            assert trendingPost_model != null;
             TVTitle.setText(trendingPost_model.getTitle());
             TVTitle.setTextSize(26);
             TVWriterName.setText(String.format("%s", trendingPost_model.getUser_name()));
@@ -238,17 +247,17 @@ public class ShowBlogDetails extends AppCompatActivity {
 
             if (trendingPost_model.isBookMark()) {
                 //img_bookmark.setColorFilter(ContextCompat.getColor(curr_activity, R.color.colorGreen));
-                img_bookmark.setImageResource(R.drawable.bookmarknew);
+                img_bookmark.setImageResource(R.drawable.bookmarkyellow);
             } else {
                 //img_bookmark.setColorFilter(ContextCompat.getColor(curr_activity, R.color.colorGrey));
-                img_bookmark.setImageResource(R.drawable.unbookmark);
+                img_bookmark.setImageResource(R.drawable.bookmarkblue);
             }
 
 
             if (trendingPost_model.isIs_rated()) {
-                img_rating.setImageResource(R.drawable.starnewselected);
+                img_rating.setImageResource(R.drawable.staryellow);
             } else {
-                img_rating.setImageResource(R.drawable.starnew);
+                img_rating.setImageResource(R.drawable.starblue);
             }
 
             this.img_Option.setOnClickListener(new View.OnClickListener() {
@@ -288,6 +297,7 @@ public class ShowBlogDetails extends AppCompatActivity {
                 public void onClick(View v) {
                     //final String followUserID, final String userID
                     if(trendingPost_model.isIs_followed()) {
+                        fcmNotify("follow");
                         TVFollow.setText("FOLLOW");
                         trendingPost_model.setIs_followed(false);
                         unFollowUser(trendingPost_model.getUserID(), userData.getId());
@@ -306,11 +316,12 @@ public class ShowBlogDetails extends AppCompatActivity {
                     if (cuuBlog.isIs_rated()) {
                         addRating(blogID, userData.getId(), "0");
                         cuuBlog.setIs_rated(false);
-                        img_rating.setImageResource(R.drawable.starnew);
+                        img_rating.setImageResource(R.drawable.starblue);
                     } else {
+                        fcmNotify("rate");
                         addRating(blogID, userData.getId(), "1");
                         cuuBlog.setIs_rated(true);
-                        img_rating.setImageResource(R.drawable.starnewselected);
+                        img_rating.setImageResource(R.drawable.staryellow);
                     }
                 }
             });
@@ -334,23 +345,21 @@ public class ShowBlogDetails extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
 
-                            if (cuuBlog.isBookMark()) {
-                                img_bookmark.setImageResource(R.drawable.unbookmark);
-                            } else {
-                                img_bookmark.setImageResource(R.drawable.bookmarknew);
-                            }
-
-
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                        if (cuuBlog.isBookMark()) {
+                            img_bookmark.setImageResource(R.drawable.unbookmark);
+                        } else {
+                            img_bookmark.setImageResource(R.drawable.bookmarknew);
                         }
+
+
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -374,21 +383,19 @@ public class ShowBlogDetails extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                            if (cuuBlog.isBookMark()) {
-                                img_bookmark.setImageResource(R.drawable.unbookmark);
-                                ;
-                            } else {
-                                img_bookmark.setImageResource(R.drawable.bookmarknew);
-                            }
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                        if (cuuBlog.isBookMark()) {
+                            img_bookmark.setImageResource(R.drawable.unbookmark);
+                            ;
+                        } else {
+                            img_bookmark.setImageResource(R.drawable.bookmarknew);
                         }
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -473,6 +480,7 @@ public class ShowBlogDetails extends AppCompatActivity {
         try {
             // We need to get the instance of the LayoutInflater
             LayoutInflater inflater = (LayoutInflater) ShowBlogDetails.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            assert inflater != null;
             View layout = inflater.inflate(R.layout.popup_layout, (ViewGroup) findViewById(R.id.popup_element));
             pwindo = new PopupWindow(layout, ViewGroup.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.WRAP_CONTENT, true);
             pwindo.showAtLocation(layout, Gravity.CENTER, 0, 0);
@@ -554,6 +562,7 @@ public class ShowBlogDetails extends AppCompatActivity {
     /**
      * Detects and toggles immersive mode (also known as "hidey bar" mode).
      */
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     public void toggleHideyBar() {
 
 
@@ -576,9 +585,7 @@ public class ShowBlogDetails extends AppCompatActivity {
         }
 
         // Navigation bar hiding:  Backwards compatible to ICS.
-        if (Build.VERSION.SDK_INT >= 14) {
-            newUiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-        }
+        newUiOptions ^= View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 
         // Status bar hiding: Backwards compatible to Jellybean
         if (Build.VERSION.SDK_INT >= 16) {
@@ -604,10 +611,9 @@ public class ShowBlogDetails extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch (keyCode) {
-            case KeyEvent.KEYCODE_BACK:
-                finish();
-                return true;
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            finish();
+            return true;
         }
         return super.onKeyDown(keyCode, event);
     }
@@ -623,14 +629,12 @@ public class ShowBlogDetails extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            //Toast.makeText(curr_activity, "Blog Viewed", Toast.LENGTH_LONG).show();
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        //Toast.makeText(curr_activity, "Blog Viewed", Toast.LENGTH_LONG).show();
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -654,15 +658,13 @@ public class ShowBlogDetails extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        } else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    } else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -686,15 +688,13 @@ public class ShowBlogDetails extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        } else {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    } else {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -719,15 +719,13 @@ public class ShowBlogDetails extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        } else {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    } else {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -739,10 +737,55 @@ public class ShowBlogDetails extends AppCompatActivity {
             }
         });
         VolleySingleton.getInstance().addToRequestQueue(mainCategory);
+
+
+
     }
 
 
+    private void fcmNotify(String who) {
+        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
+        cuuBlog = (Blog) getIntent().getSerializableExtra("BlogObject");
+        String urlExt = "";
+        // Instantiate the RequestQueue.
+        switch (who) {
+            case "bookmark":
+                urlExt = userData.getId()+"&sp=your post is getting popular&tp="+cuuBlog.getTitle()+" has been bookmarked by "+userData2.getUsername();
+                break;
+            case "follow":
+                urlExt = userData.getId()+"&sp=you are getting noticed&tp="+userData2.getUsername()+" has started following you. Keep up your writing";
+                break;
+            case "rate":
+                urlExt = userData.getId()+"&sp=people are liking your post&tp="+cuuBlog.getTitle()+" has been rated by "+userData2.getUsername();
+                break;
 
+            //default:
+            //console.log('Sorry, we are out of ' + expr + '.');
+        }
+
+
+        RequestQueue queue = Volley.newRequestQueue(curr_context);
+        String url ="https://www.writon.co/Mine/fcm_noti_single.php?id="+urlExt ;
+        System.out.println("Bookmark Notify: "+url);
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        System.out.println("Response is: "+ response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("That didn't work!");
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
+    }
 
 
 }

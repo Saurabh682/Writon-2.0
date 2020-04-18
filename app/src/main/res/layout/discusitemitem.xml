@@ -53,11 +53,11 @@
 
         <TextView
             android:id="@+id/TVComment"
-            android:layout_width="wrap_content"
+            android:layout_width="316dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
             android:layout_marginTop="8dp"
+            android:layout_marginRight="20dp"
             android:text="I have been in love with writing since my secondary school."
 
             android:textSize="15dp" />

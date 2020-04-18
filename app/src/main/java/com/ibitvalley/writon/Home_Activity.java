@@ -1,5 +1,6 @@
 package com.ibitvalley.writon;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -7,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
@@ -29,6 +31,10 @@ import com.ibitvalley.writon.Fragment.Home_Fragment2;
 import com.ibitvalley.writon.Fragment.Home_Fragment3;
 import com.ibitvalley.writon.Fragment.MyMenuFragment;
 import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.utils.WritOnPreference;
+
+import java.util.Objects;
 
 public class Home_Activity extends FragmentActivity implements View.OnClickListener {
 
@@ -48,6 +54,7 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
         FirebaseInstanceId.getInstance().getInstanceId()
                 .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
 
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
                     public void onComplete(@NonNull Task<InstanceIdResult> task) {
                         if (!task.isSuccessful()) {
@@ -57,7 +64,7 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
                         }
 
                         // Get the Instance ID token//
-                        String token = task.getResult().getToken();
+                        String token = Objects.requireNonNull(task.getResult()).getToken();
                         String msg = getString(R.string.fcm_token, token);
                         registerFcm(token);
                         Log.d(TAG, msg);
@@ -85,10 +92,11 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
 
     public void registerFcm(String token){
         // ...
+        User userData = WritOnPreference.getInstance(getApplicationContext()).getUserDetails();
 
                 // Instantiate the RequestQueue.
                     RequestQueue queue = Volley.newRequestQueue(this);
-                    String url ="http://192.168.1.2/rest/api/addFCMid.php?id=68&fcmid=\""+token+"\"";
+                    String url ="https://www.writon.co/Mine/addFCMid.php?id="+userData.getId()+"&fcmid="+token;
 
                  // Request a string response from the provided URL.
                     StringRequest stringRequest = new StringRequest(Request.Method.GET, url,

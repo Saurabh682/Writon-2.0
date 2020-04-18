@@ -28,6 +28,7 @@ import com.google.firebase.messaging.RemoteMessage;
 import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.MyBlog;
 import com.ibitvalley.writon.R;
+import com.ibitvalley.writon.model.User;
 
 import java.util.Calendar;
 import java.util.Objects;
@@ -119,32 +120,30 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     private void sendRegistrationToServer(String token) {
         // TODO: Implement this method to send token to your app server.
+        User userData = WritOnPreference.getInstance(getApplicationContext()).getUserDetails();
 
+        // Instantiate the RequestQueue.
+                RequestQueue queue = Volley.newRequestQueue(this);
+                String url ="https://www.writon.co/Mine/addFCMid.php?id="+userData.getId()+"&fcmid="+token;
 
-// ...
-
-// Instantiate the RequestQueue.
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url ="http://192.168.1.2/rest/api/addFCMid.php?id=68&fcmid=\""+token+"\"";
-
-// Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
+        // Request a string response from the provided URL.
+                StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                // Display the first 500 characters of the response string.
+                                System.out.println("Response is: "+ response);
+                            }
+                        }, new Response.ErrorListener() {
                     @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        System.out.println("Response is: "+ response);
+                    public void onErrorResponse(VolleyError error) {
+                        System.out.println("That didn't work! :" + error.toString());
                     }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println("That didn't work!");
-            }
-        });
+                });
 
-// Add the request to the RequestQueue.
-        queue.add(stringRequest);
-    }
+        // Add the request to the RequestQueue.
+                queue.add(stringRequest);
+            }
 
     /*@Override
     public void onMessageReceived(RemoteMessage remoteMessage) {

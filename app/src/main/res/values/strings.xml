@@ -49,7 +49,7 @@
     </string-array>
 
     <string-array name="array_category">
-        <item>Select Category</item>
+        <item>Select Sub-Category</item>
         <item>Poem</item>
         <item>Dark Fantasy</item>
         <item>Fan Fiction</item>
@@ -189,7 +189,7 @@
 
 
     <string-array name="array_subCategory1">
-        <item>Select Category</item>
+        <item>Select Sub-Category</item>
         <item>Crime</item>
         <item>Children</item>
         <item>Dark Fantasy</item>
@@ -215,7 +215,7 @@
     </string-array>
 
     <string-array name="array_subCategory2">
-        <item>Select Category</item>
+        <item>Select Sub-Category</item>
         <item>Dramatic</item>
         <item>Children Rhymes</item>
         <item>Elegy</item>
@@ -231,7 +231,7 @@
     </string-array>
 
     <string-array name="array_subCategory3">
-        <item>Select Category</item>
+        <item>Select Sub-Category</item>
         <item>2 Line Shayari</item>
         <item>Attitude</item>
         <item>Birthday</item>
@@ -250,7 +250,7 @@
     </string-array>
 
     <string-array name="array_subCategory4">
-        <item>Select Category</item>
+        <item>Select Sub-Category</item>
         <item>Avant-Garde</item>
         <item>Blues</item>
         <item>Celebration</item>
@@ -271,7 +271,7 @@
     </string-array>
 
     <string-array name="array_subCategory5">
-        <item>Select Category</item>
+        <item>Select Sub-Category</item>
         <item>Blond</item>
         <item>Family</item>
         <item>Marriage</item>
@@ -284,7 +284,7 @@
     </string-array>
 
     <string-array name="array_subCategory6">
-        <item>Select Category</item>
+        <item>Select Sub-Category</item>
         <item>Movies</item>
         <item>Travel</item>
         <item>Cars</item>
@@ -294,13 +294,13 @@
     </string-array>
 
     <string-array name="array_subCategory7">
-        <item>Select Category</item>
+        <item>Select Sub-Category</item>
         <item>Personal</item>
         <item>Other</item>
     </string-array>
 
     <string-array name="array_subCategory8">
-        <item>Select Category</item>
+        <item>Select Sub-Category</item>
         <item>Business</item>
         <item>Environmental</item>
         <item>Fashion</item>

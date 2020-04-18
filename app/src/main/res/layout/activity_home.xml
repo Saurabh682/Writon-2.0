@@ -17,7 +17,7 @@
         android:weightSum="5"
         android:background="@color/colorWhite"
         android:orientation="horizontal"
-        android:layout_height="50dp"
+        android:layout_height="65dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true">
@@ -33,9 +33,23 @@
             <ImageView
                 android:id="@+id/img_category"
                 android:layout_width="28dp"
-                android:layout_centerInParent="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/size_10"
                 android:src="@drawable/burgermenu"
                 android:layout_height="28dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/img_category"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="5dp"
+                android:text="LIST"
+
+                android:textColor="@color/greyblue"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
 
         </RelativeLayout>
@@ -51,9 +65,23 @@
             <ImageView
                 android:id="@+id/img_explorer"
                 android:layout_width="28dp"
-                android:layout_centerInParent="true"
-                android:src="@drawable/explore_linemdpi"
-                android:layout_height="28dp" />
+                android:layout_height="28dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/size_10"
+                android:src="@drawable/explore_linemdpi" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/img_explorer"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="5dp"
+                android:text="EXPLORE"
+
+                android:textColor="@color/greyblue"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
 
         </RelativeLayout>
@@ -69,9 +97,23 @@
             <ImageView
                 android:id="@+id/img_myworld"
                 android:layout_width="28dp"
-                android:layout_centerInParent="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/size_10"
                 android:src="@drawable/home_linemdpi"
                 android:layout_height="28dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/img_myworld"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="5dp"
+                android:text="MYWORLD"
+
+                android:textColor="@color/greyblue"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
 
         </RelativeLayout>
@@ -87,9 +129,23 @@
             <ImageView
                 android:id="@+id/img_bookmark"
                 android:layout_width="28dp"
-                android:layout_centerInParent="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/size_10"
                 android:src="@drawable/bookmark_linemdpi"
                 android:layout_height="28dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/img_bookmark"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="5dp"
+                android:text="BOOKMARK"
+
+                android:textColor="@color/greyblue"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
 
         </RelativeLayout>
@@ -105,9 +161,23 @@
             <ImageView
                 android:id="@+id/img_profile"
                 android:layout_width="32dp"
-                android:layout_centerInParent="true"
-                android:src="@drawable/profile_linemdpi"
-                android:layout_height="32dp" />
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/size_10"
+                android:layout_height="28dp"
+                android:src="@drawable/profile_linemdpi" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/img_profile"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="5dp"
+                android:text="PROFILE"
+
+                android:textColor="@color/greyblue"
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
 
         </RelativeLayout>

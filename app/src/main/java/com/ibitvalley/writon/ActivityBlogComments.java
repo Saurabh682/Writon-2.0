@@ -326,6 +326,7 @@ public class ActivityBlogComments extends AppCompatActivity {
                     if (status == 1) {
                         JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
                         Type type = new TypeToken <ArrayList<BlogComment>>() {}.getType();
+                        assert arrMainCategoryJson != null;
                         trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
                         setAdapterData(trending_post);
                     }else{

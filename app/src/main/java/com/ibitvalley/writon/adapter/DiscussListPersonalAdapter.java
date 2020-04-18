@@ -1,7 +1,6 @@
 package com.ibitvalley.writon.adapter;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
@@ -17,15 +16,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.R;
-import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.BlogComment;
+import com.ibitvalley.writon.model.BlogCommentPersonal;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
@@ -39,18 +33,13 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-
-/**
- * Created by Sahil Bharti on 30-09-2016.
- */
-
-public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.ImagecategoryViewHolder> {
+public class DiscussListPersonalAdapter extends RecyclerView.Adapter<DiscussListPersonalAdapter.ImagecategoryViewHolder> {
     private Context curr_context;
     private Activity curr_activity;
-    private ArrayList<BlogComment> arrappliedjob;
+    private ArrayList<BlogCommentPersonal> arrappliedjob;
     private Typeface tf;
     private User userData;
-    public DiscusListAdapter(Activity curr_activity, Context curr_context, ArrayList<BlogComment> arrappliedjob) {
+    public DiscussListPersonalAdapter(Activity curr_activity, Context curr_context, ArrayList<BlogCommentPersonal> arrappliedjob) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
@@ -69,7 +58,6 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
 
 
 
-
     @Override
     public int getItemCount() {
         if (arrappliedjob != null) {
@@ -81,19 +69,19 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
 
     @Override
     public void onBindViewHolder(final ImagecategoryViewHolder holder, final int position) {
-        System.out.println("Entering onbind");
+        System.out.println("Entering onbind 2");
 
-        final BlogComment show = arrappliedjob.get(position);
+        final BlogCommentPersonal show = arrappliedjob.get(position);
 
         /*System.out.println("CommentUsername"+show.getUserName());
         System.out.println("CommentUsername"+show.getName());
         System.out.println("CommentUsername"+show.getComment());
         System.out.println("LoginUsername"+userData.getUsername());*/
         holder.TVComment.setText(show.getComment());
-        holder.TVUsername.setText(show.getUserName());
-        holder.TVTime.setText(show.getDateTime());
-        System.out.println("Username: "+ show.getUserName());
-        if(userData.getUsername()== show.getUserName()){
+        holder.TVUsername.setText(show.getTitle());
+        holder.TVTime.setText(show.getCreationDate());
+        System.out.println("Username: "+ show.getUserId()+"/n"+show.getTitle());
+        if(userData.getId()== show.getUserId()){
             holder.IMOption.setVisibility(View.VISIBLE);
         }
     }
@@ -125,8 +113,8 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
                     builder.setPositiveButton("Delete Now", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            BlogComment blog =  arrappliedjob.get(getAdapterPosition());
-                            deleteCommentApi(blog.getId());
+                            BlogCommentPersonal blog =  arrappliedjob.get(getAdapterPosition());
+                            deleteCommentApi(blog.getUserId());
                             arrappliedjob.remove(getAdapterPosition());
                             notifyItemRemoved(getAdapterPosition());
                             notifyItemRangeChanged(getAdapterPosition(), arrappliedjob.size());
@@ -156,22 +144,20 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
 
 
     private void  deleteCommentApi(String CommentId)  {
-        HashMap <String, String> hmHomeParam = new HashMap <>();
+        HashMap<String, String> hmHomeParam = new HashMap <>();
         hmHomeParam.put("CommentId", CommentId);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.delete_comment_url, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        int status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -187,4 +173,3 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
 
 
 }
-

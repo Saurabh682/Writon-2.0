@@ -1,62 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="@dimen/size_20"
+    app:cardCornerRadius="20dp"
+    android:id="@+id/TVFirst"
+    app:cardElevation="40dp"
+    android:background="@color/colorWhite"
+    >
+
+<!--<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:fillViewport="true"
     android:id="@+id/TVFirst"
-    android:background="@color/bgColor">
+    android:background="@color/bgColor">-->
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="fill_parent">
+        android:layout_height="match_parent">
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
-        android:layout_marginTop="50dp"
-        android:background="@color/bgColor"
+        android:layout_marginTop="@dimen/size_10"
         android:orientation="vertical">
 
-        <!--<TextView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:textSize="18dp"-->
-            <!--android:textColor="#263238"-->
-            <!--android:text="Name of the Creation"/>-->
-
-        <!--<EditText-->
-            <!--android:id="@+id/tv_creatorName"-->
-            <!--android:layout_width="fill_parent"-->
-            <!--android:hint="80 Character"-->
-            <!--android:layout_height="40dp"-->
-            <!--android:textSize="18dp"-->
-            <!--android:layout_marginTop="5dp"-->
-            <!--android:textColor="#263238"-->
-            <!--android:padding="2dp"-->
-            <!--android:singleLine="true"-->
-            <!--android:background="@color/textViewBg"/>-->
-
-        <!--<TextView-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:layout_marginTop="20dp"-->
-        <!--android:textSize="18dp"-->
-        <!--android:textColor="#263238"-->
-        <!--android:text="Category of the creation"/>-->
-
-        <!--<EditText-->
-        <!--android:id="@+id/tv_categoryName"-->
-        <!--android:layout_width="fill_parent"-->
-        <!--android:layout_height="40dp"-->
-        <!--android:textSize="18dp"-->
-        <!--android:layout_marginTop="5dp"-->
-        <!--android:textColor="#263238"-->
-        <!--android:padding="2dp"-->
-        <!--android:background="@color/textViewBg"/>-->
-
-
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="*Choose category/ language"
+            android:textColor="@color/greyblue"
+            />
 
         <Spinner
             android:layout_width="match_parent"
@@ -65,11 +43,10 @@
             android:textSize="18dp"
             android:layout_marginTop="15dp"
             android:entries="@array/array_mainCategory"
-            android:textColor="#263238"
+            android:textColor="@color/newColorGrey"
             android:padding="2dp"
-
-            android:background="@color/textViewBg"
-            style="@style/Base.Widget.AppCompat.Spinner.Underlined"
+            android:background="#f4f3fa"
+            style=""
             android:id="@+id/tv_categoryName">
         </Spinner>
 
@@ -81,9 +58,9 @@
             android:textSize="18dp"
             android:layout_marginTop="15dp"
             android:entries="@array/array_subCategory"
-            android:textColor="#263238"
+            android:textColor="@color/verylightPurple"
             android:padding="2dp"
-            android:background="@color/textViewBg"
+            android:background="#f4f3fa"
             style="@style/Base.Widget.AppCompat.Spinner.Underlined"
             android:id="@+id/tv_categoryL2">
         </Spinner>
@@ -96,9 +73,9 @@
             android:textSize="18dp"
             android:layout_marginTop="15dp"
             android:entries="@array/array_language"
-            android:textColor="#263238"
+            android:textColor="@color/verylightPurple"
             android:padding="2dp"
-            android:background="@color/textViewBg"
+            android:background="#f4f3fa"
             style="@style/Base.Widget.AppCompat.Spinner.Underlined"
             android:id="@+id/SPLanguage">
         </Spinner>
@@ -109,8 +86,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
+            android:layout_marginLeft="@dimen/size_10"
             android:textSize="18dp"
-            android:textColor="#263238"
+            android:textColor="@color/newColorGrey"
             android:text="Short Description"/>
 
         <EditText
@@ -118,9 +96,10 @@
             android:layout_width="fill_parent"
             android:layout_height="133dp"
             android:layout_marginTop="5dp"
-            android:background="@color/textViewBg"
+            android:background="#f3f1fc"
             android:padding="2dp"
-            android:textColor="#263238"
+            android:textColor="@color/verylightPurple"
+            android:tooltipText="Try writing a decent description which will attract more viewer"
             android:textSize="18dp" />
 
         <!--android:hint="This will be required at the time of publishing you may fill it later at that time."-->
@@ -143,22 +122,23 @@
 
             <Button
                 android:id="@+id/BtnStart"
-                android:layout_width="152dp"
+                android:layout_width="252dp"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-
                 android:layout_centerHorizontal="true"
                 android:layout_marginLeft="4dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginBottom="10dp"
-                android:background="@color/colorPrimary"
-                android:text="  Start  "
+                android:background="@drawable/round_corner_button"
+                android:elevation="40dp"
+                android:text="  Start Writing "
                 android:textColor="@color/colorWhite"
-                android:textSize="12dp" />
+                android:textSize="14sp" />
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="50dp"></LinearLayout>
     </LinearLayout>
     </ScrollView>
-</LinearLayout>
+<!--</LinearLayout>-->
+</androidx.cardview.widget.CardView>

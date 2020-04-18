@@ -22,7 +22,7 @@
     <color name="grey">#E5E7ED</color>
     <color name="green">#158B10</color>
     <color name="textGreen">@color/green</color>
-    <color name="lightBlue">#61b7fe</color>
+    <color name="lightBlue">#61B7FE</color>
     <!-- Screens background color-->
     <color name="bg_screen1">#f64c73</color>
     <color name="bg_screen2">#20d2bb</color>
@@ -45,6 +45,7 @@
     <color name="purple">#8676FB</color>
     <color name="purpleLight">#E7E4FE</color>
     <color name="greyblue">#97A0C6</color>
+    <color name="verylightPurple">#f5f4f9</color>
 
 
     <array name="array_dot_active">

@@ -21,7 +21,12 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.Blog_Profile;
 import com.ibitvalley.writon.Fragment.Home_Fragment2;
 import com.ibitvalley.writon.Home_Activity;
@@ -54,6 +59,7 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
     SharedPreferences preferences;
     Typeface tf;
     User userData;
+    private String bTitle;
 
     public TopRatedAdapter(Activity curr_activity, Context curr_context, ArrayList<TrendingPost_Model> arrappliedjob) {
         this.curr_activity = curr_activity;
@@ -76,6 +82,7 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
         System.out.println("Entering onbind");
 
         final TrendingPost_Model show = arrappliedjob.get(position);
+        bTitle = show.getTitle();
         holder.TVCategory.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
         holder.Username.setText(show.getUser_name());
         holder.TVTitle.setText(show.getTitle());
@@ -88,7 +95,7 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
         if (show.isBookMark()) {
             holder.IVBookmarked.setImageResource(R.drawable.bookmarknew);
         } else {
-            holder.IVBookmarked.setImageResource(R.drawable.unbookmark);
+            holder.IVBookmarked.setImageResource(R.drawable.bookmarkblue);
         }
 
         if(show.isIs_followed()) {
@@ -213,6 +220,7 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
                         blog.setBookMark(false);
                         IVBookmarked.setImageResource(R.drawable.unbookmark);
                     } else {
+                        fcmNotify("bookmark");
                         bookmarkRequest(userData.getId(), blog.getBlogId());
                         blog.setBookMark(true);
                         IVBookmarked.setImageResource(R.drawable.bookmarknew);
@@ -226,6 +234,7 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
                     //final String followUserID, final String userID
                     TrendingPost_Model blog = arrappliedjob.get(getPosition());
                     if(blog.isIs_followed()) {
+                        fcmNotify("follow");
                         blog.setIs_followed(false);
                         TVFollow.setText("FOLLOW");
                         unFollowUser(blog.getUser_id(), userData.getId());
@@ -400,6 +409,46 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
             }
         });
         VolleySingleton.getInstance().addToRequestQueue(mainCategory);
+    }
+
+    private void fcmNotify(String who) {
+        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
+        String urlExt = "";
+        // Instantiate the RequestQueue.
+        switch (who) {
+            case "bookmark":
+                urlExt = userData.getId()+"&sp=your post is getting popular&tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
+                break;
+            case "follow":
+                urlExt = userData.getId()+"&sp=you are getting noticed&tp="+userData2.getUsername()+" has started following you. Keep up your writing";
+                break;
+
+            //default:
+            //console.log('Sorry, we are out of ' + expr + '.');
+        }
+
+
+        RequestQueue queue = Volley.newRequestQueue(curr_context);
+        String url ="https://www.writon.co/Mine/fcm_noti_single.php?id="+urlExt ;
+        System.out.println("Bookmark Notify: "+url);
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        System.out.println("Response is: "+ response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("That didn't work!");
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
     }
 
 }

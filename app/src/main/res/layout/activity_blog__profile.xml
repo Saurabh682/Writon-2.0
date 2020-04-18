@@ -59,7 +59,7 @@
                     android:paddingRight="5dp"
                     android:text="-"
                     android:textStyle="bold"
-                    android:textColor="@color/colorBlack"
+                    android:textColor="@color/greyblue"
                     android:layout_marginTop="-12dp"
                     android:textSize="18dp" />
 
@@ -173,7 +173,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_horizontal"
                                 android:text="0"
-                                android:textColor="@color/colorBlack"
+                                android:textColor="@color/greyblue"
                                 android:textStyle="bold" />
                         </LinearLayout>
 
@@ -202,7 +202,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_horizontal"
                                 android:text="0"
-                                android:textColor="@color/colorBlack"
+                                android:textColor="@color/greyblue"
                                 android:textStyle="bold" />
                         </LinearLayout>
 
@@ -231,7 +231,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_horizontal"
                                 android:text="0"
-                                android:textColor="@color/colorBlack"
+                                android:textColor="@color/greyblue"
                                 android:textStyle="bold" />
                         </LinearLayout>
 
@@ -348,7 +348,7 @@
                         android:layout_gravity="center_vertical"
                         android:layout_weight="2"
                         android:text="User"
-                        android:textColor="@color/colorBlack"
+                        android:textColor="@color/newColorGrey"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:layout_marginLeft="@dimen/spacing_10"
@@ -402,7 +402,7 @@
                     android:text="About"
                     android:gravity="center"
                     android:textStyle="bold"
-                    android:textColor="@color/colorGrey"
+                    android:textColor="@color/newColorGrey"
                     android:layout_weight="1"
                     android:layout_width="0dp" />
 
@@ -419,7 +419,7 @@
                     android:text="Posted"
                     android:gravity="center"
                     android:textStyle="bold"
-                    android:textColor="@color/colorGrey"
+                    android:textColor="@color/newColorGrey"
                     android:layout_weight="1"
                     android:layout_width="0dp"/>
 
@@ -452,7 +452,7 @@
                         android:layout_marginRight="20dp"
                         android:text="Quote of the day"
                         android:textStyle="bold"
-                        android:textColor="@color/colorGrey"
+                        android:textColor="@color/newColorGrey"
                         android:textSize="16dp" />
                 </LinearLayout>
 
@@ -463,7 +463,7 @@
                     android:layout_marginLeft="20dp"
                     android:layout_marginRight="20dp"
                     android:layout_marginTop="8dp"
-                    android:textColor="#263238"
+                    android:textColor="@color/newColorGrey"
                     android:text=""
                     android:background="@android:color/transparent"
                     android:textSize="14dp" />
@@ -483,7 +483,7 @@
                         android:textAlignment="center"
                         android:text="Introduction"
                         android:textStyle="bold"
-                        android:textColor="@color/colorGrey"
+                        android:textColor="@color/newColorGrey"
                         android:textSize="16dp" />
 
                 </LinearLayout>
@@ -515,7 +515,7 @@
 
                         android:text="Working On"
                         android:textStyle="bold"
-                        android:textColor="@color/colorGrey"
+                        android:textColor="@color/newColorGrey"
                         android:textSize="16dp" />
 
 

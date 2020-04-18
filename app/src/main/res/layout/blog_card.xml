@@ -86,7 +86,7 @@
                 android:layout_marginRight="30dp"
                 android:layout_alignLeft="@+id/tv_user_followers_count"
                 android:text="Mindy Kaling"
-                android:textColor="#404041"
+                android:textColor="@color/colorGrey"
                 android:textSize="17dip"
                 android:textStyle="bold"/>
 
@@ -172,7 +172,7 @@
                     android:fontFamily="sans-serif"
                     android:maxLines="1"
                     android:text="Why Not Me?"
-                    android:textColor="#404041"
+                    android:textColor="@color/colorGrey"
                     android:textSize="18dip"
                     android:textStyle="bold" />
 

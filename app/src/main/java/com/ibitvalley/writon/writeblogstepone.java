@@ -39,6 +39,12 @@ public class writeblogstepone extends AppCompatActivity {
         final Spinner tv_categoryName = (Spinner) findViewById(R.id.tv_categoryName);
         final Spinner SPLanguage = (Spinner) findViewById(R.id.SPLanguage);
         final Spinner tv_categoryL2 = (Spinner) findViewById(R.id.tv_categoryL2);
+        ArrayAdapter adapter2 = ArrayAdapter.createFromResource(this, R.array.array_mainCategory, R.layout.subcat);
+        tv_categoryName.setAdapter(adapter2);
+        ArrayAdapter.createFromResource(this, R.array.array_subCategory, R.layout.subcat);
+        tv_categoryL2.setAdapter(adapter);
+        ArrayAdapter adapter3 = ArrayAdapter.createFromResource(this, R.array.array_language, R.layout.subcat);
+        SPLanguage.setAdapter(adapter3);
         tv_categoryName.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {

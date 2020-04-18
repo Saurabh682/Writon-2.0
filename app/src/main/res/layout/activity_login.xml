@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/bgColor"
+    android:background="@color/colorWhite"
     android:orientation="vertical">
 
     <ScrollView
@@ -18,8 +18,8 @@
             android:orientation="vertical">
 
             <ImageView
-                android:layout_width="300dp"
-                android:layout_height="150dp"
+                android:layout_width="250dp"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="30dp"
                 android:src="@drawable/writonlogowithtext" />
@@ -42,7 +42,7 @@
                         android:layout_height="wrap_content"
                         android:text="Email"
                         android:id="@+id/TVEmailText"
-                        android:textColor="@color/colorBlack"
+                        android:textColor="@color/newColorGrey"
                         android:textSize="18sp" />
 
                     <EditText
@@ -73,7 +73,7 @@
                         android:layout_height="wrap_content"
                         android:text="Password"
                         android:id="@+id/TVPasswordText"
-                        android:textColor="@color/colorBlack"
+                        android:textColor="@color/newColorGrey"
                         android:textSize="18sp" />
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -231,6 +231,15 @@
 
 
 
+                   <androidx.cardview.widget.CardView
+                       android:layout_width="match_parent"
+                       android:layout_height="wrap_content"
+                       android:layout_margin="@dimen/size_10"
+                       app:cardCornerRadius="15dp"
+                       app:cardElevation="22dp"
+                       android:outlineAmbientShadowColor="@color/purpleLight"
+
+                       >
                     <LinearLayout
                         android:id="@+id/btnGoogleLogin"
                         android:layout_width="match_parent"
@@ -254,10 +263,11 @@
                             android:layout_gravity="center"
                             android:gravity="center"
                             android:text="Login with Google"
-                            android:textColor="@color/colorBlack"
+                            android:textColor="@color/greyblue"
                             android:textSize="18dp" />
 
                     </LinearLayout>
+                   </androidx.cardview.widget.CardView>
 
                     <!--<TextView-->
                         <!--android:id="@+id/skip"-->

@@ -38,7 +38,9 @@ import com.ibitvalley.writon.Report;
 import com.ibitvalley.writon.ShowBlog;
 import com.ibitvalley.writon.model.AvtarUtil;
 import com.ibitvalley.writon.model.Blog;
+import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.Const;
+import com.ibitvalley.writon.utils.WritOnPreference;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,6 +61,7 @@ import static android.content.Context.MODE_PRIVATE;
 public class MostReadBlogAdapter extends RecyclerView.Adapter<MostReadBlogAdapter.ImagecategoryViewHolder> {
     private Context curr_context;
     private Activity curr_activity;
+    private String bUserid,bTitle;
     ArrayList<Blog> arrappliedjob;
     SharedPreferences preferences;
     Typeface tf;
@@ -80,6 +83,8 @@ public class MostReadBlogAdapter extends RecyclerView.Adapter<MostReadBlogAdapte
     public void onBindViewHolder(final ImagecategoryViewHolder holder, final int position) {
         System.out.println("Entering onbind");
         final Blog show = arrappliedjob.get(position);
+        bUserid = show.getUser_id();
+        bTitle = show.getTitle();
         holder.category.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
         holder.Username.setText(show.getCreateBy());
         holder.Title.setText(show.getTitle());
@@ -221,6 +226,7 @@ public class MostReadBlogAdapter extends RecyclerView.Adapter<MostReadBlogAdapte
                         blog.setBookMark(false);
                         IVBookmarked.setColorFilter(ContextCompat.getColor(curr_activity, R.color.colorGrey));
                     } else {
+                        fcmNotify("bookmark");
                         blog.setBookMark(true);
                         IVBookmarked.setColorFilter(ContextCompat.getColor(curr_activity, R.color.colorGreen));
                     }
@@ -310,6 +316,47 @@ public class MostReadBlogAdapter extends RecyclerView.Adapter<MostReadBlogAdapte
         };
         jor.setRetryPolicy(new DefaultRetryPolicy(20000, 0, 0.0f));
         requestQueue.add(jor);
+    }
+
+
+    private void fcmNotify(String who) {
+        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
+        String urlExt = "";
+        // Instantiate the RequestQueue.
+        switch (who) {
+            case "bookmark":
+                urlExt = bUserid +"&sp=your post is getting popular&tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
+                break;
+            case "follow":
+                urlExt = bUserid +"&sp=you are getting noticed&tp="+userData2.getUsername()+" has started following you. Keep up your writing";
+                break;
+
+            //default:
+            //console.log('Sorry, we are out of ' + expr + '.');
+        }
+
+
+        RequestQueue queue = Volley.newRequestQueue(curr_context);
+        String url ="https://www.writon.co/Mine/fcm_noti_single.php?id="+urlExt ;
+        System.out.println("Bookmark Notify: "+url);
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        System.out.println("Response is: "+ response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("That didn't work!");
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
     }
 
 

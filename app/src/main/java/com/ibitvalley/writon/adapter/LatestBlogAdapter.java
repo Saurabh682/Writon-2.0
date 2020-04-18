@@ -72,6 +72,7 @@ import static android.content.Context.MODE_PRIVATE;
 public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.ImagecategoryViewHolder> {
     private Context curr_context;
     private Activity curr_activity;
+    private String uName,bTitle;
     ArrayList<Blog> arrappliedjob;
     SharedPreferences preferences;
     Typeface tf;
@@ -98,6 +99,9 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
     public void onBindViewHolder(final ImagecategoryViewHolder holder, final int position) {
 
         final Blog show = arrappliedjob.get(position);
+        uName = show.getUser_id();
+        bTitle = show.getTitle();
+
         holder.TVCategory.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
         holder.Username.setText(show.getUser_name());
         holder.TVTitle.setText(show.getTitle());
@@ -111,7 +115,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
         if (show.isBookMark()) {
             holder.IVBookmarked.setImageResource(R.drawable.bookmarknew);
         } else {
-            holder.IVBookmarked.setImageResource(R.drawable.unbookmark);
+            holder.IVBookmarked.setImageResource(R.drawable.bookmarkblue);
         }
 
 
@@ -249,6 +253,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
                     } else {
                         blog.setIs_followed(true);
                         TVFollow.setText("UN FOLLOW");
+                        fcmNotify("follow");
                         followUser(blog.getUser_id(), userData.getId());
                     }
                 }
@@ -322,9 +327,11 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
                         blog.setBookMark(false);
                         IVBookmarked.setImageResource(R.drawable.unbookmark);
                     } else {
+                        fcmNotify("bookmark");
                         bookmarkRequest(userData.getId(), blog.getBlogId());
                         blog.setBookMark(true);
                         IVBookmarked.setImageResource(R.drawable.bookmarknew);
+
                     }
 
                 }
@@ -334,6 +341,46 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
 
 
         }
+    }
+
+    private void fcmNotify(String who) {
+        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
+        String urlExt = "";
+        // Instantiate the RequestQueue.
+        switch (who) {
+            case "bookmark":
+                urlExt = userData.getId()+"&sp=your post is getting popular&tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
+                break;
+            case "follow":
+                urlExt = userData.getId()+"&sp=you are getting noticed&tp="+userData2.getUsername()+" has started following you. Keep up your writing";
+                break;
+
+            //default:
+                //console.log('Sorry, we are out of ' + expr + '.');
+        }
+
+
+        RequestQueue queue = Volley.newRequestQueue(curr_context);
+        String url ="https://www.writon.co/Mine/fcm_noti_single.php?id="+urlExt ;
+        System.out.println("Bookmark Notify: "+url);
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        System.out.println("Response is: "+ response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("That didn't work!");
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
     }
 
     private void bookmarkRequest(final String UserID, final String BlogID) {
@@ -346,7 +393,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
+                        int status = jsonResponse.getInt("success");
                         if (status == 1) {
                             String message = jsonResponse.getString("message");
                             Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
@@ -377,15 +424,13 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -412,7 +457,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
+                        int status = jsonResponse.getInt("success");
                         if (status == 1) {
                             String message = jsonResponse.getString("message");
                             Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
@@ -444,7 +489,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
+                        int status = jsonResponse.getInt("success");
                         if (status == 1) {
                             String message = jsonResponse.getString("message");
                             Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();

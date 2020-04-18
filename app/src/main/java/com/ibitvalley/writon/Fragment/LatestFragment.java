@@ -128,6 +128,7 @@ public class LatestFragment extends Fragment {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
@@ -251,7 +252,7 @@ public class LatestFragment extends Fragment {
         fabSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (fabExpanded == true){
+                if (fabExpanded){
                     closeSubMenusFab();
                     fabFrame.setClickable(false);
                 } else {
@@ -340,6 +341,7 @@ public class LatestFragment extends Fragment {
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) thiscontext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        assert connectivityManager != null;
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
@@ -407,37 +409,30 @@ public class LatestFragment extends Fragment {
 
     private void loadLatestPost() {
 
-        // LLNoPost.setVisibility(View.INVISIBLE);
+        //LLNoPost.setVisibility(View.INVISIBLE);
         rlLatest.setVisibility(View.VISIBLE);
-        /*rl1.setVisibility(View.VISIBLE);
-        rl2.setVisibility(View.VISIBLE);
-        rl3.setVisibility(View.VISIBLE);
-        rl4.setVisibility(View.VISIBLE);
-        rl5.setVisibility(View.VISIBLE);
-        rl6.setVisibility(View.VISIBLE);
-        rl7.setVisibility(View.VISIBLE);
-        rl8.setVisibility(View.VISIBLE);*/
+
 
         HashMap<String, String> hmHomeParam = new HashMap <>();
         hmHomeParam.put("page", "1");
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.Latest_Post, thiscontext, true, hmHomeParam, new OnResponseListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
-                            JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
-                            Type type = new TypeToken<ArrayList<Blog>>() {}.getType();
-                            ArrayList<Blog> latest_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                            //loadData(arrMainCat);
-                            displayLatestPost(latest_post);
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
+                        JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
+                        Type type = new TypeToken<ArrayList<Blog>>() {}.getType();
+                        assert arrMainCategoryJson != null;
+                        ArrayList<Blog> latest_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        //loadData(arrMainCat);
+                        displayLatestPost(latest_post);
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -452,8 +447,9 @@ public class LatestFragment extends Fragment {
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void displayLatestPost(ArrayList<Blog> latestBlog){
-        latestLatestBlogAdapter = new LatestBlogAdapter(getActivity(), getContext(), latestBlog, false);
+        latestLatestBlogAdapter = new LatestBlogAdapter(Objects.requireNonNull(getActivity()), getContext(), latestBlog, false);
         //Adapter set to recyclerView
         recyclerViewLatest.setAdapter(latestLatestBlogAdapter);
         latestLatestBlogAdapter.notifyDataSetChanged();

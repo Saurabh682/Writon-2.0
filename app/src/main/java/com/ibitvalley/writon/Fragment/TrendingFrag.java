@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -17,10 +18,12 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTabHost;
@@ -70,6 +73,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -78,7 +82,7 @@ import static android.content.Context.MODE_PRIVATE;
  */
 public class TrendingFrag extends Fragment{
     private View rootView;
-    private FragmentTabHost mTabHost;
+    private TabHost mTabHost;
     //Recent Blog List
     //ArrayList<Blog> blogArrayList;
     //Most Read Blog List
@@ -87,18 +91,9 @@ public class TrendingFrag extends Fragment{
     //ArrayList<Blog> arrMostBookMarketBlog;
 
     private Context thiscontext;
-    private LatestBlogAdapter latestLatestBlogAdapter;
     private ShortStoryAdapter shortStoryAdapter;
-    TopFollowersAdapter topFollowersAdapter;
-    TopRatedAdapter topRatedAdapter;
 
     private MostReadBlogAdapter mostReadAdapter;
-    private MostBookMarkedBlogAdapter mostBookMarkedBlogAdapter;
-    private SongsJinglesBlogAdapter songsJinglesBlogAdapter;
-    private JokesBlogAdapter jokesBlogAdapter;
-    private ReviewsBlogAdapter reviewsBlogAdapter;
-    private BlogBlogAdapter blogBlogAdapter;
-    private JournalismBlogAdapter journalismBlogAdapter;
 
     private RecyclerView recyclerViewLatest;
     private ImageView ivSearch, ivSearch1, IVSync;
@@ -110,7 +105,6 @@ public class TrendingFrag extends Fragment{
     RelativeLayout rlMain;
     private FrameLayout fabFrame;
     private boolean fabExpanded = false;
-    private FloatingActionButton fabSettings;
     private LinearLayout layoutFabSave;
     private LinearLayout layoutFabEdit;
     private LinearLayout layoutFabPhoto;
@@ -125,22 +119,24 @@ public class TrendingFrag extends Fragment{
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         rootView = inflater.inflate(R.layout.trending_frag, container, false);
+        assert container != null;
         thiscontext = container.getContext();
         ivSearch = (ImageView) rootView.findViewById(R.id.ivSearch);
         ivSearch1 = (ImageView) rootView.findViewById(R.id.ivSearch1);
         rlLatest = (RelativeLayout) rootView.findViewById(R.id.rlLatesttf);
-        rl1 = (RelativeLayout) rootView.findViewById(R.id.rl1);
+        /*rl1 = (RelativeLayout) rootView.findViewById(R.id.rl1);
         rl2 = (RelativeLayout) rootView.findViewById(R.id.rl2);
         rl3 = (RelativeLayout) rootView.findViewById(R.id.rl3);
         rl4 = (RelativeLayout) rootView.findViewById(R.id.rl4);
         rl5 = (RelativeLayout) rootView.findViewById(R.id.rl5);
         rl6 = (RelativeLayout) rootView.findViewById(R.id.rl6);
         rl7 = (RelativeLayout) rootView.findViewById(R.id.rl7);
-        rl8 = (RelativeLayout) rootView.findViewById(R.id.rl8);
+        rl8 = (RelativeLayout) rootView.findViewById(R.id.rl8);*/
 
 
         tvViewAll = (TextView) rootView.findViewById(R.id.tvViewAll6);
@@ -214,7 +210,7 @@ public class TrendingFrag extends Fragment{
 
         // rlMain = (RelativeLayout) rootView.findViewById(R.id.rlMain);
         fabFrame = (FrameLayout) rootView.findViewById(R.id.fabFrame);
-        fabSettings = (FloatingActionButton) rootView.findViewById(R.id.fabSetting);
+        FloatingActionButton fabSettings = (FloatingActionButton) rootView.findViewById(R.id.fabSetting);
 
         layoutFabSave = (LinearLayout) rootView.findViewById(R.id.layoutFabSave);
         layoutFabEdit = (LinearLayout) rootView.findViewById(R.id.layoutFabEdit);
@@ -228,7 +224,7 @@ public class TrendingFrag extends Fragment{
         fabSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (fabExpanded == true){
+                if (fabExpanded){
                     closeSubMenusFab();
                     fabFrame.setClickable(false);
                 } else {
@@ -317,12 +313,14 @@ public class TrendingFrag extends Fragment{
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) thiscontext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        assert connectivityManager != null;
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     ProgressDialog progress;
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void initilize(final String catValue) {
         //blogArrayList = new ArrayList<>();
         //arrMostReadBlog = new ArrayList<>();
@@ -342,16 +340,9 @@ public class TrendingFrag extends Fragment{
         // Adapter
 
 
-        //latestLatestBlogAdapter = new LatestBlogAdapter(getActivity(), getContext(), ShowBlogIngo.blogArrayList, false);
-        // shortStoryAdapter = new ShortStoryAdapter(getActivity(), getContext(), ShowBlogIngo.shortStoryArrayList);
-        mostReadAdapter = new MostReadBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrMostReadBlog);
-        //mostBookMarkedBlogAdapter = new MostBookMarkedBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrMostBookMarketBlog);
 
-        //songsJinglesBlogAdapter = new SongsJinglesBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrSongJingles);
-        //jokesBlogAdapter = new JokesBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrJokes);
-        //reviewsBlogAdapter = new ReviewsBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrReviews);
-        //blogBlogAdapter = new BlogBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrBlog);
-        //journalismBlogAdapter = new JournalismBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrJournalism);
+        mostReadAdapter = new MostReadBlogAdapter(getActivity(), Objects.requireNonNull(getContext()), ShowBlogIngo.arrMostReadBlog);
+
 
         //Adapter set to recyclerView
         recyclerViewLatest.setAdapter(mostReadAdapter);
@@ -386,24 +377,24 @@ public class TrendingFrag extends Fragment{
         HashMap<String, String> hmHomeParam = new HashMap <>();
         hmHomeParam.put("page", "1");
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.trending_Post, thiscontext, false, hmHomeParam, new OnResponseListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
-                            JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
-                            Type type = new TypeToken<ArrayList<TrendingPost_Model>>() {}.getType();
-                            ArrayList<TrendingPost_Model> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                            //ArrayList<TrendingPost_Model> trending_postOne = new ArrayList <>();
-                            //trending_postOne.add(trending_post.get(0));
-                            displayLTrendingPost(trending_post);
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
+                        JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
+                        Type type = new TypeToken<ArrayList<TrendingPost_Model>>() {}.getType();
+                        assert arrMainCategoryJson != null;
+                        ArrayList<TrendingPost_Model> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        //ArrayList<TrendingPost_Model> trending_postOne = new ArrayList <>();
+                        //trending_postOne.add(trending_post.get(0));
+                        displayLTrendingPost(trending_post);
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -418,8 +409,9 @@ public class TrendingFrag extends Fragment{
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void displayLTrendingPost(ArrayList<TrendingPost_Model> trendingBlog){
-        shortStoryAdapter = new ShortStoryAdapter(getActivity(), getContext(), trendingBlog);
+        shortStoryAdapter = new ShortStoryAdapter(Objects.requireNonNull(getActivity()), getContext(), trendingBlog);
         recyclerViewLatest.setAdapter(shortStoryAdapter);
         shortStoryAdapter.notifyDataSetChanged();
 
@@ -452,7 +444,7 @@ public class TrendingFrag extends Fragment{
                     public void onResponse(JSONObject response) {
                         Log.d("True", "");
                         try {
-                            if (response.get("success").toString() == "true") {
+                            if (response.get("success").toString().equals("true")) {
                                 System.out.println("Json == > " + response.toString());
                                 JSONObject obj = new JSONObject(response.toString());
                                 JSONArray arr = obj.getJSONArray("LatestBlog");
@@ -598,14 +590,10 @@ public class TrendingFrag extends Fragment{
                                 if (progress != null && progress.isShowing())
                                     progress.dismiss();
 
-                                latestLatestBlogAdapter.notifyDataSetChanged();
+
                                 mostReadAdapter.notifyDataSetChanged();
-                                mostBookMarkedBlogAdapter.notifyDataSetChanged();
-                                songsJinglesBlogAdapter.notifyDataSetChanged();
-                                jokesBlogAdapter.notifyDataSetChanged();
-                                reviewsBlogAdapter.notifyDataSetChanged();
-                                blogBlogAdapter.notifyDataSetChanged();
-                                journalismBlogAdapter.notifyDataSetChanged();
+
+
                                 shortStoryAdapter.notifyDataSetChanged();
 
                             }

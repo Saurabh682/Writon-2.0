@@ -24,6 +24,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:ellipsize="marquee"
-    android:textColor="#000000"
+    android:textColor="@color/newColorGrey"
+    android:textColorHighlight="@color/lightBlue"
     android:padding="10dp"
     android:textAlignment="inherit"/>

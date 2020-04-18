@@ -18,7 +18,12 @@ import android.widget.Toast;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
@@ -50,6 +55,7 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
     SharedPreferences preferences;
     Typeface tf;
     User userData;
+    private String bTitle;
 
     public TrendingUsersAdapter(Activity curr_activity, Context curr_context, ArrayList<TrendingPost_Model> arrappliedjob) {
         this.curr_activity = curr_activity;
@@ -72,6 +78,7 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
     public void onBindViewHolder(final ImagecategoryViewHolder holder, final int position) {
 
         final TrendingPost_Model show = arrappliedjob.get(position);
+        bTitle = show.getTitle();
         holder.Username.setText(show.getUsername());
         holder.tv_user_followers_count.setText(String.format("%s Followers", show.getFollowers_count()));
 
@@ -140,6 +147,7 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
                     //final String followUserID, final String userID
                     TrendingPost_Model blog = arrappliedjob.get(getPosition());
                     if(blog.isIs_followed() == false) {
+                        fcmNotify("follow");
                         blog.setIs_followed(true);
                         TVFollow.setText("UN FOLLOW");
                         followUser(blog.getUserID(), userData.getId());
@@ -164,6 +172,7 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
             @Override
             public void onSuccess(Object result) {
                 try {
+
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
                         Integer status = jsonResponse.getInt("success");
@@ -217,6 +226,47 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
             }
         });
         VolleySingleton.getInstance().addToRequestQueue(mainCategory);
+    }
+
+
+    private void fcmNotify(String who) {
+        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
+        String urlExt = "";
+        // Instantiate the RequestQueue.
+        switch (who) {
+            case "bookmark":
+                urlExt = userData.getId()+"&sp=your post is getting popular&tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
+                break;
+            case "follow":
+                urlExt = userData.getId()+"&sp=you are getting noticed&tp="+userData2.getUsername()+" has started following you. Keep up your writing";
+                break;
+
+            //default:
+            //console.log('Sorry, we are out of ' + expr + '.');
+        }
+
+
+        RequestQueue queue = Volley.newRequestQueue(curr_context);
+        String url ="https://www.writon.co/Mine/fcm_noti_single.php?id="+urlExt ;
+        System.out.println("Bookmark Notify: "+url);
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        System.out.println("Response is: "+ response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("That didn't work!");
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
     }
 
 
