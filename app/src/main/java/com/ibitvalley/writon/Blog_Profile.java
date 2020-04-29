@@ -365,18 +365,16 @@ public class Blog_Profile extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            JSONObject userData = jsonResponse.getJSONObject("data");
-                            setUserData(userData);
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        JSONObject userData = jsonResponse.getJSONObject("data");
+                        setUserData(userData);
 
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
-                            if(status == -1){
-                                logout();
-                            }
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_context, message, Toast.LENGTH_LONG).show();
+                        if(status == -1){
+                            logout();
                         }
                     }
                 } catch (JSONException e) {

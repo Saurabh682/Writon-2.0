@@ -81,7 +81,7 @@ public class DiscussListPersonalAdapter extends RecyclerView.Adapter<DiscussList
         holder.TVUsername.setText(show.getTitle());
         holder.TVTime.setText(show.getCreationDate());
         System.out.println("Username: "+ show.getUserId()+"/n"+show.getTitle());
-        if(userData.getId()== show.getUserId()){
+        if(userData.getId().equals(show.getUserId())){
             holder.IMOption.setVisibility(View.VISIBLE);
         }
     }
@@ -99,7 +99,7 @@ public class DiscussListPersonalAdapter extends RecyclerView.Adapter<DiscussList
             this.TVComment.setTypeface(tf);
             this.TVTime = (TextView) view.findViewById(R.id.TVTime);
             this.TVTime.setTypeface(tf);
-            this.IMOption = (ImageView) view.findViewById(R.id.IMOption);
+            this.IMOption = (ImageView) view.findViewById(R.id.IMOptionD);
             this.TVUsername = (TextView) view.findViewById(R.id.TVUsername);
             this.TVUsername.setTypeface(tf);
 

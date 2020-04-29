@@ -121,9 +121,9 @@ public class LatestFragment extends Fragment {
     private LinearLayout layoutFabPhoto;
     private LinearLayout layoutMyBlog;
 
-    TextView tvViewAll, tvViewAllztwo, tvViewAllzthree, tvViewAllzfour;
+    private TextView tvViewAll, tvViewAllztwo, tvViewAllzthree, tvViewAllzfour;
 
-    public static Fragment newInstance() {
+    static Fragment newInstance() {
         return new LatestFragment();
     }
 
@@ -414,7 +414,8 @@ public class LatestFragment extends Fragment {
 
 
         HashMap<String, String> hmHomeParam = new HashMap <>();
-        hmHomeParam.put("page", "1");
+        //hmHomeParam.put("page", "1");
+        hmHomeParam.put("id", "73");
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.Latest_Post, thiscontext, true, hmHomeParam, new OnResponseListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
@@ -423,8 +424,8 @@ public class LatestFragment extends Fragment {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
                     if (status == 1) {
-                        JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
-                        JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
+                        //JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
+                        JSONArray arrMainCategoryJson = jsonResponse.getJSONArray("data");
                         Type type = new TypeToken<ArrayList<Blog>>() {}.getType();
                         assert arrMainCategoryJson != null;
                         ArrayList<Blog> latest_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
@@ -456,7 +457,7 @@ public class LatestFragment extends Fragment {
     }
 
 
-    private void getBlogsListCallApi(String catValue) {
+    /*private void getBlogsListCallApi(String catValue) {
         RequestQueue requestQueue;
         progress = new ProgressDialog(thiscontext);
         progress.show();
@@ -658,7 +659,7 @@ public class LatestFragment extends Fragment {
         jor.setRetryPolicy(new DefaultRetryPolicy(20000, 3, 0.0f));
         requestQueue.add(jor);
     }
-
+*/
 
     private void showNotificationBell(){
 

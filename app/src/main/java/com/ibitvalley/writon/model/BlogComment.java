@@ -7,6 +7,11 @@ package com.ibitvalley.writon.model;
 public class BlogComment {
     private String Id;
     private String Comment;
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
     private String username;
 
     public String getTitle() {

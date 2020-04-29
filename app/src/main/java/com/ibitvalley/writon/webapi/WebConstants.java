@@ -11,13 +11,14 @@ public class WebConstants {
 
 
     public static final String BASE_URL = "https://www.writon.co/api/v1/";
+    public static final String NEW_BASE_URL = "https://www.writon.co/Mine/";
 
 
     public static final String Login_Api = BASE_URL + "login";
     public static final String Register_API = BASE_URL + "register";
     public static final String SocialRegister_API = BASE_URL + "social-signup";
 
-    public static final String Latest_Post = BASE_URL + "latest-posts";
+    public static final String Latest_Post = NEW_BASE_URL + "LatestPost.php";
     public static final String trending_Post = BASE_URL + "trending-posts";
     public static final String published_Post = BASE_URL + "published-blogs";
     public static final String myworld_action = BASE_URL + "myworld";

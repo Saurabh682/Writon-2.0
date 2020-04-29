@@ -171,7 +171,7 @@ public class ShowBlogDetails extends AppCompatActivity {
 
                 TVViewCount.setText(cuuBlog.getView_count());
                 TVCommentCount.setText(cuuBlog.getComments_count());
-                TVRating.setText(cuuBlog.getVotes_count());
+                TVRating.setText(cuuBlog.getRating_count());
                 ll_Discuss.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.ShowBlog;
+import com.ibitvalley.writon.ShowBlogDetails;
 import com.ibitvalley.writon.model.AvtarUtil;
 import com.ibitvalley.writon.model.Blog;
 
@@ -26,13 +27,13 @@ import java.util.ArrayList;
 public class BlogSearchAdapter extends RecyclerView.Adapter<BlogSearchAdapter.ImagecategoryViewHolder> {
     private Context curr_context;
     private Activity curr_activity;
-    ArrayList<Blog> arrappliedjob;
+    private ArrayList<Blog> arrappliedjob;
 
     public BlogSearchAdapter(Activity curr_activity, Context curr_context, ArrayList<Blog> arrappliedjob) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
-        System.out.println("Array Size In Adapter : " + arrappliedjob.size());
+        //System.out.println("Array Size In Adapter : " + arrappliedjob.size());
     }
 
     @NonNull
@@ -71,16 +72,24 @@ public class BlogSearchAdapter extends RecyclerView.Adapter<BlogSearchAdapter.Im
         ImageView list_image2;
         public ImagecategoryViewHolder(View view) {
             super(view);
-            this.TVWrite = (TextView) view.findViewById(R.id.TVWrite);
-            this.TVTitle = (TextView) view.findViewById(R.id.TVTitle);
-            this.list_image2 = (ImageView) view.findViewById(R.id.list_image2);
+            this.TVWrite = view.findViewById(R.id.TVWrite);
+            this.TVTitle = view.findViewById(R.id.TVTitle);
+            this.list_image2 = view.findViewById(R.id.list_image2);
             //this.category = (TextView) view.findViewById(R.id.category);
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent blogprofile = new Intent(curr_context, ShowBlog.class);
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getPosition()));
-                    curr_activity.startActivity(blogprofile);
+                   /* Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
+                    System.out.println("The Fuck: "+getAdapterPosition());
+                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
+                    curr_activity.startActivity(blogprofile);*/
+
+                    Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
+                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
+                    System.out.println("POSITION is: "+ getAdapterPosition());
+                    blogprofile.putExtra("boxTitle", "Latest");
+                    blogprofile.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    curr_context.startActivity(blogprofile);
                 }
             });
         }

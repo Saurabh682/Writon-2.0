@@ -1,12 +1,25 @@
-<LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/searchpopup_element"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:background="#FFFFFF"
-        android:orientation="vertical"
-        android:elevation="25dp"
-        android:padding="10sp">
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/searchpopup_element"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:cardElevation="@dimen/spacing_10"
+    android:padding="10sp"
+    android:layout_margin="@dimen/size_20"
+    app:cardCornerRadius="@dimen/size_20"
+
+    >
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#00000000"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:layout_margin="@dimen/spacing_10"
+            >
+
 
         <!--<View-->
             <!--android:layout_width="match_parent"-->
@@ -19,7 +32,7 @@
             android:id="@+id/tv_Title"
             android:layout_width="fill_parent"
             android:layout_height="45dp"
-            android:hint="Title"
+            android:hint="Search title"
             android:textSize="18dp"
             android:layout_marginTop="15dp"
 
@@ -27,7 +40,7 @@
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"/>
 
-        <EditText
+        <!--<EditText
             android:id="@+id/tv_Writer"
             android:layout_width="fill_parent"
             android:layout_height="45dp"
@@ -86,29 +99,35 @@
             android:padding="2dp"
             style="@style/Base.Widget.AppCompat.Spinner.Underlined"
             android:id="@+id/SPLanguage">
-        </Spinner>
+        </Spinner>-->
 
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:gravity="center">
+
 
             <Button
+                android:gravity="center"
+                android:layout_gravity="center"
                 android:id="@+id/BTNSearch1"
-                android:layout_width="wrap_content"
+                android:layout_width="150dp"
                 android:layout_height="30dp"
-                android:layout_alignParentBottom="true"
-                android:layout_below="@+id/no_of_follower"
-                android:layout_centerHorizontal="true"
                 android:layout_marginBottom="10dp"
                 android:layout_marginLeft="4dp"
                 android:layout_marginTop="5dp"
-                android:background="@color/colorPrimary"
-                android:text="Apply"
+                android:background="@drawable/round_corner_button"
+                android:text="Search"
                 android:textColor="@color/colorWhite"
-                android:textSize="12dp" />
-        </LinearLayout>
+                android:textSize="12dp"
+                android:elevation="@dimen/size_20"
+                android:layout_marginStart="4dp" />
 
-    </LinearLayout>
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/Searchdescritption"
+                    android:textColor="@color/colorLightWhite"
+                    android:layout_margin="@dimen/size_10"
+                    />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </androidx.cardview.widget.CardView>

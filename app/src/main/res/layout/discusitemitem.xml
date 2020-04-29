@@ -68,7 +68,7 @@
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/IMOption"
+        android:id="@+id/IMOptionD"
         android:layout_width="20dp"
         android:layout_height="wrap_content"
         android:src="@drawable/delete"

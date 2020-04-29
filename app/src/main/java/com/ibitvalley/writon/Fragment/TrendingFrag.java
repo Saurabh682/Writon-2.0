@@ -318,7 +318,7 @@ public class TrendingFrag extends Fragment{
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    ProgressDialog progress;
+    private ProgressDialog progress;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void initilize(final String catValue) {
@@ -419,7 +419,7 @@ public class TrendingFrag extends Fragment{
 
 
 
-    private void getBlogsListCallApi(String catValue) {
+    /*private void getBlogsListCallApi(String catValue) {
         RequestQueue requestQueue;
         progress = new ProgressDialog(thiscontext);
         progress.show();
@@ -616,7 +616,7 @@ public class TrendingFrag extends Fragment{
         );
         jor.setRetryPolicy(new DefaultRetryPolicy(20000, 3, 0.0f));
         requestQueue.add(jor);
-    }
+    }*/
 
 
 

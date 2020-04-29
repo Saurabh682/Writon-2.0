@@ -113,6 +113,7 @@
                         android:layout_alignParentRight="true"
                         android:layout_marginRight="10dp"
                         android:text="View More"
+                        android:visibility="gone"
                         android:textColor="@color/colorGreen"/>
 
                 </RelativeLayout>

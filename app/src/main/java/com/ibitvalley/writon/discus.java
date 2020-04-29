@@ -17,10 +17,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.ibitvalley.writon.adapter.DiscusListAdapter;
 import com.ibitvalley.writon.adapter.DiscussListPersonalAdapter;
 import com.ibitvalley.writon.adapter.TopFollowersAdapter;
-import com.ibitvalley.writon.model.BlogComment;
 import com.ibitvalley.writon.model.BlogCommentPersonal;
 import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
@@ -43,7 +41,7 @@ public class discus extends AppCompatActivity {
 
     RecyclerView recyclerView1;
     DiscussListPersonalAdapter adapter;
-    ArrayList<BlogCommentPersonal> arrComments;
+    //ArrayList<BlogCommentPersonal> arrComments;
     User userData;
 
 
@@ -55,7 +53,7 @@ public class discus extends AppCompatActivity {
         this.setTitle("Your Discussions");
 
         userData = WritOnPreference.getInstance(getApplicationContext()).getUserDetails();
-        recyclerView1 = (RecyclerView) findViewById(R.id.recyclerView1);
+        recyclerView1 = findViewById(R.id.recyclerView1);
         loadDiscussionData();
     }
 
@@ -77,7 +75,7 @@ public class discus extends AppCompatActivity {
                     int status = jsonResponse.getInt("success");
                     if (status == 1) {
                         JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
-                        Type type = new TypeToken<ArrayList<BlogComment>>() {}.getType();
+                        Type type = new TypeToken<ArrayList<BlogCommentPersonal>>() {}.getType();
                         assert arrMainCategoryJson != null;
                         ArrayList<BlogCommentPersonal> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
                         setAdapterData(trending_post);
@@ -98,8 +96,8 @@ public class discus extends AppCompatActivity {
     }
 
 
-    private void setAdapterData(ArrayList<BlogCommentPersonal> blogComment){
-        adapter = new DiscussListPersonalAdapter(this, this, blogComment);
+    private void setAdapterData(ArrayList<BlogCommentPersonal> blogCommentPersonalArrayList){
+        adapter = new DiscussListPersonalAdapter(this, this, blogCommentPersonalArrayList);
         recyclerView1.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);

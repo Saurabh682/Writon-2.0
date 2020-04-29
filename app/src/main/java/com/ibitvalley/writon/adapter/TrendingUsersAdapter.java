@@ -51,10 +51,10 @@ import static android.content.Context.MODE_PRIVATE;
 public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdapter.ImagecategoryViewHolder> {
     private Context curr_context;
     private Activity curr_activity;
-    ArrayList<TrendingPost_Model> arrappliedjob;
-    SharedPreferences preferences;
-    Typeface tf;
-    User userData;
+    private ArrayList<TrendingPost_Model> arrappliedjob;
+    private SharedPreferences preferences;
+    private Typeface tf;
+    private User userData;
     private String bTitle;
 
     public TrendingUsersAdapter(Activity curr_activity, Context curr_context, ArrayList<TrendingPost_Model> arrappliedjob) {
@@ -146,7 +146,7 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
                 public void onClick(View v) {
                     //final String followUserID, final String userID
                     TrendingPost_Model blog = arrappliedjob.get(getPosition());
-                    if(blog.isIs_followed() == false) {
+                    if(!blog.isIs_followed()) {
                         fcmNotify("follow");
                         blog.setIs_followed(true);
                         TVFollow.setText("UN FOLLOW");
@@ -174,15 +174,13 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
                 try {
 
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        } else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    } else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

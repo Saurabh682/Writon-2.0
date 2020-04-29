@@ -3,6 +3,11 @@ package com.ibitvalley.writon.model;
 public class BlogCommentPersonal
 {
     private String  BlogId;
+    private String  Comment;
+    private String  UserId;
+    private String  CreationDate;
+    private String  IsDeleted;
+    private String  Title;
 
     public String getBlogId() {
         return BlogId;
@@ -54,11 +59,7 @@ public class BlogCommentPersonal
 
 
 
-    private String  Comment;
-    private String  UserId;
-    private String  CreationDate;
-    private String  IsDeleted;
-    private String  Title;
+
 
 
 

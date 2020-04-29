@@ -17,10 +17,12 @@ public class Blog implements Serializable {
     private String CommentCount;
     private String BookMarkedCount;
     private String Rating;
+    private String rating_count;
     private int AvatorCode;
     private String Language;
     private String SubCat;
     private String user_name;
+    private String username;
     private String view_count;
     private String comments_count;
     private String votes_count;
@@ -30,6 +32,27 @@ public class Blog implements Serializable {
     private boolean is_bookmarked;
     private boolean is_followed;
     private boolean is_rated;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getRating_count() {
+        return rating_count;
+    }
+
+    public void setRating_count(String rating_count) {
+        this.rating_count = rating_count;
+    }
+
+    public Blog(String rating_count, String username) {
+        this.rating_count = rating_count;
+        this.username = username;
+    }
 
     public boolean isIs_followed() {
         return is_followed;

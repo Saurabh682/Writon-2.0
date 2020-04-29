@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#e8e8e8">
 
 
@@ -47,7 +48,7 @@
                 android:layout_marginTop="5dp"
                 android:text="LIST"
 
-                android:textColor="@color/greyblue"
+                android:textColor="#488DCB"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
@@ -79,7 +80,7 @@
                 android:layout_marginTop="5dp"
                 android:text="EXPLORE"
 
-                android:textColor="@color/greyblue"
+                android:textColor="#488DCB"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
@@ -93,6 +94,27 @@
             android:layout_weight="1"
             android:layout_height="match_parent">
 
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/notifyCircle"
+                android:layout_width="21dp"
+                android:layout_height="21dp"
+                android:layout_alignStart="@+id/img_myworld"
+                android:layout_alignLeft="@+id/img_myworld"
+                android:layout_alignTop="@+id/img_myworld"
+                android:layout_alignEnd="@+id/img_myworld"
+                android:layout_alignRight="@+id/img_myworld"
+                android:layout_alignBottom="@+id/img_myworld"
+
+                android:layout_marginStart="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginTop="1dp"
+                android:layout_marginEnd="-5dp"
+                android:layout_marginRight="-5dp"
+                android:layout_marginBottom="6dp"
+                android:elevation="@dimen/size_10"
+                android:src="@drawable/circle_icon"
+                android:visibility="invisible" />
 
             <ImageView
                 android:id="@+id/img_myworld"
@@ -111,7 +133,7 @@
                 android:layout_marginTop="5dp"
                 android:text="MYWORLD"
 
-                android:textColor="@color/greyblue"
+                android:textColor="#488DCB"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
@@ -143,7 +165,7 @@
                 android:layout_marginTop="5dp"
                 android:text="BOOKMARK"
 
-                android:textColor="@color/greyblue"
+                android:textColor="#488DCB"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 
@@ -175,7 +197,7 @@
                 android:layout_marginTop="5dp"
                 android:text="PROFILE"
 
-                android:textColor="@color/greyblue"
+                android:textColor="#488DCB"
                 android:textSize="13sp"
                 android:textStyle="bold" />
 

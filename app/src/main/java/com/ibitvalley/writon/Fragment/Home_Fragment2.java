@@ -70,6 +70,7 @@ import com.ibitvalley.writon.Blog_Profile;
 import com.ibitvalley.writon.Constants;
 import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.LoginActivity;
+import com.ibitvalley.writon.PrefManager;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.adapter.DiscusListAdapter;
 import com.ibitvalley.writon.adapter.DiscussListPersonalAdapter;
@@ -139,7 +140,8 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
     private User userData;
     private String [] permissions = {"android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.ACCESS_FINE_LOCATION", "android.permission.SYSTEM_ALERT_WINDOW","android.permission.CAMERA"};
-   // private CollapsingToolbarLayout collapsingToolbarLayout;
+    private PrefManager prefManager;
+    // private CollapsingToolbarLayout collapsingToolbarLayout;
 
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -147,6 +149,11 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         //setContentView(R.layout.activity_blog__profile);
+        prefManager = new PrefManager(getContext());
+        /*if (prefManager.isNotification()) {
+            ImageView notify =  Objects.requireNonNull(getView()).findViewById(R.id.notifyCircle);
+
+        }*/
 
         if (rootView != null) {
             ViewGroup parent = (ViewGroup) rootView.getParent();
@@ -488,7 +495,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                     int status = jsonResponse.getInt("success");
                     if (status == 1) {
                         JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
-                        Type type = new TypeToken<ArrayList<BlogComment>>() {}.getType();
+                        Type type = new TypeToken<ArrayList<BlogCommentPersonal>>() {}.getType();
                         assert arrMainCategoryJson != null;
                         ArrayList<BlogCommentPersonal> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
                         setAdapterData(trending_post);
@@ -520,7 +527,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         recview_discussion.setAdapter(adapter);
         adapter.notifyDataSetChanged();
         //Activity curre_activity = getActivity().get;
-        //ImageView iV = getActivity().findViewById(R.id.IMOption);
+        //ImageView iV = Objects.requireNonNull(getActivity()).findViewById(R.id.IMOption);
         //iV.setVisibility(View.VISIBLE);
 
     }

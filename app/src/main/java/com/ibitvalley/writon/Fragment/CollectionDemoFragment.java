@@ -22,7 +22,7 @@ import com.ibitvalley.writon.R;
 public class CollectionDemoFragment extends Fragment {
     // When requested, this adapter returns a DemoObjectFragment,
     // representing an object in the collection.
-    DemoCollectionPagerAdapter demoCollectionPagerAdapter;
+    private DemoCollectionPagerAdapter demoCollectionPagerAdapter;
     ViewPager viewPager;
     ImageView ivSearch, ivSearch1;
     Context thiscontext;
@@ -36,8 +36,8 @@ public class CollectionDemoFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.viewpagerhome, container, false);
-        ivSearch = (ImageView) rootView.findViewById(R.id.ivSearch);
-        ivSearch1 = (ImageView) rootView.findViewById(R.id.ivSearch1);
+        ivSearch = rootView.findViewById(R.id.ivSearch);
+        ivSearch1 = rootView.findViewById(R.id.ivSearch1);
         assert container != null;
         thiscontext = container.getContext();
         return rootView;

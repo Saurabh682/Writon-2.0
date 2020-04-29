@@ -111,7 +111,7 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
             this.TVComment.setTypeface(tf);
             this.TVTime = (TextView) view.findViewById(R.id.TVTime);
             this.TVTime.setTypeface(tf);
-            this.IMOption = (ImageView) view.findViewById(R.id.IMOption);
+            this.IMOption = (ImageView) view.findViewById(R.id.IMOptionD);
             this.TVUsername = (TextView) view.findViewById(R.id.TVUsername);
             this.TVUsername.setTypeface(tf);
 
@@ -163,15 +163,13 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        int status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

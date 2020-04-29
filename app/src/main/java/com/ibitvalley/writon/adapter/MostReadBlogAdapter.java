@@ -150,7 +150,7 @@ public class MostReadBlogAdapter extends RecyclerView.Adapter<MostReadBlogAdapte
                 @Override
                 public void onClick(View v) {
                     Intent blogprofile = new Intent(curr_context, ShowBlog.class);
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getPosition()));
+                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
                     blogprofile.putExtra("boxTitle", "Shayari");
                     curr_context.startActivity(blogprofile);
                 }

@@ -127,7 +127,11 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
 
         holder.TVViewCount.setText(show.getView_count());
         holder.TVCommentCount.setText(show.getComments_count());
-        holder.TVRating.setText(show.getVotes_count());
+        if(show.getRating_count() != null) {
+            holder.TVRating.setText(show.getRating_count());
+        }else{
+            holder.TVRating.setText("0");
+        }
         holder.tv_user_followers_count.setText(String.format("%s FOLLOWERS", show.getUser_followers_count()));
 
         if(show.getUser_image() != null) {
@@ -197,45 +201,46 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
         public ImagecategoryViewHolder(View view) {
             super(view);
 
-            this.TVHeader1 = (TextView) view.findViewById(R.id.TVHeader1);
+            this.TVHeader1 = view.findViewById(R.id.TVHeader1);
             this.TVHeader1.setText("LATEST");
-            this.Username = (TextView) view.findViewById(R.id.name);
+            this.Username = view.findViewById(R.id.name);
             this.Username.setTypeface(tf);
-            this.TVTitle = (TextView) view.findViewById(R.id.TVTitle);
+            this.TVTitle = view.findViewById(R.id.TVTitle);
             this.TVTitle.setTypeface(tf);
-            this.TVShortDesc = (TextView) view.findViewById(R.id.TVShortDesc);
+            this.TVShortDesc = view.findViewById(R.id.TVShortDesc);
             this.TVShortDesc.setTypeface(tf);
-            this.TVCategory = (TextView) view.findViewById(R.id.TVCategory);
+            this.TVCategory = view.findViewById(R.id.TVCategory);
             this.TVCategory.setTypeface(tf);
             //this.blogType = (TextView) view.findViewById(R.id.blogType);
             //this.blogType.setTypeface(tf);
             //this.blogType.setText("Latest");
-            this.IVBookmarked = (ImageView) view.findViewById(R.id.IVBookmarked);
-            this.TVViewCount = (TextView) view.findViewById(R.id.TVViewCount);
-            this.TVbookmarkCount = (TextView) view.findViewById(R.id.TVbookmarkCount);
-             this.TVCommentCount = (TextView) view.findViewById(R.id.TVCommentCount);
-            this.TVRating = (TextView) view.findViewById(R.id.TVRating);
+            this.IVBookmarked = view.findViewById(R.id.IVBookmarked);
+            this.TVViewCount = view.findViewById(R.id.TVViewCount);
+            this.TVbookmarkCount = view.findViewById(R.id.TVbookmarkCount);
+             this.TVCommentCount = view.findViewById(R.id.TVCommentCount);
+            this.TVRating = view.findViewById(R.id.TVRating);
 
-            this.TVFollow = (TextView) view.findViewById(R.id.TVFollow);
+            this.TVFollow = view.findViewById(R.id.TVFollow);
 
-            this.list_image = (CircleImageView) view.findViewById(R.id.list_image);
+            this.list_image = view.findViewById(R.id.list_image);
 
-            this.img_Option = (ImageView) view.findViewById(R.id.img_Option);
+            this.img_Option = view.findViewById(R.id.img_Option);
 
-            this.tv_user_followers_count = (TextView) view.findViewById(R.id.tv_user_followers_count);
-            this.ll_FArrow = (LinearLayout) view.findViewById(R.id.ll_FArrow);
+            this.tv_user_followers_count = view.findViewById(R.id.tv_user_followers_count);
+            this.ll_FArrow = view.findViewById(R.id.ll_FArrow);
 
             if(isAll){
                 this.ll_FArrow.setVisibility(View.GONE);
             }
 
-            LLContent = (LinearLayout) view.findViewById(R.id.LLContent);
+            LLContent = view.findViewById(R.id.LLContent);
             LLContent.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     //Intent blogprofile = new Intent(curr_context, ShowBlog.class);
                     Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getPosition()));
+                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
+                    System.out.println("POSITION is: "+ getAdapterPosition());
                     blogprofile.putExtra("boxTitle", "Latest");
                     curr_context.startActivity(blogprofile);
                 }
@@ -279,27 +284,6 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
 
 
 
-//            this.drawer = (ImageView) view.findViewById(R.id.drawer);
-//            this.IVProgileImage = (CircleImageView) view.findViewById(R.id.IVProgileImage);
-//
-//            drawer.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View v) {
-//                    Blog blog = arrappliedjob.get(getPosition());
-//
-//                    final String UserId = preferences.getString("UserId", "0");
-//
-//                    String shareContent = String.format("\"%s\" by %s \n\n %s \n Read more %s @WritOn %s", blog.getTitle(), blog.getCreateBy(),  Html.fromHtml(blog.getLongDescripton()), blog.getCategory(), "https://goo.gl/Cx4oPk");
-//                    if (!blog.getUserID().equals(UserId)) {
-//                        String[] arrString = {"Report", "Share"};
-//                        showPopupMenu(arrString, shareContent);
-//                    } else {
-//                        String[] arrString = {"Share"};
-//                        showPopupMenu(arrString, shareContent);
-//                    }
-//                }
-//            });
-//
             list_image.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

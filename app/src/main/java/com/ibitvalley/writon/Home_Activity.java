@@ -43,13 +43,24 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
     private Fragment fragment;
     private static String backStateName;
     private RelativeLayout layout_home, layout_home1, layout_home2, layout_home3, layout_home4;
-    ImageView ivSearch, img_category, img_explorer, img_myworld, img_bookmark, img_profile;
+    ImageView ivSearch, img_category, img_explorer, img_myworld, img_bookmark, img_profile, notify;
     private int pageActionValue = 1;
     private static final String TAG = "Home_Activity";
+    private PrefManager prefManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        notify =  findViewById(R.id.notifyCircle);
+
+        prefManager = new PrefManager(this);
+        System.out.println("RECEIVED NOTIFICATION (2)====="+prefManager.isNotification());
+        //notify.setVisibility(View.VISIBLE);
+        if (prefManager.isNotification()) {
+
+                notify.setVisibility(View.VISIBLE);
+        }else notify.setVisibility(View.INVISIBLE);
 
         FirebaseInstanceId.getInstance().getInstanceId()
                 .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
@@ -207,6 +218,8 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
                 img_category.setImageResource(R.drawable.burgermenu);
                 img_bookmark.setImageResource(R.drawable.bookmark_linemdpi);
                 img_profile.setImageResource(R.drawable.profile_linemdpi);
+                notify.setVisibility(View.INVISIBLE);
+                prefManager.setIsNotification(false);
 
                 break;
             case 3:

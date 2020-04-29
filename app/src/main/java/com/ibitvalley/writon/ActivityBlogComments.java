@@ -105,6 +105,7 @@ public class ActivityBlogComments extends AppCompatActivity {
 
         if(BlogType.endsWith("cuuBlog")){
             currBlog = (Blog) getIntent().getSerializableExtra("BlogObject");
+            assert currBlog != null;
             categoryValue = String.format("%s, %s (%s)", currBlog.getCategory(), currBlog.getSubCat(), currBlog.getLanguage());
             createdByValue = currBlog.getUser_name();
 
@@ -116,6 +117,7 @@ public class ActivityBlogComments extends AppCompatActivity {
             IntegrateWriteCommentAPI(currBlog.getBlogId());
         }else {
             trendingPost_model = (TrendingPost_Model) getIntent().getSerializableExtra("BlogObject");
+            assert trendingPost_model != null;
             categoryValue = String.format("%s, %s (%s)", trendingPost_model.getCategory(), trendingPost_model.getSubCat(), trendingPost_model.getLanguage());
             createdByValue = trendingPost_model.getUser_name();
             blogTitleValie = trendingPost_model.getTitle();
@@ -131,7 +133,7 @@ public class ActivityBlogComments extends AppCompatActivity {
         TVTitle.setText(blogTitleValie);
 
         Objects.requireNonNull(getSupportActionBar()).hide();
-        arrComments = new ArrayList<>();
+        //arrComments = new ArrayList<>();
 
         //System.out.println("CommentUsername"+createdByValue);
        // System.out.println("LoginUsername"+userData.getUsername());
@@ -176,6 +178,7 @@ public class ActivityBlogComments extends AppCompatActivity {
 
         HashMap<String, String> hmHomeParam = new HashMap <>();
         hmHomeParam.put("BlogId", blogID);
+        hmHomeParam.put("username", userData.getUsername());
         hmHomeParam.put("UserId", userData.getId());
         hmHomeParam.put("Comment", ETWriteComment.getText().toString());
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.add_comment_url, curr_context, false, hmHomeParam, new OnResponseListener() {
@@ -183,12 +186,12 @@ public class ActivityBlogComments extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    Integer status = jsonResponse.getInt("success");
+                    int status = jsonResponse.getInt("success");
                     if (status == 1) {
                         BlogComment comment = new BlogComment();
                         comment.setComment(ETWriteComment.getText().toString());
                         comment.setUserId(userData.getId());
-                        comment.setName(userData.getUsername());
+                        comment.setUserName(userData.getUsername());
                         comment.setDateTime("Now");
                         trending_post.add(comment);
                         adapter.notifyDataSetChanged();
@@ -262,7 +265,7 @@ public class ActivityBlogComments extends AppCompatActivity {
         Volley.newRequestQueue(getApplicationContext()).add(request);*/
     }
 
-    private void getBlogsListCallApi() {
+   /* private void getBlogsListCallApi() {
         RequestQueue requestQueue;
         progress = new ProgressDialog(this);
         progress.show();
@@ -308,7 +311,7 @@ public class ActivityBlogComments extends AppCompatActivity {
                 }
         );
         requestQueue.add(jor);
-    }
+    }*/
 
 
 
@@ -322,7 +325,7 @@ public class ActivityBlogComments extends AppCompatActivity {
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    Integer status = jsonResponse.getInt("success");
+                    int status = jsonResponse.getInt("success");
                     if (status == 1) {
                         JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
                         Type type = new TypeToken <ArrayList<BlogComment>>() {}.getType();

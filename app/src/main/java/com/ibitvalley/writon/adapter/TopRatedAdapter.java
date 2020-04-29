@@ -204,7 +204,7 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
                 public void onClick(View v) {
                     //Intent blogprofile = new Intent(curr_context, ShowBlog.class);
                     Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getPosition()));
+                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
                     blogprofile.putExtra("boxTitle", "Trending");
                     curr_context.startActivity(blogprofile);
                 }

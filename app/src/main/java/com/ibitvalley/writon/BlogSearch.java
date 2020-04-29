@@ -6,6 +6,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Point;
+import android.os.Build;
 import android.os.Bundle;
 
 import android.util.Log;
@@ -26,8 +27,10 @@ import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -37,17 +40,21 @@ import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.ibitvalley.writon.adapter.BlogSearchAdapter;
 import com.ibitvalley.writon.adapter.MyBlogAdapter;
 import com.ibitvalley.writon.model.Blog;
+import com.ibitvalley.writon.utils.Const;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class BlogSearch extends AppCompatActivity implements
         SearchView.OnQueryTextListener {
@@ -57,39 +64,35 @@ public class BlogSearch extends AppCompatActivity implements
     ArrayList<Blog> searchList;
     BlogSearchAdapter adapter;
     RecyclerView recyclerView1;
+    private Context curr_context;
+    private Activity curr_activity;
 
     EditText tv_Writer, tv_Title;
-    Spinner SP_categoryName, tv_categoryL2, SPLanguage;
+    //Spinner SP_categoryName, tv_categoryL2, SPLanguage;
     ArrayAdapter subadapter;
+    private ArrayList<Blog> arrappliedjob;
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_blog_search);
         this.setTitle("Search");
 
-        recyclerView1 = (RecyclerView) findViewById(R.id.recyclerView1);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        recyclerView1.setLayoutManager(layoutManager);
+        recyclerView1 = findViewById(R.id.recyclerViewSearch);
+        recyclerView1.setHasFixedSize(true);
 
 
-//        BTNSearch.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                myblogArrayList = new ArrayList<>();
-//                searchList = new ArrayList<>();
-//                adapter = new BlogSearchAdapter(BlogSearch.this, getApplicationContext(), myblogArrayList);
-//                recyclerView1.setAdapter(adapter);
-//
-//                String[] catParam = String.valueOf(SP_categoryName.getSelectedItem()).split("\\(");
-//                String catData = "";
-//                if(catParam.length>1){
-//                    catData = catParam[0];
-//                }
-//                String subcat = tv_categoryL2.getSelectedItem().toString();
-//                String language = SPLanguage.getSelectedItem().toString();
-//                //getBlogsListCallApi(catData, String.valueOf(tv_Writer.getText()), String.valueOf(tv_Title.getText()), subcat, language);
-//            }
-//        });
+        LinearLayoutManager manager = new LinearLayoutManager(this);
+        recyclerView1.setLayoutManager(manager);
+        adapter = new BlogSearchAdapter(curr_activity, curr_context, myblogArrayList);
+        recyclerView1.setAdapter(adapter);
+        recyclerView1.setItemAnimator(new DefaultItemAnimator());
+
+
+
+
         showDialog();
 
     }
@@ -100,6 +103,7 @@ public class BlogSearch extends AppCompatActivity implements
     //    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.searchmenu, menu);
+
         return true;
 //        MenuItem searchItem = menu.findItem(R.id.search);
 //        switch (searchItem.getItemId()) {
@@ -112,9 +116,22 @@ public class BlogSearch extends AppCompatActivity implements
 
         //SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
         //searchView.setOnQueryTextListener(this);
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId() == R.id.search) {
+            showDialog();
+        }
+        return Boolean.parseBoolean(null);
     }
 
 
+
+
+   /* @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -125,7 +142,7 @@ public class BlogSearch extends AppCompatActivity implements
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
+    }*/
 
     @Override
     public boolean onQueryTextSubmit(String query) {
@@ -168,6 +185,7 @@ public class BlogSearch extends AppCompatActivity implements
     View layout;
     Dialog d;
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void showDialog(){
         d = new Dialog(this);
         //  d.getWindow().setBackgroundDrawable(R.color.action_bar_bg);
@@ -175,6 +193,7 @@ public class BlogSearch extends AppCompatActivity implements
          d.setContentView(R.layout.searchpopup_layout);
 
         wm = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE); // for activity use context instead of getActivity()
+        assert wm != null;
         display = wm.getDefaultDisplay(); // getting the screen size of device
         Point size = new Point();
         display.getSize(size);
@@ -182,20 +201,21 @@ public class BlogSearch extends AppCompatActivity implements
         int height = size.y - 250; // set your widths
 
         lp = new WindowManager.LayoutParams();
-        lp.copyFrom(d.getWindow().getAttributes());
+        lp.copyFrom(Objects.requireNonNull(d.getWindow()).getAttributes());
 
         lp.width = width;
         lp.height = height;
         d.getWindow().setAttributes(lp);
 
         inflater = (LayoutInflater) BlogSearch.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        assert inflater != null;
         layout = inflater.inflate(R.layout.searchpopup_layout, (ViewGroup) findViewById(R.id.searchpopup_element));
-        SP_categoryName = (Spinner) d.findViewById(R.id.SP_categoryName);
-        SPLanguage = (Spinner) d.findViewById(R.id.SPLanguage);
-        tv_categoryL2 = (Spinner) d.findViewById(R.id.tv_categoryL2);
-        tv_Writer = (EditText) d.findViewById(R.id.tv_Writer);
-        tv_Title = (EditText) d.findViewById(R.id.tv_Title);
-        BTNSearch1 = (Button) d.findViewById(R.id.BTNSearch1);
+        //SP_categoryName = d.findViewById(R.id.SP_categoryName);
+        //SPLanguage = d.findViewById(R.id.SPLanguage);
+        //tv_categoryL2 = d.findViewById(R.id.tv_categoryL2);
+        //tv_Writer = d.findViewById(R.id.tv_Writer);
+        tv_Title = d.findViewById(R.id.tv_Title);
+        BTNSearch1 = d.findViewById(R.id.BTNSearch1);
         BTNSearch1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -205,7 +225,7 @@ public class BlogSearch extends AppCompatActivity implements
                 adapter = new BlogSearchAdapter(BlogSearch.this, getApplicationContext(), myblogArrayList);
                 recyclerView1.setAdapter(adapter);
 
-                String catData = SP_categoryName.getSelectedItem().toString().trim();
+               /* String catData = SP_categoryName.getSelectedItem().toString().trim();
                 if(catData.contains("All"))
                 {
                     catData = "";
@@ -219,12 +239,12 @@ public class BlogSearch extends AppCompatActivity implements
                 if(language.contains("All"))
                 {
                     language = "";
-                }
-                getBlogsListCallApi(catData, String.valueOf(tv_Writer.getText()), String.valueOf(tv_Title.getText()), subcat, language);
+                }*/
+                getBlogsListCallApi(String.valueOf(tv_Title.getText()));
             }
         });
 
-        SP_categoryName.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        /*SP_categoryName.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 //Toast.makeText(getApplicationContext(), "Creation name can't be blank", Toast.LENGTH_LONG).show();
@@ -256,7 +276,7 @@ public class BlogSearch extends AppCompatActivity implements
             public void onNothingSelected(AdapterView<?> parent) {
 
             }
-        });
+        });*/
 
         d.show();
     }
@@ -266,47 +286,53 @@ public class BlogSearch extends AppCompatActivity implements
 
 
     ProgressDialog progress;
-    private void getBlogsListCallApi(String category, String writer, String title, String SubCat, String Language) {
+    private void getBlogsListCallApi(String title) {
         d.dismiss();
         RequestQueue requestQueue;
-        progress = new ProgressDialog(this);
-        progress.show();
-        progress.setTitle("Please Wait");
+        final ProgressDialog dialog = new ProgressDialog(this);
+        dialog.setMessage("Please wait...");
+        dialog.show();
+        String loginURL = "https://www.writon.co/Mine/search.php?tp="+title+"&id="+73;
         requestQueue = Volley.newRequestQueue(this);
-        SharedPreferences preferences = getApplicationContext().getSharedPreferences("mPrefs", MODE_PRIVATE);
-        final String UserId = preferences.getString("UserId", "0");
-        String loginURL = String.format("http://blog.ibitvalley.com/api/BlogList?category=%s&writer=%s&title=%s&SubCat=%s&Language=%s", category.replace(" ", "%20"), writer.replace(" ", "%20"), title.replace(" ", "%20"), SubCat.replace(" ", "%20"), Language.replace(" ", "%20"));
-        JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, loginURL, null,
-                new Response.Listener<JSONObject>() {
+        StringRequest jor = new StringRequest(Request.Method.GET, loginURL,
+                new Response.Listener<String>() {
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
-                    public void onResponse(JSONObject response) {
+                    public void onResponse(String resp) {
                         Log.d("True", "");
                         try {
-                            if (progress != null && progress.isShowing())
-                                progress.dismiss();
-                            if (response.get("success").toString() == "true") {
-                                System.out.println("Json == > " + response.toString());
-                                JSONObject obj = new JSONObject(response.toString());
-                                JSONArray arr = obj.getJSONArray("Result");
+                            JSONObject response = new JSONObject(resp);
+                            dialog.dismiss();
+                            System.out.println("Json == > " + response.toString());
+                            JSONObject obj = new JSONObject(response.toString());
+                            System.out.println(response.getInt("success"));
+                            if (response.getInt("success")==1) {
+                                JSONArray arr = obj.getJSONArray("data");
                                 for (int i = 0; i < arr.length(); i++) {
                                     String blogString = arr.get(i).toString();
                                     Blog blog = new Gson().fromJson(blogString, Blog.class);
                                     myblogArrayList.add(blog);
                                 }
+                                if (myblogArrayList.isEmpty()) {
+                                    Toast.makeText(getApplicationContext(), "There are No BLog In this Categories", Toast.LENGTH_LONG).show();
+                                }
                                 adapter.notifyDataSetChanged();
+                            } else {
+                                Toast.makeText(getApplicationContext(), "No results found", Toast.LENGTH_LONG).show();
+                                showDialog();
                             }
                         } catch (JSONException ex) {
-                            if (progress != null && progress.isShowing())
-                                progress.dismiss();
-                            Log.d("JSON Exception", ex.getMessage());
+                            dialog.dismiss();
+                            Toast.makeText(getApplicationContext(), "Something Went Wrong On Server.Please Try Again Later", Toast.LENGTH_LONG).show();
+                            Log.d("JSON Exception", Objects.requireNonNull(ex.getMessage()));
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        if (progress != null && progress.isShowing())
-                            progress.dismiss();
+                        dialog.dismiss();
+                        Toast.makeText(getApplicationContext(), "Connection Error. Please Check Your Internet Connection", Toast.LENGTH_LONG).show();
                         error.printStackTrace();
                         Log.e("Volley", "Error" + error.getMessage());
                     }
@@ -315,4 +341,6 @@ public class BlogSearch extends AppCompatActivity implements
         jor.setRetryPolicy(new DefaultRetryPolicy(20000, 0, 0.0f));
         requestQueue.add(jor);
     }
+
 }
+

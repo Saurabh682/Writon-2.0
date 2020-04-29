@@ -1,8 +1,13 @@
 package com.ibitvalley.writon.Fragment;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.InflateException;
@@ -10,10 +15,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ExpandableListView;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -25,10 +35,19 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.ibitvalley.writon.AllBlogActivity;
+import com.ibitvalley.writon.BlogSearch;
+import com.ibitvalley.writon.Draft;
 import com.ibitvalley.writon.Feedback;
+import com.ibitvalley.writon.MyBlog;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.adapter.ExpandableListAdapter;
+import com.ibitvalley.writon.discus;
+import com.ibitvalley.writon.model.BlogComment;
+import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.Const;
+import com.ibitvalley.writon.writeblogstepone;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,43 +55,80 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Android_PC on 10-08-2016.
  */
 public class CategoryDrawerFragment extends Fragment implements View.OnClickListener {
     private View rootView;
-    ExpandableListView expListView;
+    private ExpandableListView expListView;
     ExpandableListAdapter listAdapter;
     List<String> listDataHeader;
     HashMap<String, List<String>> listDataChild;
     TextView TVfeedback;
+    ImageView ivSearch, ivSearch1, IVSync;
 
-    Typeface tf;
+    FrameLayout fabFrame;
+    private boolean fabExpanded = false;
+    private FloatingActionButton fabSettings;
+    private LinearLayout layoutFabSave;
+    private LinearLayout layoutFabEdit;
+    private LinearLayout layoutFabPhoto;
+    private LinearLayout layoutMyBlog;
+
+    private ArrayList<BlogComment> arrappliedjob;
+    private Typeface tf;
+    private User userData;
+
+    
+
+
+    private Context thiscontext;
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        rootView = inflater.inflate(R.layout.viewpagerhome, container, false);
+        assert container != null;
+        thiscontext = container.getContext();
+        ivSearch = rootView.findViewById(R.id.ivSearch);
+
         if (rootView != null) {
             ViewGroup parent = (ViewGroup) rootView.getParent();
             if (parent != null)
                 parent.removeView(rootView);
         }
-        try {
-            rootView = inflater.inflate(R.layout.home_fragment5, container, false);
 
-            TVfeedback = (TextView) rootView.findViewById(R.id.TVfeedback);
+        /*try {
+            //rootView = inflater.inflate(R.layout.viewpagerhome, container, false);
+            ivSearch = rootView.findViewById(R.id.ivSearch);
+            *//*TVfeedback = rootView.findViewById(R.id.TVfeedback);
             TVfeedback.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intentFeedBack = new Intent(getContext(), Feedback.class);
                     startActivity(intentFeedBack);
 
+
                 }
-            });
+            });*//*
         } catch (InflateException e) {
-        }
-        tf = Typeface.createFromAsset(getActivity().getAssets(),"Lato-Regular.ttf");
-        initilize();
+        }*/
+        tf = Typeface.createFromAsset(Objects.requireNonNull(getActivity()).getAssets(),"Lato-Regular.ttf");
+
+        ivSearch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //Toast.makeText(getActivity(), "Coming soon", Toast.LENGTH_LONG).show();
+                Intent intentSearch = new Intent(thiscontext, BlogSearch.class);
+                startActivity(intentSearch);
+            }
+        });
+        //initilize();
+        isNetworkAvailable();
         return rootView;
+
     }
 
     private void initilize() {
@@ -81,6 +137,7 @@ public class CategoryDrawerFragment extends Fragment implements View.OnClickList
         listAdapter = new ExpandableListAdapter(getActivity(), listDataHeader, listDataChild);
         expListView.setAdapter(listAdapter);
         expListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                 // Intent in = new Intent(getActivity(), "");
@@ -93,9 +150,10 @@ public class CategoryDrawerFragment extends Fragment implements View.OnClickList
 
                 Fragment  fragment2 = new categoryListBlog();
                 Bundle args = new Bundle();
-                args.putString("cName", listDataChild.get(listDataHeader.get(groupPosition)).get(childPosition));
+                args.putString("cName", Objects.requireNonNull(listDataChild.get(listDataHeader.get(groupPosition))).get(childPosition));
                 fragment2.setArguments(args);
                 FragmentManager fragmentManager = getFragmentManager();
+                assert fragmentManager != null;
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.replace(R.id.fragment_container, fragment2);
                 fragmentTransaction.addToBackStack(null);
@@ -309,6 +367,69 @@ public class CategoryDrawerFragment extends Fragment implements View.OnClickList
         listDataChild.put(listDataHeader.get(5), Review);
         listDataChild.put(listDataHeader.get(6), PersonalBlog);
         listDataChild.put(listDataHeader.get(7), GeneralLet);
+
+
+        fabFrame = rootView.findViewById(R.id.fabFrame);
+        fabSettings = rootView.findViewById(R.id.fabSetting);
+
+        layoutFabSave = rootView.findViewById(R.id.layoutFabSave);
+        layoutFabEdit = rootView.findViewById(R.id.layoutFabEdit);
+        layoutFabPhoto = rootView.findViewById(R.id.layoutFabPhoto);
+        layoutMyBlog = rootView.findViewById(R.id.layoutMyBlog);
+
+
+        fabSettings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (fabExpanded){
+                    closeSubMenusFab();
+                    fabFrame.setClickable(false);
+                } else {
+                    openSubMenusFab();
+                    fabFrame.setClickable(true);
+                }
+            }
+        });
+
+        //Only main FAB is visible in the beginning
+        closeSubMenusFab();
+
+
+        layoutFabSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), Draft.class);
+                startActivity(intent);
+            }
+        });
+
+        layoutFabEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), writeblogstepone.class);
+                startActivity(intent);
+            }
+        });
+
+
+        layoutFabPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), discus.class);
+                startActivity(intent);
+            }
+        });
+
+        layoutMyBlog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getContext(), MyBlog.class);
+                startActivity(intent);
+            }
+        });
+
+        //return rootView;
+
     }
 
     @Override
@@ -352,6 +473,55 @@ public class CategoryDrawerFragment extends Fragment implements View.OnClickList
         jor.setRetryPolicy(new DefaultRetryPolicy(20000, 0, 0.0f));
         requestQueue.add(jor);
     }
+
+
+
+
+
+
+
+
+    private void callAllBlogActivity(String screenIndex){
+        Intent intentBlogList = new Intent(thiscontext, AllBlogActivity.class);
+        intentBlogList.putExtra("boxTitle", screenIndex);
+        startActivity(intentBlogList);
+    }
+
+
+    //closes FAB submenus
+    private void closeSubMenusFab(){
+        layoutFabSave.setVisibility(View.INVISIBLE);
+        layoutFabEdit.setVisibility(View.INVISIBLE);
+        layoutFabPhoto.setVisibility(View.INVISIBLE);
+        layoutMyBlog.setVisibility(View.INVISIBLE);
+        //fabSettings.setImageResource(R.drawable.ic_autorenew_black_24dp);
+        fabExpanded = false;
+
+    }
+
+    //Opens FAB submenus
+    private void openSubMenusFab(){
+        layoutFabSave.setVisibility(View.VISIBLE);
+        layoutFabEdit.setVisibility(View.VISIBLE);
+        layoutFabPhoto.setVisibility(View.INVISIBLE);
+        layoutMyBlog.setVisibility(View.INVISIBLE);
+        //Change settings icon to 'X' icon
+        //fabSettings.setImageResource(R.drawable.ic_check_black_24dp);
+        fabExpanded = true;
+
+    }
+
+
+
+
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) thiscontext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
 
 }
 

@@ -57,10 +57,10 @@ import static android.content.Context.MODE_PRIVATE;
 public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapter.ImagecategoryViewHolder> {
     private Context curr_context;
     private Activity curr_activity;
-    ArrayList<TrendingPost_Model> arrappliedjob;
-    SharedPreferences preferences;
-    Typeface tf;
-    User userData;
+    private ArrayList<TrendingPost_Model> arrappliedjob;
+    private SharedPreferences preferences;
+    private Typeface tf;
+    private User userData;
     private String bTitle;
 
     public TopFollowersAdapter(Activity curr_activity, Context curr_context, ArrayList<TrendingPost_Model> arrappliedjob) {
@@ -207,7 +207,8 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
                 public void onClick(View v) {
                     //Intent blogprofile = new Intent(curr_context, ShowBlog.class);
                     Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getPosition()));
+                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
+                    System.out.println("POSITION is: "+ getAdapterPosition());
                     blogprofile.putExtra("boxTitle", "Trending");
                     curr_context.startActivity(blogprofile);
                 }

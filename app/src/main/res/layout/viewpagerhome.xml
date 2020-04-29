@@ -5,9 +5,11 @@
     android:layout_width="match_parent"
     android:orientation="vertical">
 
-    <RelativeLayout
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:background="@color/colorWhite">
 
         <androidx.appcompat.widget.AppCompatImageView
@@ -19,26 +21,44 @@
 
 
         <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/AppTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:text="WritOn - Write and Read"
-            android:layout_marginLeft="55dp"
+            android:layout_marginLeft="15dp"
             android:textColor="@color/newColorGrey"
             android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:layout_weight="1"
+            android:layout_marginStart="15dp" />
 
         <ImageView
             android:id="@+id/IVSync16"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="39dp"
+            android:layout_marginLeft="39dp"
             android:layout_marginTop="2dp"
-            android:layout_marginRight="45dp"
+            android:layout_marginEnd="36dp"
+            android:layout_marginRight="36dp"
+            android:layout_toStartOf="@+id/ivSearch"
+            android:layout_toLeftOf="@+id/ivSearch"
+            android:layout_toEndOf="@+id/AppTitle"
+            android:layout_toRightOf="@+id/AppTitle"
             android:padding="5dp"
-            android:src="@drawable/ic_autorenew_black_24dp"
             android:tint="@color/colorPrimary"
-            android:visibility="gone" />
+            android:visibility="gone"
+            app:srcCompat="@drawable/ic_autorenew_black_24dp" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivSearch"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:tint="@color/newRedColor"
+
+            android:visibility="visible"
+            app:srcCompat="@drawable/ic_search_black_24dp" />
 
 
         <LinearLayout
@@ -49,19 +69,7 @@
             android:layout_alignParentEnd="true">
 
 
-            <ImageView
-                android:id="@+id/ivSearch"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_alignParentRight="true"
-                android:layout_marginTop="2dp"
-                android:layout_marginRight="20dp"
-                android:padding="5dp"
-                app:srcCompat="@drawable/ic_search_black_24dp"
-                android:tint="@color/colorPrimary"
-                android:visibility="visible"
-                android:layout_alignParentEnd="true"
-                android:layout_marginEnd="20dp" />
+
 
 
             <ImageView
@@ -73,14 +81,14 @@
                 android:layout_marginRight="10dp"
                 android:padding="5dp"
                 android:src="@drawable/notification"
-                android:visibility="visible"
+                android:visibility="gone"
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="10dp" />
 
 
         </LinearLayout>
 
-    </RelativeLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
 
 <androidx.viewpager.widget.ViewPager
