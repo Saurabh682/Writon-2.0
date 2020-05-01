@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_margin="@dimen/spacing_10"
+    app:cardElevation="@dimen/size_20"
+    android:outlineAmbientShadowColor="@color/purple"
+    app:cardCornerRadius="20dp">
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#FFFFFF"
     android:elevation="5dp"
     android:orientation="horizontal"
     android:layout_marginTop="5dp"
@@ -82,13 +89,18 @@
 
     <ImageView
         android:id="@+id/IMOption"
-        android:layout_width="20dp"
-        android:layout_height="wrap_content"
-        android:src="@drawable/delete"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:visibility="invisible"
-        />
+        android:layout_width="33dp"
+        android:layout_height="38dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="308dp"
+        android:layout_marginLeft="308dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_toEndOf="@+id/thumbnail2"
+        android:layout_toRightOf="@+id/thumbnail2"
+        android:src="@drawable/red_delete"
+        android:visibility="invisible" />
 
 
 
@@ -198,3 +210,4 @@
 
 
 </RelativeLayout>
+</androidx.cardview.widget.CardView>

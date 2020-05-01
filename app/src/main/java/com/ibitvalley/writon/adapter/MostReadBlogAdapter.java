@@ -90,7 +90,11 @@ public class MostReadBlogAdapter extends RecyclerView.Adapter<MostReadBlogAdapte
         holder.Title.setText(show.getTitle());
         holder.TVbookmarkCount.setText(show.getBookMarkedCount());
         holder.TVCommentCount.setText(show.getCommentCount());
-        holder.TVRating.setText(show.getRating());
+        if(show.getRating_count() != null) {
+            holder.TVRating.setText(show.getRating_count());
+        }else{
+            holder.TVRating.setText("0");
+        }
         holder.ShortDesc.setText(Html.fromHtml(String.valueOf(show.getShortDescription())));
         holder.IVProgileImage.setImageResource(AvtarUtil.getAvtarDrawableByType(show.getAvatorCode()));
         if (show.isBookMark()) {
@@ -128,24 +132,24 @@ public class MostReadBlogAdapter extends RecyclerView.Adapter<MostReadBlogAdapte
         LinearLayout LLContent;
         public ImagecategoryViewHolder(View view) {
             super(view);
-            this.Username = (TextView) view.findViewById(R.id.name);
+            this.Username = view.findViewById(R.id.name);
             this.Username.setTypeface(tf);
-            this.Title = (TextView) view.findViewById(R.id.name2);
+            this.Title = view.findViewById(R.id.name2);
             this.Title.setTypeface(tf);
-            this.ShortDesc = (TextView) view.findViewById(R.id.name3);
+            this.ShortDesc = view.findViewById(R.id.name3);
             this.ShortDesc.setTypeface(tf);
-            this.category = (TextView) view.findViewById(R.id.category);
+            this.category = view.findViewById(R.id.category);
             this.category.setTypeface(tf);
-            this.blogType = (TextView) view.findViewById(R.id.blogType);
+            this.blogType = view.findViewById(R.id.blogType);
             this.blogType.setTypeface(tf);
-            this.IVBookmarked = (ImageView) view.findViewById(R.id.IVBookmarked);
-            this.TVbookmarkCount = (TextView) view.findViewById(R.id.TVbookmarkCount);
-            this.TVCommentCount = (TextView) view.findViewById(R.id.TVCommentCount);
-            this.TVRating = (TextView) view.findViewById(R.id.TVRating);
-            this.drawer = (ImageView) view.findViewById(R.id.drawer);
-            this.IVProgileImage = (CircleImageView) view.findViewById(R.id.IVProgileImage);
-            this.right_arrow = (ImageView) view.findViewById(R.id.right_arrow);
-            LLContent = (LinearLayout) view.findViewById(R.id.LLContent);
+            this.IVBookmarked = view.findViewById(R.id.IVBookmarked);
+            this.TVbookmarkCount = view.findViewById(R.id.TVbookmarkCount);
+            this.TVCommentCount = view.findViewById(R.id.TVCommentCount);
+            this.TVRating = view.findViewById(R.id.TVRating);
+            this.drawer = view.findViewById(R.id.drawer);
+            this.IVProgileImage = view.findViewById(R.id.IVProgileImage);
+            this.right_arrow = view.findViewById(R.id.right_arrow);
+            LLContent = view.findViewById(R.id.LLContent);
             LLContent.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

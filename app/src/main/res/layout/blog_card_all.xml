@@ -11,6 +11,7 @@
     app:cardElevation="10dp"
     app:cardBackgroundColor="@color/colorWhite"
     android:layout_margin="10dp"
+    android:outlineAmbientShadowColor="@color/purple"
     android:padding="10dp"
     tools:context="com.ibitvalley.writon.Feed">
 

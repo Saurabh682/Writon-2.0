@@ -140,7 +140,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
     private User userData;
     private String [] permissions = {"android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.ACCESS_FINE_LOCATION", "android.permission.SYSTEM_ALERT_WINDOW","android.permission.CAMERA"};
-    private PrefManager prefManager;
+    //private PrefManager prefManager;
     // private CollapsingToolbarLayout collapsingToolbarLayout;
 
 
@@ -149,7 +149,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable final ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         //setContentView(R.layout.activity_blog__profile);
-        prefManager = new PrefManager(getContext());
+        //prefManager = new PrefManager(getContext());
         /*if (prefManager.isNotification()) {
             ImageView notify =  Objects.requireNonNull(getView()).findViewById(R.id.notifyCircle);
 
@@ -352,6 +352,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             //requestUserDetails(UserId);
 
         } catch (InflateException e) {
+            System.out.println(e.toString());
         }
         initilize();
         getUserProfile();

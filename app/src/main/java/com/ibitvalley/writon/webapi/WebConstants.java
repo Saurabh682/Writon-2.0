@@ -19,12 +19,12 @@ public class WebConstants {
     public static final String SocialRegister_API = BASE_URL + "social-signup";
 
     public static final String Latest_Post = NEW_BASE_URL + "LatestPost.php";
-    public static final String trending_Post = BASE_URL + "trending-posts";
+    public static final String trending_Post = NEW_BASE_URL + "TrendingPost.php";
     public static final String published_Post = BASE_URL + "published-blogs";
     public static final String myworld_action = BASE_URL + "myworld";
     public static final String trending_users = BASE_URL + "trending-users";
     public static final String discussions_action = BASE_URL + "discussions";
-    public static final String top_followers = BASE_URL + "top-followers";
+    public static final String top_followers = NEW_BASE_URL + "MostFollowed.php";
     public static final String bookmarked_api = BASE_URL + "bookmarked";
     public static final String mark_bookmark_api = BASE_URL + "bookmark";
     public static final String mark_unbookmark_api = BASE_URL + "unbookmark";
@@ -42,7 +42,7 @@ public class WebConstants {
     public static final String add_rating_url = BASE_URL +"AddRating";
 
     public static final String drafts_api = BASE_URL + "drafts";
-    public static final String top_rated = BASE_URL + "top-rated";
+    public static final String top_rated = NEW_BASE_URL + "MostRatedPost.php";
 
     public static final String add_post = BASE_URL + "add-post";
     public static final String user_profile = BASE_URL + "user-profile";

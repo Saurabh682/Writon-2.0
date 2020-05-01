@@ -24,7 +24,9 @@ import com.ibitvalley.writon.Constants;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.ShowBlogDetails;
 import com.ibitvalley.writon.model.Blog;
+import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
+import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
@@ -100,8 +102,8 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
         }
         /*SharedPreferences sharedPref = Current().getPreferences(Context.MODE_PRIVATE);
         String highScore = sharedPref.getString("PenName", defaultValue);*/
-
-       if(show.getUser_id() == UserId) {
+        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
+       if(show.getUser_id() == userData2.getId()) {
             holder.IMOption.setVisibility(View.VISIBLE);
         }
     }
@@ -136,6 +138,8 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
             this.IMOption = (ImageView) view.findViewById(R.id.IMOption);
             this.duration = (TextView) view.findViewById(R.id.duration);
             //this.img_Delete = (ImageView) view.findViewById(R.id.img_Delete);
+
+
 
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -190,15 +194,13 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();

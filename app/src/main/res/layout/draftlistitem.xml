@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android" >
+<RelativeLayout
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     android:background="#FFFFFF"
@@ -8,22 +12,13 @@
     android:orientation="horizontal"
     android:padding="5dip" >
 
+
     <!--  ListRow Left sied Thumbnail image -->
 
     <!-- Title Of Song-->
-    <TextView
-        android:id="@+id/TVBlogTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/thumbnail"
-        android:layout_toRightOf="@+id/thumbnail"
-        android:text="Where Is My Money"
-
-        android:typeface="sans"
-        android:textSize="16dip"/>
 
     <!-- Artist Name -->
-    <TextView
+    <!--<TextView
         android:id="@+id/TVWrite"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -33,42 +28,72 @@
         android:layout_marginTop="1dip"
         android:layout_toRightOf="@+id/thumbnail"
         android:text="J K Rowling" />
-
+-->
     <!-- Rightend Duration -->
-    <TextView
-        android:id="@+id/duration"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@id/TVBlogTitle"
-        android:gravity="right"
-        android:text="20-08-2016"
-        android:layout_marginRight="5dip"
-        android:textSize="10dip"
-
-        android:textStyle="bold"/>
 
     <!-- Rightend Arrow -->
-    <ImageView android:layout_width="20dp"
-        android:layout_height="wrap_content"
-        android:src="@drawable/drawer"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"/>
 
-    <LinearLayout android:id="@+id/thumbnail"
+    <TextView
+        android:id="@+id/duration"
+        android:layout_width="65dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/TVBlogTitle"
+        android:layout_marginStart="9dp"
+        android:layout_marginLeft="9dp"
+        android:layout_marginTop="7dp"
+
+        android:layout_marginRight="281dp"
+        android:layout_toEndOf="@+id/thumbnail"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:text="20-08-2016"
+        android:textSize="10dip"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/TVBlogTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="3dip"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignTop="@+id/thumbnail"
+        android:layout_marginLeft="9dp"
+        android:layout_marginTop="0dp"
 
-        <ImageView
+        android:layout_toRightOf="@+id/thumbnail"
+        android:text="Where Is My Money"
+        android:textSize="16dip"
+        android:typeface="sans" />
+
+    <ImageView
+        android:layout_width="35dp"
+        android:layout_height="44dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="305dp"
+        android:layout_marginLeft="305dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="0dp"
+        android:layout_toEndOf="@+id/thumbnail"
+        android:layout_toRightOf="@+id/thumbnail"
+        android:src="@drawable/red_delete" />
+
+    <LinearLayout
+        android:id="@+id/thumbnail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginTop="5dp"
+        android:padding="3dip">
+
+        <com.android.volley.toolbox.NetworkImageView
             android:id="@+id/list_image"
             android:layout_width="50dip"
             android:layout_height="45dip"
-            android:src="@drawable/defaulta"/>
+            android:src="@drawable/usermale" />
 
     </LinearLayout>
 
 </RelativeLayout>
+</androidx.cardview.widget.CardView>

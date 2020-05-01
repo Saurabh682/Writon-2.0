@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTabHost;
@@ -57,7 +59,9 @@ import com.ibitvalley.writon.classes.ShowBlogIngo;
 import com.ibitvalley.writon.discus;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.TrendingPost_Model;
+import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
+import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
@@ -70,6 +74,7 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Objects;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -125,6 +130,7 @@ public class RatedFragment extends Fragment{
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
@@ -229,7 +235,7 @@ public class RatedFragment extends Fragment{
         fabSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (fabExpanded == true){
+                if (fabExpanded){
                     closeSubMenusFab();
                     fabFrame.setClickable(false);
                 } else {
@@ -322,13 +328,14 @@ public class RatedFragment extends Fragment{
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
-    ProgressDialog progress;
+    private ProgressDialog progress;
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void initilize(final String catValue) {
         //blogArrayList = new ArrayList<>();
         //arrMostReadBlog = new ArrayList<>();
         //arrMostBookMarketBlog = new ArrayList<>();
-        recyclerViewLatest = (RecyclerView) rootView.findViewById(R.id.recyclerViewLatest16b);
+        recyclerViewLatest = rootView.findViewById(R.id.recyclerViewLatest16b);
 
 
         LinearLayoutManager latestLayoutManager = new LinearLayoutManager(getContext());
@@ -345,7 +352,7 @@ public class RatedFragment extends Fragment{
 
         //latestLatestBlogAdapter = new LatestBlogAdapter(getActivity(), getContext(), ShowBlogIngo.blogArrayList, false);
         // shortStoryAdapter = new ShortStoryAdapter(getActivity(), getContext(), ShowBlogIngo.shortStoryArrayList);
-        mostReadAdapter = new MostReadBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrMostReadBlog);
+        mostReadAdapter = new MostReadBlogAdapter(getActivity(), Objects.requireNonNull(getContext()), ShowBlogIngo.arrMostReadBlog);
         //mostBookMarkedBlogAdapter = new MostBookMarkedBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrMostBookMarketBlog);
 
         //songsJinglesBlogAdapter = new SongsJinglesBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrSongJingles);
@@ -360,7 +367,7 @@ public class RatedFragment extends Fragment{
 
 
       if(catValue != ""){
-           getBlogsListCallApi(catValue);
+           //getBlogsListCallApi(catValue);
      }
 
         /*IVSync.setOnClickListener(new View.OnClickListener() {
@@ -385,28 +392,27 @@ public class RatedFragment extends Fragment{
 
 
     private void loadTopRated() {
-
+        User userData2 = WritOnPreference.getInstance(Objects.requireNonNull(getContext()).getApplicationContext()).getUserDetails();
         HashMap<String, String> hmHomeParam = new HashMap <>();
-        hmHomeParam.put("page", "1");
+        //hmHomeParam.put("page", "1");
+        hmHomeParam.put("id", userData2.getId());
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.top_rated, thiscontext, false, hmHomeParam, new OnResponseListener() {
+            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
-                            JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
-                            Type type = new TypeToken<ArrayList<TrendingPost_Model>>() {}.getType();
-                            ArrayList<TrendingPost_Model> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                            //ArrayList<TrendingPost_Model> trending_postOne = new ArrayList <>();
-                            //trending_postOne.add(trending_post.get(0));
-                            displayTopRatedPost(trending_post);
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        //JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
+                        JSONArray arrMainCategoryJson = jsonResponse.getJSONArray("data");
+                        Type type = new TypeToken<ArrayList<Blog>>() {}.getType();
+                        ArrayList<Blog> latest_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        //loadData(arrMainCat);
+                        displayLatestPost(latest_post);
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -418,6 +424,16 @@ public class RatedFragment extends Fragment{
             }
         });
         VolleySingleton.getInstance().addToRequestQueue(mainCategory);
+    }
+
+
+
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void displayLatestPost(ArrayList<Blog> latestBlog){
+        latestLatestBlogAdapter = new LatestBlogAdapter(Objects.requireNonNull(getActivity()), getContext(), latestBlog, false);
+        //Adapter set to recyclerView
+        recyclerViewLatest.setAdapter(latestLatestBlogAdapter);
+        latestLatestBlogAdapter.notifyDataSetChanged();
     }
 
 

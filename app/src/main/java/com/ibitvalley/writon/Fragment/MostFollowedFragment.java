@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -22,7 +21,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTabHost;
@@ -38,13 +36,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.tabs.TabLayout;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.AllBlogActivity;
-import com.ibitvalley.writon.BlogSearch;
 import com.ibitvalley.writon.Draft;
-import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.MyBlog;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.adapter.BlogBlogAdapter;
@@ -61,9 +56,8 @@ import com.ibitvalley.writon.adapter.TopRatedAdapter;
 import com.ibitvalley.writon.classes.ShowBlogIngo;
 import com.ibitvalley.writon.discus;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.utils.VolleySingleton;
-import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
@@ -76,16 +70,15 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 
 import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by Android_PC on 10-08-2016.
  */
-public class LatestFragment extends Fragment {
+public class MostFollowedFragment extends Fragment{
     private View rootView;
-    private TabLayout mTabHost;
+    private FragmentTabHost mTabHost;
     //Recent Blog List
     //ArrayList<Blog> blogArrayList;
     //Most Read Blog List
@@ -98,6 +91,7 @@ public class LatestFragment extends Fragment {
     private ShortStoryAdapter shortStoryAdapter;
     TopFollowersAdapter topFollowersAdapter;
     TopRatedAdapter topRatedAdapter;
+
     private MostReadBlogAdapter mostReadAdapter;
     private MostBookMarkedBlogAdapter mostBookMarkedBlogAdapter;
     private SongsJinglesBlogAdapter songsJinglesBlogAdapter;
@@ -106,8 +100,8 @@ public class LatestFragment extends Fragment {
     private BlogBlogAdapter blogBlogAdapter;
     private JournalismBlogAdapter journalismBlogAdapter;
 
-    private RecyclerView recyclerViewLatest, recyclerView1, recyclerView2, recyclerViewMB, recyclerView4, recyclerView5, recyclerView6, recyclerView7, recyclerView8;
-    private ImageView ivSearch, ivSearch1, IVSync;
+    private RecyclerView recyclerViewLatest;
+    private ImageView IVSync;
     private LinearLayout LLNoPost;
     private RelativeLayout rlLatest, rl1, rl2, rl3, rl4, rl5, rl6, rl7, rl8;
     private Handler handler;
@@ -124,36 +118,37 @@ public class LatestFragment extends Fragment {
 
     private TextView tvViewAll, tvViewAllztwo, tvViewAllzthree, tvViewAllzfour;
 
-    static Fragment newInstance() {
-        return new LatestFragment();
+    public static Fragment newInstance() {
+
+        return new MostFollowedFragment();
+
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
-        rootView = inflater.inflate(R.layout.latest_frag, container, false);
+        rootView = inflater.inflate(R.layout.rated_frag, container, false);
         assert container != null;
         thiscontext = container.getContext();
-        ivSearch = rootView.findViewById(R.id.ivSearch);
-        ivSearch1 = rootView.findViewById(R.id.ivSearch1);
-        rlLatest = rootView.findViewById(R.id.rlLatest);
-        rl1 = rootView.findViewById(R.id.rl1);
-        rl2 = rootView.findViewById(R.id.rl2);
-        rl3 = rootView.findViewById(R.id.rl3);
-        rl4 = rootView.findViewById(R.id.rl4);
-        rl5 = rootView.findViewById(R.id.rl5);
-        rl6 = rootView.findViewById(R.id.rl6);
-        rl7 = rootView.findViewById(R.id.rl7);
-        rl8 = rootView.findViewById(R.id.rl8);
+        //ivSearch = (ImageView) rootView.findViewById(R.id.ivSearch);
+       // ivSearch1 = (ImageView) rootView.findViewById(R.id.ivSearch1);
+        rlLatest = (RelativeLayout) rootView.findViewById(R.id.rlLatesttf);
+        rl1 = (RelativeLayout) rootView.findViewById(R.id.rl1);
+        rl2 = (RelativeLayout) rootView.findViewById(R.id.rl2);
+        rl3 = (RelativeLayout) rootView.findViewById(R.id.rl3);
+        rl4 = (RelativeLayout) rootView.findViewById(R.id.rl4);
+        rl5 = (RelativeLayout) rootView.findViewById(R.id.rl5);
+        rl6 = (RelativeLayout) rootView.findViewById(R.id.rl6);
+        rl7 = (RelativeLayout) rootView.findViewById(R.id.rl7);
+        rl8 = (RelativeLayout) rootView.findViewById(R.id.rl8);
 
 
-        tvViewAll = rootView.findViewById(R.id.tvViewAll6);
+        tvViewAll = (TextView) rootView.findViewById(R.id.tvViewAll6);
         tvViewAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                callAllBlogActivity("1");
+                callAllBlogActivity("4");
             }
         });
 
@@ -186,26 +181,7 @@ public class LatestFragment extends Fragment {
         if(getArguments()!=null) {
             catValue = String.valueOf(this.getArguments().getString("cName"));
         }
-        ivSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                //Toast.makeText(getActivity(), "Coming soon", Toast.LENGTH_LONG).show();
-                Intent intentSearch = new Intent(thiscontext, BlogSearch.class);
-                startActivity(intentSearch);
-            }
-        });
-        ivSearch1.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                Intent homeActivity = new Intent(thiscontext, Home_Activity.class);
-                homeActivity.putExtra("pageActionValue", 2);
-                startActivity(homeActivity);
-
-            }
-        });
-
-        IVSync = rootView.findViewById(R.id.IVSync16);
 
 
         initilize(catValue);
@@ -253,7 +229,7 @@ public class LatestFragment extends Fragment {
         fabSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (fabExpanded){
+                if (fabExpanded == true){
                     closeSubMenusFab();
                     fabFrame.setClickable(false);
                 } else {
@@ -342,19 +318,17 @@ public class LatestFragment extends Fragment {
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) thiscontext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        assert connectivityManager != null;
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     ProgressDialog progress;
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void initilize(final String catValue) {
         //blogArrayList = new ArrayList<>();
         //arrMostReadBlog = new ArrayList<>();
         //arrMostBookMarketBlog = new ArrayList<>();
-        recyclerViewLatest = (RecyclerView) rootView.findViewById(R.id.recyclerViewLatest16);
+        recyclerViewLatest = (RecyclerView) rootView.findViewById(R.id.recyclerViewLatest16b);
 
 
         LinearLayoutManager latestLayoutManager = new LinearLayoutManager(getContext());
@@ -369,25 +343,25 @@ public class LatestFragment extends Fragment {
         // Adapter
 
 
-        latestLatestBlogAdapter = new LatestBlogAdapter(Objects.requireNonNull(getActivity()), getContext(), ShowBlogIngo.blogArrayList, false);
+        //latestLatestBlogAdapter = new LatestBlogAdapter(getActivity(), getContext(), ShowBlogIngo.blogArrayList, false);
         // shortStoryAdapter = new ShortStoryAdapter(getActivity(), getContext(), ShowBlogIngo.shortStoryArrayList);
-        mostReadAdapter = new MostReadBlogAdapter(getActivity(), Objects.requireNonNull(getContext()), ShowBlogIngo.arrMostReadBlog);
-        mostBookMarkedBlogAdapter = new MostBookMarkedBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrMostBookMarketBlog);
+        mostReadAdapter = new MostReadBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrMostReadBlog);
+        //mostBookMarkedBlogAdapter = new MostBookMarkedBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrMostBookMarketBlog);
 
-        songsJinglesBlogAdapter = new SongsJinglesBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrSongJingles);
-        jokesBlogAdapter = new JokesBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrJokes);
-        reviewsBlogAdapter = new ReviewsBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrReviews);
-        blogBlogAdapter = new BlogBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrBlog);
-        journalismBlogAdapter = new JournalismBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrJournalism);
+        //songsJinglesBlogAdapter = new SongsJinglesBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrSongJingles);
+        //jokesBlogAdapter = new JokesBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrJokes);
+        //reviewsBlogAdapter = new ReviewsBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrReviews);
+        //blogBlogAdapter = new BlogBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrBlog);
+        //journalismBlogAdapter = new JournalismBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrJournalism);
 
         //Adapter set to recyclerView
-        recyclerViewLatest.setAdapter(latestLatestBlogAdapter);
+        recyclerViewLatest.setAdapter(mostReadAdapter);
 
 
 
-//        if(catValue != ""){
-//            getBlogsListCallApi(catValue);
-//        }
+      if(catValue != ""){
+           getBlogsListCallApi(catValue);
+     }
 
         /*IVSync.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -395,32 +369,26 @@ public class LatestFragment extends Fragment {
 
 
                 //getBlogsListCallApi(catValue);
-                latestLatestBlogAdapter.notifyDataSetChanged();
+                mostReadAdapter.notifyDataSetChanged();
 
             }
         });*/
 
-        loadLatestPost();
+        loadTopRated();
 
 
     }
 
 
-    // Fetching Latest Post
+    // Fetching Top Rated Post
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    private void loadLatestPost() {
 
-        User userData2 = WritOnPreference.getInstance(Objects.requireNonNull(getContext()).getApplicationContext()).getUserDetails();
-        //LLNoPost.setVisibility(View.INVISIBLE);
-        rlLatest.setVisibility(View.VISIBLE);
 
+    private void loadTopRated() {
 
         HashMap<String, String> hmHomeParam = new HashMap <>();
-        //hmHomeParam.put("page", "1");
-        hmHomeParam.put("id", userData2.getId());
-        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.Latest_Post, thiscontext, true, hmHomeParam, new OnResponseListener() {
-            @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+        hmHomeParam.put("page", "1");
+        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.top_rated, thiscontext, false, hmHomeParam, new OnResponseListener() {
             @Override
             public void onSuccess(Object result) {
                 try {
@@ -429,10 +397,11 @@ public class LatestFragment extends Fragment {
                     if (status == 1) {
                         //JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
                         JSONArray arrMainCategoryJson = jsonResponse.getJSONArray("data");
-                        Type type = new TypeToken<ArrayList<Blog>>() {}.getType();
-                        ArrayList<Blog> latest_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                        //loadData(arrMainCat);
-                        displayLatestPost(latest_post);
+                        Type type = new TypeToken<ArrayList<TrendingPost_Model>>() {}.getType();
+                        ArrayList<TrendingPost_Model> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        //ArrayList<TrendingPost_Model> trending_postOne = new ArrayList <>();
+                        //trending_postOne.add(trending_post.get(0));
+                        displayTopRatedPost(trending_post);
                     }else{
                         String message = jsonResponse.getString("message");
                         Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
@@ -450,16 +419,14 @@ public class LatestFragment extends Fragment {
     }
 
 
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
-    private void displayLatestPost(ArrayList<Blog> latestBlog){
-        latestLatestBlogAdapter = new LatestBlogAdapter(Objects.requireNonNull(getActivity()), getContext(), latestBlog, false);
-        //Adapter set to recyclerView
-        recyclerViewLatest.setAdapter(latestLatestBlogAdapter);
-        latestLatestBlogAdapter.notifyDataSetChanged();
+    private void displayTopRatedPost(ArrayList<TrendingPost_Model> trendingBlog){
+        topRatedAdapter = new TopRatedAdapter(getActivity(), getContext(), trendingBlog);
+        recyclerViewLatest.setAdapter(topRatedAdapter);
+        topRatedAdapter.notifyDataSetChanged();
+
     }
 
-
-    /*private void getBlogsListCallApi(String catValue) {
+    private void getBlogsListCallApi(String catValue) {
         RequestQueue requestQueue;
         progress = new ProgressDialog(thiscontext);
         progress.show();
@@ -661,16 +628,12 @@ public class LatestFragment extends Fragment {
         jor.setRetryPolicy(new DefaultRetryPolicy(20000, 3, 0.0f));
         requestQueue.add(jor);
     }
-*/
-
-    private void showNotificationBell(){
 
 
-
-    }
 
     @Override
     public void onResume() {
         super.onResume();
     }
 }
+

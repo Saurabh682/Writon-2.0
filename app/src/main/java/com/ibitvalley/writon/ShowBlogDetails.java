@@ -109,6 +109,7 @@ public class ShowBlogDetails extends AppCompatActivity {
         assert screenName != null;
         if(screenName.equals("Latest") || screenName.equals("Bookmarked") || screenName.equals("Recent Read")) {
                 cuuBlog = (Blog) getIntent().getSerializableExtra("BlogObject");
+            System.out.println("cUUbLOG??="+cuuBlog.isIs_rated()+"----------"+cuuBlog.isBookMark());
                 assert cuuBlog != null;
                 TVTitle.setText(cuuBlog.getTitle());
                 TVTitle.setTextSize(26);
@@ -145,7 +146,6 @@ public class ShowBlogDetails extends AppCompatActivity {
                 } else {
                     img_rating.setImageResource(R.drawable.starblue);
                 }
-
 
                 img_bookmark.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -260,6 +260,17 @@ public class ShowBlogDetails extends AppCompatActivity {
                 img_rating.setImageResource(R.drawable.starblue);
             }
 
+            img_bookmark.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(trendingPost_model.isBookMark()){
+                        unbookmarkRequest(userData.getId(), blogID, trendingPost_model.isBookMark());
+                    }else {
+                        bookmarkRequest(userData.getId(), blogID, trendingPost_model.isBookMark());
+                    }
+                }
+            });
+
             this.img_Option.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -273,7 +284,7 @@ public class ShowBlogDetails extends AppCompatActivity {
 
             TVViewCount.setText(trendingPost_model.getView_count());
             TVCommentCount.setText(trendingPost_model.getComments_count());
-            TVRating.setText(trendingPost_model.getVotes_count());
+            TVRating.setText(trendingPost_model.getRating());
 
             ll_Discuss.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -284,7 +295,6 @@ public class ShowBlogDetails extends AppCompatActivity {
                     startActivity(intentShowBlogDetails);
                 }
             });
-
 
             if(trendingPost_model.isIs_followed()) {
                 TVFollow.setText("UNFOLLOW");
@@ -297,7 +307,7 @@ public class ShowBlogDetails extends AppCompatActivity {
                 public void onClick(View v) {
                     //final String followUserID, final String userID
                     if(trendingPost_model.isIs_followed()) {
-                        fcmNotify("follow");
+                        fcmNotify("follow", trendingPost_model.getTitle());
                         TVFollow.setText("FOLLOW");
                         trendingPost_model.setIs_followed(false);
                         unFollowUser(trendingPost_model.getUserID(), userData.getId());
@@ -313,14 +323,14 @@ public class ShowBlogDetails extends AppCompatActivity {
             img_rating.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (cuuBlog.isIs_rated()) {
+                    if (trendingPost_model.isIs_rated()) {
                         addRating(blogID, userData.getId(), "0");
-                        cuuBlog.setIs_rated(false);
+                        trendingPost_model.setIs_rated(false);
                         img_rating.setImageResource(R.drawable.starblue);
                     } else {
-                        fcmNotify("rate");
+                        fcmNotify("rate", trendingPost_model.getTitle());
                         addRating(blogID, userData.getId(), "1");
-                        cuuBlog.setIs_rated(true);
+                        trendingPost_model.setIs_rated(true);
                         img_rating.setImageResource(R.drawable.staryellow);
                     }
                 }
@@ -336,7 +346,7 @@ public class ShowBlogDetails extends AppCompatActivity {
     }
 
 
-    private void bookmarkRequest(final String UserID, final String BlogID, boolean isBookMark) {
+    private void bookmarkRequest(final String UserID, final String BlogID, final boolean isBookMark) {
         HashMap<String, String> hmHomeParam = new HashMap <>();
         hmHomeParam.put("blogid", BlogID);
         hmHomeParam.put("userid", UserID);
@@ -350,7 +360,7 @@ public class ShowBlogDetails extends AppCompatActivity {
                         String message = jsonResponse.getString("message");
                         Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
 
-                        if (cuuBlog.isBookMark()) {
+                        if (isBookMark) {
                             img_bookmark.setImageResource(R.drawable.unbookmark);
                         } else {
                             img_bookmark.setImageResource(R.drawable.bookmarknew);
@@ -374,7 +384,7 @@ public class ShowBlogDetails extends AppCompatActivity {
     }
 
 
-    private void unbookmarkRequest(final String UserID, final String BlogID, boolean isBookMark) {
+    private void unbookmarkRequest(final String UserID, final String BlogID, final boolean isBookMark) {
         HashMap<String, String> hmHomeParam = new HashMap <>();
         hmHomeParam.put("blogid", BlogID);
         hmHomeParam.put("userid", UserID);
@@ -387,9 +397,8 @@ public class ShowBlogDetails extends AppCompatActivity {
                     if (status == 1) {
                         String message = jsonResponse.getString("message");
                         Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        if (cuuBlog.isBookMark()) {
+                        if (isBookMark) {
                             img_bookmark.setImageResource(R.drawable.unbookmark);
-                            ;
                         } else {
                             img_bookmark.setImageResource(R.drawable.bookmarknew);
                         }
@@ -743,20 +752,20 @@ public class ShowBlogDetails extends AppCompatActivity {
     }
 
 
-    private void fcmNotify(String who) {
+    private void fcmNotify(String who, String title) {
         User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
-        cuuBlog = (Blog) getIntent().getSerializableExtra("BlogObject");
+
         String urlExt = "";
         // Instantiate the RequestQueue.
         switch (who) {
             case "bookmark":
-                urlExt = userData.getId()+"&sp=your post is getting popular&tp="+cuuBlog.getTitle()+" has been bookmarked by "+userData2.getUsername();
+                urlExt = userData.getId()+"&sp=your post is getting popular&tp="+title+" has been bookmarked by "+userData2.getUsername();
                 break;
             case "follow":
                 urlExt = userData.getId()+"&sp=you are getting noticed&tp="+userData2.getUsername()+" has started following you. Keep up your writing";
                 break;
             case "rate":
-                urlExt = userData.getId()+"&sp=people are liking your post&tp="+cuuBlog.getTitle()+" has been rated by "+userData2.getUsername();
+                urlExt = userData.getId()+"&sp=people are liking your post&tp="+title+" has been rated by "+userData2.getUsername();
                 break;
 
             //default:

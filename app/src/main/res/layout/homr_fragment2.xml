@@ -2,6 +2,7 @@
 <androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:background="@color/colorWhite"
@@ -33,6 +34,24 @@
                 android:layout_marginTop="1dp"
                 android:background="@color/colorWhite">
 
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/IVSeeting"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginLeft="60dp"
+                    android:layout_marginTop="@dimen/spacing_10"
+                    android:layout_marginRight="@dimen/spacing_10"
+                    android:layout_toEndOf="@+id/TVCi"
+                    android:layout_toRightOf="@+id/TVCi"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.464"
+                    app:srcCompat="@drawable/plus_button" />
+
                 <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:id="@+id/image"
                     android:layout_width="100dp"
@@ -45,26 +64,24 @@
                     app:civ_border_width=".5dp"
                     app:civ_border_color="@color/newBlue"/>
 
-                <ImageView
+
+                <androidx.appcompat.widget.AppCompatImageView
                     android:id="@+id/TVCi"
-                    android:layout_width="20dp"
-                    android:layout_height="40dp"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_alignLeft="@+id/image"
-                    android:layout_marginLeft="50dp"
-                    android:layout_marginTop="40dp"
-                    android:src="@drawable/writeedit" />
+                    android:layout_alignTop="@+id/image"
+                    android:layout_marginLeft="77dp"
+                    android:layout_marginTop="61dp"
+                    android:scaleType="fitXY"
+                    android:scaleX=".5"
+                    android:scaleY=".5"
+                    android:src="@drawable/camera"
+                    app:civ_border_color="@color/colorWhite"
+                    app:civ_border_width="@dimen/size_2"
+                    app:civ_circle_background_color="@color/colorWhite"
 
-
-
-
-                <ImageView
-                    android:id="@+id/IVSeeting"
-                    android:layout_width="25dp"
-                    android:layout_height="40dp"
-                    android:layout_alignParentRight="true"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="5dp"
-                    app:srcCompat="@drawable/ic_settings_applications_black_24dp" />
+                    />
 
                 <EditText
                     android:id="@+id/TVname"
@@ -365,6 +382,10 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toEndOf="@+id/image6"
                     app:layout_constraintTop_toTopOf="parent" />
+
+
+
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.appcompat.widget.Toolbar>

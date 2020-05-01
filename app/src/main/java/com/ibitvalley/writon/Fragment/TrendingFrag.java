@@ -60,7 +60,9 @@ import com.ibitvalley.writon.classes.ShowBlogIngo;
 import com.ibitvalley.writon.discus;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.TrendingPost_Model;
+import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
+import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
@@ -111,6 +113,7 @@ public class TrendingFrag extends Fragment{
     private LinearLayout layoutMyBlog;
 
     private TextView tvViewAll, tvViewAllztwo, tvViewAllzthree, tvViewAllzfour;
+    private LatestBlogAdapter latestLatestBlogAdapter;
 
     public static Fragment newInstance() {
 
@@ -369,13 +372,23 @@ public class TrendingFrag extends Fragment{
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private void displayLatestPost(ArrayList<Blog> latestBlog){
+        latestLatestBlogAdapter = new LatestBlogAdapter(Objects.requireNonNull(getActivity()), getContext(), latestBlog, false);
+        //Adapter set to recyclerView
+        recyclerViewLatest.setAdapter(latestLatestBlogAdapter);
+        latestLatestBlogAdapter.notifyDataSetChanged();
+    }
+
 
     // Fetching Latest Post
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void loadTrendingPost() {
-
+        User userData2 = WritOnPreference.getInstance(Objects.requireNonNull(getContext()).getApplicationContext()).getUserDetails();
         HashMap<String, String> hmHomeParam = new HashMap <>();
-        hmHomeParam.put("page", "1");
+        //hmHomeParam.put("page", "1");
+        hmHomeParam.put("id", userData2.getId());
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.trending_Post, thiscontext, false, hmHomeParam, new OnResponseListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
@@ -384,14 +397,13 @@ public class TrendingFrag extends Fragment{
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
                     if (status == 1) {
-                        JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
-                        JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
-                        Type type = new TypeToken<ArrayList<TrendingPost_Model>>() {}.getType();
-                        assert arrMainCategoryJson != null;
-                        ArrayList<TrendingPost_Model> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        //JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
+                        JSONArray arrMainCategoryJson = jsonResponse.getJSONArray("data");
+                        Type type = new TypeToken<ArrayList<Blog>>() {}.getType();
+                        ArrayList<Blog> latest_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
                         //ArrayList<TrendingPost_Model> trending_postOne = new ArrayList <>();
                         //trending_postOne.add(trending_post.get(0));
-                        displayLTrendingPost(trending_post);
+                        displayLatestPost(latest_post);
                     }else{
                         String message = jsonResponse.getString("message");
                         Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();

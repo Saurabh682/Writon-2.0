@@ -69,14 +69,15 @@
 
     <ImageView
         android:id="@+id/IMOptionD"
-        android:layout_width="20dp"
-        android:layout_height="wrap_content"
-        android:src="@drawable/delete"
+        android:layout_width="30dp"
+        android:layout_height="50dp"
+        android:src="@drawable/red_delete"
         android:layout_marginRight="@dimen/spacing_15"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:visibility="invisible"
-        />
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="@dimen/spacing_15" />
 
 
 

@@ -4,14 +4,17 @@
     android:id="@+id/activity_draft"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#e8e8e8"
+    android:background="@color/colorWhite"
     tools:context="com.ibitvalley.writon.Draft">
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
 
+        android:layout_below="@+id/topBar"
+        android:layout_marginTop="@dimen/spacing_10"
         android:elevation="10dp" />
 
 </RelativeLayout>

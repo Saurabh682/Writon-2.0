@@ -51,7 +51,7 @@ public class BlogSearchAdapter extends RecyclerView.Adapter<BlogSearchAdapter.Im
         final Blog show = arrappliedjob.get(position);
         //holder.category.setText(show.getCategory());
         //holder.category.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
-        holder.TVWrite.setText(String.format("%s (%s)", show.getCreateBy(), show.getCategory()));
+        holder.TVWrite.setText(String.format("%s (%s, %s)", show.getUser_name(), show.getCategory(), show.getSubCat()));
         holder.TVTitle.setText(show.getTitle());
         holder.list_image2.setImageResource(AvtarUtil.getAvtarDrawableByType(show.getAvatorCode()));
         //holder.ShortDesc.setText(Html.fromHtml(String.valueOf(show.getShortDescription())));
