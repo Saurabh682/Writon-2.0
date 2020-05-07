@@ -42,6 +42,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.AllBlogActivity;
 import com.ibitvalley.writon.Draft;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.MyBlog;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.adapter.BlogBlogAdapter;
@@ -281,7 +282,8 @@ public class RatedFragment extends Fragment{
                 startActivity(intent);
             }
         });
-
+        MyApplication.getInstance().trackEvent("Posts", "Read Post List", "Most rated posts");
+        MyApplication.getInstance().trackScreenView("Most rated");
         return rootView;
     }
 
@@ -399,7 +401,7 @@ public class RatedFragment extends Fragment{
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.top_rated, thiscontext, false, hmHomeParam, new OnResponseListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -417,6 +419,7 @@ public class RatedFragment extends Fragment{
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

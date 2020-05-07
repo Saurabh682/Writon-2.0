@@ -47,7 +47,7 @@ public class SmartPostWebRequest extends StringRequest {
         this.URL = URL;
         Log.d(TAG, "POST URL IS :" + URL);
         this.hm_params = hm_params;
-        setRetryPolicy(new DefaultRetryPolicy(60000,0,0.0f));
+        setRetryPolicy(new DefaultRetryPolicy(100000,0,0.0f));
         Log.d("WritOn API", "POST URL IS :" + URL);
 
     }
@@ -83,7 +83,40 @@ public class SmartPostWebRequest extends StringRequest {
             WritOnProgressDialog.getInstance().showProgress(context, "Please wait..");
         }
         //VedashrayaProgressDialog.getInstance().showProgress(context, "Please wait..");
-        setRetryPolicy(new DefaultRetryPolicy(60000,0,0.0f));
+        setRetryPolicy(new DefaultRetryPolicy(100000,0,0.0f));
+    }
+
+    public SmartPostWebRequest(String URL, Context context, boolean showLoading, HashMap<String, String> hmHomeParam, final OnResponseListener2 oRL2) {
+        super(Method.POST, URL, new Response.Listener<String>() {
+
+            @Override
+            public void onResponse(String response) {
+                WritOnProgressDialog.getInstance().hideProgress();
+                Log.d("Get Following API", "POST RESPONSE IS :" + response);
+                oRL2.onSuccess(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                WritOnProgressDialog.getInstance().hideProgress();
+                Log.e("Get Following API", "POST RESPONSE ERROR :" + error.getMessage());
+                error.printStackTrace();
+                oRL2.onError(error);
+            }
+        });
+        this.URL = URL;
+        this.hm_params = hmHomeParam;
+        user = WritOnPreference.getInstance(context).getUserDetails();
+        if (user != null)
+            HeaderValue = user.getAccess_token();
+        this.context = context;
+        this.showLoading = showLoading;
+
+        if (showLoading) {
+            WritOnProgressDialog.getInstance().showProgress(context, "Please wait..");
+        }
+        //VedashrayaProgressDialog.getInstance().showProgress(context, "Please wait..");
+        setRetryPolicy(new DefaultRetryPolicy(100000,0,0.0f));
     }
 
     @Override

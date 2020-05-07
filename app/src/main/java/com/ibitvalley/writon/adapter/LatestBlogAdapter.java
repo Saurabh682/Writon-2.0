@@ -1,7 +1,6 @@
 package com.ibitvalley.writon.adapter;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -12,7 +11,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -22,29 +20,20 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.Blog_Profile;
 import com.ibitvalley.writon.Fragment.Home_Fragment2;
 import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.Report;
-import com.ibitvalley.writon.ShowBlog;
 import com.ibitvalley.writon.ShowBlogDetails;
-import com.ibitvalley.writon.classes.UserInfo;
-import com.ibitvalley.writon.model.AvtarUtil;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
-import com.ibitvalley.writon.utils.Const;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
@@ -52,14 +41,11 @@ import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -373,7 +359,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
         hmHomeParam.put("userid", UserID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_bookmark_api, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -389,6 +375,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -405,7 +392,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
         hmHomeParam.put("userid", UserID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_unbookmark_api, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -419,6 +406,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -437,7 +425,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
         hmHomeParam.put("UserID", userID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -453,6 +441,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -469,7 +458,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
         hmHomeParam.put("UserID", userID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.un_follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -485,6 +474,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

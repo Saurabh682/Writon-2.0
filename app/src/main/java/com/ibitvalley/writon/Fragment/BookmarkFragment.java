@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.adapter.MyBlogAdapter;
 import com.ibitvalley.writon.model.Blog;
@@ -30,8 +31,6 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static android.content.Context.MODE_PRIVATE;
 
 
 public class BookmarkFragment extends Fragment {
@@ -57,6 +56,8 @@ public class BookmarkFragment extends Fragment {
         //adapter = new MyBlogAdapter(getActivity(), getContext(), myblogArrayList, "Bookmarks");
         //recyclerView1.setAdapter(adapter);
        // getBlogsListCallApi();
+        MyApplication.getInstance().trackEvent("Bookmark", "View Bookmark", "BookMark");
+        MyApplication.getInstance().trackScreenView("Bookmark");
         loadTopFollowers();
         return  view;
 
@@ -76,7 +77,7 @@ public class BookmarkFragment extends Fragment {
         //hmHomeParam.put("page", "1");
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.bookmarked_api, getContext(), true, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -95,6 +96,7 @@ public class BookmarkFragment extends Fragment {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

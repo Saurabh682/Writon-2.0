@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -25,40 +24,27 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTabHost;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.AllBlogActivity;
 import com.ibitvalley.writon.Draft;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.MyBlog;
 import com.ibitvalley.writon.R;
-import com.ibitvalley.writon.adapter.BlogBlogAdapter;
-import com.ibitvalley.writon.adapter.JokesBlogAdapter;
-import com.ibitvalley.writon.adapter.JournalismBlogAdapter;
 import com.ibitvalley.writon.adapter.LatestBlogAdapter;
-import com.ibitvalley.writon.adapter.MostBookMarkedBlogAdapter;
 import com.ibitvalley.writon.adapter.MostReadBlogAdapter;
-import com.ibitvalley.writon.adapter.ReviewsBlogAdapter;
 import com.ibitvalley.writon.adapter.ShortStoryAdapter;
-import com.ibitvalley.writon.adapter.SongsJinglesBlogAdapter;
 import com.ibitvalley.writon.adapter.TopFollowersAdapter;
-import com.ibitvalley.writon.adapter.TopRatedAdapter;
 import com.ibitvalley.writon.classes.ShowBlogIngo;
 import com.ibitvalley.writon.discus;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
@@ -76,14 +62,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-import static android.content.Context.MODE_PRIVATE;
-
 /**
  * Created by Android_PC on 10-08-2016.
  */
 public class FollowedFragment extends Fragment{
     private View rootView;
-    private FragmentTabHost mTabHost;
+    private TabLayout mTabHost;
     //Recent Blog List
     //ArrayList<Blog> blogArrayList;
     //Most Read Blog List
@@ -94,16 +78,10 @@ public class FollowedFragment extends Fragment{
     private Context thiscontext;
     private LatestBlogAdapter latestLatestBlogAdapter;
     private ShortStoryAdapter shortStoryAdapter;
-    TopFollowersAdapter topFollowersAdapter;
-    TopRatedAdapter topRatedAdapter;
+    private TopFollowersAdapter topFollowersAdapter;
+
 
     private MostReadBlogAdapter mostReadAdapter;
-    private MostBookMarkedBlogAdapter mostBookMarkedBlogAdapter;
-    private SongsJinglesBlogAdapter songsJinglesBlogAdapter;
-    private JokesBlogAdapter jokesBlogAdapter;
-    private ReviewsBlogAdapter reviewsBlogAdapter;
-    private BlogBlogAdapter blogBlogAdapter;
-    private JournalismBlogAdapter journalismBlogAdapter;
 
     private RecyclerView recyclerViewLatest;
     private ImageView ivSearch, ivSearch1, IVSync;
@@ -130,25 +108,19 @@ public class FollowedFragment extends Fragment{
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         rootView = inflater.inflate(R.layout.followed_frag, container, false);
         thiscontext = container.getContext();
-        ivSearch = (ImageView) rootView.findViewById(R.id.ivSearch);
-        ivSearch1 = (ImageView) rootView.findViewById(R.id.ivSearch1);
-        rlLatest = (RelativeLayout) rootView.findViewById(R.id.rlLatesttf);
-        rl1 = (RelativeLayout) rootView.findViewById(R.id.rl1);
-        rl2 = (RelativeLayout) rootView.findViewById(R.id.rl2);
-        rl3 = (RelativeLayout) rootView.findViewById(R.id.rl3);
-        rl4 = (RelativeLayout) rootView.findViewById(R.id.rl4);
-        rl5 = (RelativeLayout) rootView.findViewById(R.id.rl5);
-        rl6 = (RelativeLayout) rootView.findViewById(R.id.rl6);
-        rl7 = (RelativeLayout) rootView.findViewById(R.id.rl7);
-        rl8 = (RelativeLayout) rootView.findViewById(R.id.rl8);
+        ivSearch = rootView.findViewById(R.id.ivSearch);
+        ivSearch1 = rootView.findViewById(R.id.ivSearch1);
+        rlLatest = rootView.findViewById(R.id.rlLatesttf);
 
 
-        tvViewAll = (TextView) rootView.findViewById(R.id.tvViewAll6);
+
+        tvViewAll = rootView.findViewById(R.id.tvViewAll6);
         tvViewAll.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -165,23 +137,8 @@ public class FollowedFragment extends Fragment{
 
 
 
-        // LLNoPost = (LinearLayout) rootView.findViewById(R.id.LLNoPost);
-        // TextView TVnoPost= (TextView) rootView.findViewById(R.id.TVnoPost);
-//        TVnoPost.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(thiscontext, writeblogstepone.class);
-//                startActivity(intent);
-//            }
-//        });
-//        LLNoPost.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(thiscontext, writeblogstepone.class);
-//                startActivity(intent);
-//            }
-//        });
-        String catValue = "";
+
+       String catValue = "";
         if(getArguments()!=null) {
             catValue = String.valueOf(this.getArguments().getString("cName"));
         }
@@ -233,7 +190,7 @@ public class FollowedFragment extends Fragment{
         fabSettings.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (fabExpanded == true){
+                if (fabExpanded){
                     closeSubMenusFab();
                     fabFrame.setClickable(false);
                 } else {
@@ -279,6 +236,9 @@ public class FollowedFragment extends Fragment{
                 startActivity(intent);
             }
         });
+
+        MyApplication.getInstance().trackEvent("Posts", "Read Post List", "Most followed posts");
+        MyApplication.getInstance().trackScreenView("Most followed");
 
         return rootView;
     }
@@ -365,9 +325,9 @@ public class FollowedFragment extends Fragment{
 
 
 
-       if(catValue != ""){
+       /*if(catValue != ""){
           // getBlogsListCallApi(catValue);
-       }
+       }*/
 
        /* IVSync.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -396,7 +356,7 @@ public class FollowedFragment extends Fragment{
         hmHomeParam.put("id", userData2.getId());
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.top_followers, thiscontext, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -405,12 +365,10 @@ public class FollowedFragment extends Fragment{
                         JSONArray arrMainCategoryJson = jsonResponse.getJSONArray("data");
                         Type type = new TypeToken<ArrayList<Blog>>() {}.getType();
                         ArrayList<Blog> latest_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                        //loadData(arrMainCat);
+
                         displayLatestPost(latest_post);
 
-                        //ArrayList<TrendingPost_Model> trending_postOne = new ArrayList <>();
-                        //trending_postOne.add(trending_post.get(0));
-                        //displayTopFollowersPost(trending_post);
+
                     }else{
                         String message = jsonResponse.getString("message");
                         Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
@@ -418,6 +376,7 @@ public class FollowedFragment extends Fragment{
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -430,22 +389,11 @@ public class FollowedFragment extends Fragment{
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void displayLatestPost(ArrayList<Blog> latestBlog){
         latestLatestBlogAdapter = new LatestBlogAdapter(Objects.requireNonNull(getActivity()), getContext(), latestBlog, false);
-        //Adapter set to recyclerView
         recyclerViewLatest.setAdapter(latestLatestBlogAdapter);
         latestLatestBlogAdapter.notifyDataSetChanged();
     }
 
-
-    private void displayTopFollowersPost(ArrayList<TrendingPost_Model> trendingBlog){
-        topFollowersAdapter = new TopFollowersAdapter(getActivity(), getContext(), trendingBlog);
-        recyclerViewLatest.setAdapter(topFollowersAdapter);
-        topFollowersAdapter.notifyDataSetChanged();
-
-    }
-
-
-
-    private void getBlogsListCallApi(String catValue) {
+   /* private void getBlogsListCallApi(String catValue) {
         RequestQueue requestQueue;
         progress = new ProgressDialog(thiscontext);
         progress.show();
@@ -466,6 +414,7 @@ public class FollowedFragment extends Fragment{
         }
         JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, getBlogListURL, null,
                 new Response.Listener<JSONObject>() {
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("True", "");
@@ -618,19 +567,12 @@ public class FollowedFragment extends Fragment{
 
                                 latestLatestBlogAdapter.notifyDataSetChanged();
                                 mostReadAdapter.notifyDataSetChanged();
-                                mostBookMarkedBlogAdapter.notifyDataSetChanged();
-                                songsJinglesBlogAdapter.notifyDataSetChanged();
-                                jokesBlogAdapter.notifyDataSetChanged();
-                                reviewsBlogAdapter.notifyDataSetChanged();
-                                blogBlogAdapter.notifyDataSetChanged();
-                                journalismBlogAdapter.notifyDataSetChanged();
-                                shortStoryAdapter.notifyDataSetChanged();
 
                             }
                         } catch (JSONException ex) {
                             if (progress != null && progress.isShowing())
                                 progress.dismiss();
-                            Log.d("JSON Exception", ex.getMessage());
+                            Log.d("JSON Exception", Objects.requireNonNull(ex.getMessage()));
                         }
                     }
                 },
@@ -647,7 +589,7 @@ public class FollowedFragment extends Fragment{
         jor.setRetryPolicy(new DefaultRetryPolicy(20000, 3, 0.0f));
         requestQueue.add(jor);
     }
-
+*/
 
 
     @Override

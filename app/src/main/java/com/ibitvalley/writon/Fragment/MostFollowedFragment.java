@@ -4,9 +4,9 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -14,43 +14,29 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTabHost;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.AllBlogActivity;
 import com.ibitvalley.writon.Draft;
 import com.ibitvalley.writon.MyBlog;
 import com.ibitvalley.writon.R;
-import com.ibitvalley.writon.adapter.BlogBlogAdapter;
-import com.ibitvalley.writon.adapter.JokesBlogAdapter;
-import com.ibitvalley.writon.adapter.JournalismBlogAdapter;
-import com.ibitvalley.writon.adapter.LatestBlogAdapter;
-import com.ibitvalley.writon.adapter.MostBookMarkedBlogAdapter;
 import com.ibitvalley.writon.adapter.MostReadBlogAdapter;
-import com.ibitvalley.writon.adapter.ReviewsBlogAdapter;
-import com.ibitvalley.writon.adapter.ShortStoryAdapter;
-import com.ibitvalley.writon.adapter.SongsJinglesBlogAdapter;
 import com.ibitvalley.writon.adapter.TopFollowersAdapter;
 import com.ibitvalley.writon.adapter.TopRatedAdapter;
 import com.ibitvalley.writon.classes.ShowBlogIngo;
@@ -70,15 +56,14 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static android.content.Context.MODE_PRIVATE;
+import java.util.Objects;
 
 /**
  * Created by Android_PC on 10-08-2016.
  */
 public class MostFollowedFragment extends Fragment{
     private View rootView;
-    private FragmentTabHost mTabHost;
+    private TabLayout mTabHost;
     //Recent Blog List
     //ArrayList<Blog> blogArrayList;
     //Most Read Blog List
@@ -87,27 +72,19 @@ public class MostFollowedFragment extends Fragment{
     //ArrayList<Blog> arrMostBookMarketBlog;
 
     private Context thiscontext;
-    private LatestBlogAdapter latestLatestBlogAdapter;
-    private ShortStoryAdapter shortStoryAdapter;
+
     TopFollowersAdapter topFollowersAdapter;
     TopRatedAdapter topRatedAdapter;
 
     private MostReadBlogAdapter mostReadAdapter;
-    private MostBookMarkedBlogAdapter mostBookMarkedBlogAdapter;
-    private SongsJinglesBlogAdapter songsJinglesBlogAdapter;
-    private JokesBlogAdapter jokesBlogAdapter;
-    private ReviewsBlogAdapter reviewsBlogAdapter;
-    private BlogBlogAdapter blogBlogAdapter;
-    private JournalismBlogAdapter journalismBlogAdapter;
+
 
     private RecyclerView recyclerViewLatest;
-    private ImageView IVSync;
-    private LinearLayout LLNoPost;
     private RelativeLayout rlLatest, rl1, rl2, rl3, rl4, rl5, rl6, rl7, rl8;
     private Handler handler;
 
 
-    RelativeLayout rlMain;
+
     private FrameLayout fabFrame;
     private boolean fabExpanded = false;
     private FloatingActionButton fabSettings;
@@ -324,6 +301,7 @@ public class MostFollowedFragment extends Fragment{
 
     ProgressDialog progress;
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void initilize(final String catValue) {
         //blogArrayList = new ArrayList<>();
         //arrMostReadBlog = new ArrayList<>();
@@ -345,7 +323,7 @@ public class MostFollowedFragment extends Fragment{
 
         //latestLatestBlogAdapter = new LatestBlogAdapter(getActivity(), getContext(), ShowBlogIngo.blogArrayList, false);
         // shortStoryAdapter = new ShortStoryAdapter(getActivity(), getContext(), ShowBlogIngo.shortStoryArrayList);
-        mostReadAdapter = new MostReadBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrMostReadBlog);
+        mostReadAdapter = new MostReadBlogAdapter(getActivity(), Objects.requireNonNull(getContext()), ShowBlogIngo.arrMostReadBlog);
         //mostBookMarkedBlogAdapter = new MostBookMarkedBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrMostBookMarketBlog);
 
         //songsJinglesBlogAdapter = new SongsJinglesBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrSongJingles);
@@ -359,10 +337,10 @@ public class MostFollowedFragment extends Fragment{
 
 
 
-      if(catValue != ""){
+      /*if(catValue != ""){
            getBlogsListCallApi(catValue);
      }
-
+*/
         /*IVSync.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -388,9 +366,9 @@ public class MostFollowedFragment extends Fragment{
 
         HashMap<String, String> hmHomeParam = new HashMap <>();
         hmHomeParam.put("page", "1");
-        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.top_rated, thiscontext, false, hmHomeParam, new OnResponseListener() {
+        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.top_followers, thiscontext, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -409,6 +387,7 @@ public class MostFollowedFragment extends Fragment{
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -426,7 +405,7 @@ public class MostFollowedFragment extends Fragment{
 
     }
 
-    private void getBlogsListCallApi(String catValue) {
+   /* private void getBlogsListCallApi(String catValue) {
         RequestQueue requestQueue;
         progress = new ProgressDialog(thiscontext);
         progress.show();
@@ -447,6 +426,7 @@ public class MostFollowedFragment extends Fragment{
         }
         JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, getBlogListURL, null,
                 new Response.Listener<JSONObject>() {
+                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d("True", "");
@@ -457,7 +437,7 @@ public class MostFollowedFragment extends Fragment{
                                 JSONArray arr = obj.getJSONArray("LatestBlog");
 
                                 if(arr.length()<=0){
-                                    LLNoPost.setVisibility(View.VISIBLE);
+                                    //LLNoPost.setVisibility(View.VISIBLE);
                                     rlLatest.setVisibility(View.INVISIBLE);
                                     rl1.setVisibility(View.INVISIBLE);
                                     rl2.setVisibility(View.INVISIBLE);
@@ -468,7 +448,7 @@ public class MostFollowedFragment extends Fragment{
                                     rl6.setVisibility(View.INVISIBLE);
                                     rl8.setVisibility(View.INVISIBLE);
                                 } else {
-                                    LLNoPost.setVisibility(View.INVISIBLE);
+                                    //LLNoPost.setVisibility(View.INVISIBLE);
                                     rlLatest.setVisibility(View.VISIBLE);
                                     rl1.setVisibility(View.VISIBLE);
                                     rl2.setVisibility(View.VISIBLE);
@@ -501,117 +481,18 @@ public class MostFollowedFragment extends Fragment{
                                 }
 
 
-                                JSONArray arrShortStory = obj.getJSONArray("ShortStory");
-
-                                for (int i = 0; i < arrShortStory.length(); i++) {
-                                    String blogString = arrShortStory.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.shortStoryArrayList.add(blog);
-                                }
-
-                                JSONArray arrPoetry = obj.getJSONArray("Poetry");
-
-                                for (int i = 0; i < arrPoetry.length(); i++) {
-                                    String blogString = arrPoetry.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrMostBookMarketBlog.add(blog);
-                                }
-
-
-
-                                JSONArray arrShayari = obj.getJSONArray("Shayari");
-
-                                for (int i = 0; i < arrShayari.length(); i++) {
-                                    String blogString = arrShayari.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrMostReadBlog.add(blog);
-                                }
-
-
-                                JSONArray arrSongJingles = obj.getJSONArray("SongJingles");
-
-                                for (int i = 0; i < arrSongJingles.length(); i++) {
-                                    String blogString = arrSongJingles.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrSongJingles.add(blog);
-                                }
-
-                                JSONArray arrJoke = obj.getJSONArray("Jokes");
-
-                                for (int i = 0; i < arrJoke.length(); i++) {
-                                    String blogString = arrJoke.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrJokes.add(blog);
-                                }
-
-                                JSONArray arrreview = obj.getJSONArray("Reviews");
-
-                                for (int i = 0; i < arrreview.length(); i++) {
-                                    String blogString = arrreview.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrReviews.add(blog);
-                                }
-
-                                JSONArray arrBlog = obj.getJSONArray("Blog");
-
-                                for (int i = 0; i < arrBlog.length(); i++) {
-                                    String blogString = arrBlog.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrBlog.add(blog);
-                                }
-
-
-                                JSONArray arrJournalism = obj.getJSONArray("Journalism");
-
-                                for (int i = 0; i < arrJournalism.length(); i++) {
-                                    String blogString = arrJournalism.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrJournalism.add(blog);
-                                }
-
-
-//                                // Most Read
-//
-//                                 for (int s=0; s< listMostRead.size(); s++){
-//                                        for (int i = 0; i < ShowBlogIngo.blogArrayList.size(); i++) {
-//                                            if (ShowBlogIngo.blogArrayList.get(i).getBlogId().toString().equals(listMostRead.get(s).toString())) {
-//                                                ShowBlogIngo.arrMostReadBlog.add(ShowBlogIngo.blogArrayList.get(i));
-//                                                break;
-//                                            }
-//                                        }
-//                                 }
-//
-//                                // Most BookMarked
-//
-//                                for (int s=0; s< listMostBookMarked.size(); s++){
-//                                    for (int i = 0; i < ShowBlogIngo.blogArrayList.size(); i++) {
-//                                        if (ShowBlogIngo.blogArrayList.get(i).getBlogId().toString().equals(listMostBookMarked.get(s).toString())) {
-//                                            ShowBlogIngo.arrMostBookMarketBlog.add(ShowBlogIngo.blogArrayList.get(i));
-//                                            break;
-//                                        }
-//                                    }
-//                                }
-
-
-
                                 if (progress != null && progress.isShowing())
                                     progress.dismiss();
 
-                                latestLatestBlogAdapter.notifyDataSetChanged();
+
                                 mostReadAdapter.notifyDataSetChanged();
-                                mostBookMarkedBlogAdapter.notifyDataSetChanged();
-                                songsJinglesBlogAdapter.notifyDataSetChanged();
-                                jokesBlogAdapter.notifyDataSetChanged();
-                                reviewsBlogAdapter.notifyDataSetChanged();
-                                blogBlogAdapter.notifyDataSetChanged();
-                                journalismBlogAdapter.notifyDataSetChanged();
-                                shortStoryAdapter.notifyDataSetChanged();
+
 
                             }
                         } catch (JSONException ex) {
                             if (progress != null && progress.isShowing())
                                 progress.dismiss();
-                            Log.d("JSON Exception", ex.getMessage());
+                            Log.d("JSON Exception", Objects.requireNonNull(ex.getMessage()));
                         }
                     }
                 },
@@ -628,7 +509,7 @@ public class MostFollowedFragment extends Fragment{
         jor.setRetryPolicy(new DefaultRetryPolicy(20000, 3, 0.0f));
         requestQueue.add(jor);
     }
-
+*/
 
 
     @Override

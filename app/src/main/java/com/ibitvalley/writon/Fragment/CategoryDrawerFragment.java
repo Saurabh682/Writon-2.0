@@ -1,6 +1,5 @@
 package com.ibitvalley.writon.Fragment;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -37,17 +36,12 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.ibitvalley.writon.AllBlogActivity;
-import com.ibitvalley.writon.BlogSearch;
-import com.ibitvalley.writon.Draft;
-import com.ibitvalley.writon.Feedback;
-import com.ibitvalley.writon.MyBlog;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.adapter.ExpandableListAdapter;
-import com.ibitvalley.writon.discus;
 import com.ibitvalley.writon.model.BlogComment;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.Const;
-import com.ibitvalley.writon.writeblogstepone;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -89,7 +83,7 @@ public class CategoryDrawerFragment extends Fragment implements View.OnClickList
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.viewpagerhome, container, false);
+        rootView = inflater.inflate(R.layout.home_fragment5, container, false);
         assert container != null;
         thiscontext = container.getContext();
         ivSearch = rootView.findViewById(R.id.ivSearch);
@@ -100,11 +94,11 @@ public class CategoryDrawerFragment extends Fragment implements View.OnClickList
                 parent.removeView(rootView);
         }
 
-        /*try {
-            //rootView = inflater.inflate(R.layout.viewpagerhome, container, false);
+         try {
+            rootView = inflater.inflate(R.layout.home_fragment5, container, false);
             ivSearch = rootView.findViewById(R.id.ivSearch);
-            *//*TVfeedback = rootView.findViewById(R.id.TVfeedback);
-            TVfeedback.setOnClickListener(new View.OnClickListener() {
+            TVfeedback = rootView.findViewById(R.id.TVfeedback);
+            /*TVfeedback.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intentFeedBack = new Intent(getContext(), Feedback.class);
@@ -112,27 +106,29 @@ public class CategoryDrawerFragment extends Fragment implements View.OnClickList
 
 
                 }
-            });*//*
+            });*/
         } catch (InflateException e) {
-        }*/
+        }
         tf = Typeface.createFromAsset(Objects.requireNonNull(getActivity()).getAssets(),"Lato-Regular.ttf");
 
-        ivSearch.setOnClickListener(new View.OnClickListener() {
+        /*ivSearch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //Toast.makeText(getActivity(), "Coming soon", Toast.LENGTH_LONG).show();
                 Intent intentSearch = new Intent(thiscontext, BlogSearch.class);
                 startActivity(intentSearch);
             }
-        });
-        //initilize();
+        });*/
+        initilize();
         isNetworkAvailable();
+        MyApplication.getInstance().trackEvent("Category", "See Category", "Categories");
+        MyApplication.getInstance().trackScreenView("Category Screen");
         return rootView;
 
     }
 
     private void initilize() {
-        expListView = (ExpandableListView) rootView.findViewById(R.id.lvExp);
+        expListView = rootView.findViewById(R.id.lvExp);
         prepareListData();
         listAdapter = new ExpandableListAdapter(getActivity(), listDataHeader, listDataChild);
         expListView.setAdapter(listAdapter);
@@ -369,7 +365,7 @@ public class CategoryDrawerFragment extends Fragment implements View.OnClickList
         listDataChild.put(listDataHeader.get(7), GeneralLet);
 
 
-        fabFrame = rootView.findViewById(R.id.fabFrame);
+       /* fabFrame = rootView.findViewById(R.id.fabFrame);
         fabSettings = rootView.findViewById(R.id.fabSetting);
 
         layoutFabSave = rootView.findViewById(R.id.layoutFabSave);
@@ -427,7 +423,7 @@ public class CategoryDrawerFragment extends Fragment implements View.OnClickList
                 startActivity(intent);
             }
         });
-
+*/
         //return rootView;
 
     }

@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -21,11 +22,13 @@ import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.Draft;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.MyBlog;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.adapter.MyWorldAdapter;
 import com.ibitvalley.writon.adapter.TrendingUsersAdapter;
 import com.ibitvalley.writon.discus;
+import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
@@ -61,12 +64,13 @@ public class MyMenuFragment extends Fragment implements View.OnClickListener {
     TrendingUsersAdapter trendingUsersAdapter;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (rootView != null) {
             ViewGroup parent = (ViewGroup) rootView.getParent();
             if (parent != null)
                 parent.removeView(rootView);
         }
+        assert container != null;
         thiscontext = container.getContext();
         userData = WritOnPreference.getInstance(thiscontext).getUserDetails();
         try {
@@ -116,6 +120,8 @@ public class MyMenuFragment extends Fragment implements View.OnClickListener {
         initilize();
 
         getMyWordData();
+        MyApplication.getInstance().trackEvent("Notification", "Read Notification", "My World");
+        MyApplication.getInstance().trackScreenView("My World");
         return rootView;
     }
 
@@ -134,27 +140,27 @@ public class MyMenuFragment extends Fragment implements View.OnClickListener {
         HashMap<String, String> hmMyWorldParams = WebApiParams.getyserProfileParam(userData.getId());
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.myworld_action, thiscontext, true, hmMyWorldParams, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
 
-                            JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
-                            JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
-                            Type type = new TypeToken<ArrayList<TrendingPost_Model>>() {}.getType();
-                            ArrayList<TrendingPost_Model> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                            displayLTrendingPost(trending_post);
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
-                            getTrendingUsers();
-                        }
+                        JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
+                        JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
+                        Type type = new TypeToken<ArrayList<TrendingPost_Model>>() {}.getType();
+                        assert arrMainCategoryJson != null;
+                        ArrayList<TrendingPost_Model> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        displayLTrendingPost(trending_post);
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
+                        getTrendingUsers();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -186,25 +192,25 @@ public class MyMenuFragment extends Fragment implements View.OnClickListener {
         hmMyWorldParams.put("page", "1");
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.trending_users, thiscontext, true, hmMyWorldParams, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            //JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
-                            JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
-                            Type type = new TypeToken<ArrayList<TrendingPost_Model>>() {}.getType();
-                            ArrayList<TrendingPost_Model> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
-                            displayLTrendingUser(trending_post);
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        //JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
+                        JSONArray arrMainCategoryJson = jsonResponse.optJSONArray("data");
+                        Type type = new TypeToken<ArrayList<TrendingPost_Model>>() {}.getType();
+                        assert arrMainCategoryJson != null;
+                        ArrayList<TrendingPost_Model> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        displayLTrendingUser(trending_post);
+                    }else{
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(thiscontext, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

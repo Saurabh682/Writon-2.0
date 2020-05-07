@@ -54,6 +54,12 @@ public class Blog implements Serializable {
         this.username = username;
     }
 
+    public Blog(String name, String image, String fCount) {
+        this.user_name = name;
+        this.user_image = image;
+        this.user_followers_count = fCount;
+    }
+
     public boolean isIs_followed() {
         return is_followed;
     }

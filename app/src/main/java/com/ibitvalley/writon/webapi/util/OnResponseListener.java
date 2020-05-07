@@ -1,9 +1,11 @@
 package com.ibitvalley.writon.webapi.util;
 
 import com.android.volley.VolleyError;
+import com.ibitvalley.writon.model.Blog;
+
+import java.util.ArrayList;
 
 public interface OnResponseListener {
-    public void onSuccess(Object result);
-
-    public void onError(VolleyError error);
+    ArrayList<Blog> onSuccess(Object result);
+    void onError(VolleyError error);
 }

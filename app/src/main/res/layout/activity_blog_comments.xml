@@ -24,7 +24,7 @@
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
             android:tint="@color/colorWhite"
-            android:src="@drawable/left_arrow"></ImageView>
+            android:src="@drawable/left_arrow" />
 
 
         <de.hdodenhof.circleimageview.CircleImageView
@@ -35,7 +35,7 @@
             android:layout_marginBottom="5dp"
             app:civ_border_width="0dp"
             app:civ_border_color="@color/colorBlack"
-            android:src="@drawable/userprofilepic"></de.hdodenhof.circleimageview.CircleImageView>
+            android:src="@drawable/userprofilepic" />
 
 
         <LinearLayout
@@ -84,6 +84,8 @@
         android:layout_below="@+id/header"
         android:elevation="10dp" />
 
+
+
     <LinearLayout
         android:id="@+id/rlBottomView"
         android:layout_width="match_parent"
@@ -110,7 +112,7 @@
                 android:layout_width=".1sp"
                 android:layout_height="wrap_content"
                 android:layout_toLeftOf="@+id/IVSend"
-                android:background="@color/colorPrimary"></View>
+                android:background="@color/colorPrimary" />
 
             <ImageView
                 android:id="@+id/IVSend"

@@ -31,7 +31,9 @@
                 android:layout_marginLeft="5dp"
                 android:layout_alignParentLeft="true"
                 android:layout_marginTop="3dp"
-                android:layout_marginRight="5dip">
+                android:layout_marginRight="5dip"
+                android:layout_marginEnd="5dip"
+                android:layout_alignParentStart="true">
 
                 <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/list_imageone"
@@ -136,7 +138,7 @@
                 android:maxLines="1"
                 android:text="Why Not Me?"
                 android:textColor="#404041"
-                android:textSize="18dip"
+                android:textSize="18dp"
                 android:textStyle="bold"/>
 
 
@@ -158,7 +160,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/name"
                 android:textColor="#263238"
-                android:textSize="15dip"
+                android:textSize="15dp"
                 android:visibility="gone"
                 android:textStyle="bold"
                 android:layout_marginLeft="15dp"
@@ -189,7 +191,7 @@
                 android:layout_marginTop="10dp"
                 android:text="Short Story, Romance (English)"
                 android:textColor="#7E72B3"
-                android:textSize="12dip" />
+                android:textSize="12dp" />
 
 
 
@@ -226,7 +228,7 @@
                             android:layout_marginTop="2dp"
                             android:id="@+id/TVViewCount"
                             android:layout_marginLeft="5dp"
-                            android:textSize="12dip"
+                            android:textSize="12dp"
                             android:textColor="#959FC4"
                             android:text="0"/>
                     </LinearLayout>
@@ -247,7 +249,7 @@
                             android:layout_marginTop="2dp"
                             android:id="@+id/TVCommentCount"
                             android:layout_marginLeft="5dp"
-                            android:textSize="12dip"
+                            android:textSize="12dp"
                             android:textColor="#959FC4"
                             android:text="0"/>
                     </LinearLayout>
@@ -268,7 +270,7 @@
                             android:id="@+id/TVRating"
                             android:layout_marginLeft="5dp"
                             android:textColor="#959FC4"
-                            android:textSize="12dip"
+                            android:textSize="12dp"
                             android:text="0"/>
                     </LinearLayout>
 

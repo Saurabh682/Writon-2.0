@@ -130,18 +130,18 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
 
 
     private void initilize(int pageActionValue) {
-        layout_home = (RelativeLayout) findViewById(R.id.layout_home);
-        layout_home1 = (RelativeLayout) findViewById(R.id.layout_home1);
-        layout_home2 = (RelativeLayout) findViewById(R.id.layout_home2);
-        layout_home3 = (RelativeLayout) findViewById(R.id.layout_home3);
-        layout_home4 = (RelativeLayout) findViewById(R.id.layout_home4);
+        layout_home = findViewById(R.id.layout_home);
+        layout_home1 = findViewById(R.id.layout_home1);
+        layout_home2 = findViewById(R.id.layout_home2);
+        layout_home3 = findViewById(R.id.layout_home3);
+        layout_home4 = findViewById(R.id.layout_home4);
 
 
-        img_category = (ImageView) findViewById(R.id.img_category);
-        img_explorer = (ImageView) findViewById(R.id.img_explorer);
-        img_myworld = (ImageView) findViewById(R.id.img_myworld);
-        img_bookmark = (ImageView) findViewById(R.id.img_bookmark);
-        img_profile = (ImageView) findViewById(R.id.img_profile);
+        img_category = findViewById(R.id.img_category);
+        img_explorer = findViewById(R.id.img_explorer);
+        img_myworld = findViewById(R.id.img_myworld);
+        img_bookmark = findViewById(R.id.img_bookmark);
+        img_profile = findViewById(R.id.img_profile);
 
         layout_home.setOnClickListener(this);
         layout_home1.setOnClickListener(this);
@@ -155,7 +155,7 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
             fragment = new CategoryDrawerFragment();
             replaceFragment(fragment);
         }else if(pageActionValue == 2){
-            fragment = new CategoryDrawerFragment();
+            fragment = new CollectionDemoFragment();
             replaceFragment(fragment);
         }
     }
@@ -199,7 +199,7 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
     private void pageAction(int position) {
         switch (position) {
             case 0:
-                img_category.setImageResource(R.drawable.categoryselected);
+                img_category.setImageResource(R.drawable.burgermenu);
                 img_explorer.setImageResource(R.drawable.explore_linemdpi);
                 img_myworld.setImageResource(R.drawable.home_linemdpi);
                 img_bookmark.setImageResource(R.drawable.bookmark_linemdpi);
@@ -207,7 +207,7 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
                 break;
             case 1:
                 img_explorer.setImageResource(R.drawable.exploremdpi);
-                img_category.setImageResource(R.drawable.burgermenu);
+                img_category.setImageResource(R.drawable.categoryselected);
                 img_myworld.setImageResource(R.drawable.home_linemdpi);
                 img_bookmark.setImageResource(R.drawable.bookmark_linemdpi);
                 img_profile.setImageResource(R.drawable.profile_linemdpi);
@@ -215,7 +215,7 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
             case 2:
                 img_myworld.setImageResource(R.drawable.homemdpi);
                 img_explorer.setImageResource(R.drawable.explore_linemdpi);
-                img_category.setImageResource(R.drawable.burgermenu);
+                img_category.setImageResource(R.drawable.categoryselected);
                 img_bookmark.setImageResource(R.drawable.bookmark_linemdpi);
                 img_profile.setImageResource(R.drawable.profile_linemdpi);
                 notify.setVisibility(View.INVISIBLE);
@@ -226,7 +226,7 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
                 img_bookmark.setImageResource(R.drawable.bookmarkmdpifill);
                 img_myworld.setImageResource(R.drawable.home_linemdpi);
                 img_explorer.setImageResource(R.drawable.explore_linemdpi);
-                img_category.setImageResource(R.drawable.burgermenu);
+                img_category.setImageResource(R.drawable.categoryselected);
                 img_profile.setImageResource(R.drawable.profile_linemdpi);
                 break;
             case 4:
@@ -234,7 +234,7 @@ public class Home_Activity extends FragmentActivity implements View.OnClickListe
                 img_bookmark.setImageResource(R.drawable.bookmark_linemdpi);
                 img_myworld.setImageResource(R.drawable.home_linemdpi);
                 img_explorer.setImageResource(R.drawable.explore_linemdpi);
-                img_category.setImageResource(R.drawable.burgermenu);
+                img_category.setImageResource(R.drawable.categoryselected);
                 break;
         }
     }

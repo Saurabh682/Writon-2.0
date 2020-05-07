@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.VolleyError;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
@@ -21,6 +23,7 @@ import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Report extends AppCompatActivity {
@@ -38,7 +41,9 @@ public class Report extends AppCompatActivity {
         setContentView(R.layout.activity_report);
         userData = WritOnPreference.getInstance(this).getUserDetails();
         blogID = getIntent().getStringExtra("blogID");
+
         initControls();
+
     }
 
 
@@ -63,6 +68,8 @@ public class Report extends AppCompatActivity {
             public void onClick(View v) {
                 if(fieldValidation()){
                     // Call API........
+                    MyApplication.getInstance().trackEvent("Reporting Screen", "User Click on report button.", "Report Button");
+                    MyApplication.getInstance().trackScreenView("Report Screen");
                     submitReport();
                 }
             }
@@ -90,7 +97,7 @@ public class Report extends AppCompatActivity {
 
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.submit_report_url, this, true, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -107,6 +114,7 @@ public class Report extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

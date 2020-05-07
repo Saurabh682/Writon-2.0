@@ -8,6 +8,7 @@
     android:padding="10sp"
     android:layout_margin="@dimen/size_20"
     app:cardCornerRadius="@dimen/size_20"
+    android:background="#00000000"
 
     >
 
@@ -20,7 +21,11 @@
             android:layout_margin="@dimen/spacing_10"
             >
 
-
+            <androidx.appcompat.widget.AppCompatImageView
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:alpha=".6"
+                android:src="@drawable/search_pic" />
         <!--<View-->
             <!--android:layout_width="match_parent"-->
             <!--android:layout_marginTop="30dp"-->
@@ -28,17 +33,18 @@
             <!--android:background="#000000">-->
 
         <!--</View>-->
-        <EditText
-            android:id="@+id/tv_Title"
-            android:layout_width="fill_parent"
-            android:layout_height="45dp"
-            android:hint="Search title"
-            android:textSize="18dp"
-            android:layout_marginTop="15dp"
+            <EditText
+                android:id="@+id/tv_Title"
+                android:layout_width="fill_parent"
+                android:layout_height="45dp"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginRight="5dp"
 
-            android:padding="2dp"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp"/>
+                android:hint="Search title"
+                android:inputType="textAutoCorrect|textAutoComplete"
+                android:padding="2dp"
+                android:textSize="18dp" />
 
         <!--<EditText
             android:id="@+id/tv_Writer"

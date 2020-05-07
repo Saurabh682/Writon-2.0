@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Html;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -27,9 +26,8 @@ import com.android.volley.VolleyError;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.adapter.GridViewAdapter;
-import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.utils.VolleySingleton;
-import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebApiParams;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
@@ -39,6 +37,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
@@ -168,6 +167,7 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
     ProgressDialog progress;
 
     private void checkValidation() {
+
         if (email.getText().toString().equals("") && password.getText().toString().trim().trim().equals("") && TVUserName.getText().toString().trim().equals("")) {
             //first_name.setError("First Name cannot be empty");
             //last_name.setError("Last Name cannot be empty");
@@ -222,7 +222,7 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
         HashMap <String, String> hmLoginParams = WebApiParams.getRegistrationParams(userPenNameValue, emailValue, passwordValue);
         SmartPostWebRequest loginRequest = new SmartPostWebRequest(WebConstants.Register_API, Signup.this, true, hmLoginParams, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -243,6 +243,7 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
                     //e.printStackTrace();
                     Toast.makeText(Signup.this, e.getMessage(), Toast.LENGTH_LONG).show();
                 }
+                return null;
             }
 
             @Override

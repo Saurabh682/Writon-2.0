@@ -1,7 +1,6 @@
 package com.ibitvalley.writon.adapter;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
@@ -17,12 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.BlogComment;
@@ -160,7 +154,7 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
         hmHomeParam.put("CommentId", CommentId);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.delete_comment_url, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -174,6 +168,7 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

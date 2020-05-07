@@ -6,8 +6,8 @@
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:background="@color/purple"
+        android:layout_height="60dp"
+        android:background="@color/lightBlue"
         android:orientation="horizontal"
         >
         <androidx.appcompat.widget.AppCompatTextView

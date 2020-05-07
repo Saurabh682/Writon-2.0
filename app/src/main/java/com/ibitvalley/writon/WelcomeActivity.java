@@ -19,6 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+
 public class WelcomeActivity extends AppCompatActivity {
 
     private ViewPager viewPager;
@@ -71,6 +73,8 @@ public class WelcomeActivity extends AppCompatActivity {
         viewPager.setAdapter(myViewPagerAdapter);
         viewPager.addOnPageChangeListener(viewPagerPageChangeListener);
 
+
+
         btnSkip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -88,10 +92,14 @@ public class WelcomeActivity extends AppCompatActivity {
                     // move to next screen
                     viewPager.setCurrentItem(current);
                 } else {
+                    MyApplication.getInstance().trackEvent("WelcomeActivity", "App Started First time", "Welcome Screen");
+                    MyApplication.getInstance().trackScreenView("WelcomeScreen");
                     launchHomeScreen();
                 }
             }
         });
+
+
     }
 
     private void addBottomDots(int currentPage) {

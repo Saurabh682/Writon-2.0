@@ -2,7 +2,7 @@
     <string name="app_name">WritOn</string>
 
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="hello_blank_fragment">OOps! There is nothing to see here.</string>
 
     <string-array name="array_mainCategory">
         <item>Select Main Category</item>
@@ -351,5 +351,8 @@
 
 
     </string>
+    <string name="place">WhichPlace</string>
+    <string name="person">Who</string>
+    <string name="image">Whichimage</string>
 
 </resources>

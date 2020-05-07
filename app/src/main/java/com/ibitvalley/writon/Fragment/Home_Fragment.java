@@ -544,7 +544,7 @@ public class Home_Fragment extends Fragment {
         hmHomeParam.put("page", "1");
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.Latest_Post, thiscontext, true, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -564,6 +564,7 @@ public class Home_Fragment extends Fragment {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -589,7 +590,7 @@ public class Home_Fragment extends Fragment {
         hmHomeParam.put("page", "1");
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.trending_Post, thiscontext, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -610,6 +611,7 @@ public class Home_Fragment extends Fragment {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -637,7 +639,7 @@ public class Home_Fragment extends Fragment {
         hmHomeParam.put("page", "1");
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.top_followers, thiscontext, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -659,6 +661,7 @@ public class Home_Fragment extends Fragment {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -685,7 +688,7 @@ public class Home_Fragment extends Fragment {
         hmHomeParam.put("page", "1");
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.top_rated, thiscontext, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -706,6 +709,7 @@ public class Home_Fragment extends Fragment {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

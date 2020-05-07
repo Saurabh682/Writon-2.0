@@ -19,7 +19,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -29,6 +28,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -47,11 +47,9 @@ import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -70,7 +68,7 @@ public class ShowBlogDetails extends AppCompatActivity {
     Context curr_context;
     Button TVFollow;
     String blogID = "";
-    LinearLayout ll_Discuss;
+    ConstraintLayout ll_Discuss;
     User userData;
 
     @Override
@@ -85,22 +83,22 @@ public class ShowBlogDetails extends AppCompatActivity {
         curr_context = this;
         userData = WritOnPreference.getInstance(curr_context).getUserDetails();
 
-        TVTitle = (TextView) findViewById(R.id.TVTitle);
-        TVDescription = (TextView) findViewById(R.id.TVDescription);
-        TVWriterName = (TextView) findViewById(R.id.TVWriterName);
+        TVTitle = findViewById(R.id.TVTitle);
+        TVDescription = findViewById(R.id.TVDescription);
+        TVWriterName = findViewById(R.id.TVWriterName);
         tv_user_followers_count = findViewById(R.id.tv_user_followers_count);
 
-        tv_Category = (TextView) findViewById(R.id.tv_Category);
-        tv_subCategory = (TextView) findViewById(R.id.tv_subCategory);
-        tv_language = (TextView) findViewById(R.id.tv_language);
+        tv_Category = findViewById(R.id.tv_Category);
+        tv_subCategory = findViewById(R.id.tv_subCategory);
+        tv_language = findViewById(R.id.tv_language);
         list_image = (CircleImageView) findViewById(R.id.list_image);
-        img_bookmark = (ImageView) findViewById(R.id.img_bookmark);
-        img_Option = (ImageView) findViewById(R.id.img_Option);
+        img_bookmark = findViewById(R.id.img_bookmark);
+        img_Option = findViewById(R.id.img_Option);
 
-        TVViewCount = (TextView) findViewById(R.id.TVViewCount);
-        TVCommentCount = (TextView) findViewById(R.id.TVCommentCount);
-        TVRating = (TextView) findViewById(R.id.TVRating);
-        ll_Discuss = (LinearLayout) findViewById(R.id.ll_Discuss);
+        TVViewCount = findViewById(R.id.TVViewCount);
+        TVCommentCount = findViewById(R.id.TVCommentCount);
+        TVRating = findViewById(R.id.TVRating);
+        ll_Discuss = findViewById(R.id.ll_Discuss);
         TVFollow = findViewById(R.id.TVFollow);
         img_rating = findViewById(R.id.img_rating);
 
@@ -343,6 +341,8 @@ public class ShowBlogDetails extends AppCompatActivity {
         MyApplication.getInstance().trackEvent("ShowBlogDetail", "Blog Details", "Blog reading screen.");
         MyApplication.getInstance().trackScreenView("HomeScreen");
         //toggleHideyBar();
+
+
     }
 
 
@@ -352,7 +352,7 @@ public class ShowBlogDetails extends AppCompatActivity {
         hmHomeParam.put("userid", UserID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_bookmark_api, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -374,6 +374,7 @@ public class ShowBlogDetails extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -390,7 +391,7 @@ public class ShowBlogDetails extends AppCompatActivity {
         hmHomeParam.put("userid", UserID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_unbookmark_api, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -409,6 +410,7 @@ public class ShowBlogDetails extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -635,7 +637,7 @@ public class ShowBlogDetails extends AppCompatActivity {
         hmHomeParam.put("BlogID", blogID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_as_View, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -648,6 +650,7 @@ public class ShowBlogDetails extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -664,7 +667,7 @@ public class ShowBlogDetails extends AppCompatActivity {
         hmHomeParam.put("UserID", userID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -678,6 +681,7 @@ public class ShowBlogDetails extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -694,7 +698,7 @@ public class ShowBlogDetails extends AppCompatActivity {
         hmHomeParam.put("UserID", userID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.un_follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -708,6 +712,7 @@ public class ShowBlogDetails extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -725,7 +730,7 @@ public class ShowBlogDetails extends AppCompatActivity {
         hmHomeParam.put("UserId", userID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.add_rating_url, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -739,6 +744,7 @@ public class ShowBlogDetails extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

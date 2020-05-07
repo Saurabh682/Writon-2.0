@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -26,36 +25,22 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTabHost;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.AllBlogActivity;
 import com.ibitvalley.writon.Draft;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.MyBlog;
 import com.ibitvalley.writon.R;
-import com.ibitvalley.writon.adapter.BlogBlogAdapter;
-import com.ibitvalley.writon.adapter.JokesBlogAdapter;
-import com.ibitvalley.writon.adapter.JournalismBlogAdapter;
 import com.ibitvalley.writon.adapter.LatestBlogAdapter;
-import com.ibitvalley.writon.adapter.MostBookMarkedBlogAdapter;
 import com.ibitvalley.writon.adapter.MostReadBlogAdapter;
-import com.ibitvalley.writon.adapter.ReviewsBlogAdapter;
 import com.ibitvalley.writon.adapter.ShortStoryAdapter;
-import com.ibitvalley.writon.adapter.SongsJinglesBlogAdapter;
-import com.ibitvalley.writon.adapter.TopFollowersAdapter;
-import com.ibitvalley.writon.adapter.TopRatedAdapter;
 import com.ibitvalley.writon.classes.ShowBlogIngo;
 import com.ibitvalley.writon.discus;
 import com.ibitvalley.writon.model.Blog;
@@ -76,8 +61,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
-
-import static android.content.Context.MODE_PRIVATE;
 
 /**
  * Created by Android_PC on 10-08-2016.
@@ -273,7 +256,8 @@ public class TrendingFrag extends Fragment{
                 startActivity(intent);
             }
         });
-
+        MyApplication.getInstance().trackEvent("Posts", "Read Post List", "Trending posts");
+        MyApplication.getInstance().trackScreenView("Trending Posts");
         return rootView;
     }
 
@@ -392,7 +376,7 @@ public class TrendingFrag extends Fragment{
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.trending_Post, thiscontext, false, hmHomeParam, new OnResponseListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -411,6 +395,7 @@ public class TrendingFrag extends Fragment{
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.VolleyError;
 import com.ibitvalley.writon.R;
-import com.ibitvalley.writon.model.BlogComment;
+import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.BlogCommentPersonal;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
@@ -148,7 +148,7 @@ public class DiscussListPersonalAdapter extends RecyclerView.Adapter<DiscussList
         hmHomeParam.put("CommentId", CommentId);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.delete_comment_url, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -162,6 +162,7 @@ public class DiscussListPersonalAdapter extends RecyclerView.Adapter<DiscussList
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

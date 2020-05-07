@@ -3,10 +3,8 @@ package com.ibitvalley.writon;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.se.omapi.SEService;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -21,18 +19,10 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.ibitvalley.writon.adapter.BlogCommentsAdapter;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.adapter.DiscusListAdapter;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.BlogComment;
@@ -52,7 +42,6 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -156,6 +145,9 @@ public class ActivityBlogComments extends AppCompatActivity {
             }
         });
 
+        MyApplication.getInstance().trackEvent("Comments", "Commenting", "User Comments");
+        MyApplication.getInstance().trackScreenView("User Comments");
+
     }
 
     private void IntegrateWriteCommentAPI(final String blogID) {
@@ -183,7 +175,7 @@ public class ActivityBlogComments extends AppCompatActivity {
         hmHomeParam.put("Comment", ETWriteComment.getText().toString());
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.add_comment_url, curr_context, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -206,6 +198,7 @@ public class ActivityBlogComments extends AppCompatActivity {
                     IVSend.setVisibility(View.VISIBLE);
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -322,7 +315,7 @@ public class ActivityBlogComments extends AppCompatActivity {
         hmHomeParam.put("BlogId", blogIDValue);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.comment_url, curr_context, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -339,6 +332,7 @@ public class ActivityBlogComments extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

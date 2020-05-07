@@ -1,9 +1,6 @@
 package com.ibitvalley.writon.Fragment;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.adapter.RecentReadBlogAdapter;
 import com.ibitvalley.writon.model.Blog;
@@ -36,8 +34,6 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import static android.content.Context.MODE_PRIVATE;
 
 public class RecentFragment extends Fragment {
 
@@ -63,6 +59,9 @@ public class RecentFragment extends Fragment {
         userData = WritOnPreference.getInstance(thiscontext).getUserDetails();
         recyclerView1 = (RecyclerView) view.findViewById(R.id.recyclerView1);
         loadLatestPost();
+
+        MyApplication.getInstance().trackEvent("Posts", "Read Post List", "Recent read posts");
+        MyApplication.getInstance().trackScreenView("Recent Read");
         return  view;
     }
 
@@ -75,7 +74,7 @@ public class RecentFragment extends Fragment {
         hmHomeParam.put("UserID", userData.getId());
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.recent_blog, getActivity(), true, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -96,6 +95,7 @@ public class RecentFragment extends Fragment {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

@@ -1,23 +1,17 @@
 package com.ibitvalley.writon.Fragment;
 
-import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
@@ -38,13 +32,13 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupMenu;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.DefaultItemAnimator;
@@ -58,32 +52,22 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.appbar.AppBarLayout;
-import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import com.ibitvalley.writon.Blog_Profile;
 import com.ibitvalley.writon.Constants;
-import com.ibitvalley.writon.Home_Activity;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.LoginActivity;
-import com.ibitvalley.writon.PrefManager;
 import com.ibitvalley.writon.R;
-import com.ibitvalley.writon.adapter.DiscusListAdapter;
+import com.ibitvalley.writon.Ui.BasicTabLayoutActivity;
 import com.ibitvalley.writon.adapter.DiscussListPersonalAdapter;
 import com.ibitvalley.writon.adapter.GridViewAdapter;
 import com.ibitvalley.writon.adapter.MyBlogAdapter;
-import com.ibitvalley.writon.adapter.ShortStoryAdapter;
 import com.ibitvalley.writon.constants.PrefrenceConstants;
-import com.ibitvalley.writon.discus;
-import com.ibitvalley.writon.model.AvtarUtil;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.BlogComment;
 import com.ibitvalley.writon.model.BlogCommentPersonal;
-import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.Const;
 import com.ibitvalley.writon.utils.VolleySingleton;
@@ -93,6 +77,7 @@ import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.multipart.VolleyMultipartRequest;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
+import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -113,8 +98,6 @@ import static android.content.Context.MODE_PRIVATE;
 import static com.facebook.FacebookSdk.getApplicationContext;
 import static com.ibitvalley.writon.model.AvtarUtil.getAvtarData;
 import static com.ibitvalley.writon.model.AvtarUtil.getAvtarDrawableByType;
-import com.ibitvalley.writon.webapi.multipart.VolleyMultipartRequest;
-import com.squareup.picasso.Picasso;
 
 /**
  * Created by Android_PC on 10-08-2016.
@@ -127,6 +110,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
     private EditText TVname, ETQofDay, ETIntro, ETWorkiingon;
     private SharedPreferences preferences;
     private CircleImageView image, image6;
+    private Button B_followers;
     private ImageView IVEdit;
     private ImageView TVCi;
     private int isEdit = 0;
@@ -135,8 +119,9 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
     Toolbar toolbar;
 
     private RecyclerView recyclerView1, recview_discussion;
-    private LinearLayout ll_about, ll_posted, ll_discussion, ll_contactus;
+    private LinearLayout  ll_posted, ll_discussion, ll_contactus;
     private DiscussListPersonalAdapter adapter;
+    private RelativeLayout ll_about;
 
     private User userData;
     private String [] permissions = {"android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.ACCESS_FINE_LOCATION", "android.permission.SYSTEM_ALERT_WINDOW","android.permission.CAMERA"};
@@ -162,10 +147,11 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         }
         try {
 
-            userData = WritOnPreference.getInstance(curr_context).getUserDetails();
+
             rootView = inflater.inflate(R.layout.homr_fragment2, container, false);
             assert container != null;
             curr_context = container.getContext();
+            userData = WritOnPreference.getInstance(curr_context).getUserDetails();
             int requestCode = 200;
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -206,6 +192,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             ll_posted = rootView.findViewById(R.id.ll_posted);
             ll_discussion = rootView.findViewById(R.id.ll_discussion);
             ll_contactus = rootView.findViewById(R.id.ll_contactus);
+            B_followers = rootView.findViewById(R.id.B_followerList);
 
             recyclerView1 = rootView.findViewById(R.id.recyclerView1);
             recview_discussion = rootView.findViewById(R.id.recview_discussion);
@@ -287,6 +274,14 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                 }
             });
 
+            B_followers.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(getContext(), BasicTabLayoutActivity.class);
+                    startActivity(i);
+                }
+            });
+
 
             Button btnLogout = rootView.findViewById(R.id.btnLogout);
             btnLogout.setTypeface(tf);
@@ -302,14 +297,17 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                     //Intent intentSearch = new Intent(container.getContext(), EditProfile.class);
                     //startActivity(intentSearch);
                     if(isEdit ==0) {
-                        IVEdit.setImageResource(R.drawable.ic_check_black_24dp);
+                        IVEdit.setImageResource(R.drawable.ok);
 
                         isEdit = 1;
                         TVname.setEnabled(true);
 
                         ETQofDay.setEnabled(true);
+                        ETQofDay.setBackgroundColor(Color.parseColor("#ECECEC"));
                         ETIntro.setEnabled(true);
+                        ETIntro.setBackgroundColor(Color.parseColor("#ECECEC"));
                         ETWorkiingon.setEnabled(true);
+                        ETWorkiingon.setBackgroundColor(Color.parseColor("#ECECEC"));
                         ETQofDay.setSelection(ETQofDay.getText().length());
                         ETQofDay.setFocusable(true);
                         ETQofDay.requestFocus();
@@ -322,14 +320,18 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                         });
                     } else if(isEdit ==1)
                     {
-                        IVEdit.setImageResource(R.drawable.ic_edit);
+                        IVEdit.setImageResource(R.drawable.user_change_edit);
 
                         TVname.setEnabled(false);
                         ETQofDay.setEnabled(false);
+                        ETQofDay.setBackgroundColor(Color.parseColor("#FFFFFF"));
+                        ETIntro.setBackgroundColor(Color.parseColor("#FFFFFF"));
+                        ETWorkiingon.setBackgroundColor(Color.parseColor("#FFFFFF"));
+
                         ETIntro.setEnabled(false);
                         ETWorkiingon.setEnabled(false);
 
-                        updateInfo(UserId, ETQofDay.getText().toString().trim(), ETIntro.getText().toString().trim(), ETWorkiingon.getText().toString().trim(), selectedAvtarType);
+                        updateInfo(ETQofDay.getText().toString().trim(), ETWorkiingon.getText().toString().trim(), ETIntro.getText().toString().trim(), userData.getId());
                         isEdit = 0;
                     }
 
@@ -421,7 +423,8 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                 }
             }
         });
-
+        MyApplication.getInstance().trackEvent("Profile", "See profile", "Personal Profile");
+        MyApplication.getInstance().trackScreenView("Self Profile");
         return rootView;
     }
 
@@ -436,7 +439,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.published_Post, curr_context, false, hmHomeParam, new OnResponseListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -457,6 +460,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                 }
 
 
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -490,7 +494,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.discussions_action, curr_context, false, hmHomeParam, new OnResponseListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -507,6 +511,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -540,7 +545,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.user_profile, curr_context, false, hmUserProfileParams, new OnResponseListener() {
                 @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                 @Override
-                public void onSuccess(Object result) {
+                public ArrayList<Blog> onSuccess(Object result) {
                     try {
                         JSONObject jsonResponse = new JSONObject(result.toString());
                         int status = jsonResponse.getInt("success");
@@ -559,6 +564,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
+                    return null;
                 }
                 @Override
                 public void onError(VolleyError error) {
@@ -797,11 +803,11 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             @Override
             protected Map<String, String> getParams() throws AuthFailureError {
                 HashMap<String, String> params = new HashMap<>();
-                params.put("UserID", UserID);
-                params.put("QuoteofDay", QuoteofDay);
-                params.put("Introducation", Introducation);
-                params.put("WorkingOn", WorkingOn);
-                params.put("AvatorCode", String.valueOf(AvatorCode));
+                params.put("id", UserID);
+                params.put("QoD", QuoteofDay);
+                params.put("Intro", Introducation);
+                params.put("Wo", WorkingOn);
+                //params.put("AvatorCode", String.valueOf(AvatorCode));
                 return params;
             }
         };
@@ -811,14 +817,75 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
 
 
 
-    private void updateInfo(final String UserID, final String QuoteofDay, final String Introducation, final String WorkingOn, final  int AvatorCode) {
+    private void updateInfo(final String QoD, final String Wo, final String Intro, final String id){
+        RequestQueue MyRequestQueue = Volley.newRequestQueue(curr_context);
+        String url = "https://www.writon.co/Mine/UserProfileUpdate.php";
+        StringRequest MyStringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        //This code is executed if the server responds, whether or not the response contains data.
+                        //The String 'response' contains the server's response.
+                        Log.i("VOLLEY", response);
+                    }
+                }, new Response.ErrorListener() { //Create an error listener to handle errors appropriately.
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        //This code is executed if there is an error.
+                    }
+                }) {
+                    protected Map<String, String> getParams() {
+                        Map<String, String> params = new HashMap<String, String>();
+                        params.put("id", id);
+                        params.put("QoD", QoD);
+                        params.put("Intro", Intro);
+                        params.put("Wo", Wo); //Add the data you'd like to send to the server.
+                        return params;
+                    }
+                };
+            MyRequestQueue.add(MyStringRequest);
+        //Log.i("Params", params.);
+            }
 
-        HashMap<String, String> hmUserProfileParams = WebApiParams.getyserProfileParam(userData.getId());
+
+
+        /*try {
+            RequestQueue requestQueue = Volley.newRequestQueue(curr_context);
+            String URL = "https://www.writon.co/Mine/UserProfileUpdate.php";
+            JSONObject params = new JSONObject();
+            params.put("id", id);
+            params.put("QoD", QoD);
+            params.put("Intro", Intro);
+            params.put("Wo", Wo);
+            final String requestBody = params.toString();
+
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.i("VOLLEY", response);
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("VOLLEY", error.toString());
+                }
+            })
+            ;
+
+            requestQueue.add(stringRequest);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }*/
+
+        /*HashMap<String, String> hmUserProfileParams = new HashMap<>();
+        hmUserProfileParams.put("id", id);
+        hmUserProfileParams.put("QoD", QoD);
+        hmUserProfileParams.put("Wo", Wo);
+        hmUserProfileParams.put("Intro", Intro);
 
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.user_update_profile, curr_context, false, hmUserProfileParams, new OnResponseListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -835,6 +902,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -842,7 +910,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
             }
         });
         VolleySingleton.getInstance().addToRequestQueue(mainCategory);
-    }
+    }*/
 
 
 
@@ -931,7 +999,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                     hmHomeParam.put("NewPassword", et_newpassword.getText().toString());
                     SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.chanhe_password, curr_context, false, hmHomeParam, new OnResponseListener() {
                         @Override
-                        public void onSuccess(Object result) {
+                        public ArrayList<Blog> onSuccess(Object result) {
                             try {
                                 JSONObject jsonResponse = new JSONObject(result.toString());
                                 int status = jsonResponse.getInt("success");
@@ -947,6 +1015,7 @@ public class Home_Fragment2 extends Fragment implements View.OnClickListener {
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
+                            return null;
                         }
                         @Override
                         public void onError(VolleyError error) {

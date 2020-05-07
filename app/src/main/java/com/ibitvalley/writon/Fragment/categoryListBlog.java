@@ -1,12 +1,9 @@
 package com.ibitvalley.writon.Fragment;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -29,7 +26,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.adapter.LatestBlogAdapter;
-import com.ibitvalley.writon.classes.ShowBlogIngo;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.webapi.WebConstants;
@@ -44,8 +40,6 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
-
-import static android.content.Context.MODE_PRIVATE;
 
 
 public class categoryListBlog extends Fragment {
@@ -151,7 +145,7 @@ public class categoryListBlog extends Fragment {
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.search_url, thiscontext, true, hmHomeParam, new OnResponseListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -170,6 +164,7 @@ public class categoryListBlog extends Fragment {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

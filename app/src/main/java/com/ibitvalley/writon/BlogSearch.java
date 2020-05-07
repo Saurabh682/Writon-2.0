@@ -4,11 +4,9 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
-
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -18,13 +16,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.PopupWindow;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
@@ -39,21 +33,18 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.adapter.BlogSearchAdapter;
-import com.ibitvalley.writon.adapter.MyBlogAdapter;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.utils.Const;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Objects;
 
 public class BlogSearch extends AppCompatActivity implements
@@ -91,7 +82,8 @@ public class BlogSearch extends AppCompatActivity implements
         recyclerView1.setItemAnimator(new DefaultItemAnimator());
 
 
-
+        MyApplication.getInstance().trackEvent("Search", "Post Search", "Search");
+        MyApplication.getInstance().trackScreenView("Search");
 
         showDialog();
 

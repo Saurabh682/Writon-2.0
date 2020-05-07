@@ -1,22 +1,20 @@
 package com.ibitvalley.writon;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.model.Blog;
 
 import java.util.Arrays;
@@ -25,7 +23,9 @@ public class writeblogstepone extends AppCompatActivity {
 
     TextView BtnStart;
     Blog blog;
+    int forSubCatPos;
     ArrayAdapter adapter;
+    private Spinner tv_categoryL2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,15 +36,54 @@ public class writeblogstepone extends AppCompatActivity {
         blog = (Blog) getIntent().getSerializableExtra("BlogObject");
         BtnStart = (Button) findViewById(R.id.BtnStart);
         //final EditText tv_creatorName = (EditText) findViewById(R.id.tv_creatorName);
-        final Spinner tv_categoryName = (Spinner) findViewById(R.id.tv_categoryName);
-        final Spinner SPLanguage = (Spinner) findViewById(R.id.SPLanguage);
-        final Spinner tv_categoryL2 = (Spinner) findViewById(R.id.tv_categoryL2);
+        final Spinner tv_categoryName = findViewById(R.id.tv_categoryName);
+        MyApplication.getInstance().trackEvent("Blog Writing", "Start Blog", "Blog Writing.");
+        MyApplication.getInstance().trackScreenView("Short Description");
+        final Spinner SPLanguage = findViewById(R.id.SPLanguage);
+        tv_categoryL2 = findViewById(R.id.tv_categoryL2);
         ArrayAdapter adapter2 = ArrayAdapter.createFromResource(this, R.array.array_mainCategory, R.layout.subcat);
+
         tv_categoryName.setAdapter(adapter2);
-        ArrayAdapter.createFromResource(this, R.array.array_subCategory, R.layout.subcat);
-        tv_categoryL2.setAdapter(adapter);
+        if(blog!=null){
+        for(int i=0; i < adapter2.getCount(); i++) {
+            if(blog.getCategory().equals(adapter2.getItem(i))){
+                tv_categoryName.setSelection(i);
+                forSubCatPos = i;
+                break;
+            }
+        }}
+        System.out.println("++++++++  "+tv_categoryName.getSelectedItem().toString());
+
+        if(forSubCatPos>=0){
+            selectSubCatArray(forSubCatPos);
+
+            tv_categoryL2.setAdapter(adapter);
+        } else{
+            adapter = ArrayAdapter.createFromResource(this, R.array.array_subCategory, R.layout.subcat);
+            //tv_categoryL2.setAdapter(adapter);
+        }
+
+
+
+        if(blog!=null){
+        for(int i=0; i < adapter.getCount(); i++) {
+            if(blog.getSubCat().equals(adapter.getItem(i))){
+                System.out.println("++++++++  "+adapter.getItem(i)+"i===="+i);
+                tv_categoryL2.setSelection(i);
+                break;
+            }
+        }}
+
         ArrayAdapter adapter3 = ArrayAdapter.createFromResource(this, R.array.array_language, R.layout.subcat);
         SPLanguage.setAdapter(adapter3);
+        if(blog!=null){
+        for(int i=0; i < adapter3.getCount(); i++) {
+            if(blog.getLanguage().equals(adapter3.getItem(i))){
+                SPLanguage.setSelection(i);
+                break;
+            }
+        }}
+
         tv_categoryName.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -72,16 +111,19 @@ public class writeblogstepone extends AppCompatActivity {
                     tv_categoryL2.setAdapter(adapter);
                 }
 
-                if(blog != null){
+                /*if(blog != null){
                     String[] subCate = getResources().getStringArray(R.array.array_subCategory);
                     tv_categoryL2.setSelection(Arrays.asList(subCate).indexOf(blog.getSubCat()));
-                }
+                }*/
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
 
             }
+
+
+
         });
 
 
@@ -96,7 +138,7 @@ public class writeblogstepone extends AppCompatActivity {
             }
 
             public void onNothingSelected(AdapterView<?> adapterView) {
-                return;
+
             }
         });
 
@@ -152,7 +194,7 @@ public class writeblogstepone extends AppCompatActivity {
                 intent.putExtra("language", SPLanguage.getSelectedItem().toString());
                 if (blog != null) {
                     intent.putExtra("BlogObject", blog);
-                    blog.setTitle(tv_categoryName.getSelectedItem().toString());
+                    blog.setTitle(blog.getTitle());
                     blog.setCategory(tv_categoryName.getSelectedItem().toString());
                     blog.setSubCat(tv_categoryL2.getSelectedItem().toString());
                     blog.setLanguage(SPLanguage.getSelectedItem().toString());
@@ -163,5 +205,37 @@ public class writeblogstepone extends AppCompatActivity {
         });
 
     }
+
+    public void selectSubCatArray(int position){
+        System.out.println("++++++++  "+ position);
+        if(position ==1){
+            adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.array_subCategory1, R.layout.subcat);
+        } else if(position ==2){
+            adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.array_subCategory2, R.layout.subcat);
+        } else if(position ==3){
+            adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.array_subCategory3, R.layout.subcat);
+        } else if(position ==4){
+            adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.array_subCategory4, R.layout.subcat);
+        } else if(position ==5){
+            adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.array_subCategory5, R.layout.subcat);
+        } else if(position ==6){
+            adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.array_subCategory6, R.layout.subcat);
+        } else if(position ==7){
+            adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.array_subCategory7, R.layout.subcat);
+        } else if(position ==8){
+            adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.array_subCategory8, R.layout.subcat);
+        }
+
+        if(blog!=null){
+            for(int i=0; i < adapter.getCount(); i++) {
+                if(blog.getSubCat().equals(adapter.getItem(i))){
+
+                    tv_categoryL2.setSelection(i);
+                    System.out.println("pppppppp  "+tv_categoryL2.getSelectedItemPosition());
+                    break;
+                }
+            }}
+    }
+
 
 }

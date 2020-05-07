@@ -3,16 +3,15 @@ package com.ibitvalley.writon;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import android.util.Log;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.volley.VolleyError;
 import com.google.gson.Gson;
@@ -146,7 +145,7 @@ public class AllBlogActivity extends AppCompatActivity {
         hmHomeParam.put("page", String.valueOf(pageCount));
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.Latest_Post, curr_activity, true, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     newList = new ArrayList<>();
                     JSONObject jsonResponse = new JSONObject(result.toString());
@@ -175,6 +174,7 @@ public class AllBlogActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -213,7 +213,7 @@ public class AllBlogActivity extends AppCompatActivity {
         hmHomeParam.put("page", String.valueOf(pageCount));
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.trending_Post, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     trendingNewList = new ArrayList <>();
                     JSONObject jsonResponse = new JSONObject(result.toString());
@@ -243,6 +243,7 @@ public class AllBlogActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -282,7 +283,7 @@ public class AllBlogActivity extends AppCompatActivity {
         hmHomeParam.put("page", String.valueOf(pageCount));
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.top_followers, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     trendingNewList = new ArrayList <>();
                     JSONObject jsonResponse = new JSONObject(result.toString());
@@ -313,6 +314,7 @@ public class AllBlogActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -350,7 +352,7 @@ public class AllBlogActivity extends AppCompatActivity {
         hmHomeParam.put("page", String.valueOf(pageCount));
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.top_rated, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     trendingNewList = new ArrayList <>();
                     JSONObject jsonResponse = new JSONObject(result.toString());
@@ -380,6 +382,7 @@ public class AllBlogActivity extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

@@ -18,9 +18,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
-import com.ibitvalley.writon.adapter.DraftBlogAdapter;
 import com.ibitvalley.writon.adapter.MyBlogAdapter;
-import com.ibitvalley.writon.classes.UserInfo;
 import com.ibitvalley.writon.model.Blog;
 
 import org.json.JSONArray;
@@ -41,7 +39,7 @@ public class MyBlog extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_blog);
         this.setTitle("Your Creations");
-        recyclerView1 = (RecyclerView) findViewById(R.id.recyclerView1);
+        recyclerView1 = findViewById(R.id.recyclerView1);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView1.setLayoutManager(layoutManager);
         myblogArrayList = new ArrayList<>();

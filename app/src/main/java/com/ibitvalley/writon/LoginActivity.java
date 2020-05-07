@@ -5,9 +5,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,10 +12,12 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
@@ -27,16 +26,12 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.bumptech.glide.Glide;
-import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
 import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
-import com.facebook.Profile;
-import com.facebook.appevents.AppEventsLogger;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
@@ -45,18 +40,14 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.classes.UserInfo;
+import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.Const;
 import com.ibitvalley.writon.utils.VolleySingleton;
@@ -66,10 +57,10 @@ import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -206,6 +197,8 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent signInIntent = googleSignInClient.getSignInIntent();
                 startActivityForResult(signInIntent, 101);
+                MyApplication.getInstance().trackEvent("Login Screen", "User Click on login button.", "Google Login Button");
+                MyApplication.getInstance().trackScreenView("Login Screen");
             }
         });
 
@@ -222,14 +215,21 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Intent home = new Intent(LoginActivity.this, Signup.class);
+                MyApplication.getInstance().trackEvent("Login Screen", "User clicked SignUp button", "Signup Button");
+                MyApplication.getInstance().trackScreenView("Login Screen");
                 startActivity(home);
                 finish();
             }
         });
+
+
     }
 
 
     private void validateUser() {
+
+        MyApplication.getInstance().trackEvent("Login Screen", "User Click on login button.", "Login Button");
+        MyApplication.getInstance().trackScreenView("Login Screen");
         //ETEmail.setText("saurabh.682@gmail.com");
         //ETPassword.setText("Tarzan#4321");
 //      ETEmail.setText("admin");
@@ -240,7 +240,7 @@ public class LoginActivity extends AppCompatActivity {
         HashMap<String, String> hmLoginParams = WebApiParams.getLoginParams(email, password);
         SmartPostWebRequest loginRequest = new SmartPostWebRequest(WebConstants.Login_Api, LoginActivity.this, true, hmLoginParams, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -261,6 +261,7 @@ public class LoginActivity extends AppCompatActivity {
                     //e.printStackTrace();
                     Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                 }
+                return null;
             }
 
             @Override
@@ -275,8 +276,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void login()
     {
-        MyApplication.getInstance().trackEvent("Login Screen", "Login Button", "User Click on login button.");
-        MyApplication.getInstance().trackScreenView("Login Screen");
+
         if (!ETEmail.getText().toString().trim().equals("") && !ETPassword.getText().toString().trim().equals("")) {
             RequestQueue requestQueue;
             final ProgressDialog dialog = new ProgressDialog(LoginActivity.this);
@@ -470,7 +470,7 @@ public class LoginActivity extends AppCompatActivity {
         HashMap <String, String> hmLoginParams = WebApiParams.getRegistrationParamsFB(Name, fEmail, userId, provider);
         SmartPostWebRequest loginRequest = new SmartPostWebRequest(WebConstants.SocialRegister_API, LoginActivity.this, true, hmLoginParams, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -491,6 +491,7 @@ public class LoginActivity extends AppCompatActivity {
                     //e.printStackTrace();
                     Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
                 }
+                return null;
             }
 
             @Override

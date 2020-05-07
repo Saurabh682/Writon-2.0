@@ -18,13 +18,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.ibitvalley.writon.adapter.BlogCommentsAdapter;
 import com.ibitvalley.writon.adapter.DraftBlogAdapter;
-import com.ibitvalley.writon.adapter.TopFollowersAdapter;
-import com.ibitvalley.writon.classes.UserInfo;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.BlogComment;
-import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
@@ -116,7 +111,7 @@ public class Draft extends AppCompatActivity {
         HashMap<String, String> hmLoginParams = new HashMap <>();
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.drafts_api, Draft.this, true, hmLoginParams, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -134,6 +129,7 @@ public class Draft extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

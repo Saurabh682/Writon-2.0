@@ -1,9 +1,6 @@
 package com.ibitvalley.writon;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,16 +9,12 @@ import android.os.Bundle;
 import android.text.Html;
 import android.text.InputFilter;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,29 +28,21 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
-import com.ibitvalley.writon.classes.UserInfo;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
-import com.ibitvalley.writon.utils.Const;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 import jp.wasabeef.richeditor.RichEditor;
-
-import static java.security.AccessController.getContext;
 
 public class WriteBlog extends AppCompatActivity {
 
@@ -171,14 +156,14 @@ public class WriteBlog extends AppCompatActivity {
                 } else if(tv_creatorName.getText().toString().trim().length()> 80){
                     Toast.makeText(getApplicationContext(), "Creation name can't be more than 80 character", Toast.LENGTH_LONG).show();
                 }else  if (String.valueOf(mEditor.getHtml()).trim().length() <= 5) {
-                    Toast.makeText(this, "Blog Content is to Short.Please Write More.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Post content is too Short. Please Write More.", Toast.LENGTH_SHORT).show();
                 } else {
 
                     hideSoftKeyboard();
                     AlertDialog.Builder builder = new AlertDialog.Builder(this);
                     View dialogView = getLayoutInflater().inflate(R.layout.blogpostconfirmdialog, null);
-                    TextView btnOk = (TextView) dialogView.findViewById(R.id.btnOk);
-                    TextView btnCancel = (TextView) dialogView.findViewById(R.id.btnCancel);
+                    TextView btnOk = dialogView.findViewById(R.id.btnOk);
+                    TextView btnCancel = dialogView.findViewById(R.id.btnCancel);
                     builder.setView(dialogView);
                     final AlertDialog dialog = builder.create();
                     btnCancel.setOnClickListener(new View.OnClickListener() {
@@ -330,7 +315,7 @@ public class WriteBlog extends AppCompatActivity {
 
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.add_post, WriteBlog.this, false, params, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -350,6 +335,7 @@ public class WriteBlog extends AppCompatActivity {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -393,14 +379,15 @@ public class WriteBlog extends AppCompatActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Save Draft");
-        builder.setMessage("Do you want to save this Blog to Draft ?.");
+        builder.setMessage("Do you want to save this post as draft?.");
         builder.setPositiveButton("Save Draft", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 publishBlog("1");
             }
         });
-        builder.setNegativeButton("Discard Blog", new DialogInterface.OnClickListener() {
+
+        builder.setNegativeButton("Discard this post?", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();

@@ -1,8 +1,6 @@
 package com.ibitvalley.writon.webapi;
 
 
-import java.util.ArrayList;
-
 public class WebConstants {
 
     //public static final String BASE_URL = "http://n100.online/";
@@ -19,6 +17,8 @@ public class WebConstants {
     public static final String SocialRegister_API = BASE_URL + "social-signup";
 
     public static final String Latest_Post = NEW_BASE_URL + "LatestPost.php";
+    public static final String Followers_List = NEW_BASE_URL + "followersList.php";
+    public static final String Following_List = NEW_BASE_URL + "followingList.php";
     public static final String trending_Post = NEW_BASE_URL + "TrendingPost.php";
     public static final String published_Post = BASE_URL + "published-blogs";
     public static final String myworld_action = BASE_URL + "myworld";
@@ -46,7 +46,7 @@ public class WebConstants {
 
     public static final String add_post = BASE_URL + "add-post";
     public static final String user_profile = BASE_URL + "user-profile";
-    public static final String user_update_profile = BASE_URL + "update-profile";
+    public static final String user_update_profile = NEW_BASE_URL + "UserProfileUpdate.php";
 
 
     public static final String chanhe_password = BASE_URL + "change-password";

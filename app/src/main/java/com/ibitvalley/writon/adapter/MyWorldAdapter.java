@@ -24,6 +24,7 @@ import com.ibitvalley.writon.Blog_Profile;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.Report;
 import com.ibitvalley.writon.ShowBlogDetails;
+import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.webapi.WebConstants;
@@ -270,7 +271,7 @@ public class MyWorldAdapter extends RecyclerView.Adapter<MyWorldAdapter.Imagecat
         hmHomeParam.put("userid", UserID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_bookmark_api, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -286,6 +287,7 @@ public class MyWorldAdapter extends RecyclerView.Adapter<MyWorldAdapter.Imagecat
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

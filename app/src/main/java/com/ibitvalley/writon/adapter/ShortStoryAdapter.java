@@ -1,7 +1,6 @@
 package com.ibitvalley.writon.adapter;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -28,6 +27,7 @@ import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.Report;
 import com.ibitvalley.writon.ShowBlogDetails;
+import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
@@ -291,7 +291,7 @@ public class ShortStoryAdapter extends RecyclerView.Adapter<ShortStoryAdapter.Im
         hmHomeParam.put("userid", UserID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_bookmark_api, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -307,6 +307,7 @@ public class ShortStoryAdapter extends RecyclerView.Adapter<ShortStoryAdapter.Im
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -322,7 +323,7 @@ public class ShortStoryAdapter extends RecyclerView.Adapter<ShortStoryAdapter.Im
         hmHomeParam.put("userid", UserID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_unbookmark_api, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -338,6 +339,7 @@ public class ShortStoryAdapter extends RecyclerView.Adapter<ShortStoryAdapter.Im
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -354,7 +356,7 @@ public class ShortStoryAdapter extends RecyclerView.Adapter<ShortStoryAdapter.Im
         hmHomeParam.put("UserID", userID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -370,6 +372,7 @@ public class ShortStoryAdapter extends RecyclerView.Adapter<ShortStoryAdapter.Im
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -386,7 +389,7 @@ public class ShortStoryAdapter extends RecyclerView.Adapter<ShortStoryAdapter.Im
         hmHomeParam.put("UserID", userID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.un_follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -402,6 +405,7 @@ public class ShortStoryAdapter extends RecyclerView.Adapter<ShortStoryAdapter.Im
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

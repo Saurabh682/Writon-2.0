@@ -48,13 +48,18 @@ import static android.content.Context.MODE_PRIVATE;
  */
 
 public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.ImagecategoryViewHolder> {
+    private static final String TAG = "MyBlogAdapter";
     private Context curr_context;
     private Activity curr_activity;
     private ArrayList<Blog> arrappliedjob;
     private SharedPreferences preferences;
+    private Blog show;
     //SharedPreferences preferences;
     Typeface tf;
     String Title= "";
+    private String currUserId, blogUserID;
+    private User userData2;
+
     public MyBlogAdapter(Activity curr_activity, Context curr_context, ArrayList<Blog> arrappliedjob, String title) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
@@ -80,10 +85,11 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
     public void onBindViewHolder(final MyBlogAdapter.ImagecategoryViewHolder holder, final int position) {
         System.out.println("Entering onbind");
 
-        final Blog show = arrappliedjob.get(position);
+        show = arrappliedjob.get(position);
         preferences = Objects.requireNonNull(curr_context).getSharedPreferences(Constants.PREFREFRENCE, MODE_PRIVATE);
 
-        final String UserId = preferences.getString(Constants.KEY_PREF_USERID, "0");
+        final  String  UserId = preferences.getString(Constants.KEY_PREF_USERID, "0");
+
         //final String UserName = preferences.getString(Constants.KEY_PREF_DISPLAY_NAME, "0");
 
 
@@ -92,20 +98,25 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
         holder.TVViewCount.setText(show.getView_count());
         holder.TVCommentCount.setText(show.getComments_count());
         holder.TVRating.setText(show.getVotes_count());
+        blogUserID = show.getUser_id();
 
         if(show.getUser_image() != null){
             Picasso.get().load(show.getUser_image()).placeholder(R.drawable.usermale).into(holder.list_image2);
         }
 
-        if(this.Title == "Bookmarked"){
+        if(this.Title.equals("Bookmarked")){
             holder.IMOption.setVisibility(View.GONE);
         }
         /*SharedPreferences sharedPref = Current().getPreferences(Context.MODE_PRIVATE);
         String highScore = sharedPref.getString("PenName", defaultValue);*/
-        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
-       if(show.getUser_id() == userData2.getId()) {
+        userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
+        currUserId = userData2.getId();
+        Log.i(TAG,show.getUser_id()+"-----"+userData2.getId());
+       if(show.getUser_id().equals(userData2.getId())) {
             holder.IMOption.setVisibility(View.VISIBLE);
-        }
+        }else{
+           holder.IMOption.setVisibility(View.INVISIBLE);
+       }
     }
 
 
@@ -127,15 +138,20 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
         public ImagecategoryViewHolder(View view) {
             super(view);
 
-            this.TVWrite = (TextView) view.findViewById(R.id.TVWrite);
+            this.TVWrite = view.findViewById(R.id.TVWrite);
             this.TVWrite.setTypeface(tf);
-            this.TVTitle = (TextView) view.findViewById(R.id.TVTitle);
+            this.TVTitle = view.findViewById(R.id.TVTitle);
             this.TVTitle.setTypeface(tf);
-            this.TVViewCount = (TextView) view.findViewById(R.id.TVViewCount);
-            this.TVCommentCount = (TextView) view.findViewById(R.id.TVCommentCount);
-            this.TVRating = (TextView) view.findViewById(R.id.TVRating);
-            this.list_image2 = (CircleImageView) view.findViewById(R.id.list_image2);
-            this.IMOption = (ImageView) view.findViewById(R.id.IMOption);
+            this.TVViewCount = view.findViewById(R.id.TVViewCount);
+            this.TVCommentCount = view.findViewById(R.id.TVCommentCount);
+            this.TVRating = view.findViewById(R.id.TVRating);
+            this.list_image2 = view.findViewById(R.id.list_image2);
+            this.IMOption = view.findViewById(R.id.IMOption);
+            //if() {IMOption.setVisibility(View.VISIBLE);}
+            /*if(blogUserID.equals(currUserId)) {
+                IMOption.setVisibility(View.VISIBLE);
+            }*/
+
             this.duration = (TextView) view.findViewById(R.id.duration);
             //this.img_Delete = (ImageView) view.findViewById(R.id.img_Delete);
 
@@ -191,7 +207,7 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
         hmHomeParam.put("BlogId", BlogID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.delete_post_url, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -205,6 +221,7 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {

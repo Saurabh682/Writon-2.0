@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
@@ -25,18 +24,11 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTabHost;
 import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.gson.Gson;
@@ -44,20 +36,11 @@ import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.AllBlogActivity;
 import com.ibitvalley.writon.BlogSearch;
 import com.ibitvalley.writon.Draft;
+import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.MyBlog;
 import com.ibitvalley.writon.R;
-import com.ibitvalley.writon.adapter.BlogBlogAdapter;
-import com.ibitvalley.writon.adapter.JokesBlogAdapter;
-import com.ibitvalley.writon.adapter.JournalismBlogAdapter;
 import com.ibitvalley.writon.adapter.LatestBlogAdapter;
-import com.ibitvalley.writon.adapter.MostBookMarkedBlogAdapter;
-import com.ibitvalley.writon.adapter.MostReadBlogAdapter;
-import com.ibitvalley.writon.adapter.ReviewsBlogAdapter;
-import com.ibitvalley.writon.adapter.ShortStoryAdapter;
-import com.ibitvalley.writon.adapter.SongsJinglesBlogAdapter;
-import com.ibitvalley.writon.adapter.TopFollowersAdapter;
-import com.ibitvalley.writon.adapter.TopRatedAdapter;
 import com.ibitvalley.writon.classes.ShowBlogIngo;
 import com.ibitvalley.writon.discus;
 import com.ibitvalley.writon.model.Blog;
@@ -78,8 +61,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 
-import static android.content.Context.MODE_PRIVATE;
-
 /**
  * Created by Android_PC on 10-08-2016.
  */
@@ -95,16 +76,7 @@ public class LatestFragment extends Fragment {
 
     private Context thiscontext;
     private LatestBlogAdapter latestLatestBlogAdapter;
-    private ShortStoryAdapter shortStoryAdapter;
-    TopFollowersAdapter topFollowersAdapter;
-    TopRatedAdapter topRatedAdapter;
-    private MostReadBlogAdapter mostReadAdapter;
-    private MostBookMarkedBlogAdapter mostBookMarkedBlogAdapter;
-    private SongsJinglesBlogAdapter songsJinglesBlogAdapter;
-    private JokesBlogAdapter jokesBlogAdapter;
-    private ReviewsBlogAdapter reviewsBlogAdapter;
-    private BlogBlogAdapter blogBlogAdapter;
-    private JournalismBlogAdapter journalismBlogAdapter;
+
 
     private RecyclerView recyclerViewLatest, recyclerView1, recyclerView2, recyclerViewMB, recyclerView4, recyclerView5, recyclerView6, recyclerView7, recyclerView8;
     private ImageView ivSearch, ivSearch1, IVSync;
@@ -139,14 +111,14 @@ public class LatestFragment extends Fragment {
         ivSearch = rootView.findViewById(R.id.ivSearch);
         ivSearch1 = rootView.findViewById(R.id.ivSearch1);
         rlLatest = rootView.findViewById(R.id.rlLatest);
-        rl1 = rootView.findViewById(R.id.rl1);
+        /*rl1 = rootView.findViewById(R.id.rl1);
         rl2 = rootView.findViewById(R.id.rl2);
         rl3 = rootView.findViewById(R.id.rl3);
         rl4 = rootView.findViewById(R.id.rl4);
         rl5 = rootView.findViewById(R.id.rl5);
         rl6 = rootView.findViewById(R.id.rl6);
         rl7 = rootView.findViewById(R.id.rl7);
-        rl8 = rootView.findViewById(R.id.rl8);
+        rl8 = rootView.findViewById(R.id.rl8);*/
 
 
         tvViewAll = rootView.findViewById(R.id.tvViewAll6);
@@ -160,28 +132,6 @@ public class LatestFragment extends Fragment {
 
 
 
-
-
-
-
-
-
-        // LLNoPost = (LinearLayout) rootView.findViewById(R.id.LLNoPost);
-        // TextView TVnoPost= (TextView) rootView.findViewById(R.id.TVnoPost);
-//        TVnoPost.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(thiscontext, writeblogstepone.class);
-//                startActivity(intent);
-//            }
-//        });
-//        LLNoPost.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                Intent intent = new Intent(thiscontext, writeblogstepone.class);
-//                startActivity(intent);
-//            }
-//        });
         String catValue = "";
         if(getArguments()!=null) {
             catValue = String.valueOf(this.getArguments().getString("cName"));
@@ -300,6 +250,9 @@ public class LatestFragment extends Fragment {
             }
         });
 
+        MyApplication.getInstance().trackEvent("Posts", "Read Post List", "Latest posts");
+        MyApplication.getInstance().trackScreenView("Latest Post");
+
         return rootView;
     }
 
@@ -371,14 +324,14 @@ public class LatestFragment extends Fragment {
 
         latestLatestBlogAdapter = new LatestBlogAdapter(Objects.requireNonNull(getActivity()), getContext(), ShowBlogIngo.blogArrayList, false);
         // shortStoryAdapter = new ShortStoryAdapter(getActivity(), getContext(), ShowBlogIngo.shortStoryArrayList);
-        mostReadAdapter = new MostReadBlogAdapter(getActivity(), Objects.requireNonNull(getContext()), ShowBlogIngo.arrMostReadBlog);
+        /*mostReadAdapter = new MostReadBlogAdapter(getActivity(), Objects.requireNonNull(getContext()), ShowBlogIngo.arrMostReadBlog);
         mostBookMarkedBlogAdapter = new MostBookMarkedBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrMostBookMarketBlog);
 
         songsJinglesBlogAdapter = new SongsJinglesBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrSongJingles);
         jokesBlogAdapter = new JokesBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrJokes);
         reviewsBlogAdapter = new ReviewsBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrReviews);
         blogBlogAdapter = new BlogBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrBlog);
-        journalismBlogAdapter = new JournalismBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrJournalism);
+        journalismBlogAdapter = new JournalismBlogAdapter(getActivity(), getContext(), ShowBlogIngo.arrJournalism);*/
 
         //Adapter set to recyclerView
         recyclerViewLatest.setAdapter(latestLatestBlogAdapter);
@@ -422,7 +375,7 @@ public class LatestFragment extends Fragment {
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.Latest_Post, thiscontext, true, hmHomeParam, new OnResponseListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -440,6 +393,7 @@ public class LatestFragment extends Fragment {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -459,215 +413,7 @@ public class LatestFragment extends Fragment {
     }
 
 
-    /*private void getBlogsListCallApi(String catValue) {
-        RequestQueue requestQueue;
-        progress = new ProgressDialog(thiscontext);
-        progress.show();
-        progress.setCancelable(false);
-        progress.setTitle("Please Wait");
 
-        requestQueue = Volley.newRequestQueue(thiscontext);
-        //String loginURL = String.format("http://blog.ibitvalley.com/api/BlogList?userid=%s", 2);
-        SharedPreferences preferences = thiscontext.getSharedPreferences("mPrefs", MODE_PRIVATE);
-        String UserID = preferences.getString("UserId", "");
-        String getBlogListURL = "";
-        if(catValue == "") {
-            //getBlogListURL = String.format("http://blog.ibitvalley.com/api/BlogList?UserID=%s", UserID);
-            //
-            getBlogListURL = String.format("http://blog.ibitvalley.com/api/AllCategoryBlog?UserID=%s", UserID);
-        } else {
-            getBlogListURL = String.format("http://blog.ibitvalley.com/api/GetBlogsByCategory?UserID=%s&Category=%s", UserID, catValue.replace(" ", "%20"));
-        }
-        JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, getBlogListURL, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("True", "");
-                        try {
-                            if (response.get("success").toString() == "true") {
-                                System.out.println("Json == > " + response.toString());
-                                JSONObject obj = new JSONObject(response.toString());
-                                JSONArray arr = obj.getJSONArray("LatestBlog");
-
-                                if(arr.length()<=0){
-                                    LLNoPost.setVisibility(View.VISIBLE);
-                                    rlLatest.setVisibility(View.INVISIBLE);
-                                    rl1.setVisibility(View.INVISIBLE);
-                                    rl2.setVisibility(View.INVISIBLE);
-                                    rl3.setVisibility(View.INVISIBLE);
-                                    rl4.setVisibility(View.INVISIBLE);
-                                    rl5.setVisibility(View.INVISIBLE);
-                                    rl6.setVisibility(View.INVISIBLE);
-                                    rl6.setVisibility(View.INVISIBLE);
-                                    rl8.setVisibility(View.INVISIBLE);
-                                } else {
-                                    LLNoPost.setVisibility(View.INVISIBLE);
-                                    rlLatest.setVisibility(View.VISIBLE);
-                                    rl1.setVisibility(View.VISIBLE);
-                                    rl2.setVisibility(View.VISIBLE);
-                                    rl3.setVisibility(View.VISIBLE);
-                                    rl4.setVisibility(View.VISIBLE);
-                                    rl5.setVisibility(View.VISIBLE);
-                                    rl6.setVisibility(View.VISIBLE);
-                                    rl7.setVisibility(View.VISIBLE);
-                                    rl8.setVisibility(View.VISIBLE);
-                                }
-
-//                                JSONArray arrJsonMostRead = obj.getJSONArray("MostRead");
-//                                List<String> listMostRead = new ArrayList<String>();
-//                                for(int i = 0; i < arrJsonMostRead.length(); i++){
-//                                    listMostRead.add(arrJsonMostRead.getJSONObject(i).getString("BlogID"));
-//                                }
-//
-//                                JSONArray arrJsonMostBookMarked = obj.getJSONArray("MostBookMarked");
-//                                List<String> listMostBookMarked = new ArrayList<String>();
-//                                for(int i = 0; i < arrJsonMostBookMarked.length(); i++){
-//                                    listMostBookMarked.add(arrJsonMostBookMarked.getJSONObject(i).getString("BlogID"));
-//                                }
-
-
-
-                                for (int i = 0; i < arr.length(); i++) {
-                                    String blogString = arr.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.blogArrayList.add(blog);
-                                }
-
-
-                                JSONArray arrShortStory = obj.getJSONArray("ShortStory");
-
-                                for (int i = 0; i < arrShortStory.length(); i++) {
-                                    String blogString = arrShortStory.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.shortStoryArrayList.add(blog);
-                                }
-
-                                JSONArray arrPoetry = obj.getJSONArray("Poetry");
-
-                                for (int i = 0; i < arrPoetry.length(); i++) {
-                                    String blogString = arrPoetry.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrMostBookMarketBlog.add(blog);
-                                }
-
-
-
-                                JSONArray arrShayari = obj.getJSONArray("Shayari");
-
-                                for (int i = 0; i < arrShayari.length(); i++) {
-                                    String blogString = arrShayari.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrMostReadBlog.add(blog);
-                                }
-
-
-                                JSONArray arrSongJingles = obj.getJSONArray("SongJingles");
-
-                                for (int i = 0; i < arrSongJingles.length(); i++) {
-                                    String blogString = arrSongJingles.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrSongJingles.add(blog);
-                                }
-
-                                JSONArray arrJoke = obj.getJSONArray("Jokes");
-
-                                for (int i = 0; i < arrJoke.length(); i++) {
-                                    String blogString = arrJoke.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrJokes.add(blog);
-                                }
-
-                                JSONArray arrreview = obj.getJSONArray("Reviews");
-
-                                for (int i = 0; i < arrreview.length(); i++) {
-                                    String blogString = arrreview.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrReviews.add(blog);
-                                }
-
-                                JSONArray arrBlog = obj.getJSONArray("Blog");
-
-                                for (int i = 0; i < arrBlog.length(); i++) {
-                                    String blogString = arrBlog.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrBlog.add(blog);
-                                }
-
-
-                                JSONArray arrJournalism = obj.getJSONArray("Journalism");
-
-                                for (int i = 0; i < arrJournalism.length(); i++) {
-                                    String blogString = arrJournalism.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    ShowBlogIngo.arrJournalism.add(blog);
-                                }
-
-
-//                                // Most Read
-//
-//                                 for (int s=0; s< listMostRead.size(); s++){
-//                                        for (int i = 0; i < ShowBlogIngo.blogArrayList.size(); i++) {
-//                                            if (ShowBlogIngo.blogArrayList.get(i).getBlogId().toString().equals(listMostRead.get(s).toString())) {
-//                                                ShowBlogIngo.arrMostReadBlog.add(ShowBlogIngo.blogArrayList.get(i));
-//                                                break;
-//                                            }
-//                                        }
-//                                 }
-//
-//                                // Most BookMarked
-//
-//                                for (int s=0; s< listMostBookMarked.size(); s++){
-//                                    for (int i = 0; i < ShowBlogIngo.blogArrayList.size(); i++) {
-//                                        if (ShowBlogIngo.blogArrayList.get(i).getBlogId().toString().equals(listMostBookMarked.get(s).toString())) {
-//                                            ShowBlogIngo.arrMostBookMarketBlog.add(ShowBlogIngo.blogArrayList.get(i));
-//                                            break;
-//                                        }
-//                                    }
-//                                }
-
-
-
-                                if (progress != null && progress.isShowing())
-                                    progress.dismiss();
-
-                                latestLatestBlogAdapter.notifyDataSetChanged();
-                                mostReadAdapter.notifyDataSetChanged();
-                                mostBookMarkedBlogAdapter.notifyDataSetChanged();
-                                songsJinglesBlogAdapter.notifyDataSetChanged();
-                                jokesBlogAdapter.notifyDataSetChanged();
-                                reviewsBlogAdapter.notifyDataSetChanged();
-                                blogBlogAdapter.notifyDataSetChanged();
-                                journalismBlogAdapter.notifyDataSetChanged();
-                                shortStoryAdapter.notifyDataSetChanged();
-
-                            }
-                        } catch (JSONException ex) {
-                            if (progress != null && progress.isShowing())
-                                progress.dismiss();
-                            Log.d("JSON Exception", ex.getMessage());
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        if (progress != null && progress.isShowing())
-                            progress.dismiss();
-                        Log.e("Volley", "Error" + error.getMessage());
-                    }
-                }
-        );
-        jor.setRetryPolicy(new DefaultRetryPolicy(20000, 3, 0.0f));
-        requestQueue.add(jor);
-    }
-*/
-
-    private void showNotificationBell(){
-
-
-
-    }
 
     @Override
     public void onResume() {

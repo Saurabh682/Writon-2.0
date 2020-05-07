@@ -27,7 +27,14 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:layout_marginTop="@dimen/size_10"
-        android:orientation="vertical">
+        android:orientation="vertical"
+
+        >
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:alpha=".6"
+            android:src="@drawable/write_pic" />
 
         <TextView
             android:layout_width="match_parent"
@@ -98,7 +105,7 @@
             android:layout_marginTop="5dp"
             android:background="#f3f1fc"
             android:padding="2dp"
-            android:textColor="@color/verylightPurple"
+            android:textColor="@color/newColorGrey"
             android:tooltipText="Try writing a decent description which will attract more viewer"
             android:textSize="18dp" />
 

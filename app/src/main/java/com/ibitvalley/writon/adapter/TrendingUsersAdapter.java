@@ -2,7 +2,6 @@ package com.ibitvalley.writon.adapter;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
@@ -25,6 +24,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.R;
+import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
@@ -64,7 +64,6 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
         preferences = curr_activity.getSharedPreferences("mPrefs", MODE_PRIVATE);
         System.out.println("Array Size In Adapter : " + arrappliedjob.size());
         tf = Typeface.createFromAsset(curr_context.getAssets(),"Lato-Regular.ttf");
-
         userData = WritOnPreference.getInstance(curr_context).getUserDetails();
     }
 
@@ -170,7 +169,7 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
         hmHomeParam.put("UserID", userID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
 
                     JSONObject jsonResponse = new JSONObject(result.toString());
@@ -185,6 +184,7 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
@@ -201,7 +201,7 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
         hmHomeParam.put("UserID", userID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.un_follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
             @Override
-            public void onSuccess(Object result) {
+            public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     if (jsonResponse != null) {
@@ -217,6 +217,7 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
+                return null;
             }
             @Override
             public void onError(VolleyError error) {
