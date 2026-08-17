@@ -38,6 +38,7 @@
         <activity
             android:name=".modern.WritOnModernActivity"
             android:exported="true"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.Material3.DayNight.NoActionBar" />
         <activity
             android:name=".WelcomeActivity"

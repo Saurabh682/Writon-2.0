@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -43,6 +44,19 @@ fun FeedScreen(
     onWriteClick: () -> Unit
 ) {
     val posts by viewModel.posts.collectAsState()
+    val listState = rememberLazyListState(
+        initialFirstVisibleItemIndex = viewModel.scrollIndex,
+        initialFirstVisibleItemScrollOffset = viewModel.scrollOffset
+    )
+
+    // Sync scroll state back to ViewModel whenever it changes
+    LaunchedEffect(listState) {
+        snapshotFlow { Pair(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) }
+            .collect { (index, offset) ->
+                viewModel.scrollIndex = index
+                viewModel.scrollOffset = offset
+            }
+    }
 
     Scaffold(
         topBar = {
@@ -74,6 +88,7 @@ fun FeedScreen(
             }
         } else {
             LazyColumn(
+                state = listState,
                 modifier = Modifier
                     .padding(innerPadding)
                     .fillMaxSize()
@@ -104,9 +119,9 @@ fun FeedCard(
             .padding(16.dp)
             .clip(RoundedCornerShape(32.dp))
             .background(Color.White)
-            .clickable { onReadClick() }
-            .pointerInput(Unit) {
+            .pointerInput(post.id) {
                 detectTapGestures(
+                    onTap = { onReadClick() },
                     onDoubleTap = { onApplaud() }
                 )
             }
@@ -217,14 +232,15 @@ fun FeedCard(
                 Icon(
                     painter = painterResource(id = R.drawable.speech),
                     contentDescription = null,
-                    tint = BrandRed,
+                    tint = if (post.isLiked) BrandRed else Color.Black.copy(alpha = 0.6f),
                     modifier = Modifier.size(20.dp)
                 )
                 Text(
-                    text = "${post.likesCnt / 1000.0}K",
+                    text = if (post.likesCnt >= 1000) String.format(java.util.Locale.getDefault(), "%.1fK", post.likesCnt / 1000.0) else post.likesCnt.toString(),
                     modifier = Modifier.padding(start = 8.dp),
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp
+                    fontSize = 14.sp,
+                    color = if (post.isLiked) BrandRed else Color.Black
                 )
             }
 

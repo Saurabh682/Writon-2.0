@@ -76,11 +76,11 @@ public class Splash extends BaseActivity {
                 FirebaseApp.initializeApp(Splash.this);
 
                 if (email == null || email.isEmpty()) {
-                    Intent home = new Intent(Splash.this, LoginActivity.class);
+                    Intent home = new Intent(Splash.this, com.ibitvalley.writon.modern.WritOnModernActivity.class);
                     startActivity(home);
                     finish();
                 } else {
-                    Intent home = new Intent(Splash.this, Home_Activity.class);
+                    Intent home = new Intent(Splash.this, com.ibitvalley.writon.modern.WritOnModernActivity.class);
                     startActivity(home);
                     finish();
                 }

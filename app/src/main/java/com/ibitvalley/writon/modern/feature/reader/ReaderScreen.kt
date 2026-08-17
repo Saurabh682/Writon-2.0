@@ -1,6 +1,7 @@
 package com.ibitvalley.writon.modern.feature.reader
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -10,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.*
@@ -18,12 +20,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.content.Intent
+import java.util.Locale
 import coil.compose.AsyncImage
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
@@ -37,6 +42,7 @@ fun ReaderScreen(
     onBackClick: () -> Unit
 ) {
     val post by viewModel.post.collectAsState()
+    val commentText by viewModel.commentText.collectAsState()
     val scrollState = rememberScrollState()
 
     Scaffold(
@@ -66,10 +72,14 @@ fun ReaderScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Outlined.BookmarkBorder, contentDescription = "Bookmark")
+                    IconButton(onClick = { viewModel.toggleBookmark() }) {
+                        Icon(
+                            imageVector = if (post?.isBookmarked == true) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
+                            contentDescription = "Bookmark",
+                            tint = if (post?.isBookmarked == true) BrandRed else Color.Black
+                        )
                     }
-                    IconButton(onClick = { /* TODO */ }) {
+                    IconButton(onClick = { /* More actions */ }) {
                         Icon(Icons.Default.MoreHoriz, contentDescription = "More")
                     }
                 },
@@ -95,27 +105,41 @@ fun ReaderScreen(
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     OutlinedTextField(
-                        value = "",
-                        onValueChange = {},
+                        value = commentText,
+                        onValueChange = { 
+                            viewModel.commentText.value = it 
+                        },
                         placeholder = { Text("Write a response...", fontSize = 14.sp) },
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(28.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedContainerColor = Color.White,
                             focusedContainerColor = Color.White,
-                            unfocusedBorderColor = Color.Transparent,
+                            unfocusedBorderColor = Color.LightGray.copy(alpha = 0.5f),
                             focusedBorderColor = BrandRed
+                        ),
+                        singleLine = true,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            imeAction = androidx.compose.ui.text.input.ImeAction.Send
+                        ),
+                        keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                            onSend = { viewModel.submitComment("Testing User") }
                         )
                     )
                     Spacer(modifier = Modifier.width(12.dp))
-                    FloatingActionButton(
-                        onClick = { /* TODO */ },
-                        containerColor = BrandRed,
-                        contentColor = Color.White,
-                        shape = CircleShape,
-                        modifier = Modifier.size(48.dp)
+                    IconButton(
+                        onClick = { viewModel.submitComment("Testing User") },
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(BrandRed)
                     ) {
-                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send", modifier = Modifier.size(20.dp))
+                        Icon(
+                            imageVector = Icons.Default.ArrowUpward,
+                            contentDescription = "Send",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
                     }
                 }
             }
@@ -214,27 +238,111 @@ fun ReaderScreen(
                 Spacer(modifier = Modifier.height(48.dp))
 
                 // Interaction Stats
+                val context = LocalContext.current
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(painterResource(R.drawable.speech), contentDescription = null, tint = BrandRed, modifier = Modifier.size(20.dp))
-                        Text("1.2K", modifier = Modifier.padding(start = 8.dp), fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                        Spacer(modifier = Modifier.width(24.dp))
-                        Icon(Icons.Default.ChatBubbleOutline, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
-                        Text("128", modifier = Modifier.padding(start = 8.dp), fontSize = 14.sp, fontWeight = FontWeight.Medium)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.BookmarkBorder, contentDescription = null, tint = Color.Black, modifier = Modifier.size(20.dp))
-                            Text("Save", modifier = Modifier.padding(start = 4.dp), fontSize = 14.sp)
+                        // Applaud
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { viewModel.toggleLike() }
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.speech),
+                                contentDescription = "Like",
+                                tint = if (p.isLiked) BrandRed else Color.Black.copy(alpha = 0.6f),
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (p.likesCnt >= 1000) String.format(Locale.getDefault(), "%.1fK", p.likesCnt / 1000.0) else p.likesCnt.toString(),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
                         }
-                        Spacer(modifier = Modifier.width(16.dp))
+                        
+                        Spacer(modifier = Modifier.width(40.dp))
+                        
+                        // Comment
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.Share, contentDescription = null, tint = Color.Black, modifier = Modifier.size(20.dp))
-                            Text("Share", modifier = Modifier.padding(start = 4.dp), fontSize = 14.sp)
+                            Icon(
+                                painter = painterResource(id = R.drawable.chat), 
+                                contentDescription = null, 
+                                tint = Color.Black.copy(alpha = 0.6f), 
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = p.commentsCnt.toString(), 
+                                fontSize = 16.sp, 
+                                fontWeight = FontWeight.Bold,
+                                color = Color.Black
+                            )
+                        }
+                    }
+                    
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Save
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable { viewModel.toggleBookmark() }
+                                .padding(horizontal = 4.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.bookmark),
+                                contentDescription = null,
+                                tint = if (p.isBookmarked) BrandRed else Color.Black,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Save",
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(24.dp))
+                        
+                        // Share
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    val sendIntent: Intent = Intent().apply {
+                                        action = Intent.ACTION_SEND
+                                        putExtra(Intent.EXTRA_TEXT, "Check out this story: ${p.title}\n\nhttps://writon.co/posts/${p.slug}")
+                                        type = "text/plain"
+                                    }
+                                    val shareIntent = Intent.createChooser(sendIntent, null)
+                                    context.startActivity(shareIntent)
+                                }
+                                .padding(horizontal = 4.dp, vertical = 4.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_share), 
+                                contentDescription = null, 
+                                tint = Color.Black, 
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Share", 
+                                fontSize = 16.sp,
+                                color = Color.Black
+                            )
                         }
                     }
                 }

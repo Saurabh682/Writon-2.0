@@ -29,472 +29,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9c6ae2d-bc2c-4dad-a201-11f11e4ca373" name="Default Changelist" comment="Till 12 June">
-      <change afterPath="$PROJECT_DIR$/.artifacts/0c573adc-f0c0-45bb-82cb-013cecd9e2ec/implementation_plan.artifact.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.artifacts/ad0cdb1a-45bd-437d-aa67-c3b20c581191/implementation_plan.artifact.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/AndroidProjectSystem.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/appInsightsSettings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/compiler.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/deploymentTargetSelector.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/deviceManager.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/markdown.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/migrations.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules/app/WritOn-PowerUp.app.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/planningMode.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/render.experimental.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.vscode/settings.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/ANDROID_STUDIO_AI_SPEC.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/release/app-release.apk" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/schemas/com.ibitvalley.writon.classes.dao.MyDatabase/1.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/schemas/com.ibitvalley.writon.classes.dao.MyDatabase/2.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/schemas/com.ibitvalley.writon.classes.dao.MyDatabase/3.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/schemas/com.ibitvalley.writon.classes.dao.MyDatabase/4.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ActionType.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/AddNewDeleteEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/AddNewEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/AddNewPostEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/BaseActivity.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/EmojiFilter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/InternetChangeReceiver.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/InternetConnectionEvent.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/MaintenanceActivity.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/MyPostedItemsList.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/MyWorldActionListener.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/TinyDB.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/BookmarksBlogAdapter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/CategoryListAdapter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/LatestBlogAdapterDiffUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/MyBlogAdapter_two.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/PersonalBlogAdapter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/PostListPaginationAdapter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/SubCategoryListAdapter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/JsonPrettyprint.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/dao/DataConverter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/dao/DataRepository.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/dao/MyDatabase.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/dao/MyDatabaseApplication.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/dao/OtherUserDao.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/fragments/AlertDialogFragment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/AddPostResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/BlogDataResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/BookMark_List.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/DraftCreationResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/LoginBody.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/PersonalPost_List.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/Posts_List.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/Posts_List_Response.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/SignupBody.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/SignupResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/SocialLoginBody.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/model/UserList.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/roomdataclasses/BookMark_List_Data.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/roomdataclasses/Other_Users_Room.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/roomdataclasses/PersonalPost_List_Data.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/roomdataclasses/Post_List_Data.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/roomdataclasses/UserDetail.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/roomdataclasses/User_List_Data.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/view_model/OUD_Viewmodel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/custom_ui/RoundCornerDialog.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/BurgerMenuFragment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/CategoryListBlogFragment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/ContestFragment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/LatestFragment_old.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/PagerM.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/ScreenSlidePageFragment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/ScreenSlidePagerActivity.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/ZoomOutPageTransformer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/DeamoObserver.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/DefaultResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/LatestPost.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/LoginUserDetails.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/MyWorldModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/MyWorldResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/PostData.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/TrendingUserResponse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/UserData.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/UserInfo.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/followData.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/designsystem/components/LayoutComponents.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/designsystem/components/StoryComponents.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/designsystem/components/UserComponents.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/auth/LoginScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/auth/SignupScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/explore/ExploreScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/library/LibraryScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/notifications/NotificationsScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/onboarding/InterestsScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ApplaudsScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/settings/SettingsScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/welcome/WelcomeScreen.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/pagination/BlogDataSourceFactory.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/pagination/BlogDiffUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/pagination/BlogsDataSource.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/remoteConfig/FirebaseConfig.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/retroFit/RetroFitClient.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/retroFit/ServiceGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/utils/AppUtils.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/utils/MyFirebaseMessagingService_old.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/writeblogsteponeOld.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/arrow1.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/arrow2.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/arrow3.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/arrow4.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/arrow5.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/abstract_downloading.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/abstract_fatal_error.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/contest_bg.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/contest_default.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/contest_selected.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/gradient_category.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/gradient_contest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/gradient_contest2.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/loader.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/round_shape.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/shadow_no_trans.9.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/white_corner_bg.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/font/lato.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/font/lato_bold.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/font/lato_light.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout-v23/activity_edit_profile.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout-v23/layout_target.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_home_content.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_login_dialog.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_maintenance.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_my_posted_items_list.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_user_list.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/category_list_item.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/contest_layout.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/dialog_progress.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_burgermenu.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_item.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_list.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/internet_connection_dialog.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/page_indicator_status.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/sub_category_list_item.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/layout/subcategory_bottom_sheet.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/values/font_certs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/values/preloaded_fonts.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/xml/remote_config_defaults.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/release/app-release.aab" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/release/app-release.apk" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/release/output-metadata.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/auth/jwt.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/auth/password.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/db/index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/db/schema.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/db/seed.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/index.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/routes/auth.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/routes/comments.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/routes/media.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/routes/posts.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/dist/routes/users.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/src/db/inspect-categories.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/src/db/migrate-legacy.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/upload_certificate.pem" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/executionHistory/executionHistory.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/executionHistory/executionHistory.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/fileChanges/last-build.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/fileContent/fileContent.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/fileHashes/fileHashes.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/fileHashes/fileHashes.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/fileHashes/resourceHashesCache.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/gc.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/javaCompile/classAnalysis.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/javaCompile/jarAnalysis.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/javaCompile/javaCompile.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/5.6.4/javaCompile/taskHistory.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/gradle.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_activity_activity_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_annotation_annotation_1_1_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_appcompat_appcompat_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_appcompat_appcompat_resources_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_arch_core_core_common_2_1_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_arch_core_core_runtime_2_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_asynclayoutinflater_asynclayoutinflater_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_browser_browser_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_cardview_cardview_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_collection_collection_1_1_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_constraintlayout_constraintlayout_1_1_3_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_constraintlayout_constraintlayout_solver_1_1_3_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_coordinatorlayout_coordinatorlayout_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_core_core_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_cursoradapter_cursoradapter_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_customview_customview_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_documentfile_documentfile_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_drawerlayout_drawerlayout_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_exifinterface_exifinterface_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_fragment_fragment_1_2_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_interpolator_interpolator_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_legacy_legacy_support_core_ui_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_legacy_legacy_support_core_utils_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_legacy_legacy_support_v4_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_lifecycle_lifecycle_common_2_2_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_lifecycle_lifecycle_extensions_2_2_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_lifecycle_lifecycle_livedata_2_2_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_lifecycle_lifecycle_livedata_core_2_2_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_lifecycle_lifecycle_process_2_2_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_lifecycle_lifecycle_runtime_2_2_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_lifecycle_lifecycle_service_2_2_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_lifecycle_lifecycle_viewmodel_2_2_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_lifecycle_lifecycle_viewmodel_savedstate_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_loader_loader_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_localbroadcastmanager_localbroadcastmanager_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_media_media_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_multidex_multidex_2_0_1_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_multidex_multidex_instrumentation_2_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_palette_palette_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_print_print_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_recyclerview_recyclerview_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_savedstate_savedstate_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_slidingpanelayout_slidingpanelayout_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_swiperefreshlayout_swiperefreshlayout_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_transition_transition_1_2_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_vectordrawable_vectordrawable_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_vectordrawable_vectordrawable_animated_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_versionedparcelable_versionedparcelable_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_viewpager2_viewpager2_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_viewpager_viewpager_1_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__androidx_work_work_runtime_2_3_4_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_volley_volley_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_facebook_android_facebook_android_sdk_4_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_github_bumptech_glide_annotations_4_11_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_github_bumptech_glide_disklrucache_4_11_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_github_bumptech_glide_gifdecoder_4_11_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_github_bumptech_glide_glide_4_11_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_annotations_4_1_1_4_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_datatransport_transport_api_2_2_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_datatransport_transport_backend_cct_2_2_1_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_datatransport_transport_runtime_2_2_1_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_ads_identifier_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_analytics_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_analytics_impl_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_auth_18_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_auth_api_phone_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_auth_base_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_base_17_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_basement_17_1_1_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_measurement_17_4_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_measurement_api_17_4_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_measurement_base_17_4_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_measurement_impl_17_4_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_measurement_sdk_17_4_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_measurement_sdk_api_17_4_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_stats_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_tagmanager_v4_impl_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_gms_play_services_tasks_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_android_material_material_1_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_auto_value_auto_value_annotations_1_6_5_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_code_findbugs_jsr305_3_0_2_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_code_gson_gson_2_8_6_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_dagger_dagger_2_27_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_errorprone_error_prone_annotations_2_3_2_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_abt_19_0_1_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_analytics_17_4_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_auth_19_3_1_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_auth_interop_19_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_common_19_3_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_components_16_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_core_17_4_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_crashlytics_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_datatransport_17_0_3_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_encoders_json_16_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_iid_20_1_6_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_iid_interop_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_inappmessaging_19_0_6_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_inappmessaging_display_19_0_6_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_installations_16_2_2_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_installations_interop_16_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_measurement_connector_18_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_firebase_messaging_20_1_6_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_firebase_protolite_well_known_types_17_0_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_guava_guava_26_0_android_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_guava_listenablefuture_9999_0_empty_to_avoid_conflict_with_guava_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_j2objc_j2objc_annotations_1_1_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_google_protobuf_protobuf_lite_3_0_1_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_parse_bolts_bolts_android_1_1_4_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_squareup_okhttp3_okhttp_3_12_1_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_squareup_okhttp_okhttp_2_7_5_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_squareup_okio_okio_1_15_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_squareup_picasso_picasso_2_71828_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__de_hdodenhof_circleimageview_3_1_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__io_grpc_grpc_api_1_21_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__io_grpc_grpc_context_1_21_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__io_grpc_grpc_core_1_21_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__io_grpc_grpc_okhttp_1_21_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__io_grpc_grpc_protobuf_lite_1_21_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__io_grpc_grpc_stub_1_21_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__io_opencensus_opencensus_api_0_21_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__io_opencensus_opencensus_contrib_grpc_metrics_0_21_0_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__io_reactivex_rxjava2_rxandroid_2_0_2_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__io_reactivex_rxjava2_rxjava_2_1_14_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__javax_inject_javax_inject_1_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__jp_wasabeef_richeditor_android_1_2_2_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__junit_junit_4_13_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_checkerframework_checker_compat_qual_2_5_2_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_codehaus_mojo_animal_sniffer_annotations_1_17_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_hamcrest_hamcrest_core_1_3_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_reactivestreams_reactive_streams_1_0_2_jar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/runConfigurations.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/runConfigurations.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/WritOn-PowerUp.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/release/V56_app-release.apk" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/release/output.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/release/output.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ActivityBlogComments.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ActivityBlogComments.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ActivityCategoryBlogs.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ActivityCategoryBlogs.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/AllBlogActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/AllBlogActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/BlogSearch.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/BlogSearch.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Blog_Profile.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Blog_Profile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/CategoryBlogList.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/CategoryBlogList.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Constants.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Constants.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Draft.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Draft.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/EditProfile.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/EditProfile.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/FBLogin.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/FBLogin.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Feed.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Feed.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Feedback.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Feedback.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/BookmarkFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/BookmarkFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/CategoryDrawerFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/CategoryDrawerFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/CollectionDemoFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/CollectionDemoFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/DemoCollectionPagerAdapter.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/DemoObjectFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/DemoObjectFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/FollowedFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/FollowedFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/FragmentA.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/FragmentA.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/FragmentB.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/FragmentB.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/Home_Fragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/Home_Fragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/Home_Fragment2.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/Home_Fragment2.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/Home_Fragment3.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/Home_Fragment3.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/LatestFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/LatestFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/LatestFragment_old.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/MostFollowedFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/MostFollowedFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/MyMenuFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/MyWorldFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/NewHomeFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/NewHomeFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/NotificationFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/NotificationFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/RatedFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/RatedFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/RecentFragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/RecentFragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/Tab1Fragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/Tab1Fragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/Tab2Fragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/Tab2Fragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/Tab3Fragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/Tab3Fragment.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/TrendingFrag.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/TrendingFrag.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/categoryListBlog.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Fragment/dummy/DummyContent.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/GoogleAnalytics/AnalyticsTrackers.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/GoogleAnalytics/MyApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/googleAnalytics/MyApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Home_Activity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Home_Activity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/LoginActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/LoginActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/MyBlog.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/MyBlog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/NotificationActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/NotificationActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Report.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Report.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ShowBlog.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ShowBlog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ShowBlogDetails.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ShowBlogDetails.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Signup.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Signup.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Splash.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Splash.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Ui/BasicTabLayoutActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ui/BasicTabLayoutActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/WelcomeActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/WelcomeActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/WriteBlog.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/WriteBlog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/WriterBlog.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/WriterBlog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/BlogBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/BlogBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/BlogSearchAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/BlogSearchAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/CategoryBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/CategoryBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/DiscusListAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/DiscusListAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/DraftBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/DraftBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/ExpandableListAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/ExpandableListAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/FollowersAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/FollowersAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/JokesBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/JokesBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/JournalismBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/JournalismBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/LatestBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/LatestBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/MostBookMarkedBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/MostBookMarkedBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/MostReadBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/MostReadBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/MyBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/MyBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/MyWorldAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/MyWorldAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/NotificationAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/NotificationAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/PagerAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/PagerAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/PagerAdapter2.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/PagerAdapter2.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/ReviewsBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/ReviewsBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/ShortStoryAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/ShortStoryAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/SongsJinglesBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/SongsJinglesBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/TopFollowersAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/TopFollowersAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/TopRatedAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/TopRatedAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/TrendingRecycleAdapter.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/TrendingUsersAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/TrendingUsersAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/WriterBlogAdapter.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/WriterBlogAdapter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/ShowBlogIngo.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/ShowBlogIngo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/custom_ui/WritOnProgressDialog.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/custom_ui/WritOnProgressDialog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/discus.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/discus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/Blog.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/Blog.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/Followers.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/Followers.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/TrendingPost_Model.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/UserModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/model/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/utils/MyFirebaseMessagingService.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/utils/MyFirebaseMessagingService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/utils/VolleySingleton.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/utils/VolleySingleton.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/utils/WritOnPreference.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/utils/WritOnPreference.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/webapi/WebConstants.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/webapi/WebConstants.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/webapi/util/OnResponseListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/webapi/util/OnResponseListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/webapi/util/OnResponseListener2.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/webapi/util/OnResponseListener2.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/writeblogstepone.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/writeblogstepone.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout-v18/activity_blog__profile.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout-v18/activity_blog__profile.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout-v21/fragment_category_list_blog.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout-v21/fragment_category_list_blog.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout-v28/fragment_collection_object.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_all_blog.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_all_blog.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_blog__profile.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_blog__profile.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_blog_comments.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_blog_comments.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_draft.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_draft.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_edit_profile.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_edit_profile.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_home.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_home.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_login.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_show_blog_details.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_show_blog_details.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_signup.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_signup.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_splash.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_splash.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_write_blog.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_write_blog.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/blog_card.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/blog_card.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/blog_card_all.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/blog_card_all.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/discusitemitem.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/discusitemitem.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/draftlistitem.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/draftlistitem.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/followed_frag.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/followed_frag.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/followers_list.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/followers_list.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_bookmark.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_bookmark.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_category_list_blog.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_category_list_blog.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_collection_object.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_collection_object.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_notification.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_notification.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_recent.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_recent.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/fragment_trending_item_list.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/fragment_trending_item_list.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/home_fragment.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/home_fragment.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/home_fragment4.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/home_fragment4.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/homr_fragment2.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/homr_fragment2.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/latest_frag.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/latest_frag.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/list_item_category_blog.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/list_item_category_blog.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/list_item_latest_blog.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/list_item_latest_blog.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/list_item_most_read_blog.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/list_item_most_read_blog.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/mostbookmarked.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/mostbookmarked.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/myblogitem.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/myblogitem.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/myworld_list_item_view.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/myworld_list_item_view.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/rated_frag.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/rated_frag.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/searchblogitem.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/searchblogitem.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/trending_frag.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/trending_frag.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/trendinguser_card.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/trendinguser_card.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/viewpagerhome.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/viewpagerhome.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/menu/menu_album.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/menu/menu_album.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/menu/menu_rtool.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/menu/menu_rtool.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/colors.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/colors.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/dimens.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/dimens.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/values/strings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" beforeDir="false" afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/local.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/settings.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/settings.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/WritOnModernActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/WritOnModernActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/feed/FeedScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/feed/FeedScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/reader/ReaderScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/reader/ReaderScreen.kt" afterDir="false" />
     </list>
     <list id="ce0c4f36-a9ea-4726-9ed7-f5148670e229" name="Update workspace.xml" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -572,32 +111,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Android App.New Run Config.executor": "Run",
-    "Android App.app.executor": "Run",
-    "Gradle.Configure Daemon JVM Criteria.executor": "Run",
-    "Gradle.Upgrade Gradle wrapper.executor": "Run",
-    "Gradle.WritOn-PowerUp [signingReport].executor": "Run",
-    "GradleDaemonJvmCriteriaMigrationNotification.isNotificationDisabled": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "com.google.services.firebase.aqiPopupShown": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "Till__29Aug",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "D:/VibeCode/WritOn-PowerUp",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
-    "show.migrate.to.gradle.popup": "false"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Android App.New Run Config.executor&quot;: &quot;Run&quot;,
+    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Configure Daemon JVM Criteria.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Upgrade Gradle wrapper.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.WritOn-PowerUp [signingReport].executor&quot;: &quot;Run&quot;,
+    &quot;GradleDaemonJvmCriteriaMigrationNotification.isNotificationDisabled&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Till__29Aug&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/VibeCode/WritOn-PowerUp&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
-}]]></component>
+}</component>
   <component name="PsdUISettings">
     <option name="MODULE_TAB" value="Signing Configs" />
     <option name="BUILD_VARIANTS_TAB" value="Build Types" />
@@ -1217,12 +756,12 @@
       <map>
         <entry key="com.ibitvalley.writon">
           <value>
-            <CheckInfo lastCheckTimestamp="1786864922933" />
+            <CheckInfo lastCheckTimestamp="1786981348565" />
           </value>
         </entry>
         <entry key="com.ibitvalley.writon.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1786864922943" />
+            <CheckInfo lastCheckTimestamp="1786981348565" />
           </value>
         </entry>
       </map>

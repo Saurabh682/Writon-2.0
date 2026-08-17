@@ -64,6 +64,10 @@ class WritOnModernActivity : ComponentActivity() {
 
         database = WritOnDatabase.getDatabase(this)
         userPreferences = UserPreferences(this)
+        
+        // FOR TESTING: Set a dummy token so API calls don't fail with 401 Unauthorized
+        NetworkClient.setAuthToken("test-token-julian-ross")
+
         repository = PostRepository(
             apiService = NetworkClient.apiService,
             postDao = database.postDao(),

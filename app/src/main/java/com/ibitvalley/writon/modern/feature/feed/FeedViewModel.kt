@@ -18,6 +18,10 @@ class FeedViewModel(
     val searchQuery = _searchQuery.asStateFlow()
     val isRefreshing = MutableStateFlow(false)
 
+    // Preserve scroll state
+    var scrollIndex = 0
+    var scrollOffset = 0
+
     @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
     val posts: StateFlow<List<PostEntity>> = combine(
         selectedCategory, 
