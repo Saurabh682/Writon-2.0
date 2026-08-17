@@ -19,18 +19,28 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
 import com.ibitvalley.writon.adapter.MyBlogAdapter;
+import com.ibitvalley.writon.classes.model.Posts_List;
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
 import com.ibitvalley.writon.model.Blog;
+import com.ibitvalley.writon.retroFit.RetroFitClient;
+import com.ibitvalley.writon.retroFit.ServiceGenerator;
+import com.ibitvalley.writon.utils.AppUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
-public class MyBlog extends AppCompatActivity {
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
-    ArrayList<Blog> myblogArrayList;
+public class MyBlog extends BaseActivity {
+
+    List<Post_List_Data> myblogArrayList;
     MyBlogAdapter adapter;
     RecyclerView recyclerView1;
 
@@ -57,47 +67,35 @@ public class MyBlog extends AppCompatActivity {
         progress = new ProgressDialog(this);
         progress.show();
         progress.setTitle("Please Wait");
-        requestQueue = Volley.newRequestQueue(this);
+
         SharedPreferences preferences = getApplicationContext().getSharedPreferences("mPrefs", MODE_PRIVATE);
         final String UserId = preferences.getString("UserId", "0");
-        String loginURL = String.format("http://blog.ibitvalley.com/api/BlogListByUserId?UserID=%s", UserId);
-        JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, loginURL, null,
-                new Response.Listener<JSONObject>() {
-                    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+
+        RetroFitClient publishedPosts = ServiceGenerator.getRetrofitOld().create(RetroFitClient.class);
+        publishedPosts.getBlogListByUserID( UserId )
+                .subscribeOn( Schedulers.io() )
+                .observeOn( AndroidSchedulers.mainThread() )
+                .subscribe( new Consumer<Posts_List>() {
                     @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("True", "");
-                        try {
-                            if (progress != null && progress.isShowing())
-                                progress.dismiss();
-                            if (response.get("success").toString().equals("true")) {
-                                System.out.println("Json == > " + response.toString());
-                                JSONObject obj = new JSONObject(response.toString());
-                                JSONArray arr = obj.getJSONArray("Result");
-                                for (int i = 0; i < arr.length(); i++) {
-                                    String blogString = arr.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    myblogArrayList.add(blog);
-                                }
-                                adapter.notifyDataSetChanged();
-                            }
-                        } catch (JSONException ex) {
-                            if (progress != null && progress.isShowing())
-                                progress.dismiss();
-                            Log.d("JSON Exception", Objects.requireNonNull(ex.getMessage()));
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
+                    public void accept(Posts_List posts_list) throws Exception {
+
                         if (progress != null && progress.isShowing())
                             progress.dismiss();
-                        error.printStackTrace();
-                        Log.e("Volley", "Error" + error.getMessage());
+
+                        if ( !AppUtils.isNull( posts_list ) && !AppUtils.isNull( posts_list.getData() ) )
+                        {
+                            myblogArrayList.addAll( posts_list.getData());
+                            adapter.notifyDataSetChanged();
+                        }
+
                     }
-                }
-        );
-        requestQueue.add(jor);
+                } , new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        if (progress != null && progress.isShowing())
+                            progress.dismiss();
+                    }
+                } );
+
     }
 }

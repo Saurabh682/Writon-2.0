@@ -2,91 +2,42 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bgColor"
+    android:background="@color/colorWhite"
     android:scrollbars="none">
 
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:orientation="vertical"
+        android:background="@color/browser_actions_bg_grey"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Update Profile"
+            android:fontFamily="@font/lato_bold"
+            android:textColor="@color/com_facebook_blue"
+            android:textSize="@dimen/size_14"
+            android:layout_marginVertical="10dp"
+            android:layout_marginLeft="@dimen/spacing_15"
+            />
+
+
+    </LinearLayout>
+
+
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!--<LinearLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginBottom="20dp"-->
-                <!--android:layout_marginTop="20dp"-->
-                <!--android:gravity="center_horizontal|bottom"-->
-                <!--android:orientation="horizontal">-->
 
-                <!--<ImageView-->
-                    <!--android:layout_width="300dp"-->
-                    <!--android:layout_height="70dp"-->
-                    <!--android:src="@drawable/flogoblue" />-->
-
-
-            <!--</LinearLayout>-->
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:text="FIND OTHERS"
-                    android:textColor="#ffffff"
-                    android:textSize="12dp" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="STAY STRONGER TOGETHER"
-                    android:textColor="#ffffff"
-                    android:textSize="12dp" />
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/llChangeAvatar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="10dp"
-                android:layout_marginTop="20dp"
-                android:orientation="vertical">
-
-                <ImageView
-                    android:id="@+id/avatarImageView"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/defaulta" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:text="Change Avatar"
-                    android:textSize="14sp" />
-
-            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -95,15 +46,16 @@
                 android:orientation="vertical">
 
                 <EditText
-                    android:id="@+id/TVUserName"
+                    android:id="@+id/ETUserName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
                     android:layout_marginLeft="40dp"
+                    android:layout_marginTop="50dp"
                     android:layout_marginRight="40dp"
-                    android:layout_marginTop="5dp"
-                    android:background="@color/textViewBg"
-                    android:hint="Display Name"
+                    android:layout_marginBottom="5dp"
+                    android:background="@color/colorLessWhite"
+                    android:fontFamily="@font/lato"
+                    android:hint="Pen Name/ User Name"
                     android:imeOptions="actionNext"
                     android:inputType="text"
                     android:padding="10dp"
@@ -119,14 +71,15 @@
                 android:orientation="vertical">
 
                 <EditText
-                    android:id="@+id/first_name"
+                    android:id="@+id/ETfirst_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
                     android:layout_marginLeft="40dp"
-                    android:layout_marginRight="40dp"
                     android:layout_marginTop="5dp"
-                    android:background="@color/textViewBg"
+                    android:layout_marginRight="40dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@color/colorLessWhite"
+                    android:fontFamily="@font/lato"
                     android:hint="First Name"
                     android:imeOptions="actionNext"
                     android:inputType="text"
@@ -143,14 +96,15 @@
                 android:orientation="vertical">
 
                 <EditText
-                    android:id="@+id/last_name"
+                    android:id="@+id/ETlast_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
                     android:layout_marginLeft="40dp"
-                    android:layout_marginRight="40dp"
                     android:layout_marginTop="5dp"
-                    android:background="@color/textViewBg"
+                    android:layout_marginRight="40dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@color/colorLessWhite"
+                    android:fontFamily="@font/lato"
                     android:hint="Last Name"
                     android:imeOptions="actionNext"
                     android:inputType="text"
@@ -167,39 +121,18 @@
                 android:orientation="vertical">
 
                 <EditText
-                    android:id="@+id/email"
+                    android:id="@+id/ETQuoteOfDay"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="5dp"
                     android:layout_marginLeft="40dp"
-                    android:layout_marginRight="40dp"
                     android:layout_marginTop="5dp"
-                    android:background="@color/textViewBg"
-                    android:hint="E-mail"
-                    android:padding="10dp"
-                    android:textColor="#000000"
-                    android:textColorHint="@color/colorBlack"
-                    android:textSize="14dp" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <EditText
-                    android:id="@+id/TVQuoteofDay"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_marginRight="40dp"
                     android:layout_marginBottom="5dp"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginRight="40dp"
-                    android:layout_marginTop="5dp"
-                    android:background="@color/textViewBg"
-                    android:hint="Quote of day"
+                    android:background="@color/colorLessWhite"
+                    android:fontFamily="@font/lato"
+                    android:hint="Quote Of Day"
+                    android:inputType="textImeMultiLine"
                     android:padding="10dp"
-                    android:inputType="text"
                     android:textColor="@color/colorBlack"
                     android:textColorHint="@color/colorBlack"
                     android:textSize="14dp" />
@@ -208,7 +141,6 @@
 
             </LinearLayout>
 
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -216,44 +148,18 @@
                 android:orientation="vertical">
 
                 <EditText
-                    android:id="@+id/password"
+                    android:id="@+id/ETIntroducaation"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginBottom="5dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginLeft="40dp"
-                    android:layout_marginRight="40dp"
                     android:layout_marginTop="5dp"
-                    android:background="@color/textViewBg"
-                    android:hint="Password"
-                    android:padding="10dp"
-                    android:inputType="textPassword"
-                    android:textColor="@color/colorBlack"
-                    android:textColorHint="@color/colorBlack"
-                    android:textSize="14dp" />
-
-
-
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <EditText
-                    android:id="@+id/TVIntroducaation"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_marginRight="40dp"
                     android:layout_marginBottom="5dp"
-                    android:layout_marginLeft="40dp"
-                    android:layout_marginRight="40dp"
-                    android:layout_marginTop="5dp"
-                    android:background="@color/textViewBg"
-                    android:hint="Introducation"
+                    android:background="@color/colorLessWhite"
+                    android:fontFamily="@font/lato"
+                    android:hint="Introductiontest"
+                    android:inputType="textImeMultiLine"
                     android:padding="10dp"
-                    android:inputType="text"
                     android:textColor="@color/colorBlack"
                     android:textColorHint="@color/colorBlack"
                     android:textSize="14dp" />
@@ -271,15 +177,16 @@
                 <EditText
                     android:id="@+id/TVWorkingON"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginBottom="5dp"
+                    android:layout_height="wrap_content"
                     android:layout_marginLeft="40dp"
-                    android:layout_marginRight="40dp"
                     android:layout_marginTop="5dp"
-                    android:background="@color/textViewBg"
+                    android:layout_marginRight="40dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@color/colorLessWhite"
+                    android:fontFamily="@font/lato"
                     android:hint="Working On"
+                    android:inputType="textImeMultiLine"
                     android:padding="10dp"
-                    android:inputType="text"
                     android:textColor="@color/colorBlack"
                     android:textColorHint="@color/colorBlack"
                     android:textSize="14dp" />
@@ -295,19 +202,22 @@
                 android:weightSum="2">
 
                 <LinearLayout
+                    android:id="@+id/calender_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1">
+                    android:layout_height="@dimen/_40sdp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    >
 
                     <TextView
-                        android:id="@+id/open_calender"
+                        android:id="@+id/ETopen_calender"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout_marginBottom="5dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginLeft="40dp"
-                        android:layout_marginRight="8dp"
                         android:layout_marginTop="5dp"
-                        android:background="@color/textViewBg"
+                        android:layout_marginRight="8dp"
+                        android:layout_marginBottom="5dp"
+                        android:background="@color/colorLessWhite"
                         android:drawableRight="@drawable/calender"
                         android:drawableTint="@color/colorBlack"
                         android:gravity="center_vertical"
@@ -317,65 +227,22 @@
                         android:textColor="@color/colorBlack"
                         android:textColorHint="@color/colorBlack"
                         android:textSize="12dp" />
+
+                    <DatePicker
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"/>
+
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1">
-
-                    <Spinner
-                        android:id="@+id/spinner"
-                        android:layout_width="match_parent"
-                        android:layout_height="38dp"
-                        android:layout_marginBottom="5dp"
-                        android:layout_marginLeft="8dp"
-                        android:layout_marginRight="40dp"
-                        android:layout_marginTop="5dp"
-                        android:background="@color/textViewBg"
-                        android:popupBackground="@color/colorWhite"></Spinner>
-                    <!--  <EditText
-                          android:layout_width="match_parent"
-                          android:layout_height="match_parent"
-                          android:layout_marginBottom="5dp"
-                          android:layout_marginLeft="8dp"
-                          android:layout_marginRight="40dp"
-                          android:layout_marginTop="5dp"
-                          android:background="@drawable/round_edit_text"
-                          android:hint="Gender"
-                          android:paddingLeft="22dp"
-                          android:textColor="#ffffff"
-                          android:textColorHint="#ffffff"
-                          android:textSize="14dp" />-->
-                </LinearLayout>
+                    android:layout_weight="1"/>
             </LinearLayout>
+
         </LinearLayout>
 
-        <!--<LinearLayout-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:orientation="horizontal"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_marginLeft="40dp">-->
 
-            <!--<CheckBox-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_marginTop="20dp"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:text="  I Accept"-->
-                <!--android:layout_marginRight="8dp"-->
-                <!--android:id="@+id/CBtandc"-->
-                <!--android:textSize="18dp"/>-->
-            <!--<TextView-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:id="@+id/TVTerms"-->
-                <!--android:textSize="18dp"-->
-                <!--android:layout_gravity="bottom"-->
-                <!--android:layout_marginBottom="2dp"-->
-                <!--android:gravity="center_vertical"-->
-                <!--android:text="Terms and Conditons"/>-->
-
-        <!--</LinearLayout>-->
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -393,19 +260,20 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/signup_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
+                    android:id="@+id/update_button"
+                    android:layout_width="200dp"
+                    android:layout_height="@dimen/_40sdp"
                     android:layout_gravity="center"
                     android:layout_marginTop="15dp"
 
-                    android:fontFamily="sans-serif-light"
+                    android:background="@drawable/round_corner_button"
+                    android:fontFamily="@font/lato"
                     android:gravity="center"
                     android:paddingLeft="8dp"
                     android:paddingRight="8dp"
                     android:text="Update"
                     android:textAllCaps="false"
-                    android:textColor="@color/colorPrimary"
+                    android:textColor="@color/colorWhite"
                     android:textSize="20dp" />
 
 
@@ -415,25 +283,7 @@
             </LinearLayout>
 
 
-            <!--<LinearLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:layout_marginTop="20dp"-->
-                <!--android:layout_weight="1.1"-->
-                <!--android:gravity="center_horizontal"-->
-                <!--android:orientation="vertical">-->
 
-                <!--<TextView-->
-                    <!--android:id="@+id/signin"-->
-                    <!--android:layout_width="wrap_content"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:paddingBottom="4dp"-->
-                    <!--android:paddingLeft="5dp"-->
-                    <!--android:paddingRight="5dp"-->
-                    <!--android:text="Already have an account? Sign in"-->
-                    <!--android:textColor="@color/colorPrimary"-->
-                    <!--android:textSize="14dp" />-->
-            <!--</LinearLayout>-->
         </LinearLayout>
 
         <LinearLayout

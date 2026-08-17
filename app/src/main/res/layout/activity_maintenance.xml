@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@color/colorWhite"
+    android:padding="@dimen/spacing_10">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:padding="@dimen/spacing_10">
+
+        <TextView
+            android:id="@+id/heading_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/spacing_30"
+            android:text="@string/maintenance_heading_one" />
+
+        <TextView
+            android:id="@+id/heading_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/heading_1"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/spacing_20"
+            android:textSize="25dp"
+            android:text="@string/maintenance_heading_two" />
+
+        <ImageView
+            android:id="@+id/img_maintenance"
+            android:layout_width="wrap_content"
+            android:layout_height="75dp"
+            android:layout_below="@id/heading_2"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center"
+            android:layout_marginTop="50dp"
+            android:src="@drawable/red_delete" />
+
+
+        <TextView
+            android:id="@+id/heading_3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/img_maintenance"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="@dimen/spacing_50"
+            android:gravity="center"
+            android:text="@string/sorry_maintenance" />
+
+    </RelativeLayout>
+</RelativeLayout>

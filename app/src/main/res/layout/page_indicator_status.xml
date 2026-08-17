@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:id="@+id/rl_page_indicator"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ProgressBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:elevation="4dp"
+        android:id="@+id/progress_bar"
+        android:layout_centerInParent="true"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:id="@+id/txt_no_records"
+        android:fontFamily="@font/lato"
+        android:visibility="gone"
+        android:textSize="12sp"
+        android:text="No Records Found!"
+        android:textColor="@color/colorBlack"
+        />
+</RelativeLayout>

@@ -8,32 +8,13 @@
     app:cardElevation="@dimen/spacing_10"
     android:outlineAmbientShadowColor="@color/purple"
     xmlns:android="http://schemas.android.com/apk/res/android">
-<RelativeLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="horizontal"
     android:padding="5dip" >
 
 
-    <!--  ListRow Left sied Thumbnail image -->
-
-    <!-- Title Of Song-->
-
-    <!-- Artist Name -->
-    <!--<TextView
-        android:id="@+id/TVWrite"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/TVBlogTitle"
-
-        android:textSize="12dip"
-        android:layout_marginTop="1dip"
-        android:layout_toRightOf="@+id/thumbnail"
-        android:text="J K Rowling" />
--->
-    <!-- Rightend Duration -->
-
-    <!-- Rightend Arrow -->
 
     <TextView
         android:id="@+id/TVBlogTitle"
@@ -42,11 +23,17 @@
         android:layout_alignTop="@+id/thumbnail"
         android:layout_marginLeft="9dp"
         android:layout_marginTop="18dp"
-
         android:layout_toRightOf="@+id/thumbnail"
         android:text="Where Is My Money"
         android:textSize="16dip"
-        android:typeface="sans" />
+        android:typeface="sans"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintVertical_bias="0"
+
+        app:layout_constraintStart_toEndOf="@+id/guideline10"
+        app:layout_constraintEnd_toStartOf="@+id/guideline11"
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
     <TextView
         android:id="@+id/duration"
@@ -56,28 +43,33 @@
         android:layout_marginStart="9dp"
         android:layout_marginLeft="9dp"
         android:layout_marginTop="7dp"
-
+        android:visibility="gone"
         android:layout_marginRight="281dp"
         android:layout_toEndOf="@+id/thumbnail"
         android:layout_toRightOf="@+id/thumbnail"
         android:text="20-08-2016"
         android:textSize="10dip"
-        android:textStyle="bold" />
+
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/guideline10"
+        app:layout_constraintEnd_toStartOf="@+id/guideline11"
+        app:layout_constraintTop_toBottomOf="@+id/TVBlogTitle"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintVertical_bias="0"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
     <ImageView
         android:id="@+id/TV_deleteDraft"
-        android:layout_width="50dp"
-        android:layout_height="35dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:layout_marginStart="250dp"
-        android:layout_marginLeft="250dp"
-        android:layout_marginEnd="5dp"
-        android:layout_marginRight="5dp"
-        android:layout_toEndOf="@+id/thumbnail"
-        android:layout_toRightOf="@+id/thumbnail"
-        android:src="@drawable/red_delete" />
+        android:src="@drawable/red_delete"
+        app:layout_constraintStart_toEndOf="@+id/guideline11"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/thumbnail"
@@ -87,7 +79,11 @@
         android:layout_alignParentLeft="true"
         android:layout_centerVertical="true"
         app:cardElevation="20dp"
-        android:padding="3dip">
+        android:padding="3dip"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline10">
 
         <androidx.appcompat.widget.AppCompatImageView
             android:cropToPadding="true"
@@ -100,5 +96,19 @@
 
     </androidx.cardview.widget.CardView>
 
-</RelativeLayout>
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline10"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.25" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline11"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.88" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

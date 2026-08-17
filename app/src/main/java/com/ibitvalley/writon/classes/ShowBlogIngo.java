@@ -1,5 +1,6 @@
 package com.ibitvalley.writon.classes;
 
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
 import com.ibitvalley.writon.model.Blog;
 
 import java.util.ArrayList;
@@ -13,6 +14,9 @@ public class ShowBlogIngo {
 
     //Recent Blog List
     public static ArrayList<Blog> blogArrayList = new ArrayList<>();
+
+    //Recent Blog List
+    public static ArrayList<Post_List_Data> blogArrayList2 = new ArrayList<>();
     // shortStory
     public static ArrayList<Blog> shortStoryArrayList = new ArrayList<>();
     //Most Read Blog List

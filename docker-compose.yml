@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  writon-backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: writon-api
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_SECRET=writon-production-secure-jwt-secret-key
+      - DATABASE_PATH=/data/writon.db
+    volumes:
+      - writon-data:/data
+      - writon-uploads:/app/uploads
+
+  writon-web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: writon-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - writon-backend
+
+volumes:
+  writon-data:
+  writon-uploads:

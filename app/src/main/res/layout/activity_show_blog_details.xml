@@ -8,16 +8,22 @@
     android:clipToPadding="false"
     tools:context="com.ibitvalley.writon.ShowBlogDetails">
 
-
+<ProgressBar
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:id="@+id/progress_bar"
+    android:elevation="1dp"
+    android:visibility="gone"
+    android:layout_centerInParent="true"/>
     <ScrollView
         android:id="@+id/activity_show_blog_details"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="@dimen/spacing_35"
+        android:paddingBottom="@dimen/size_45"
         >
         <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingBottom="@dimen/spacing_35"
             android:clipToPadding="false"
@@ -34,8 +40,8 @@
             android:layout_marginVertical="300dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/spacing_10"
-            app:cardCornerRadius="25dp"
+            android:layout_margin="@dimen/spacing_15"
+            app:cardCornerRadius="10dp"
             app:cardElevation="30dp"
             android:clipToPadding="false"
             >
@@ -53,9 +59,20 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
             android:gravity="center"
+            android:text="Title"
             android:textColor="@color/colorBlack"
+            android:fontFamily="@font/lato"
             android:textSize="18dp" />
-
+        <TextView
+            android:id="@+id/writer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:gravity="center"
+            android:text="\@name"
+            android:textColor="@color/colorBlack"
+            android:fontFamily="@font/lato_light"
+            android:textSize="14dp" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -75,15 +92,6 @@
             android:gravity="right">
         </LinearLayout>
 
-        <!--<TextView-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:id="@+id/TVWriterName"-->
-            <!--android:visibility="gone"-->
-            <!--android:layout_gravity="right"-->
-            <!--android:textStyle="bold"-->
-            <!--android:textSize="16dp"-->
-            <!--android:text=""/>-->
 
 
 
@@ -167,7 +175,7 @@
                         android:layout_marginLeft="5dp"
                         android:textSize="12dip"
                         android:textColor="#959FC4"
-                        android:text="24k"/>
+                        android:text="0"/>
                 </LinearLayout>
 
 
@@ -188,7 +196,7 @@
                         android:layout_marginLeft="5dp"
                         android:textSize="12dip"
                         android:textColor="#959FC4"
-                        android:text="52"/>
+                        android:text="0"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -208,7 +216,7 @@
                         android:layout_marginLeft="5dp"
                         android:textColor="#959FC4"
                         android:textSize="12dip"
-                        android:text="406"/>
+                        android:text="0"/>
                 </LinearLayout>
 
                 <RelativeLayout
@@ -234,6 +242,119 @@
             android:layout_width="match_parent"
             android:layout_height="0.5dp"
             android:layout_marginTop="20dp"
+            android:background="#9E9E9E"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="@dimen/size_10"
+            android:paddingTop="@dimen/size_10"
+            android:orientation="horizontal"
+            >
+            <FrameLayout
+                android:id="@+id/Frame_Bookmark"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                >
+
+                <ImageView
+                    android:id="@+id/img_bookmark"
+                    android:layout_width="18dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/bookmarkblue" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="35dp"
+                    android:fontFamily="@font/lato_bold"
+                    android:textAllCaps="true"
+                    android:text="Bookmark"
+                    android:textSize="10sp"
+
+                    />
+
+            </FrameLayout>
+
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:background="#9E9E9E"/>
+
+            <FrameLayout
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:id="@+id/Frame_Rate"
+                >
+
+                <ImageView
+                    android:id="@+id/img_rating"
+                    android:layout_width="22dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/starblue" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="35dp"
+                    android:fontFamily="@font/lato_bold"
+                    android:textAllCaps="true"
+                    android:text="Rate"
+                    android:textSize="10sp"
+
+                    />
+            </FrameLayout>
+
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:layout_marginTop="10dp"
+                android:background="#9E9E9E"/>
+
+            <FrameLayout
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:id="@+id/Frame_Share"
+                >
+
+                <ImageView
+                    android:id="@+id/img_share"
+                    android:layout_width="22dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/shareblue" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="35dp"
+                    android:fontFamily="@font/lato_bold"
+                    android:textAllCaps="true"
+                    android:text="SHARE"
+                    android:textSize="10sp"
+                    />
+            </FrameLayout>
+
+        </LinearLayout>
+
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginTop="10dp"
             android:background="#9E9E9E"/>
 
 
@@ -316,116 +437,48 @@
                 android:textColor="@color/colorWhite"
                 android:layout_marginLeft="-4dp" />
 
-            <ImageView
-                android:id="@+id/img_bookmark"
-                android:layout_width="17dp"
-                android:layout_height="22dp"
-                android:layout_centerHorizontal="@+id/img_rating"
-                android:layout_centerVertical="true"
-                android:layout_marginTop="10dp"
-                android:layout_marginEnd="18dp"
-                android:layout_marginRight="18dp"
-                android:layout_toStartOf="@+id/img_rating"
-                android:layout_toLeftOf="@+id/img_rating"
-                android:src="@drawable/bookmarkblue" />
 
-            <ImageView
-                android:id="@+id/img_rating"
-                android:layout_width="22dp"
-                android:layout_height="wrap_content"
-                android:layout_alignEnd="@+id/thumbnail"
-                android:layout_alignRight="@+id/thumbnail"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="-279dp"
-                android:layout_marginRight="-279dp"
-                android:src="@drawable/starblue" />
 
         </RelativeLayout>
 
 
-        <!--<RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="43dp"
-            android:orientation="horizontal">
 
-
-
-
-            <ImageView
-                android:id="@+id/img_share"
-                android:layout_width="15dp"
-                android:layout_height="22dp"
-                android:layout_alignParentRight="true"
-                android:layout_marginTop="4dp"
-                android:layout_marginRight="0dip"
-                android:src="@drawable/shareblue"
-                android:visibility="gone" />
-
-        </RelativeLayout>-->
-
-
-
-        <!--<View
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:layout_marginTop="20dp"
-            android:background="#BDBDBD"/>-->
     </LinearLayout>
     </androidx.cardview.widget.CardView>
-        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
 </ScrollView>
-
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+<LinearLayout
+        android:id="@+id/ll_Discuss"
+        android:layout_width="200dp"
+        android:layout_height="45dp"
         android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:background="@drawable/rounded_button_blue"
         android:gravity="center">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/ll_Discuss"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:gravity="center"
-            android:background="#FDF9F7"
-            android:orientation="horizontal">
+
 
             <TextView
                 android:id="@+id/tv_comment"
-                android:layout_width="170dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerHorizontal="true"
-                android:layout_centerVertical="true"
-                android:background="@drawable/rounded_button_blue"
-                android:paddingLeft="20dp"
-                android:paddingRight="20dp"
-                android:layout_marginBottom="8dp"
                 android:text="Discuss"
                 android:textColor="@color/colorWhite"
-                android:textSize="26dip"
+                android:textSize="18dip"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                android:fontFamily="@font/lato_bold"/>
 
             <ImageView
                 android:id="@+id/img_comment"
                 android:layout_width="wrap_content"
                 android:layout_height="25dp"
-                android:layout_alignEnd="@+id/tv_comment"
-                android:layout_alignRight="@+id/tv_comment"
                 android:src="@drawable/discuss"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="@+id/tv_comment"
-                app:layout_constraintHorizontal_bias="0.891"
-                app:layout_constraintStart_toStartOf="@+id/tv_comment"
-                app:layout_constraintTop_toTopOf="@+id/tv_comment"
-                app:layout_constraintVertical_bias="0.3" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+                 />
 
 
-    </RelativeLayout>
+
+    </LinearLayout>
 
 
 

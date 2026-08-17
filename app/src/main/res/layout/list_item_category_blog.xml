@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/itemView"
     android:layout_width="match_parent"
     android:layout_height="270dp"
@@ -151,7 +152,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="25dp"
                 android:layout_marginLeft="10dp"
-                android:tint="@color/colorGrey"
+                app:tint="@color/colorGrey"
                 android:src="@drawable/bookmark_filed" />
 
             <de.hdodenhof.circleimageview.CircleImageView xmlns:app="http://schemas.android.com/apk/res-auto"

@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:background="@color/colorWhite"
+
     >
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appbar05"
@@ -173,6 +174,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_horizontal"
                                 android:text="0"
+                                android:fontFamily="@font/lato"
                                 android:textColor="@color/greyblue"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -202,6 +204,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_horizontal"
                                 android:text="0"
+                                android:fontFamily="@font/lato"
                                 android:textColor="@color/greyblue"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -231,6 +234,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center_horizontal"
                                 android:text="0"
+                                android:fontFamily="@font/lato"
                                 android:textColor="@color/greyblue"
                                 android:textStyle="bold" />
                         </LinearLayout>
@@ -255,6 +259,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="center"
+                            android:fontFamily="@font/lato"
                             android:text="Published" />
 
                         <TextView
@@ -264,6 +269,7 @@
                             android:layout_centerHorizontal="true"
                             android:layout_weight="1"
                             android:gravity="center"
+                            android:fontFamily="@font/lato"
                             android:text="Followers" />
 
                         <TextView
@@ -273,6 +279,7 @@
                             android:layout_centerHorizontal="true"
                             android:layout_weight="1"
                             android:gravity="center"
+                            android:fontFamily="@font/lato"
                             android:text="Following" />
 
                     </LinearLayout>
@@ -299,11 +306,6 @@
 
 
                 </RelativeLayout>
-
-
-
-
-
 
             </RelativeLayout>
             <androidx.appcompat.widget.Toolbar
@@ -348,6 +350,7 @@
                         android:layout_gravity="center_vertical"
                         android:layout_weight="2"
                         android:text="User"
+                        android:fontFamily="@font/lato_bold"
                         android:textColor="@color/newColorGrey"
                         android:textSize="20sp"
                         android:textStyle="bold"
@@ -464,7 +467,8 @@
                     android:layout_marginRight="20dp"
                     android:layout_marginTop="8dp"
                     android:textColor="@color/newColorGrey"
-                    android:text=""
+                    android:text="-"
+                    android:textAlignment="center"
                     android:background="@android:color/transparent"
                     android:textSize="14dp" />
 
@@ -496,7 +500,8 @@
                     android:layout_marginRight="20dp"
                     android:layout_marginTop="8dp"
                     android:textColor="#263238"
-                    android:text=""
+                    android:text="-"
+                    android:textAlignment="center"
                     android:background="@android:color/transparent"
                     android:textSize="14dp" />
 
@@ -529,7 +534,8 @@
                     android:layout_marginRight="20dp"
                     android:layout_marginTop="8dp"
                     android:textColor="#263238"
-                    android:text=""
+                    android:text="-"
+                    android:textAlignment="center"
                     android:background="@android:color/transparent"
                     android:textSize="14dp" />
 
@@ -577,6 +583,13 @@
             </LinearLayout>
 
 
+            <include
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                layout="@layout/page_indicator_status">
+
+            </include>
 
         </RelativeLayout>
 

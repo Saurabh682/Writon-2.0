@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:background="@color/colorWhite"
+    >
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:visibility="gone"
+        android:elevation="5dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+
+    </ProgressBar>
+
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:background="@color/colorWhite"
@@ -310,6 +326,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="80dp"
                 android:gravity="left"
+                android:visibility="gone"
                 app:layout_collapseMode="pin"
                 android:background="@drawable/scrim"
                 app:layout_collapseParallaxMultiplier=".6"
@@ -319,6 +336,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="80dp"
                     android:padding="@dimen/spacing_10"
+                    android:visibility="visible"
                     android:foregroundGravity="fill_horizontal"
                     android:animateLayoutChanges="true"
 
@@ -445,6 +463,7 @@
 
 
                     <TextView
+                        android:id="@+id/txt_quote"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="20dp"
@@ -463,7 +482,8 @@
                     android:layout_marginRight="20dp"
                     android:layout_marginTop="8dp"
                     android:textColor="#263238"
-                    android:text=""
+                    android:text="-"
+                    android:textAlignment="center"
                     android:background="@android:color/transparent"
                     android:textSize="14dp" />
 
@@ -474,6 +494,7 @@
                     android:layout_marginTop="20dp"
                     android:gravity="center">
                     <TextView
+                        android:id="@+id/txt_introduction"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="20dp"
@@ -495,7 +516,8 @@
                     android:layout_marginRight="20dp"
                     android:layout_marginTop="8dp"
                     android:textColor="#263238"
-                    android:text=""
+                    android:text="-"
+                    android:textAlignment="center"
                     android:background="@android:color/transparent"
                     android:textSize="14dp" />
 
@@ -507,6 +529,7 @@
                     android:gravity="center">
 
                     <TextView
+                        android:id="@+id/txt_working_on"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="20dp"
@@ -528,7 +551,8 @@
                     android:layout_marginRight="20dp"
                     android:layout_marginTop="8dp"
                     android:textColor="#263238"
-                    android:text=""
+                    android:text="-"
+                    android:textAlignment="center"
                     android:background="@android:color/transparent"
                     android:textSize="14dp" />
 
@@ -585,3 +609,4 @@
     </androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>

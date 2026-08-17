@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<defaultsMap>
+    <entry>
+        <key>App_Config</key>
+        <value>none</value>
+        <key>is_show_maintenance</key>
+        <Key>is_show_pop_up</Key>
+        <value>false</value>
+        <key>new_version</key>
+        <value></value>
+        <key>currentVersion</key>
+        <value></value>
+        <key>releaseDate</key>
+        <value>none</value>
+        <key>is_show_maintenance</key>
+        <value>false</value>
+        <key>is_two_factor_enabled</key>
+        <value>true</value>
+        <key>is_two_factor_enabled</key>
+        <value>true</value>
+        <key>is_log_enabled</key>
+        <value>true</value>
+    </entry>
+</defaultsMap>
+

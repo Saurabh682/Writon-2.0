@@ -5,7 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Typeface;
+import android.os.Bundle;
+import android.os.Parcelable;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,8 +17,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
@@ -27,13 +33,18 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.Blog_Profile;
-import com.ibitvalley.writon.Fragment.Home_Fragment2;
+import com.ibitvalley.writon.MyWorldActionListener;
+import com.ibitvalley.writon.classes.roomdataclasses.BookMark_List_Data;
+import com.ibitvalley.writon.fragment.Home_Fragment2;
 import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.Report;
 import com.ibitvalley.writon.ShowBlogDetails;
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
+import com.ibitvalley.writon.classes.view_model.OUD_Viewmodel;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.utils.AppUtils;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
@@ -46,6 +57,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -59,22 +71,27 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
     private Context curr_context;
     private Activity curr_activity;
     private String uName,bTitle;
-    ArrayList<Blog> arrappliedjob;
+    List<Post_List_Data> arrappliedjob;
     SharedPreferences preferences;
-    Typeface tf;
     User userData;
-    boolean isAll = false;
+    private OUD_Viewmodel oud_Viewmodel;
+    private String username;
+    private Post_List_Data blog;
+    //boolean isAll = false;
+    MyWorldActionListener myWorldActionListener;
 
-    public LatestBlogAdapter(Activity curr_activity, Context curr_context, ArrayList<Blog> arrappliedjob, boolean isAll) {
+    public LatestBlogAdapter(Activity curr_activity, Context curr_context, List<Post_List_Data> arrappliedjob, MyWorldActionListener myWorldActionListener) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
         preferences = curr_activity.getSharedPreferences("mPrefs", MODE_PRIVATE);
         userData = WritOnPreference.getInstance(curr_context).getUserDetails();
-        tf = Typeface.createFromAsset(curr_context.getAssets(),"Lato-Regular.ttf");
-        this.isAll = isAll;
+        oud_Viewmodel = new ViewModelProvider((FragmentActivity) curr_context).get(OUD_Viewmodel.class);
+        this.myWorldActionListener=myWorldActionListener;
+        //this.isAll = isAll;
     }
 
+    @NonNull
     @Override
     public ImagecategoryViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.blog_card, parent, false);
@@ -84,52 +101,63 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
     @Override
     public void onBindViewHolder(final ImagecategoryViewHolder holder, final int position) {
 
-        final Blog show = arrappliedjob.get(position);
-        uName = show.getUser_id();
+        final Post_List_Data show = arrappliedjob.get(position);
+        uName = show.getUserId();
         bTitle = show.getTitle();
 
         holder.TVCategory.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
-        holder.Username.setText(show.getUser_name());
+        holder.Username.setText(show.getUserName());
         holder.TVTitle.setText(show.getTitle());
 
         if(show.getShortDescription() != null) {
+
             holder.TVShortDesc.setText(Html.fromHtml(String.valueOf(show.getShortDescription())));
         } else {
-            holder.TVShortDesc.setText(Html.fromHtml(String.valueOf(show.getLongDescripton())));
+                holder.TVShortDesc.setText(" ");
+
         }
 
-        if (show.isBookMark()) {
-            holder.IVBookmarked.setImageResource(R.drawable.bookmarknew);
+        if (show.getIsBookmarked() != null ) {
+            if (show.getIsBookmarked()) {
+            holder.IVBookmarked.setImageResource(R.drawable.bookmarkyellow);
         } else {
-            holder.IVBookmarked.setImageResource(R.drawable.bookmarkblue);
+                holder.IVBookmarked.setImageResource(R.drawable.bookmarkblue);
+            }
+        }
+
+        if (show.getIsRated() != null ) {
+            if (show.getIsRated()) {
+                holder.iv_rating.setImageResource(R.drawable.staryellow);
+            } else {
+                holder.iv_rating.setImageResource(R.drawable.starblue);
+            }
         }
 
 
-        if(show.isIs_followed()) {
+        if(show.getIsFollowed() != null ) {
+            if (show.getIsFollowed()) {
             holder.TVFollow.setText("UN FOLLOW");
         } else {
-            holder.TVFollow.setText("FOLLOW");
+                holder.TVFollow.setText("FOLLOW");
+            }
         }
 
-        holder.TVViewCount.setText(show.getView_count());
-        holder.TVCommentCount.setText(show.getComments_count());
-        if(show.getRating_count() != null) {
-            holder.TVRating.setText(show.getRating_count());
+        holder.TVViewCount.setText(String.valueOf(show.getViewCount()));
+        holder.TVCommentCount.setText(String.valueOf(show.getCommentsCount()));
+        if(show.getRatingCount() != null) {
+            holder.TVRating.setText(String.valueOf(show.getRatingCount()));
         }else{
             holder.TVRating.setText("0");
         }
-        holder.tv_user_followers_count.setText(String.format("%s FOLLOWERS", show.getUser_followers_count()));
+        holder.tv_user_followers_count.setText(String.format("%s FOLLOWERS", show.getUserFollowersCount()));
 
-        if(show.getUser_image() != null) {
-            Picasso.get().load(show.getUser_image()).placeholder(R.drawable.usermale).into(holder.list_image);
+        if(show.getUserImage() != null) {
+            Picasso.get().load(show.getUserImage()).placeholder(R.drawable.generic_male).into(holder.list_image);
         }
 
-//        holder.IVProgileImage.setImageResource(AvtarUtil.getAvtarDrawableByType(show.getAvatorCode()));
-//        if(position ==0){
-//            holder.right_arrow.setVisibility(View.VISIBLE);
-//        } else {
-//            holder.right_arrow.setVisibility(View.INVISIBLE);
-//        }
+
+
+
 
     }
 
@@ -142,6 +170,7 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
             return 0;
         }
     }
+
 
     private void showPopupMenu(final String[] arrString, final String shareContent, final String blogID) {
         AlertDialog.Builder builderSingle = new AlertDialog.Builder(curr_activity);
@@ -176,34 +205,31 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
         curr_activity.startActivity(sendIntent);
     }
 
+
+
     public class ImagecategoryViewHolder extends RecyclerView.ViewHolder {
         TextView Username, TVTitle, TVShortDesc, TVCategory, TVbookmarkCount, TVCommentCount, TVRating, blogType, TVViewCount,
                 tv_user_followers_count;
         CircleImageView IVProgileImage, list_image;
-        ImageView IVBookmarked, drawer, right_arrow, img_Option;
-        LinearLayout LLContent, ll_FArrow;
+        ImageView IVBookmarked, drawer, right_arrow, img_Option,iv_rating;
+        LinearLayout LLContent, ll_FArrow,ll_rating;
         TextView TVHeader1, TVFollow;
 
         public ImagecategoryViewHolder(View view) {
             super(view);
 
-            this.TVHeader1 = view.findViewById(R.id.TVHeader1);
-            this.TVHeader1.setText("LATEST");
+
             this.Username = view.findViewById(R.id.name);
-            this.Username.setTypeface(tf);
             this.TVTitle = view.findViewById(R.id.TVTitle);
-            this.TVTitle.setTypeface(tf);
             this.TVShortDesc = view.findViewById(R.id.TVShortDesc);
-            this.TVShortDesc.setTypeface(tf);
             this.TVCategory = view.findViewById(R.id.TVCategory);
-            this.TVCategory.setTypeface(tf);
             //this.blogType = (TextView) view.findViewById(R.id.blogType);
             //this.blogType.setTypeface(tf);
             //this.blogType.setText("Latest");
             this.IVBookmarked = view.findViewById(R.id.IVBookmarked);
             this.TVViewCount = view.findViewById(R.id.TVViewCount);
             this.TVbookmarkCount = view.findViewById(R.id.TVbookmarkCount);
-             this.TVCommentCount = view.findViewById(R.id.TVCommentCount);
+            this.TVCommentCount = view.findViewById(R.id.TVCommentCount);
             this.TVRating = view.findViewById(R.id.TVRating);
 
             this.TVFollow = view.findViewById(R.id.TVFollow);
@@ -214,38 +240,50 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
 
             this.tv_user_followers_count = view.findViewById(R.id.tv_user_followers_count);
             this.ll_FArrow = view.findViewById(R.id.ll_FArrow);
-
-            if(isAll){
+            this.ll_rating=view.findViewById( R.id.ll_rating );
+            this.iv_rating=view.findViewById( R.id.iv_rating );
+            /*if(isAll){
                 this.ll_FArrow.setVisibility(View.GONE);
-            }
+            }*/
 
             LLContent = view.findViewById(R.id.LLContent);
             LLContent.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //Intent blogprofile = new Intent(curr_context, ShowBlog.class);
+                    Post_List_Data blog = arrappliedjob.get(getAdapterPosition());
+
                     Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
-                    System.out.println("POSITION is: "+ getAdapterPosition());
+
+                    Bundle bundle = new Bundle();
+                    bundle.putInt( "position", getAdapterPosition());
                     blogprofile.putExtra("boxTitle", "Latest");
+                    blog.setViewCount( blog.getViewCount()+1 );
+                    myWorldActionListener.onClick( getAdapterPosition(),"View",blog.getBlogId(),true,blog.getUserId(),blog.getUserName(),blog.getTitle());
+
+                    bundle.putSerializable("BlogObject", blog);
+                    blogprofile.putExtras(bundle);
+
                     curr_context.startActivity(blogprofile);
                 }
             });
 
-            this.TVFollow.setOnClickListener(new View.OnClickListener() {
+
+            TVFollow.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //final String followUserID, final String userID
-                    Blog blog = arrappliedjob.get(getPosition());
-                    if(blog.isIs_followed()) {
-                        blog.setIs_followed(false);
+                    Post_List_Data blog = arrappliedjob.get(getAdapterPosition());
+                    if(!blog.getIsFollowed()) {
+                        blog.setIsFollowed( true );
+
                         TVFollow.setText("FOLLOW");
-                        unFollowUser(blog.getUser_id(), userData.getId());
+                        myWorldActionListener.onClick( getAdapterPosition(),"followed",blog.getBlogId(),true,blog.getUserId(),blog.getUserName(),blog.getTitle());
                     } else {
-                        blog.setIs_followed(true);
+                        blog.setIsFollowed( false );
+
                         TVFollow.setText("UN FOLLOW");
-                        fcmNotify("follow");
-                        followUser(blog.getUser_id(), userData.getId());
+                        username=blog.getUserName();
+                        myWorldActionListener.onClick( getAdapterPosition(),"followed",blog.getBlogId(),false,blog.getUserId(),blog.getUserName(),blog.getTitle());
+
                     }
                 }
             });
@@ -253,13 +291,14 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
             this.img_Option.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Blog blog = arrappliedjob.get(getPosition());
+                    blog = arrappliedjob.get(getAdapterPosition());
                     final String UserId = preferences.getString("UserId", "0");
 
-                    String shareContent = String.format("\"%s\" by %s \n\n %s \n Read more %s @WritOn %s", blog.getTitle(), blog.getUser_name(),  Html.fromHtml(blog.getLongDescripton()), blog.getCategory(), "https://goo.gl/Cx4oPk");
+                    String shareContent = String.format("\"%s\" by %s \n\n %s \n Read more %s @WritOn %s", blog.getTitle(), blog.getUserId(), Html.fromHtml(
+                            AppUtils.ifItsEmpty( blog.getLongDescription()," " )), blog.getCategory(), "https://goo.gl/Cx4oPk");
                     //if (!blog.getUserID().equals(UserId)) {
-                        String[] arrString = {"Report", "Share"};
-                        showPopupMenu(arrString, shareContent, blog.getBlogId());
+                    String[] arrString = {"Report", "Share"};
+                    showPopupMenu(arrString, shareContent, blog.getBlogId());
                     /*} else {
                         String[] arrString = {"Share"};
                         showPopupMenu(arrString, shareContent);
@@ -269,15 +308,13 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
             });
 
 
-
             list_image.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Blog show = arrappliedjob.get(getPosition());
-                    if (!show.getUser_id().equals(userData.getId())) {
+                    Post_List_Data show = arrappliedjob.get(getAdapterPosition());
+                    if (!show.getUserId().equals(userData.getId())) {
                         Intent blogprofile = new Intent(curr_context, Blog_Profile.class);
-                        blogprofile.putExtra("BlogObject", arrappliedjob.get(getPosition()));
-                        blogprofile.putExtra("UserID", show.getUser_id());
+                        blogprofile.putExtra("UserID", show.getUserId());
                         curr_context.startActivity(blogprofile);
                     } else {
                         Fragment fragment = new Home_Fragment2();
@@ -290,200 +327,82 @@ public class LatestBlogAdapter extends RecyclerView.Adapter<LatestBlogAdapter.Im
             this.IVBookmarked.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Blog blog = arrappliedjob.get(getPosition());
-
-                    if (blog.isBookMark()) {
-                        unbookmarkRequest(userData.getId(), blog.getBlogId());
-                        blog.setBookMark(false);
-                        IVBookmarked.setImageResource(R.drawable.unbookmark);
+                    blog = arrappliedjob.get(getAdapterPosition());
+                    BookMark_List_Data bookMark_list_data=new BookMark_List_Data(blog);
+                    if (blog.getIsBookmarked()) {
+                        //unbookmarkRequest(userData.getId(), blog.getBlogId());
+                        //blog.setIsBookmarked(false);
+                        oud_Viewmodel.updateBookmark(bookMark_list_data,false);
+                        IVBookmarked.setImageResource(R.drawable.bookmarkblue);
+                        //getBMStat();
                     } else {
-                        fcmNotify("bookmark");
-                        bookmarkRequest(userData.getId(), blog.getBlogId());
-                        blog.setBookMark(true);
-                        IVBookmarked.setImageResource(R.drawable.bookmarknew);
-
+                        oud_Viewmodel.updateBookmark(bookMark_list_data,true);
+                        //fcmNotify("bookmark");
+                        //fcmNotifyAll("bookmark");
+                        //bookmarkRequest(userData.getId(), blog.getBlogId());
+                        //blog.setIsBookmarked(true);
+                        IVBookmarked.setImageResource(R.drawable.bookmarkyellow);
+                        //getBMStat();
                     }
+
+
+
 
                 }
             });
 
 
+            ll_rating.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    blog=arrappliedjob.get(getAdapterPosition());
+                    if (blog.getIsRated()) {
+                        //addRating(blogID, userData.getId(), "0");
+                        int i = blog.getRatingCount()-1;
+                        blog.setRatingCount(i);
+                        blog.setIsRated(false);
+                        //TVRating.setText(Integer.parseInt(TVRating.getText().toString())+1);
+                        oud_Viewmodel.updateRateRoom(blog.getBlogId(), false,i,blog.getUserId(),blog.getUserName(),blog.getTitle());
+                        iv_rating.setImageResource(R.drawable.starblue);
 
+                    } else {
+                        //addRating(blogID, userData.getId(), "1");
+                        //fcmNotify("rate", cuuBlog.getTitle());
+                        //fcmNotifyAll("rate", cuuBlog.getTitle());
+                        int i = blog.getRatingCount()+1;
+                        blog.setRatingCount(i);
+                        blog.setIsRated(true);
+                        oud_Viewmodel.updateRateRoom(blog.getBlogId(), true,i,blog.getUserId(),blog.getUserName(),blog.getTitle());
+                        iv_rating.setImageResource(R.drawable.staryellow);
+
+                    }
+                }
+            });
 
         }
-    }
-
-    private void fcmNotify(String who) {
-        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
-        String urlExt = "";
-        // Instantiate the RequestQueue.
-        switch (who) {
-            case "bookmark":
-                urlExt = userData.getId()+"&sp=your post is getting popular&tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
-                break;
-            case "follow":
-                urlExt = userData.getId()+"&sp=you are getting noticed&tp="+userData2.getUsername()+" has started following you. Keep up your writing";
-                break;
-
-            //default:
-                //console.log('Sorry, we are out of ' + expr + '.');
-        }
-
-
-        RequestQueue queue = Volley.newRequestQueue(curr_context);
-        String url ="https://www.writon.co/Mine/fcm_noti_single.php?id="+urlExt ;
-        System.out.println("Bookmark Notify: "+url);
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        System.out.println("Response is: "+ response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println("That didn't work!");
-            }
-        });
-
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
 
     }
 
-    private void bookmarkRequest(final String UserID, final String BlogID) {
-        HashMap<String, String> hmHomeParam = new HashMap <>();
-        hmHomeParam.put("blogid", BlogID);
-        hmHomeParam.put("userid", UserID);
-        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_bookmark_api, curr_activity, false, hmHomeParam, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        int status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-            @Override
-            public void onError(VolleyError error) {
-                Log.d("","");
-            }
-        });
-        VolleySingleton.getInstance().addToRequestQueue(mainCategory);
+
+    public void addItems(List<Post_List_Data> newList)
+    {
+        final LatestBlogAdapterDiffUtil diffUtil=new LatestBlogAdapterDiffUtil( this.arrappliedjob,newList );
+        final DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(diffUtil);
+
+        diffResult.dispatchUpdatesTo(this);
+
+        this.arrappliedjob.clear();
+        this.arrappliedjob.addAll( newList );
+
     }
 
 
-    private void unbookmarkRequest(final String UserID, final String BlogID) {
-        HashMap<String, String> hmHomeParam = new HashMap <>();
-        hmHomeParam.put("blogid", BlogID);
-        hmHomeParam.put("userid", UserID);
-        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_unbookmark_api, curr_activity, false, hmHomeParam, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    int status = jsonResponse.getInt("success");
-                    if (status == 1) {
-                        String message = jsonResponse.getString("message");
-                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                    }else{
-                        String message = jsonResponse.getString("message");
-                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-            @Override
-            public void onError(VolleyError error) {
-                Log.d("","");
-            }
-        });
-        VolleySingleton.getInstance().addToRequestQueue(mainCategory);
-    }
-
-
-
-
-    private void followUser(final String followUserID, final String userID) {
-        HashMap<String, String> hmHomeParam = new HashMap <>();
-        hmHomeParam.put("FollowerID", followUserID);
-        hmHomeParam.put("UserID", userID);
-        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        int status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        } else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-            @Override
-            public void onError(VolleyError error) {
-                Log.d("","");
-            }
-        });
-        VolleySingleton.getInstance().addToRequestQueue(mainCategory);
-    }
-
-
-    private void unFollowUser(final String followUserID, final String userID) {
-        HashMap<String, String> hmHomeParam = new HashMap <>();
-        hmHomeParam.put("FollowerID", followUserID);
-        hmHomeParam.put("UserID", userID);
-        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.un_follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        int status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        } else {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-            @Override
-            public void onError(VolleyError error) {
-                Log.d("","");
-            }
-        });
-        VolleySingleton.getInstance().addToRequestQueue(mainCategory);
-    }
 
 
 }
+
+
+
+
+
 

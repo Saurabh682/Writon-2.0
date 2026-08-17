@@ -87,7 +87,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
 
                     for (int s=0; s< ShowBlogIngo.blogArrayList.size(); s++){
 
-                            if (ShowBlogIngo.blogArrayList.get(s).getBlogId().toString().equals(nClass.getBlogID().toString())) {
+                            if ( ShowBlogIngo.blogArrayList.get(s).getBlogId().equals(
+                                    nClass.getBlogID() )) {
 
                                 Intent blogprofile = new Intent(curr_context, ShowBlog.class);
                                 blogprofile.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

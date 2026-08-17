@@ -4,6 +4,21 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">OOps! There is nothing to see here.</string>
 
+
+    -
+    <string-array name="array_str_values">
+
+        <item>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old.</item>
+
+        <item>Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance.</item>
+
+        <item>The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.</item>
+
+        <item>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using \'Content here, content here\', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for \'lorem ipsum\' will uncover many web sites still in their infancy.</item>
+
+    </string-array>
+
+
     <string-array name="array_mainCategory">
         <item>Select Main Category</item>
         <item>Short Stories</item>
@@ -316,6 +331,7 @@
     <!--  The property id associated with this analytics tracker -->
     <string name="ga_trackingId">UA-90643573-1</string>
     <string name="facebook_app_id">697436403776745</string>
+    <string name="facebook_client_token">00000000000000000000000000000000</string>
     <string name="fb_login_protocol_scheme">fb697436403776745</string>
 
 
@@ -344,8 +360,8 @@
     <string name="play_again_desc">To see the welcome slider again, goto Settings -> apps -> welcome slider -> clear data</string>
     <string name="play_again">Play Again</string>
     <string name="default_notification_channel_id" />
-    <string name="fcm_message" >WritOn</string>
-    <string name="fcm_token" >FCM Token: %s</string>
+    <string name="fcm_message">WritOn</string>
+    <string name="fcm_token">FCM Token: %s</string>
     <string name="user_name"> </string>
     <string name="Searchdescritption">*Enter the title you want to search \n
 
@@ -354,5 +370,22 @@
     <string name="place">WhichPlace</string>
     <string name="person">Who</string>
     <string name="image">Whichimage</string>
+    <string name="message_dialog">What do you want to do?</string>
+    <string name="message_yes">yes</string>
+    <string name="message_no">No</string>
+    <string name="message_error">error</string>
+    <string name="message_delete">Delete</string>
+    <string name="message_cancel">Cancle</string>
+
+    <string name="sorry_maintenance"> Sorry for the inconvenience\nWe will be back up and running as fast as possible</string>
+    <string name="maintenance_heading_one"> We are undergoing a bit of</string>
+    <string name="maintenance_heading_two"> Scheduled Maintenance</string>
+    <string name="tutorial_write"> Write your thoughts here</string>
+    <string name="tutorial_bookmark"> Access your recently viewed and bookmarked articles</string>
+    <string name="tutorial_myworld"> Follow your favourite writers to receive the updates</string>
+    <string name="tutorial_explore"> Browse the latest posts,trends and popular things</string>
+    <string name="tutorial_list"> Access the contents Categorically</string>
+    <string name="previous_winners">Previous Winners</string>
+
 
 </resources>

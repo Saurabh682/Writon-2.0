@@ -15,6 +15,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,27 +23,26 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.VolleyError;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.adapter.GridViewAdapter;
-import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.utils.VolleySingleton;
+import com.ibitvalley.writon.classes.model.SignupBody;
+import com.ibitvalley.writon.classes.model.SignupResponse;
+import com.ibitvalley.writon.googleAnalytics.MyApplication;
+import com.ibitvalley.writon.retroFit.RetroFitClient;
+import com.ibitvalley.writon.retroFit.ServiceGenerator;
+import com.ibitvalley.writon.utils.AppUtils;
 import com.ibitvalley.writon.webapi.WebApiParams;
-import com.ibitvalley.writon.webapi.WebConstants;
-import com.ibitvalley.writon.webapi.util.OnResponseListener;
-import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 import static com.ibitvalley.writon.model.AvtarUtil.getAvtarData;
 import static com.ibitvalley.writon.model.AvtarUtil.getAvtarDrawableByType;
@@ -63,33 +63,31 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
     CircleImageView avatarImageView;
     int selectedAvtarType = 0;
     CheckBox CBtandc;
-
+    private TinyDB tinydb;
+    ProgressBar progressBar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
-        //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_signup);
         fbEmail = getIntent().getStringExtra("fbEmail");
         fbId = getIntent().getStringExtra("fbId");
         getSupportActionBar().hide();
-        spinner = (Spinner) findViewById(R.id.spinner);
         llChangeAvatar = (LinearLayout) findViewById(R.id.llChangeAvatar);
         avatarImageView = (CircleImageView) findViewById(R.id.avatarImageView);
-        //first_name = (EditText) findViewById(R.id.first_name);
         TVUserName = (EditText) findViewById(R.id.TVUserName);
-        //last_name = (EditText) findViewById(R.id.last_name);
         email = (EditText) findViewById(R.id.email);
         et_Mobile = findViewById(R.id.et_Mobile);
         password = (EditText) findViewById(R.id.password);
         Cpassword = (EditText) findViewById(R.id.Cpassword);
         signin = (TextView) findViewById(R.id.signin);
-        //opencalender = (TextView) findViewById(R.id.open_calender);
         signup_button = (TextView) findViewById(R.id.signup_button);
         CBtandc = (CheckBox) findViewById(R.id.CBtandc);
         TVTerms = (TextView) findViewById(R.id.TVTerms);
         String text = "<a href='#'>Terms and Conditions.</a>";
         TVTerms.setText(Html.fromHtml(text));
+        tinydb = new TinyDB(getApplicationContext());
+        progressBar=findViewById( R.id.progress_bar );
         TVTerms.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -98,11 +96,8 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
         });
 
         String[] items = new String[]{"Gender", "Male", "Female", "Other"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.spinner_text_layout, items);
-        //spinner.setAdapter(adapter);
         signin.setOnClickListener(this);
         signup_button.setOnClickListener(this);
-        //opencalender.setOnClickListener(this);
         llChangeAvatar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -117,24 +112,6 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SIGN_UP, bundle);
 
 
-//        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-//            @Override
-//            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-//                gender_selected = spinner.getItemAtPosition(position).toString().trim();
-//                if (gender_selected.equals("Male")) {
-//                    gender = "1";
-//                }
-//                if (gender_selected.equals("Female")) {
-//                    gender = "2";
-//                }
-//            }
-//
-//            @Override
-//            public void onNothingSelected(AdapterView<?> parent) {
-//
-//            }
-//        });
-
         final DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear,
@@ -147,18 +124,11 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
             }
         };
 
-//        opencalender.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                new DatePickerDialog(Signup.this, date, myCalendar.get(Calendar.YEAR), myCalendar.get(Calendar.MONTH), myCalendar.get(Calendar.DAY_OF_MONTH)).show();
-//            }
-//        });
     }
 
     public void updatedate() {
         String myFormat = "MM/dd/yy"; //In which you need put here
         SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
-        //opencalender.setText(sdf.format(myCalendar.getTime()));
         year = myCalendar.get(Calendar.YEAR);
         month = myCalendar.get(Calendar.MONTH)+1;
         day = myCalendar.get(Calendar.DAY_OF_MONTH);
@@ -167,42 +137,32 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
     ProgressDialog progress;
 
     private void checkValidation() {
+        String emailStr = email.getText().toString().trim();
+        String passStr = password.getText().toString().trim();
+        String cPassStr = Cpassword.getText().toString().trim();
+        String userNameStr = TVUserName.getText().toString().trim();
 
-        if (email.getText().toString().equals("") && password.getText().toString().trim().trim().equals("") && TVUserName.getText().toString().trim().equals("")) {
-            //first_name.setError("First Name cannot be empty");
-            //last_name.setError("Last Name cannot be empty");
+        if (userNameStr.isEmpty()) {
+            TVUserName.setError("Pen Name cannot be empty");
+            TVUserName.requestFocus();
+        } else if (emailStr.isEmpty()) {
             email.setError("Email cannot be empty");
-            password.setError("Password cannot be empty");
-            TVUserName.setError("UserName cannot be empty");
-        } else if (TVUserName.getText().toString().trim().equals("")) {
-            TVUserName.setError("UserName cannot be empty");
-        }
-        else if (email.getText().toString().trim().equals("")) {
-            email.setError("Email cannot be empty");
-        }if(!password.getText().toString().trim().equals(Cpassword.getText().toString().trim())){
-            Cpassword.setError("Passwords must match");
-        } else if (password.getText().toString().trim().equals("")) {
-            password.setError("Password cannot be empty");
-        }
-        else if (!email.getText().toString().contains("@")) {
+            email.requestFocus();
+        } else if (!emailStr.contains("@")) {
             email.setError("Invalid Email ID");
-        }
-//        else if (month == 0) {
-//            //opencalender.setError("Please Select DateOfBirth");
-//            Toast.makeText(getApplicationContext(), "Please Select DateOfBirth", Toast.LENGTH_LONG).show();
-//
-//        }
-//        else if (gender_selected.equals("Gender")) {
-//           Toast.makeText(getApplicationContext(), "Please Select Gender", Toast.LENGTH_LONG).show();
-//        }
-
-        else if (!CBtandc.isChecked()) {
+            email.requestFocus();
+        } else if (passStr.isEmpty()) {
+            password.setError("Password cannot be empty");
+            password.requestFocus();
+        } else if (passStr.length() < 6) {
+            password.setError("Password must be at least 6 characters");
+            password.requestFocus();
+        } else if (!passStr.equals(cPassStr)) {
+            Cpassword.setError("Passwords must match");
+            Cpassword.requestFocus();
+        } else if (!CBtandc.isChecked()) {
             Toast.makeText(Signup.this, "Please Accept the Terms and Conditions", Toast.LENGTH_SHORT).show();
         } else {
-            //String token = String.valueOf(FirebaseInstanceId.getInstance().getToken());
-            //String signUPUrl = String.format("http://blog.ibitvalley.com/api/Registration?Email=%s&Password=%s&UserName=%s&QuoteofDay=&Introducation=&WorkingOn=&AvatorCode=%s&FcmID=%s",  email.getText().toString().trim(), password.getText().toString().trim(), TVUserName.getText().toString().trim(), selectedAvtarType, token);
-            //signUPUrl = signUPUrl.replace(" ", "%20");
-            //sendRegistrationRequest(signUPUrl);
             createUserAccount();
             MyApplication.getInstance().trackEvent("SignUp Screen", "SignUp Button", "User Click on SignUp.");
             MyApplication.getInstance().trackScreenView("SignUp");
@@ -211,56 +171,59 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
 
 
     private void createUserAccount() {
-
-
         final String emailValue = email.getText().toString().trim();
-       // final String mobileValue = et_Mobile.getText().toString().trim();
         final String passwordValue = password.getText().toString().trim();
         final String userPenNameValue = TVUserName.getText().toString().trim();
 
+        showProgressDialog(true);
+        signup_button.setEnabled(false);
 
-        HashMap <String, String> hmLoginParams = WebApiParams.getRegistrationParams(userPenNameValue, emailValue, passwordValue);
-        SmartPostWebRequest loginRequest = new SmartPostWebRequest(WebConstants.Register_API, Signup.this, true, hmLoginParams, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            Toast.makeText(Signup.this, jsonResponse.get("message").toString(), Toast.LENGTH_LONG).show();
+        RetroFitClient registerClient = ServiceGenerator.getRetrofit().create(RetroFitClient.class);
+        SignupBody signupBody = new SignupBody();
+        signupBody.setPenName(userPenNameValue);
+        signupBody.setFullName(userPenNameValue);
+        signupBody.setEmail(emailValue);
+        signupBody.setPassword(passwordValue);
+
+        Single<SignupResponse> registerCall = registerClient.register(signupBody);
+
+        registerCall.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<SignupResponse>() {
+                    @Override
+                    public void accept(SignupResponse signupResponse) throws Exception {
+                        showProgressDialog(false);
+                        signup_button.setEnabled(true);
+
+                        if (signupResponse.getUser() != null) {
+                            Toast.makeText(Signup.this, "Signup Successful! Please Login.", Toast.LENGTH_LONG).show();
                             Intent home = new Intent(Signup.this, LoginActivity.class);
-                            //home.putExtra("EmailID", emailValue);
-                            //home.putExtra("Password", passwordValue);
+                            home.putExtra("EmailID", emailValue);
+                            home.putExtra("Password", passwordValue);
                             startActivity(home);
                             finish();
                         } else {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(Signup.this, message, Toast.LENGTH_LONG).show();
+                            String message = signupResponse.getMessage();
+                            Toast.makeText(Signup.this, message != null ? message : "Signup failed", Toast.LENGTH_LONG).show();
                         }
                     }
-                } catch (JSONException e) {
-                    //e.printStackTrace();
-                    Toast.makeText(Signup.this, e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-                return null;
-            }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        signup_button.setEnabled(true);
+                        showProgressDialog(false);
+                        String errorMsg = throwable.getMessage();
+                        if (throwable instanceof retrofit2.HttpException) {
+                            retrofit2.HttpException httpException = (retrofit2.HttpException) throwable;
+                            if (httpException.code() == 409) {
+                                errorMsg = "Email or Pen Name already registered";
+                            }
+                        }
+                        Toast.makeText(Signup.this, errorMsg, Toast.LENGTH_LONG).show();
+                    }
+                });
 
-            @Override
-            public void onError(VolleyError error) {
-                Toast.makeText(Signup.this, error.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-        VolleySingleton.getInstance().addToRequestQueue(loginRequest);
     }
-
-
-
-
-
-
-
-
 
     private void showAvtarSelectorPopup() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -295,15 +258,13 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.signin:
-                Intent login = new Intent(Signup.this, LoginActivity.class);
-                startActivity(login);
-                finish();
-                break;
-            case R.id.signup_button:
-                checkValidation();
-                break;
+        int id = v.getId();
+        if (id == R.id.signin) {
+            Intent login = new Intent(Signup.this, LoginActivity.class);
+            startActivity(login);
+            finish();
+        } else if (id == R.id.signup_button) {
+            checkValidation();
         }
     }
 
@@ -366,5 +327,10 @@ public class Signup extends AppCompatActivity implements View.OnClickListener {
 
         // Showing Alert Message
         alertDialog.show();
+    }
+
+    void showProgressDialog(boolean isVisible)
+    {
+        progressBar.setVisibility( isVisible? View.VISIBLE:View.GONE );
     }
 }

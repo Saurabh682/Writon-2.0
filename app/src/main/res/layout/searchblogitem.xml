@@ -20,6 +20,7 @@
             android:layout_width="50dip"
             android:layout_height="50dip"
             android:layout_marginTop="3dp"
+            android:scaleType="centerCrop"
             android:src="@drawable/defaulta"/>
 
     </LinearLayout>

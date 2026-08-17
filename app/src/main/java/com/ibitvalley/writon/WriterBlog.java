@@ -47,7 +47,7 @@ public class WriterBlog extends AppCompatActivity {
         String WID = getIntent().getExtras().getString("WriterID");
         String writerName = getIntent().getExtras().getString("WriterName");
         adapter = new WriterBlogAdapter(this, this, myblogArrayList, writerName);
-        recyclerView1.setAdapter(adapter);;
+        recyclerView1.setAdapter(adapter);
         getBlogsListCallApi(WID);
     }
 

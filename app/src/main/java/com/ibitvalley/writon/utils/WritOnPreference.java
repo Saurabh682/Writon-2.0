@@ -59,11 +59,7 @@ public class WritOnPreference {
         User user = null;
         if (userJson != null && !userJson.equals("")) {
             user = new Gson().fromJson(userJson, User.class);
-            if (user != null) {
-                return true;
-            } else {
-                return false;
-            }
+            return user != null;
         } else {
             return false;
         }

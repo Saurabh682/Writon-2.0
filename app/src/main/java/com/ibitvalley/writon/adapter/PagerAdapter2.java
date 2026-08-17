@@ -6,7 +6,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
-import com.ibitvalley.writon.Fragment.FragmentB;
+import com.ibitvalley.writon.fragment.FragmentB;
 
 import java.util.ArrayList;
 

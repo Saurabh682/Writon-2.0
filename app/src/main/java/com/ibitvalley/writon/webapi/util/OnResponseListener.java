@@ -7,5 +7,6 @@ import java.util.ArrayList;
 
 public interface OnResponseListener {
     ArrayList<Blog> onSuccess(Object result);
+
     void onError(VolleyError error);
 }

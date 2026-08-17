@@ -7,9 +7,12 @@
     <color name="newBlue">#73B2E0</color>
     <color name="colorBlack">#000000</color>
     <color name="colorWhite">#ffffff</color>
+    <color name="colorLessWhite">#FAFAFA</color>
     <color name="colorLightWhite">#d4d2d2</color>
     <color name="colorLightGrey">#e9e6e6</color>
     <color name="colorGrey">#5c5c5c</color>
+    <color name="colorGreyLight">#8A8A8A</color>
+
     <color name="newColorGrey">#97A0C6</color>
     <color name="newColorYellow">#FFE600</color>
     <color name="newRedColor">#FF7878</color>
@@ -46,6 +49,7 @@
     <color name="purpleLight">#E7E4FE</color>
     <color name="greyblue">#97A0C6</color>
     <color name="verylightPurple">#f5f4f9</color>
+    <color name="spotlightBackground">#BF000000</color>
 
 
     <array name="array_dot_active">

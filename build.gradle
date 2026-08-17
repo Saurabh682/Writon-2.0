@@ -3,32 +3,31 @@
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.google.gms:google-services:4.3.3'
-        classpath 'com.android.tools.build:gradle:3.6.3'
-        // Add the Crashlytics Gradle plugin.
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.0.0-beta03'
+        classpath 'com.google.gms:google-services:4.4.2'
+        classpath 'com.android.tools.build:gradle:8.7.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.21"
+        classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.0.21-1.0.28"
+        classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:2.0.21"
+        classpath 'com.google.firebase:firebase-crashlytics-gradle:3.0.3'
+        classpath 'com.jakewharton:butterknife-gradle-plugin:10.2.3'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
+
 }
 
 
 allprojects {
     repositories {
-        //start here
-
-            google()
-            jcenter()
-        }
-        //end
-
-
-
+        google()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
     }
+}
     // You need to add the google maven in this block.
 
 

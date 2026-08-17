@@ -31,7 +31,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.Blog_Profile;
-import com.ibitvalley.writon.Fragment.Home_Fragment2;
+import com.ibitvalley.writon.fragment.Home_Fragment2;
 import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.Report;
@@ -65,6 +65,8 @@ public class MostReadBlogAdapter extends RecyclerView.Adapter<MostReadBlogAdapte
     ArrayList<Blog> arrappliedjob;
     SharedPreferences preferences;
     Typeface tf;
+    private String username;
+
     public MostReadBlogAdapter(Activity curr_activity, Context curr_context, ArrayList<Blog> arrappliedjob) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
@@ -85,13 +87,14 @@ public class MostReadBlogAdapter extends RecyclerView.Adapter<MostReadBlogAdapte
         final Blog show = arrappliedjob.get(position);
         bUserid = show.getUser_id();
         bTitle = show.getTitle();
+        username = show.getUser_name();
         holder.category.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
         holder.Username.setText(show.getCreateBy());
         holder.Title.setText(show.getTitle());
         holder.TVbookmarkCount.setText(show.getBookMarkedCount());
         holder.TVCommentCount.setText(show.getCommentCount());
-        if(show.getRating_count() != null) {
-            holder.TVRating.setText(show.getRating_count());
+        if(show.getRating() != null) {
+            holder.TVRating.setText(show.getRating());
         }else{
             holder.TVRating.setText("0");
         }
@@ -350,6 +353,49 @@ public class MostReadBlogAdapter extends RecyclerView.Adapter<MostReadBlogAdapte
                     public void onResponse(String response) {
                         // Display the first 500 characters of the response string.
                         System.out.println("Response is: "+ response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("That didn't work!");
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
+    }
+
+    private void fcmNotifyAll(String who) {
+        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
+        String urlExt = "";
+        // Instantiate the RequestQueue.
+        switch (who) {
+            case "bookmark":
+                urlExt = userData2.getId()+"&sp="+userData2.getUsername()+" has bookmarked a post. &tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
+                break;
+            case "follow":
+                urlExt = userData2.getId()+"&sp="+userData2.getUsername()+" has started following a new user. &tp="+userData2.getUsername()+" has started following "+username;
+                break;
+            case "rate":
+                urlExt = userData2.getId()+"&sp="+userData2.getUsername()+" has rated a post. &tp="+bTitle+" has been rated by "+userData2.getUsername();
+                break;
+
+            //default:
+            //console.log('Sorry, we are out of ' + expr + '.');
+        }
+
+
+        RequestQueue queue = Volley.newRequestQueue(curr_context);
+        String url ="https://www.writon.co/Mine/fcm_noti_multiuser.php?id="+urlExt ;
+        Log.i("FCM-Notify Single: ", url);
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("FCM-Notify Single", "onResponse() returned: " + response);
                     }
                 }, new Response.ErrorListener() {
             @Override

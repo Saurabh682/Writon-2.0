@@ -1,15 +1,24 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.ibitvalley.writon.Fragment.categoryListBlog">
+    tools:context="com.ibitvalley.writon.fragment.CategoryListBlogFragment">
+
+
+    <include
+        android:id="@+id/page_indicator_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        layout="@layout/page_indicator_status"/>
 
     <LinearLayout
+        android:layout_alignParentTop="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/LLHeader"
+        android:padding="@dimen/_10sdp"
         android:background="#2196f3"
-        android:layout_marginBottom="15dp"
         android:orientation="vertical">
 
         <TextView
@@ -24,11 +33,12 @@
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
+        android:layout_below="@+id/LLHeader"
         android:id="@+id/recyclerView1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="31dp"
+        android:layout_marginTop="10dp"
         android:elevation="10dp" />
 
 
-</FrameLayout>
+</RelativeLayout>

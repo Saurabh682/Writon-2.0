@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class Feedback extends AppCompatActivity {
+public class Feedback extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

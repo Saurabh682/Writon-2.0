@@ -4,6 +4,7 @@
 
 
     <item
+        android:title="test"
         android:id="@+id/action_settings"
         android:icon="@drawable/ic_text_format2_black_24dp"
         app:showAsAction="ifRoom"/>

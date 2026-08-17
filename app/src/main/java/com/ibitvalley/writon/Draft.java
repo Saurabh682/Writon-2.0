@@ -4,6 +4,8 @@ import android.app.ProgressDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.ibitvalley.writon.adapter.DraftBlogAdapter;
 import com.ibitvalley.writon.model.Blog;
+import com.ibitvalley.writon.utils.AppUtils;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
@@ -33,10 +36,12 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Draft extends AppCompatActivity {
+public class Draft extends BaseActivity {
     ArrayList<Blog> draftblogArrayList;
     DraftBlogAdapter adapter;
     RecyclerView recyclerView1;
+    TextView txt_no_records;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,65 +51,19 @@ public class Draft extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView1.setLayoutManager(layoutManager);
         draftblogArrayList = new ArrayList<>();
-        adapter = new DraftBlogAdapter(this, this, draftblogArrayList);
+        adapter = new DraftBlogAdapter( Draft.this , Draft.this , draftblogArrayList ,
+                new onDeleteClick() {
+                    @Override
+                    public void onDelete(int position) {
+                        if ( adapter.getArrappliedjob().size()==0  )
+                            txt_no_records.setVisibility( View.VISIBLE );
+                    }
+                } );
         recyclerView1.setAdapter(adapter);
-        //getBlogsListCallApi();
+        txt_no_records=findViewById( R.id.txt_no_records );
+
         getDraftBlog();
     }
-
-
-    ProgressDialog progress;
-
-    private void getBlogsListCallApi() {
-
-        RequestQueue requestQueue;
-        progress = new ProgressDialog(this);
-        progress.show();
-        progress.setTitle("Please Wait");
-        requestQueue = Volley.newRequestQueue(this);
-        SharedPreferences preferences = getApplicationContext().getSharedPreferences("mPrefs", MODE_PRIVATE);
-        final String UserId = preferences.getString("UserId", "0");
-        String loginURL = String.format("http://blog.ibitvalley.com/api/DraftBlogsByUserId?UserID=%s", UserId);
-        System.out.println("URL : " + loginURL);
-        JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, loginURL, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Log.d("True", "");
-                        try {
-                            if (progress != null && progress.isShowing())
-                                progress.dismiss();
-                            if (response.get("success").toString() == "true") {
-                                System.out.println("Json == > " + response.toString());
-                                JSONObject obj = new JSONObject(response.toString());
-                                JSONArray arr = obj.getJSONArray("Result");
-                                for (int i = 0; i < arr.length(); i++) {
-                                    String blogString = arr.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
-                                    draftblogArrayList.add(blog);
-                                }
-                                adapter.notifyDataSetChanged();
-                            }
-                        } catch (JSONException ex) {
-                            if (progress != null && progress.isShowing())
-                                progress.dismiss();
-                            Log.d("JSON Exception", ex.getMessage());
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        if (progress != null && progress.isShowing())
-                            progress.dismiss();
-                        error.printStackTrace();
-                        Log.e("Volley", "Error" + error.getMessage());
-                    }
-                }
-        );
-        requestQueue.add(jor);
-    }
-
 
     private void getDraftBlog() {
 
@@ -141,11 +100,22 @@ public class Draft extends AppCompatActivity {
 
 
     private void displayDraftPost(ArrayList<Blog> trendingBlog){
-        adapter = new DraftBlogAdapter(Draft.this, Draft.this, trendingBlog);
-        recyclerView1.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
 
+        if ( AppUtils.isNull( trendingBlog )  ||  trendingBlog.size()==0)
+            txt_no_records.setVisibility( View.VISIBLE );
+        else
+        {
+            txt_no_records.setVisibility( View.GONE );
+
+            draftblogArrayList.addAll( trendingBlog );
+            recyclerView1.setAdapter(adapter);
+            adapter.notifyDataSetChanged();
+        }
     }
 
 
+    public interface onDeleteClick
+    {
+        void onDelete(int position);
+    }
 }

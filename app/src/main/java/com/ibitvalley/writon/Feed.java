@@ -48,7 +48,7 @@ public class Feed extends AppCompatActivity {
         String WID = getIntent().getExtras().getString("WriterID");
         String writerName = getIntent().getExtras().getString("WriterName");
         adapter = new FeedAdapter(this, this, myblogArrayList, writerName);
-        recyclerView1.setAdapter(adapter);;
+        recyclerView1.setAdapter(adapter);
         getBlogsListCallApi(WID);
 
     }

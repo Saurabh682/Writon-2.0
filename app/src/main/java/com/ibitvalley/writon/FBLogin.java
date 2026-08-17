@@ -28,8 +28,11 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import androidx.annotation.NonNull;
+import com.ibitvalley.writon.googleAnalytics.MyApplication;
 import com.ibitvalley.writon.adapter.GridViewAdapter;
 import com.ibitvalley.writon.classes.UserInfo;
 
@@ -41,7 +44,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import static com.ibitvalley.writon.model.AvtarUtil.getAvtarData;
 import static com.ibitvalley.writon.model.AvtarUtil.getAvtarDrawableByType;
 
-public class FBLogin extends AppCompatActivity {
+public class FBLogin extends BaseActivity {
 
 
     EditText first_name, email, password, TVUserName, gender, Cpassword;
@@ -216,10 +219,19 @@ public class FBLogin extends AppCompatActivity {
         }  else if (!CBtandc.isChecked()) {
             Toast.makeText(FBLogin.this, "Please Accept the Terms and Conditions", Toast.LENGTH_SHORT).show();
         } else {
-                String token = String.valueOf(FirebaseInstanceId.getInstance().getToken());
-                String signUPUrl = String.format("http://blog.ibitvalley.com/api/SocialRegister?Name=%s&Email=%s&Gender=%s&Password=%s&UserName=%s&FacebookId=%s&AvatorCode=%s&FcmID=%s", first_name.getText().toString().trim() , email.getText().toString().trim(),  gender.getText(), password.getText().toString().trim(), TVUserName.getText().toString().trim(), FBID, selectedAvtarType, token);
-                signUPUrl = signUPUrl.replace(" ", "%20");
-                sendRegistrationRequest(signUPUrl);
+            FirebaseMessaging.getInstance().getToken()
+                    .addOnCompleteListener(new OnCompleteListener<String>() {
+                        @Override
+                        public void onComplete(@NonNull Task<String> task) {
+                            String token = "";
+                            if (task.isSuccessful()) {
+                                token = task.getResult();
+                            }
+                            String signUPUrl = String.format("http://blog.ibitvalley.com/api/SocialRegister?Name=%s&Email=%s&Gender=%s&Password=%s&UserName=%s&FacebookId=%s&AvatorCode=%s&FcmID=%s", first_name.getText().toString().trim(), email.getText().toString().trim(), gender.getText(), password.getText().toString().trim(), TVUserName.getText().toString().trim(), FBID, selectedAvtarType, token);
+                            signUPUrl = signUPUrl.replace(" ", "%20");
+                            sendRegistrationRequest(signUPUrl);
+                        }
+                    });
         }
     }
 

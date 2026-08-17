@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.VolleyError;
 import com.ibitvalley.writon.Constants;
+import com.ibitvalley.writon.Draft;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.User;
@@ -52,10 +53,12 @@ public class DraftBlogAdapter extends RecyclerView.Adapter<DraftBlogAdapter.Imag
     private ArrayList<Blog> arrappliedjob;
     private SharedPreferences preferences;
     private Typeface tf;
-    public DraftBlogAdapter(Activity curr_activity, Context curr_context, ArrayList<Blog> arrappliedjob) {
+    Draft.onDeleteClick onDeleteClick;
+    public DraftBlogAdapter(Activity curr_activity, Context curr_context, ArrayList<Blog> arrappliedjob,Draft.onDeleteClick onDeleteClick) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
+        this.onDeleteClick=onDeleteClick;
         System.out.println("Array Size In Adapter : " + arrappliedjob.size());
         tf = Typeface.createFromAsset(curr_context.getAssets(),"Lato-Regular.ttf");
     }
@@ -123,6 +126,7 @@ public class DraftBlogAdapter extends RecyclerView.Adapter<DraftBlogAdapter.Imag
                             Blog blog =  arrappliedjob.get(getAdapterPosition());
                             deleteBlogApi(blog.getBlogId());
                             arrappliedjob.remove(getAdapterPosition());
+                            onDeleteClick.onDelete( getAdapterPosition() );
                             notifyItemRemoved(getAdapterPosition());
                             notifyItemRangeChanged(getAdapterPosition(), arrappliedjob.size());
                         }
@@ -154,6 +158,10 @@ public class DraftBlogAdapter extends RecyclerView.Adapter<DraftBlogAdapter.Imag
         }
     }
 
+    public ArrayList<Blog> getArrappliedjob()
+    {
+        return  arrappliedjob;
+    }
 
     private void  deleteBlogApi(String BlogID)  {
         HashMap<String, String> hmHomeParam = new HashMap <>();

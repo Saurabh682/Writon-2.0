@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,12 +18,19 @@ import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.VolleyError;
+import com.ibitvalley.writon.ActionType;
+import com.ibitvalley.writon.AddNewDeleteEvent;
+import com.ibitvalley.writon.AddNewEvent;
 import com.ibitvalley.writon.Constants;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.ShowBlogDetails;
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
+import com.ibitvalley.writon.classes.view_model.OUD_Viewmodel;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
@@ -32,11 +40,13 @@ import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
 import com.squareup.picasso.Picasso;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -51,22 +61,25 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
     private static final String TAG = "MyBlogAdapter";
     private Context curr_context;
     private Activity curr_activity;
-    private ArrayList<Blog> arrappliedjob;
+    private List<Post_List_Data> arrappliedjob;
     private SharedPreferences preferences;
-    private Blog show;
+    private Post_List_Data show;
     //SharedPreferences preferences;
     Typeface tf;
     String Title= "";
     private String currUserId, blogUserID;
     private User userData2;
+    private OUD_Viewmodel oud_Viewmodel;
 
-    public MyBlogAdapter(Activity curr_activity, Context curr_context, ArrayList<Blog> arrappliedjob, String title) {
+    public MyBlogAdapter(Activity curr_activity, Context curr_context, List<Post_List_Data> arrappliedjob, String title) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
         System.out.println("Array Size In Adapter : " + arrappliedjob.size());
         tf = Typeface.createFromAsset(curr_context.getAssets(),"Lato-Regular.ttf");
         this.Title = title;
+        oud_Viewmodel = new ViewModelProvider( (FragmentActivity) curr_context ).get(OUD_Viewmodel.class);
+
     }
 
     @Override
@@ -95,13 +108,13 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
 
         holder.TVWrite.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
         holder.TVTitle.setText(show.getTitle());
-        holder.TVViewCount.setText(show.getView_count());
-        holder.TVCommentCount.setText(show.getComments_count());
-        holder.TVRating.setText(show.getVotes_count());
-        blogUserID = show.getUser_id();
+        holder.TVViewCount.setText(""+show.getViewCount());
+        holder.TVCommentCount.setText(""+show.getCommentsCount());
+        holder.TVRating.setText(""+show.getRatingCount());
+        blogUserID = show.getUserId();
 
-        if(show.getUser_image() != null){
-            Picasso.get().load(show.getUser_image()).placeholder(R.drawable.usermale).into(holder.list_image2);
+        if(show.getUserImage() != null){
+            Picasso.get().load(show.getUserImage()).placeholder(R.drawable.usermale).into(holder.list_image2);
         }
 
         if(this.Title.equals("Bookmarked")){
@@ -111,8 +124,7 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
         String highScore = sharedPref.getString("PenName", defaultValue);*/
         userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
         currUserId = userData2.getId();
-        Log.i(TAG,show.getUser_id()+"-----"+userData2.getId());
-       if(show.getUser_id().equals(userData2.getId())) {
+       if(show.getUserId().equals(userData2.getId())) {
             holder.IMOption.setVisibility(View.VISIBLE);
         }else{
            holder.IMOption.setVisibility(View.INVISIBLE);
@@ -161,7 +173,9 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
                 @Override
                 public void onClick(View v) {
                     Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("BlogObject", arrappliedjob.get(getAdapterPosition()));
+                    blogprofile.putExtras(bundle);
                     blogprofile.putExtra("boxTitle", Title);
                     curr_context.startActivity(blogprofile);
 
@@ -177,7 +191,7 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
                     builder.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Blog blog =  arrappliedjob.get(getAdapterPosition());
+                            Post_List_Data blog =  arrappliedjob.get(getAdapterPosition());
                             deleteBlogApi(blog.getBlogId());
                             arrappliedjob.remove(getAdapterPosition());
                             notifyItemRemoved(getAdapterPosition());
@@ -214,6 +228,8 @@ public class MyBlogAdapter extends RecyclerView.Adapter<MyBlogAdapter.Imagecateg
                     if (status == 1) {
                         String message = jsonResponse.getString("message");
                         Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                        oud_Viewmodel.deleteByBlogId(Long.valueOf( BlogID ));
+                        EventBus.getDefault().post(new AddNewDeleteEvent(  BlogID ));
                     }else{
                         String message = jsonResponse.getString("message");
                         Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();

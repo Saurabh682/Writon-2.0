@@ -78,16 +78,10 @@ public class DiscusListAdapter extends RecyclerView.Adapter<DiscusListAdapter.Im
         System.out.println("Entering onbind");
 
         final BlogComment show = arrappliedjob.get(position);
-
-        /*System.out.println("CommentUsername"+show.getUserName());
-        System.out.println("CommentUsername"+show.getName());
-        System.out.println("CommentUsername"+show.getComment());
-        System.out.println("LoginUsername"+userData.getUsername());*/
         holder.TVComment.setText(show.getComment());
         holder.TVUsername.setText(show.getUserName());
         holder.TVTime.setText(show.getDateTime());
-        System.out.println("Username: "+ show.getUserName());
-        if(userData.getUsername()== show.getUserName()){
+        if(userData.getId().equalsIgnoreCase( show.getUserId() ) ){
             holder.IMOption.setVisibility(View.VISIBLE);
         }
     }

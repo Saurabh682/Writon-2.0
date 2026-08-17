@@ -30,7 +30,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class discus extends AppCompatActivity {
+public class discus extends BaseActivity {
 
 
     RecyclerView recyclerView1;
@@ -93,7 +93,6 @@ public class discus extends AppCompatActivity {
 
     private void setAdapterData(ArrayList<BlogCommentPersonal> blogCommentPersonalArrayList){
         adapter = new DiscussListPersonalAdapter(this, this, blogCommentPersonalArrayList);
-        recyclerView1.setHasFixedSize(true);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         recyclerView1.setLayoutManager(layoutManager);

@@ -6,12 +6,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.Handler;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -23,22 +24,33 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+import com.ibitvalley.writon.classes.model.Posts_List;
+import com.ibitvalley.writon.classes.view_model.OUD_Viewmodel;
 import com.ibitvalley.writon.model.User;
-//import com.ibitvalley.writon.utils.MyFirebaseInstanceIDService;
+import com.ibitvalley.writon.remoteConfig.FirebaseConfig;
+import com.ibitvalley.writon.retroFit.RetroFitClient;
+import com.ibitvalley.writon.retroFit.ServiceGenerator;
 import com.ibitvalley.writon.utils.WritOnPreference;
 
 import org.json.JSONObject;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.Signature;
 
-public class Splash extends AppCompatActivity {
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 
+//import com.ibitvalley.writon.utils.MyFirebaseInstanceIDService;
+
+public class Splash extends BaseActivity {
+
+    private static final String TAG = "SPLASH" ;
     User userData;
     Context curr_context;
+    private OUD_Viewmodel oud_Viewmodel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,11 +58,14 @@ public class Splash extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_splash);
+        //oud_Viewmodel = new ViewModelProvider(this).get(OUD_Viewmodel.class);
 
         curr_context = this;
         // getSupportActionBar().hide();
         printKeyHash(this);
         Handler handler = new Handler();
+        TinyDB tinydb = new TinyDB(getApplicationContext());
+        String email = tinydb.getString("userEmail");
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -59,32 +74,67 @@ public class Splash extends AppCompatActivity {
                 userData = WritOnPreference.getInstance(curr_context).getUserDetails();
 
                 FirebaseApp.initializeApp(Splash.this);
-                String token = String.valueOf(FirebaseInstanceId.getInstance().getId());
 
-
-
-
-
-                if (!token.equals("")) {
-                    String fcmUpdateUrl = String.format("http://blog.ibitvalley.com/api/FcmUpdate?userID=%s&FcmID=%s", preferences.getString("UserId", ""), token);
-                    sendRegistrationRequest(fcmUpdateUrl);
-                }
-
-                if (userData == null) {
+                if (email == null || email.isEmpty()) {
                     Intent home = new Intent(Splash.this, LoginActivity.class);
                     startActivity(home);
                     finish();
-
                 } else {
-                    MyApplication.getInstance().trackEvent("Re Login", "Re Login", "Auto Login, if user already login.");
-                    MyApplication.getInstance().trackScreenView("Login Screen");
                     Intent home = new Intent(Splash.this, Home_Activity.class);
                     startActivity(home);
                     finish();
                 }
             }
-        }, 2000);
+        }, 1500);
 
+        initializeFireBaseConfig();
+    }
+
+    private FirebaseConfig firebaseConfig;
+
+    private void initializeFireBaseConfig() {
+        firebaseConfig = new FirebaseConfig();
+        firebaseConfig.fetchNewVersion(Splash.this);
+    }
+
+
+    void UpdateRecyclerView() {
+        RetroFitClient PostList = ServiceGenerator.getRetrofit().create(RetroFitClient.class);
+        Observable<Posts_List> observable = PostList.getPostDataRx("73",100);
+        Disposable d = observable.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(new DisposableObserver<Posts_List>()
+                {
+                    @Override
+                    public void onNext(Posts_List posts_list) {
+                        //insertAllPost(posts_list.getData());
+                        //LoadBookmarkRx();
+                        oud_Viewmodel.insertAllPost(posts_list.getData());
+                        Log.d(TAG, "onLoadLatest: "+ posts_list.getMessage());
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                        Toast.makeText(getApplicationContext(),
+                                e.getMessage(),
+                                Toast.LENGTH_SHORT)
+                                .show();
+                        Log.d(TAG, "onError: "+e.getLocalizedMessage());
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Toast.makeText(getApplicationContext(),
+                                "Creations Updated",
+                                Toast.LENGTH_SHORT)
+                                .show();
+                        //d.dispose();
+                    }
+
+
+                });
     }
 
     public static String printKeyHash(Activity context) {
@@ -121,28 +171,6 @@ public class Splash extends AppCompatActivity {
     }
 
 
-    private void sendRegistrationRequest(String fcmUpdateUrl) {
-        RequestQueue requestQueue;
-        requestQueue = Volley.newRequestQueue(getApplicationContext());
-        JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, fcmUpdateUrl, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-
-                        Log.d("True", "");
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-
-                        Log.e("Volley", "Error");
-                    }
-                }
-        );
-        jor.setRetryPolicy(new DefaultRetryPolicy(20000, 0, 0.0f));
-        requestQueue.add(jor);
-    }
 
     @Override
     protected void onResume() {

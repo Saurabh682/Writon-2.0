@@ -45,7 +45,7 @@
                     android:layout_alignParentRight="true"
                     android:layout_marginRight="50dp"
                     android:src="@drawable/right_arrow"
-                    android:tint="@color/colorPrimary" />
+                    app:tint="@color/colorPrimary" />
 
             </RelativeLayout>
             <!--  ListRow Left sied Thumbnail image -->
@@ -84,12 +84,13 @@
                 android:id="@+id/name"
                 android:layout_width="match_parent"
                 android:layout_height="25dp"
-                android:layout_marginRight="30dp"
                 android:layout_alignLeft="@+id/tv_user_followers_count"
+                android:layout_marginRight="30dp"
+                android:fontFamily="@font/lato"
                 android:text="Mindy Kaling"
                 android:textColor="@color/colorGrey"
                 android:textSize="17dip"
-                android:textStyle="bold"/>
+                android:textStyle="bold" />
 
             <!-- Artist Name -->
             <TextView
@@ -99,6 +100,7 @@
                 android:layout_centerInParent="@id/thumbnail"
                 android:textColor="#6D6E70"
                 android:textSize="12dip"
+                android:fontFamily="@font/lato"
                 android:layout_marginTop="25dp"
                 android:layout_marginLeft="20dp"
                 android:layout_toRightOf="@+id/thumbnail"
@@ -116,6 +118,7 @@
                 android:text="Follow"
                 android:textSize="10dp"
 
+                android:fontFamily="@font/lato"
                 android:background="@drawable/rounded_button_blue"
                 android:padding="1dp"
                 android:layout_marginTop="2dp"
@@ -152,7 +155,7 @@
                     android:layout_height="30dp"
                     android:visibility="gone"
                     android:src="@drawable/right_arrow"
-                    android:tint="@color/colorPrimary" />
+                    app:tint="@color/colorPrimary" />
 
             </LinearLayout>
 
@@ -170,11 +173,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="10dp"
-                    android:fontFamily="sans-serif"
                     android:maxLines="1"
                     android:text="Why Not Me?"
                     android:textColor="@color/colorGrey"
                     android:textSize="18dip"
+
+                    android:fontFamily="@font/lato"
                     android:textStyle="bold" />
 
                 <TextView
@@ -187,6 +191,7 @@
                     android:maxLines="4"
                     android:text="Amazing how time captures the best moments. And i want to be captured in time with you. All the beautiful things, your intelligence. And your smiling face in the nights..."
                     android:textColor="#6D6E70"
+                    android:fontFamily="@font/lato"
                     android:textSize="14dip"
                     android:alpha=".8"/>
 
@@ -196,6 +201,7 @@
                     android:layout_height="30dp"
                     android:layout_marginLeft="10dp"
                     android:layout_marginTop="-1dp"
+                    android:fontFamily="@font/lato"
                     android:text="Short Story, Romance (English)"
                     android:textColor="#7E72B3"
                     android:textSize="12dip" />
@@ -230,6 +236,7 @@
                             android:id="@+id/TVViewCount"
                             android:layout_marginLeft="5dp"
                             android:textSize="12dip"
+                            android:fontFamily="@font/lato"
                             android:textColor="#959FC4"
                             android:text="24k"/>
                     </LinearLayout>
@@ -251,15 +258,18 @@
                             android:id="@+id/TVCommentCount"
                             android:layout_marginLeft="5dp"
                             android:textSize="12dip"
+                            android:fontFamily="@font/lato"
                             android:textColor="#959FC4"
                             android:text="52"/>
                     </LinearLayout>
 
                     <LinearLayout
+                        android:id="@+id/ll_rating"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="15dp">
                         <ImageView
+                            android:id="@+id/iv_rating"
                             android:layout_width="15dp"
                             android:layout_height="15dp"
                             android:layout_marginTop="1dp"
@@ -272,6 +282,7 @@
                             android:layout_marginLeft="5dp"
                             android:textColor="#959FC4"
                             android:textSize="12dip"
+                            android:fontFamily="@font/lato"
                             android:text="406"/>
                     </LinearLayout>
 

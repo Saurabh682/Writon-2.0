@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.Html;
 import android.text.InputFilter;
 import android.util.Log;
@@ -15,8 +16,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,28 +30,48 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+import com.ibitvalley.writon.classes.model.AddPostResponse;
+import com.ibitvalley.writon.classes.model.Posts_List;
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
+import com.ibitvalley.writon.googleAnalytics.MyApplication;
 import com.ibitvalley.writon.model.Blog;
+import com.ibitvalley.writon.model.DefaultResponse;
+import com.ibitvalley.writon.model.PostData;
 import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.retroFit.RetroFitClient;
+import com.ibitvalley.writon.retroFit.ServiceGenerator;
+import com.ibitvalley.writon.utils.AppUtils;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
 
+import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import jp.wasabeef.richeditor.RichEditor;
+import retrofit2.http.Field;
+import retrofit2.http.Header;
 
-public class WriteBlog extends AppCompatActivity {
+public class WriteBlog extends BaseActivity {
 
     private RichEditor mEditor;
     Blog blog;
     EditText tv_creatorName;
+    private long mLastClickTime = 0;
+    User userData;
+
+    LinearLayout ll_publish,ll_save_draft;
+    private String blogId;
 
     //private TextView mPreview;
     @Override
@@ -61,14 +84,20 @@ public class WriteBlog extends AppCompatActivity {
 
         this.setTitle("Create New");
         blog = (Blog) getIntent().getSerializableExtra("BlogObject");
+        userData = WritOnPreference.getInstance(this).getUserDetails();
 
         tv_creatorName = (EditText) findViewById(R.id.tv_creatorName);
         mEditor = (RichEditor) findViewById(R.id.editor);
+//        mEditor.setFilters(EmojiFilter.getFilter());
+
+        ll_publish=findViewById( R.id.ll_publish );
+        ll_save_draft=findViewById( R.id.ll_save_draft );
         //mEditor.setEditorHeight(250);
         mEditor.setEditorFontSize(20);
         mEditor.setEditorFontColor(Color.BLACK);
         mEditor.setVerticalScrollBarEnabled(true);
         mEditor.setScrollContainer(true);
+        blogId=getIntent().getStringExtra( "blogId" );
         //mEditor.setEditorBackgroundColor(Color.BLUE);
         //mEditor.setBackgroundColor(Color.BLUE);
         //mEditor.setBackgroundResource(R.drawable.bg);
@@ -135,32 +164,19 @@ public class WriteBlog extends AppCompatActivity {
             mEditor.setHtml(blog.getLongDescripton());
         }
 
-        MyApplication.getInstance().trackEvent("Blog Writing", "Write Blog", "Blog Writing.");
-        MyApplication.getInstance().trackScreenView("WriteBlog");
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.writeblog, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            // action with ID action_refresh was selected
-            case R.id.action_settings:
+        ll_publish.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 if(tv_creatorName.getText().toString().trim().length()<=0){
                     Toast.makeText(getApplicationContext(), "Creation name can't be blank", Toast.LENGTH_LONG).show();
                 } else if(tv_creatorName.getText().toString().trim().length()> 80){
                     Toast.makeText(getApplicationContext(), "Creation name can't be more than 80 character", Toast.LENGTH_LONG).show();
                 }else  if (String.valueOf(mEditor.getHtml()).trim().length() <= 5) {
-                    Toast.makeText(this, "Post content is too Short. Please Write More.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(WriteBlog.this, "Post content is too Short. Please Write More.", Toast.LENGTH_SHORT).show();
                 } else {
 
                     hideSoftKeyboard();
-                    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                    AlertDialog.Builder builder = new AlertDialog.Builder(WriteBlog.this);
                     View dialogView = getLayoutInflater().inflate(R.layout.blogpostconfirmdialog, null);
                     TextView btnOk = dialogView.findViewById(R.id.btnOk);
                     TextView btnCancel = dialogView.findViewById(R.id.btnCancel);
@@ -180,22 +196,23 @@ public class WriteBlog extends AppCompatActivity {
                         }
                     });
                     dialog.show();
-                    item.setEnabled(false);
-
 
                 }
-                break;
-            case R.id.action_saveDraft:
+            }
+        } );
+
+        ll_save_draft.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 publishBlog("1");
-                break;
-            case R.id.home:
-                onBackPressed();
-                break;
-            default:
-                break;
-        }
-        return true;
+            }
+        } );
+
+        MyApplication.getInstance().trackEvent("Blog Writing", "Write Blog", "Blog Writing.");
+        MyApplication.getInstance().trackScreenView("WriteBlog");
+
     }
+
 
     /**
      * Hides the soft keyboard
@@ -208,86 +225,18 @@ public class WriteBlog extends AppCompatActivity {
         }
     }
 
-    /*private void publishBlog(final String IsDraft) {
-        final String creatorName = tv_creatorName.getText().toString();   //getIntent().getStringExtra("CreatorName");
-        tv_creatorName.setFilters(new InputFilter[] {new InputFilter.LengthFilter(80)});
-        final String Category = getIntent().getStringExtra("Category");
-        final String SubCat = getIntent().getStringExtra("SubCat");
-        final String shortDesc = getIntent().getStringExtra("shortDesc");
-        final String language = getIntent().getStringExtra("language");
-        final String content = mEditor.getHtml();
-        SharedPreferences preferences = getApplicationContext().getSharedPreferences("mPrefs", MODE_PRIVATE);
-        final String UserId = preferences.getString("UserId", "0");
-        RequestQueue requestQueue;
-        final ProgressDialog dialog = new ProgressDialog(WriteBlog.this);
-        dialog.setMessage("Please wait...");
-        dialog.show();
-        requestQueue = Volley.newRequestQueue(getApplicationContext());
-        String loginURL = Const.BASE_URL + "Blog";
 
-        Log.d("URL", loginURL);
-        System.out.println("PARAMS ARE Tilte," + creatorName + " : Category," + Category + " : ShortDesc :" + shortDesc + " : CreatedBy " + UserId + " : LongDesc : " + content);
 
-        StringRequest jor = new StringRequest(Request.Method.POST, loginURL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        dialog.dismiss();
-                        Log.d("True", "");
-                        try {
-                            JSONObject jsonObject = new JSONObject(response);
-                            if (jsonObject.get("success").toString() == "true") {
-                                if (IsDraft.equals("1")) {
-                                    Toast.makeText(WriteBlog.this, "Draft saved Successfully", Toast.LENGTH_LONG).show();
-                                    callIntent();
-                                } else {
-                                    //Toast.makeText(WriteBlog.this, "Blog Published SuccessFully.", Toast.LENGTH_LONG).show();
-                                    askforShare();
-                                }
-
-                            } else {
-                                Toast.makeText(WriteBlog.this, "" + jsonObject.get("message"), Toast.LENGTH_LONG).show();
-                            }
-                        } catch (JSONException ex) {
-                            //progress.dismiss();
-                            Log.d("JSON Exception", ex.getMessage());
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        dialog.dismiss();
-                        Log.e("Volley", "Error");
-                    }
-                }
-        ) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                HashMap<String, String> params = new HashMap<>();
-                System.out.println("PARAMS SEND  Tilte," + creatorName + " : Category," + Category + " : ShortDesc :" + shortDesc + " : CreatedBy " + UserId + " : LongDesc : " + content);
-                params.put("Title", creatorName);
-                params.put("Category", Category);
-                params.put("SubCat", SubCat);
-                params.put("LongDescription", content);
-                params.put("ShortDescription", shortDesc);
-                params.put("CreateBy", UserId);
-                params.put("Language", language);
-                //if (blog != null)
-                    //params.put("BlogId", blog.getBlogId());
-                params.put("IsDraft", IsDraft);
-                Log.d("URL PARAMS ", params.toString());
-                return params;
-            }
-        };
-        jor.setRetryPolicy(new DefaultRetryPolicy(20000, 0, 0.0f));
-        requestQueue.add(jor);
-    }*/
 
 
 
     private void publishBlog(final String IsDraft) {
 
+        if ( SystemClock.elapsedRealtime() - mLastClickTime < 2000) {
+            return;
+        }
+        mLastClickTime = SystemClock.elapsedRealtime();
+
         final String creatorName = tv_creatorName.getText().toString();   //getIntent().getStringExtra("CreatorName");
         tv_creatorName.setFilters(new InputFilter[] {new InputFilter.LengthFilter(80)});
         final String Category = getIntent().getStringExtra("Category");
@@ -298,51 +247,59 @@ public class WriteBlog extends AppCompatActivity {
         SharedPreferences preferences = getApplicationContext().getSharedPreferences("mPrefs", MODE_PRIVATE);
         final String UserId = preferences.getString("UserId", "0");
 
-        HashMap<String, String> params = new HashMap<>();
-        System.out.println("PARAMS SEND  Tilte," + creatorName + " : Category," + Category + " : ShortDesc :" + shortDesc + " : CreatedBy " + UserId + " : LongDesc : " + content);
-        params.put("title", creatorName);
-        params.put("category", Category);
-        params.put("subcategory", SubCat);
-        params.put("fulldescription", content);
-        params.put("shortdescription", shortDesc);
-        //params.put("CreateBy", UserId);
-        params.put("language", language);
-        params.put("blogid", "");
-        //if (blog != null)
-        //params.put("BlogId", blog.getBlogId());
-        params.put("is_draft", IsDraft);
-        Log.d("URL PARAMS ", params.toString());
 
-        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.add_post, WriteBlog.this, false, params, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    int status = jsonResponse.getInt("success");
-                    if (status == 1) {
-                        if (IsDraft.equals("1")) {
-                            Toast.makeText(WriteBlog.this, "Draft saved Successfully", Toast.LENGTH_LONG).show();
-                            callIntent();
-                        } else {
-                            //Toast.makeText(WriteBlog.this, "Blog Published SuccessFully.", Toast.LENGTH_LONG).show();
+        RetroFitClient postData = ServiceGenerator.getRetrofit().create(RetroFitClient.class);
+        Post_List_Data postDataBody=new Post_List_Data(  );
+        postDataBody.setTitle( creatorName );
+        postDataBody.setCategory( Category );
+        postDataBody.setSubCat( SubCat );
+        postDataBody.setLongDescription(content  );
+        postDataBody.setShortDescription( shortDesc );
+        postDataBody.setLanguage( language );
+        postDataBody.setBlogId( blogId );
+        postDataBody.setUserName( userData.getUsername() );
+        postDataBody.setIsFollowed( false );
+        postDataBody.setViewCount( 0 );
+        postDataBody.setCommentsCount( 0 );
+        postDataBody.setRatingCount( 0 );
 
-                            askforShare();
+        User userData = WritOnPreference.getInstance(getApplicationContext()).getUserDetails();
+        postData.submitCreation(
+                creatorName,
+                Category,
+                SubCat,
+                shortDesc,
+                content,
+                userData.getId(),
+                language,
+                blogId,
+                IsDraft
+                ).subscribeOn( Schedulers.io() )
+                .observeOn( AndroidSchedulers.mainThread() )
+                .subscribe( new Consumer<DefaultResponse>() {
+                    @Override
+                    public void accept(DefaultResponse postData1) throws Exception {
+                        if (postData1.getSuccess() == 1) {
+                            if (IsDraft.equals("1")) {
+                                Toast.makeText(WriteBlog.this, "Draft saved Successfully", Toast.LENGTH_LONG).show();
+//                                callIntent();
+                            } else {
+                                EventBus.getDefault().post(new AddNewPostEvent(postDataBody));
+                                //Toast.makeText(WriteBlog.this, "Blog Published SuccessFully.", Toast.LENGTH_LONG).show();
+                                askforShare();
+                            }
+                        }else{
+                            String message = postData1.getMessage();
+                            Toast.makeText(WriteBlog.this, message, Toast.LENGTH_LONG).show();
                         }
-                    }else{
-                        String message = jsonResponse.getString("message");
-                        Toast.makeText(WriteBlog.this, message, Toast.LENGTH_LONG).show();
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-            @Override
-            public void onError(VolleyError error) {
-                Log.d("","");
-            }
-        });
-        VolleySingleton.getInstance().addToRequestQueue(mainCategory);
+                } , new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Toast.makeText(WriteBlog.this, throwable.getMessage(), Toast.LENGTH_LONG).show();
+
+                    }
+                } );
     }
 
     private void fcmNotifyAll() {

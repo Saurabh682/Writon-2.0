@@ -2,6 +2,7 @@ package com.ibitvalley.writon;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
@@ -14,24 +15,38 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+import com.ibitvalley.writon.classes.model.DraftCreationResponse;
+import com.ibitvalley.writon.googleAnalytics.MyApplication;
 import com.ibitvalley.writon.model.Blog;
+import com.ibitvalley.writon.model.DefaultResponse;
+import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.retroFit.RetroFitClient;
+import com.ibitvalley.writon.retroFit.ServiceGenerator;
+import com.ibitvalley.writon.utils.AppUtils;
+import com.ibitvalley.writon.utils.WritOnPreference;
 
 import java.util.Arrays;
 
-public class writeblogstepone extends AppCompatActivity {
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+
+public class  writeblogstepone extends BaseActivity {
 
     TextView BtnStart;
     Blog blog;
     int forSubCatPos;
     ArrayAdapter adapter;
     private Spinner tv_categoryL2;
+    User userData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
         setContentView(R.layout.activity_writeblogstepone);
+        userData = WritOnPreference.getInstance(this).getUserDetails();
+
         this.setTitle("What Do You Want to Write");
         blog = (Blog) getIntent().getSerializableExtra("BlogObject");
         BtnStart = (Button) findViewById(R.id.BtnStart);
@@ -57,22 +72,12 @@ public class writeblogstepone extends AppCompatActivity {
         if(forSubCatPos>=0){
             selectSubCatArray(forSubCatPos);
 
-            tv_categoryL2.setAdapter(adapter);
         } else{
             adapter = ArrayAdapter.createFromResource(this, R.array.array_subCategory, R.layout.subcat);
             //tv_categoryL2.setAdapter(adapter);
         }
 
 
-
-        if(blog!=null){
-        for(int i=0; i < adapter.getCount(); i++) {
-            if(blog.getSubCat().equals(adapter.getItem(i))){
-                System.out.println("++++++++  "+adapter.getItem(i)+"i===="+i);
-                tv_categoryL2.setSelection(i);
-                break;
-            }
-        }}
 
         ArrayAdapter adapter3 = ArrayAdapter.createFromResource(this, R.array.array_language, R.layout.subcat);
         SPLanguage.setAdapter(adapter3);
@@ -132,8 +137,7 @@ public class writeblogstepone extends AppCompatActivity {
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 // Your code here
                 if(blog != null){
-                    String[] subCate = getResources().getStringArray(R.array.array_subCategory);
-                    tv_categoryL2.setSelection(Arrays.asList(adapter).indexOf(blog.getSubCat()));
+                    tv_categoryL2.setSelection(i);
                 }
             }
 
@@ -157,11 +161,7 @@ public class writeblogstepone extends AppCompatActivity {
         BtnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if(tv_creatorName.getText().toString().trim().length()<=0){
-//                    Toast.makeText(getApplicationContext(), "Creation name can't be blank", Toast.LENGTH_LONG).show();
-//                    return;
-//                }
-                //if(tv_categoryName.getSelectedItem().toString().trim().length()<=0){
+
                 if(tv_categoryName.getSelectedItemPosition()<=0){
                     Toast.makeText(getApplicationContext(), "Category can't be blank", Toast.LENGTH_LONG).show();
                     return;
@@ -175,32 +175,75 @@ public class writeblogstepone extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Language can't be blank", Toast.LENGTH_LONG).show();
                     return;
                 }
-//                if(tv_creatorName.getText().toString().trim().length()> 80){
-//                    Toast.makeText(getApplicationContext(), "Creation name can't be more than 80 character", Toast.LENGTH_LONG).show();
-//                    return;
-//                }
-//                if(tv_shortDesc.getText().toString().trim().length()<=0){
-//                    Toast.makeText(getApplicationContext(), "Short Description can't be blank", Toast.LENGTH_LONG).show();
-//                    return;
-//                }
-                Intent intent = new Intent(writeblogstepone.this, WriteBlog.class);
-                //intent.putExtra("CreatorName", tv_creatorName.getText().toString());
-                intent.putExtra("Category", tv_categoryName.getSelectedItem().toString());
-                intent.putExtra("SubCat", tv_categoryL2.getSelectedItem().toString());
-                if(tv_shortDesc.getText().toString().length()<=0){
-                    tv_shortDesc.setText(String.format("%s, %s", tv_categoryName.getSelectedItem().toString(), tv_categoryL2.getSelectedItem().toString()));
+                BtnStart.setEnabled( false );
+
+                if ( !AppUtils.isNull( blog ) && !AppUtils.isNull( blog.getBlogId() ) )
+                {
+                    Intent intent = new Intent(writeblogstepone.this, WriteBlog.class);
+                    //intent.putExtra("CreatorName", tv_creatorName.getText().toString());
+                    intent.putExtra("Category", tv_categoryName.getSelectedItem().toString());
+                    intent.putExtra("SubCat", tv_categoryL2.getSelectedItem().toString());
+                    intent.putExtra("blogId", blog.getBlogId());
+                    if(tv_shortDesc.getText().toString().length()<=0){
+                        tv_shortDesc.setText(String.format("%s, %s", tv_categoryName.getSelectedItem().toString(), tv_categoryL2.getSelectedItem().toString()));
+                    }
+                    intent.putExtra("shortDesc", tv_shortDesc.getText().toString());
+                    intent.putExtra("language", SPLanguage.getSelectedItem().toString());
+                    if (blog != null) {
+                        intent.putExtra("BlogObject", blog);
+                        blog.setTitle(blog.getTitle());
+                        blog.setCategory(tv_categoryName.getSelectedItem().toString());
+                        blog.setSubCat(tv_categoryL2.getSelectedItem().toString());
+                        blog.setLanguage(SPLanguage.getSelectedItem().toString());
+                        blog.setShortDescription(tv_shortDesc.getText().toString());
+                    }
+                    startActivity(intent);
+                    BtnStart.setEnabled( true );
                 }
-                intent.putExtra("shortDesc", tv_shortDesc.getText().toString());
-                intent.putExtra("language", SPLanguage.getSelectedItem().toString());
-                if (blog != null) {
-                    intent.putExtra("BlogObject", blog);
-                    blog.setTitle(blog.getTitle());
-                    blog.setCategory(tv_categoryName.getSelectedItem().toString());
-                    blog.setSubCat(tv_categoryL2.getSelectedItem().toString());
-                    blog.setLanguage(SPLanguage.getSelectedItem().toString());
-                    blog.setShortDescription(tv_shortDesc.getText().toString());
+                else
+                {
+                    RetroFitClient draftCreation = ServiceGenerator.getRetrofit().create(RetroFitClient.class);
+                    draftCreation.draftCreation( "untitled",tv_categoryName.getSelectedItem().toString(), tv_categoryL2.getSelectedItem().toString()
+                            ,tv_shortDesc.getText().toString(),null,userData.getId(),SPLanguage.getSelectedItem().toString())
+                            .subscribeOn( Schedulers.io() )
+                            .observeOn( AndroidSchedulers.mainThread() )
+                            .subscribe( new Consumer<DraftCreationResponse>() {
+                                @Override
+                                public void accept(DraftCreationResponse defaultResponse) throws Exception {
+
+                                    Intent intent = new Intent(writeblogstepone.this, WriteBlog.class);
+                                    //intent.putExtra("CreatorName", tv_creatorName.getText().toString());
+                                    intent.putExtra("Category", tv_categoryName.getSelectedItem().toString());
+                                    intent.putExtra("SubCat", tv_categoryL2.getSelectedItem().toString());
+                                    intent.putExtra("blogId", defaultResponse.getData().get( 0 ).getBlogId());
+                                    if(tv_shortDesc.getText().toString().length()<=0){
+                                        tv_shortDesc.setText(String.format("%s, %s", tv_categoryName.getSelectedItem().toString(), tv_categoryL2.getSelectedItem().toString()));
+                                    }
+                                    intent.putExtra("shortDesc", tv_shortDesc.getText().toString());
+                                    intent.putExtra("language", SPLanguage.getSelectedItem().toString());
+                                    if (blog != null) {
+                                        intent.putExtra("BlogObject", blog);
+                                        blog.setTitle(blog.getTitle());
+                                        blog.setCategory(tv_categoryName.getSelectedItem().toString());
+                                        blog.setSubCat(tv_categoryL2.getSelectedItem().toString());
+                                        blog.setLanguage(SPLanguage.getSelectedItem().toString());
+                                        blog.setShortDescription(tv_shortDesc.getText().toString());
+                                    }
+                                    startActivity(intent);
+                                    BtnStart.setEnabled( true );
+
+                                }
+                            } , new Consumer<Throwable>() {
+                                @Override
+                                public void accept(Throwable throwable) throws Exception {
+                                    BtnStart.setEnabled( true );
+                                }
+                            } );
+
+
                 }
-                startActivity(intent);
+
+
             }
         });
 
@@ -225,16 +268,36 @@ public class writeblogstepone extends AppCompatActivity {
         } else if(position ==8){
             adapter = ArrayAdapter.createFromResource(getApplicationContext(), R.array.array_subCategory8, R.layout.subcat);
         }
+        tv_categoryL2.setAdapter(adapter);
 
-        if(blog!=null){
-            for(int i=0; i < adapter.getCount(); i++) {
-                if(blog.getSubCat().equals(adapter.getItem(i))){
+        new Handler(  ).postDelayed( new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread( new Runnable() {
+                    @Override
+                    public void run() {
+                        if(blog!=null){
+                            for(int i=0; i < adapter.getCount(); i++) {
+                                if(blog.getSubCat().equals(adapter.getItem(i))){
+                                    int finalSelectedPosition = i;
+                                    tv_categoryL2.post( new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            tv_categoryL2.setSelection( finalSelectedPosition );
+                                        }
+                                    });
 
-                    tv_categoryL2.setSelection(i);
-                    System.out.println("pppppppp  "+tv_categoryL2.getSelectedItemPosition());
-                    break;
-                }
-            }}
+                                    break;
+                                }
+                            }}
+                    }
+                } );
+
+            }
+        } ,200);
+
+//        tv_categoryL2.setSelection( 2 );
+
     }
 
 

@@ -1,269 +1,406 @@
 package com.ibitvalley.writon;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
+import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.InstanceIdResult;
 import com.google.firebase.messaging.FirebaseMessaging;
-import com.ibitvalley.writon.Fragment.CategoryDrawerFragment;
-import com.ibitvalley.writon.Fragment.CollectionDemoFragment;
-import com.ibitvalley.writon.Fragment.Home_Fragment2;
-import com.ibitvalley.writon.Fragment.Home_Fragment3;
-import com.ibitvalley.writon.Fragment.MyMenuFragment;
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
-import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.databinding.ActivityHomeBinding;
+import com.ibitvalley.writon.classes.view_model.OUD_Viewmodel;
+import com.ibitvalley.writon.fragment.CollectionDemoFragment;
+import com.ibitvalley.writon.fragment.ContestFragment;
+import com.ibitvalley.writon.fragment.Home_Fragment2;
+import com.ibitvalley.writon.fragment.Home_Fragment3;
+import com.ibitvalley.writon.fragment.MyWorldFragment;
+import com.ibitvalley.writon.googleAnalytics.MyApplication;
+import com.ibitvalley.writon.classes.model.LoginBody;
+import com.ibitvalley.writon.model.LoginUserDetails;
+import com.ibitvalley.writon.model.MyWorldModel;
+import com.ibitvalley.writon.remoteConfig.FirebaseConfig;
+import com.ibitvalley.writon.retroFit.RetroFitClient;
+import com.ibitvalley.writon.retroFit.ServiceGenerator;
+import com.ibitvalley.writon.utils.AppUtils;
 import com.ibitvalley.writon.utils.WritOnPreference;
+import com.takusemba.spotlight.Spotlight;
+import com.takusemba.spotlight.Target;
+import com.takusemba.spotlight.shape.Circle;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
-public class Home_Activity extends FragmentActivity implements View.OnClickListener {
+import butterknife.ButterKnife;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+import smartdevelop.ir.eram.showcaseviewlib.GuideView;
+import smartdevelop.ir.eram.showcaseviewlib.config.DismissType;
+import smartdevelop.ir.eram.showcaseviewlib.config.Gravity;
+import smartdevelop.ir.eram.showcaseviewlib.listener.GuideListener;
+
+public class Home_Activity extends BaseActivity implements View.OnClickListener {
 
 
+    private ActivityHomeBinding binding;
     private static FragmentManager manager;
     private Fragment fragment;
-    private static String backStateName;
-    private RelativeLayout layout_home, layout_home1, layout_home2, layout_home3, layout_home4;
-    ImageView ivSearch, img_category, img_explorer, img_myworld, img_bookmark, img_profile, notify;
     private int pageActionValue = 1;
+
     private static final String TAG = "Home_Activity";
     private PrefManager prefManager;
-
+    private boolean loginTest=false;
+    private Spotlight spotlight;
+    private TinyDB tinydb;
+    LinearLayout container;
+    private OUD_Viewmodel oud_Viewmodel;
+    boolean showingTutorial=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        binding = ActivityHomeBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
-        notify =  findViewById(R.id.notifyCircle);
-
+        
         prefManager = new PrefManager(this);
-        System.out.println("RECEIVED NOTIFICATION (2)====="+prefManager.isNotification());
-        //notify.setVisibility(View.VISIBLE);
         if (prefManager.isNotification()) {
 
-                notify.setVisibility(View.VISIBLE);
-        }else notify.setVisibility(View.INVISIBLE);
+                binding.content.notifyCircle.setVisibility(View.VISIBLE);
+        }else binding.content.notifyCircle.setVisibility(View.INVISIBLE);
 
-        FirebaseInstanceId.getInstance().getInstanceId()
-                .addOnCompleteListener(new OnCompleteListener<InstanceIdResult>() {
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new OnCompleteListener<String>() {
 
                     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
                     @Override
-                    public void onComplete(@NonNull Task<InstanceIdResult> task) {
+                    public void onComplete(@NonNull Task<String> task) {
                         if (!task.isSuccessful()) {
-//To do//
-
                             return;
                         }
 
                         // Get the Instance ID token//
-                        String token = Objects.requireNonNull(task.getResult()).getToken();
+                        String token = task.getResult();
                         String msg = getString(R.string.fcm_token, token);
-                        registerFcm(token);
+                        AppUtils.registerFcm( getApplicationContext(),token );
                         Log.d(TAG, msg);
 
                     }
                 });
+        tinydb = new TinyDB(getApplicationContext());
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             pageActionValue = extras.getInt("pageActionValue");
         }
+        if(!loginTest){
+            validateUser();
+        }
 
         initilize(pageActionValue);
         MyApplication.getInstance().trackEvent("Home Screen", "HomeScreen Active", "Home screen load successfully.");
         MyApplication.getInstance().trackScreenView("HomeScreen");
-        replaceFragment(new CollectionDemoFragment());
+        initializeFireBaseConfig();
+        oud_Viewmodel= new ViewModelProvider(this).get( OUD_Viewmodel.class );
+        oud_Viewmodel.getMyWorldData();
+
+        oud_Viewmodel.getMyWorldLiveData().observe( this , new Observer<List<MyWorldModel>>() {
+            @Override
+            public void onChanged(List<MyWorldModel> myWorldModels) {
+                if ( !AppUtils.isNull( myWorldModels ) && myWorldModels.size()>0 )
+                {
+                    binding.content.notifyCircle.setVisibility(View.VISIBLE);
+                }
+            }
+        } );
+
     }
 
-    public void runtimeEnableAutoInit() {
-        // [START fcm_runtime_enable_auto_init]
-        FirebaseMessaging.getInstance().setAutoInitEnabled(true);
-        // [END fcm_runtime_enable_auto_init]
+    public interface SubCategoryClickListner
+    {
+        void onClick(int position);
+    }
+
+    // FirebaseConfig
+    private FirebaseConfig firebaseConfig;
+
+    private void initializeFireBaseConfig() {
+        firebaseConfig = new FirebaseConfig();
+        firebaseConfig.fetchNewVersion(Home_Activity.this);
+    }
+
+    private void validateUser() {
+
+        SharedPreferences preferences = getApplicationContext().getSharedPreferences("mPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        String password = tinydb.getString("pass");
+        String email = tinydb.getString("userEmail");
+
+        RetroFitClient PostList = ServiceGenerator.getRetrofit().create(RetroFitClient.class);
+        LoginBody loginBody = new LoginBody(email, password);
+
+        Single<LoginUserDetails> call = PostList.login(loginBody);
+
+
+        call.subscribeOn( Schedulers.io() )
+                .observeOn( AndroidSchedulers.mainThread() )
+                .subscribe( new Consumer<LoginUserDetails>() {
+                    @Override
+                    public void accept(LoginUserDetails loginUserDetails) throws Exception {
+                        assert loginUserDetails != null;
+                        //Log.d("Success1", response.body().getData().get(0).getUserName());
+                        if ( loginUserDetails.getUser()!=null )
+                            WritOnPreference.getInstance(getApplicationContext()).saveUserDetails(loginUserDetails.getUser());
+                        loginTest = true;
+                    }
+                } , new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.d(TAG,"UnSuccessful >>"+ throwable.getMessage());
+                    }
+                } );
+
+
     }
 
 
-    public void registerFcm(String token){
-        // ...
-        User userData = WritOnPreference.getInstance(getApplicationContext()).getUserDetails();
 
-                // Instantiate the RequestQueue.
-                    RequestQueue queue = Volley.newRequestQueue(this);
-                    String url ="https://www.writon.co/Mine/addFCMid.php?id="+userData.getId()+"&fcmid="+token;
 
-                 // Request a string response from the provided URL.
-                    StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                            new Response.Listener<String>() {
-                                @Override
-                                public void onResponse(String response) {
-                                    // Display the first 500 characters of the response string.
-                                    System.out.println("Response is: "+ response);
-                                }
-                            }, new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            System.out.println("That didn't work!");
-                        }
-                    });
 
-                // Add the request to the RequestQueue.
-                    queue.add(stringRequest);
-    }
 
 
     private void initilize(int pageActionValue) {
-        layout_home = findViewById(R.id.layout_home);
-        layout_home1 = findViewById(R.id.layout_home1);
-        layout_home2 = findViewById(R.id.layout_home2);
-        layout_home3 = findViewById(R.id.layout_home3);
-        layout_home4 = findViewById(R.id.layout_home4);
-
-
-        img_category = findViewById(R.id.img_category);
-        img_explorer = findViewById(R.id.img_explorer);
-        img_myworld = findViewById(R.id.img_myworld);
-        img_bookmark = findViewById(R.id.img_bookmark);
-        img_profile = findViewById(R.id.img_profile);
-
-        layout_home.setOnClickListener(this);
-        layout_home1.setOnClickListener(this);
-        layout_home2.setOnClickListener(this);
-        layout_home3.setOnClickListener(this);
-        layout_home4.setOnClickListener(this);
+        binding.content.layoutHome.setOnClickListener(this);
+        binding.content.layoutHome1.setOnClickListener(this);
+        binding.content.layoutHome2.setOnClickListener(this);
+        binding.content.layoutHome3.setOnClickListener(this);
+        binding.content.layoutHome4.setOnClickListener(this);
 
         manager = getSupportFragmentManager();
         pageAction(pageActionValue);
-        if(pageActionValue == 1) {
-            fragment = new CategoryDrawerFragment();
-            replaceFragment(fragment);
-        }else if(pageActionValue == 2){
+//        if(pageActionValue == 0) {
+//            fragment = new CategoryDrawerFragment();
+//            replaceFragment(fragment);
+//        }else if(pageActionValue == 1){
             fragment = new CollectionDemoFragment();
             replaceFragment(fragment);
-        }
+//        }
+
+
     }
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.layout_home:
-                fragment = new CategoryDrawerFragment();
+        if (!showingTutorial) {
+            int id = view.getId();
+            if (id == R.id.layout_home) {
+                //contest
+                fragment = new ContestFragment();
                 replaceFragment(fragment);
                 pageAction(0);
-                break;
-            case R.id.layout_home1:
+            } else if (id == R.id.layout_home1) {
                 fragment = new CollectionDemoFragment();
                 replaceFragment(fragment);
                 pageAction(1);
-                break;
-            case R.id.layout_home2:
-                fragment = new MyMenuFragment();
+            } else if (id == R.id.layout_home2) {
+                fragment = new MyWorldFragment();
                 replaceFragment(fragment);
                 pageAction(2);
-                break;
-
-            case R.id.layout_home3:
+            } else if (id == R.id.layout_home3) {
                 fragment = new Home_Fragment3();
                 replaceFragment(fragment);
                 pageAction(3);
-                break;
-
-            case R.id.layout_home4:
+            } else if (id == R.id.layout_home4) {
                 fragment = new Home_Fragment2();
                 replaceFragment(fragment);
                 pageAction(4);
-                break;
-
-
-
+            }
         }
     }
 
-    private void pageAction(int position) {
+    public void pageAction(int position) {
         switch (position) {
             case 0:
-                img_category.setImageResource(R.drawable.burgermenu);
-                img_explorer.setImageResource(R.drawable.explore_linemdpi);
-                img_myworld.setImageResource(R.drawable.home_linemdpi);
-                img_bookmark.setImageResource(R.drawable.bookmark_linemdpi);
-                img_profile.setImageResource(R.drawable.profile_linemdpi);
+                binding.content.imgContest.setImageResource(R.drawable.contest_selected);
+                binding.content.imgExplorer.setImageResource(R.drawable.explore_linemdpi);
+                binding.content.imgMyworld.setImageResource(R.drawable.home_linemdpi);
+                binding.content.imgBookmark.setImageResource(R.drawable.bookmark_linemdpi);
+                binding.content.imgProfile.setImageResource(R.drawable.profile_linemdpi);
                 break;
             case 1:
-                img_explorer.setImageResource(R.drawable.exploremdpi);
-                img_category.setImageResource(R.drawable.categoryselected);
-                img_myworld.setImageResource(R.drawable.home_linemdpi);
-                img_bookmark.setImageResource(R.drawable.bookmark_linemdpi);
-                img_profile.setImageResource(R.drawable.profile_linemdpi);
+                binding.content.imgExplorer.setImageResource(R.drawable.exploremdpi);
+                binding.content.imgContest.setImageResource(R.drawable.contest_default);
+                binding.content.imgMyworld.setImageResource(R.drawable.home_linemdpi);
+                binding.content.imgBookmark.setImageResource(R.drawable.bookmark_linemdpi);
+                binding.content.imgProfile.setImageResource(R.drawable.profile_linemdpi);
                 break;
             case 2:
-                img_myworld.setImageResource(R.drawable.homemdpi);
-                img_explorer.setImageResource(R.drawable.explore_linemdpi);
-                img_category.setImageResource(R.drawable.categoryselected);
-                img_bookmark.setImageResource(R.drawable.bookmark_linemdpi);
-                img_profile.setImageResource(R.drawable.profile_linemdpi);
-                notify.setVisibility(View.INVISIBLE);
+                binding.content.imgMyworld.setImageResource(R.drawable.homemdpi);
+                binding.content.imgExplorer.setImageResource(R.drawable.explore_linemdpi);
+                binding.content.imgContest.setImageResource(R.drawable.contest_default);
+                binding.content.imgBookmark.setImageResource(R.drawable.bookmark_linemdpi);
+                binding.content.imgProfile.setImageResource(R.drawable.profile_linemdpi);
+                binding.content.notifyCircle.setVisibility(View.INVISIBLE);
                 prefManager.setIsNotification(false);
 
                 break;
             case 3:
-                img_bookmark.setImageResource(R.drawable.bookmarkmdpifill);
-                img_myworld.setImageResource(R.drawable.home_linemdpi);
-                img_explorer.setImageResource(R.drawable.explore_linemdpi);
-                img_category.setImageResource(R.drawable.categoryselected);
-                img_profile.setImageResource(R.drawable.profile_linemdpi);
+                binding.content.imgBookmark.setImageResource(R.drawable.bookmarkmdpifill);
+                binding.content.imgMyworld.setImageResource(R.drawable.home_linemdpi);
+                binding.content.imgExplorer.setImageResource(R.drawable.explore_linemdpi);
+                binding.content.imgContest.setImageResource(R.drawable.contest_default);
+                binding.content.imgProfile.setImageResource(R.drawable.profile_linemdpi);
                 break;
             case 4:
-                img_profile.setImageResource(R.drawable.profilemdpi);
-                img_bookmark.setImageResource(R.drawable.bookmark_linemdpi);
-                img_myworld.setImageResource(R.drawable.home_linemdpi);
-                img_explorer.setImageResource(R.drawable.explore_linemdpi);
-                img_category.setImageResource(R.drawable.categoryselected);
+                binding.content.imgProfile.setImageResource(R.drawable.profilemdpi);
+                binding.content.imgBookmark.setImageResource(R.drawable.bookmark_linemdpi);
+                binding.content.imgMyworld.setImageResource(R.drawable.home_linemdpi);
+                binding.content.imgExplorer.setImageResource(R.drawable.explore_linemdpi);
+                binding.content.imgContest.setImageResource(R.drawable.contest_default);
+                break;
+            case 5:
+                binding.content.imgContest.setImageResource(R.drawable.contest_default);
+                binding.content.imgExplorer.setImageResource(R.drawable.explore_linemdpi);
+                binding.content.imgMyworld.setImageResource(R.drawable.home_linemdpi);
+                binding.content.imgBookmark.setImageResource(R.drawable.bookmark_linemdpi);
+                binding.content.imgProfile.setImageResource(R.drawable.profile_linemdpi);
                 break;
         }
     }
 
     public void replaceFragment(Fragment fragment) {
-        backStateName = fragment.getClass().getName();
+        //backStateName = fragment.getClass().getName();
         //boolean fragmentPopped = manager.popBackStackImmediate(backStateName, 0);
         FragmentTransaction fragmentTransaction = manager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, fragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
 
-        //  if (!fragmentPopped) {
-        /*fragmentTransaction.replace(R.id.fragment_container, fragment);
-        if (!(fragment instanceof Home_Fragment)) {
-            fragmentTransaction.addToBackStack(backStateName);
-        }*/
+    }
 
-      /*  if (backStateName.trim().equals("com.soberglobe.soberglobe.Fragment.Home_Fragment"))
-        {
-            fragmentTransaction.addToBackStack(backStateName);
-        }*/
-        //fragmentTransaction.commit();
-        /* fragmentTransaction.commitAllowingStateLoss();*/
-        // }
-     /*
-        for(int i = 0; i < manager.getBackStackEntryCount(); ++i) {
-            if (backStateName.trim().equals("ccom.soberglobe.soberglobe.Fragment.Home_Fragment"))
-                manager.popBackStack();
-        }*/
+    public void printHashKey(Context pContext) {
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(
+                    "com.facebook.samples.hellofacebook",
+                    PackageManager.GET_SIGNATURES);
+            for (Signature signature : info.signatures) {
+                MessageDigest md = MessageDigest.getInstance("SHA");
+                md.update(signature.toByteArray());
+                Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+            }
+        } catch (PackageManager.NameNotFoundException | NoSuchAlgorithmException ignored) {
+
+        }
+    }
+
+//    //basel 3-9-2020
+    public void prepareTutorial()
+    {
+        final Typeface typeface = ResourcesCompat.getFont(this, R.font.lato);
+        showingTutorial=true;
+
+
+        GuideView layout_home3View=new GuideView.Builder(this)
+                .setContentText(getResources().getString( R.string.tutorial_bookmark ))
+                .setGravity( Gravity.auto) //optional
+                .setDismissType( DismissType.anywhere) //optional - default DismissType.targetView
+                .setTargetView(binding.content.layoutHome3)
+                .setGuideListener( new GuideListener() {
+                    @Override
+                    public void onDismiss(View view) {
+                        tinydb.putBoolean( "finished_tutorial",true );
+                        showingTutorial=false;
+                    }
+                } )
+                .setContentTypeFace( typeface )
+                .setContentTextSize(14)//optional
+                .build();
+
+
+        GuideView layout_home2View=new GuideView.Builder(this)
+                .setContentText(getResources().getString( R.string.tutorial_myworld ))
+                .setGravity( Gravity.auto) //optional
+                .setDismissType( DismissType.anywhere) //optional - default DismissType.targetView
+                .setTargetView(binding.content.layoutHome2)
+                .setGuideListener( new GuideListener() {
+                    @Override
+                    public void onDismiss(View view) {
+                        tinydb.putBoolean( "finished_tutorial",true );
+                        layout_home3View.show();
+                    }
+                } )
+                .setContentTypeFace( typeface )
+
+                .setContentTextSize(14)//optional
+                .build();
+
+         new GuideView.Builder(this)
+                .setContentText(getResources().getString( R.string.tutorial_explore ))
+                .setGravity( Gravity.auto) //optional
+                .setDismissType( DismissType.anywhere) //optional - default DismissType.targetView
+                .setTargetView(binding.content.layoutHome1)
+                .setGuideListener( new GuideListener() {
+                    @Override
+                    public void onDismiss(View view) {
+                        tinydb.putBoolean( "finished_tutorial",true );
+                        layout_home2View.show();
+                    }
+                } )
+                .setContentTypeFace( typeface )
+
+                .setContentTextSize(14)//optional
+                .build()
+                .show();
+
+
+
+
+
+
+
+
+
+    }
+
+    public LinearLayout getContainer()
+    {
+        return binding.container;
+    }
+
+
+    @Override
+    public void onBackPressed() {
+
+        super.onBackPressed();
+
     }
 }

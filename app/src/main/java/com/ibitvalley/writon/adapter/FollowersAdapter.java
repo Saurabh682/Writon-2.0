@@ -25,8 +25,8 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.Followers;
 import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.model.followData;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
@@ -39,6 +39,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -46,21 +47,20 @@ public class FollowersAdapter extends RecyclerView.Adapter<FollowersAdapter.Imag
 
     private Context curr_context;
     private Activity curr_activity;
-    private ArrayList<Followers> arrappliedjob;
+    private List<followData> arrappliedjob;
     private SharedPreferences preferences;
     private Typeface tf;
     private User userData;
     private String notifyUser, bTitle;
+    private String username;
 
 
-
-    public FollowersAdapter(Activity curr_activity, Context curr_context, ArrayList<Followers> arrappliedjob) {
+    public FollowersAdapter(Activity curr_activity, Context curr_context, List<followData> arrappliedjob) {
 
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
         //preferences = curr_activity.getSharedPreferences("mPrefs", MODE_PRIVATE);
-        System.out.println("Array Size In Adapter : " + arrappliedjob.size());
         tf = Typeface.createFromAsset(curr_context.getAssets(),"Lato-Regular.ttf");
 
         userData = WritOnPreference.getInstance(curr_context).getUserDetails();
@@ -78,18 +78,18 @@ public class FollowersAdapter extends RecyclerView.Adapter<FollowersAdapter.Imag
     @Override
     public void onBindViewHolder(final FollowersAdapter.ImagecategoryViewHolder holder, final int position) {
 
-        final Followers show = arrappliedjob.get(position);
+        final followData show = arrappliedjob.get(position);
 
-        holder.Username.setText(show.getUser_name());
-        holder.tv_user_followers_count.setText("Followers : "+show.getUser_followers_count());
-
-        if(show.isIs_followed()){
+        holder.Username.setText(show.getUserName());
+        holder.tv_user_followers_count.setText("Followers : "+show.getUserFollowersCount());
+        username = show.getUserName();
+        if(show.getIsFollowed()){
             holder.TVFollow.setText("UnFollow");
         }else {
             holder.TVFollow.setText("Follow");
         }
 
-        Picasso.get().load(show.getUser_image()).placeholder(R.drawable.generic_male).into(holder.list_imageone);
+        Picasso.get().load(show.getUserImage()).placeholder(R.drawable.generic_male).into(holder.list_imageone);
 
 
     }
@@ -103,21 +103,6 @@ public class FollowersAdapter extends RecyclerView.Adapter<FollowersAdapter.Imag
             return 0;
         }
     }
-
-
-
-   /* private void share(String shareContent){
-        Intent sendIntent = new Intent();
-        // Set the action to be performed i.e 'Send Data'
-        sendIntent.setAction(Intent.ACTION_SEND);
-        // Add the text to the intent
-        sendIntent.putExtra(Intent.EXTRA_TEXT, shareContent);
-        // Set the type of data i.e 'text/plain'
-        sendIntent.setType("text/plain");
-        //intent.setData(Uri.parse("market://details?id=com.ibitvalley.writon"));
-        // Launches the activity; Open 'Text editor' if you set it as default app to handle Text
-        curr_activity.startActivity(sendIntent);
-    }*/
 
 
 
@@ -146,20 +131,21 @@ public class FollowersAdapter extends RecyclerView.Adapter<FollowersAdapter.Imag
                 @Override
                 public void onClick(View v) {
                     //final String followUserID, final String userID
-                    Followers blog = arrappliedjob.get(getAdapterPosition());
+                    followData blog = arrappliedjob.get(getAdapterPosition());
 
-                    if(!blog.isIs_followed()) {
+                    if(!blog.getIsFollowed()) {
 
-                        blog.setIs_followed(true);
+                        blog.setIsFollowed(true);
                         TVFollow.setText("UN FOLLOW");
-                        followUser(blog.getUser_id(), userData.getId());
-                        notifyUser = blog.getUser_id();
+                        followUser(blog.getUserID(), userData.getId());
+                        notifyUser = blog.getUserID();
                         System.out.println("What is going on : >>>>"+blog.toString());
                         fcmNotify("follow");
+                        fcmNotifyAll("follow");
                     } else {
-                        blog.setIs_followed(false);
+                        blog.setIsFollowed(false);
                         TVFollow.setText("FOLLOW");
-                        unFollowUser(blog.getUser_id(), userData.getId());
+                        unFollowUser(blog.getUserID(), userData.getId());
                     }
                 }
             });
@@ -279,10 +265,13 @@ public class FollowersAdapter extends RecyclerView.Adapter<FollowersAdapter.Imag
         // Instantiate the RequestQueue.
         switch (who) {
             case "bookmark":
-                urlExt = notifyUser+"&sp=your post is getting popular&tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
+                urlExt = userData2.getId()+"&sp="+userData2.getUsername()+" has bookmarked a post. &tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
                 break;
             case "follow":
-                urlExt = notifyUser+"&sp=you are getting noticed&tp="+userData2.getUsername()+" has started following you. Keep up your writing";
+                urlExt = userData2.getId()+"&sp="+userData2.getUsername()+" has started following a new user. &tp="+userData2.getUsername()+" has started following "+username;
+                break;
+            case "rate":
+                urlExt = userData2.getId()+"&sp="+userData2.getUsername()+" has rated a post. &tp="+bTitle+" has been rated by "+userData2.getUsername();
                 break;
 
             //default:

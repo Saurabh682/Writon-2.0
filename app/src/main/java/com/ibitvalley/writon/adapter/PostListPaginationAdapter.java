@@ -1,0 +1,356 @@
+package com.ibitvalley.writon.adapter;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Bundle;
+import android.text.Html;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.PagedListAdapter;
+import androidx.recyclerview.widget.AsyncDifferConfig;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.ibitvalley.writon.Blog_Profile;
+import com.ibitvalley.writon.Home_Activity;
+import com.ibitvalley.writon.MyWorldActionListener;
+import com.ibitvalley.writon.R;
+import com.ibitvalley.writon.Report;
+import com.ibitvalley.writon.ShowBlogDetails;
+import com.ibitvalley.writon.classes.roomdataclasses.BookMark_List_Data;
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
+import com.ibitvalley.writon.classes.view_model.OUD_Viewmodel;
+import com.ibitvalley.writon.fragment.Home_Fragment2;
+import com.ibitvalley.writon.model.Blog;
+import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.pagination.BlogDiffUtil;
+import com.ibitvalley.writon.utils.AppUtils;
+import com.ibitvalley.writon.utils.WritOnPreference;
+import com.squareup.picasso.Picasso;
+
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+
+import static android.content.Context.MODE_PRIVATE;
+
+public class PostListPaginationAdapter extends PagedListAdapter<Post_List_Data,PostListPaginationAdapter.ImagecategoryViewHolder> {
+
+    private Context curr_context;
+    private Activity curr_activity;
+    private String uName,bTitle;
+    SharedPreferences preferences;
+    User userData;
+    private OUD_Viewmodel oud_Viewmodel;
+    private String username;
+    private Post_List_Data blog;
+    //boolean isAll = false;
+    MyWorldActionListener myWorldActionListener;
+
+    public PostListPaginationAdapter( Activity curr_activity, Context curr_context, MyWorldActionListener myWorldActionListener) {
+        super( new BlogDiffUtil() );
+        this.curr_activity = curr_activity;
+        this.curr_context = curr_context;
+        preferences = curr_activity.getSharedPreferences("mPrefs", MODE_PRIVATE);
+        userData = WritOnPreference.getInstance(curr_context).getUserDetails();
+        oud_Viewmodel = new ViewModelProvider((FragmentActivity) curr_context).get(OUD_Viewmodel.class);
+        this.myWorldActionListener=myWorldActionListener;
+        //this.isAll = isAll;
+    }
+
+
+    @NonNull
+    @Override
+    public ImagecategoryViewHolder onCreateViewHolder(@NonNull ViewGroup parent , int viewType) {
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.blog_card, parent, false);
+        return new PostListPaginationAdapter.ImagecategoryViewHolder(itemView);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ImagecategoryViewHolder holder , int position) {
+        if ( !AppUtils.isNull(getItem(position)  ) )
+        {
+            final Post_List_Data show = getItem(position);
+
+            holder.TVCategory.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
+            holder.Username.setText(show.getUserName());
+            holder.TVTitle.setText(show.getTitle());
+
+            if(show.getShortDescription() != null) {
+
+                holder.TVShortDesc.setText(Html.fromHtml(String.valueOf(show.getShortDescription())));
+            } else {
+                holder.TVShortDesc.setText(" ");
+
+            }
+
+            if (show.getIsBookmarked() != null ) {
+                if (show.getIsBookmarked()) {
+                    holder.IVBookmarked.setImageResource(R.drawable.bookmarkyellow);
+                } else {
+                    holder.IVBookmarked.setImageResource(R.drawable.bookmarkblue);
+                }
+            }
+
+            if (show.getIsRated() != null ) {
+                if (show.getIsRated()) {
+                    holder.iv_rating.setImageResource(R.drawable.staryellow);
+                } else {
+                    holder.iv_rating.setImageResource(R.drawable.starblue);
+                }
+            }
+
+
+            if(show.getIsFollowed() != null ) {
+                if (show.getIsFollowed()) {
+                    holder.TVFollow.setText("UN FOLLOW");
+                } else {
+                    holder.TVFollow.setText("FOLLOW");
+                }
+            }
+
+            holder.TVViewCount.setText(String.valueOf(show.getViewCount()));
+            holder.TVCommentCount.setText(String.valueOf(show.getCommentsCount()));
+            if(show.getRatingCount() != null) {
+                holder.TVRating.setText(String.valueOf(show.getRatingCount()));
+            }else{
+                holder.TVRating.setText("0");
+            }
+            holder.tv_user_followers_count.setText(String.format("%s FOLLOWERS", show.getUserFollowersCount()));
+
+            if(show.getUserImage() != null) {
+                Picasso.get().load(show.getUserImage()).placeholder(R.drawable.generic_male).into(holder.list_image);
+            }
+        }
+
+
+
+
+    }
+
+    @Nullable
+    @Override
+    protected Post_List_Data getItem(int position) {
+        return super.getItem( position );
+    }
+
+    public class ImagecategoryViewHolder extends RecyclerView.ViewHolder {
+        TextView Username, TVTitle, TVShortDesc, TVCategory, TVbookmarkCount, TVCommentCount, TVRating, blogType, TVViewCount,
+                tv_user_followers_count;
+        CircleImageView IVProgileImage, list_image;
+        ImageView IVBookmarked, drawer, right_arrow, img_Option,iv_rating;
+        LinearLayout LLContent, ll_FArrow,ll_rating;
+        TextView TVHeader1, TVFollow;
+
+        public ImagecategoryViewHolder(View view) {
+            super(view);
+
+
+            this.Username = view.findViewById( R.id.name);
+            this.TVTitle = view.findViewById(R.id.TVTitle);
+            this.TVShortDesc = view.findViewById(R.id.TVShortDesc);
+            this.TVCategory = view.findViewById(R.id.TVCategory);
+            //this.blogType = (TextView) view.findViewById(R.id.blogType);
+            //this.blogType.setTypeface(tf);
+            //this.blogType.setText("Latest");
+            this.IVBookmarked = view.findViewById(R.id.IVBookmarked);
+            this.TVViewCount = view.findViewById(R.id.TVViewCount);
+            this.TVbookmarkCount = view.findViewById(R.id.TVbookmarkCount);
+            this.TVCommentCount = view.findViewById(R.id.TVCommentCount);
+            this.TVRating = view.findViewById(R.id.TVRating);
+
+            this.TVFollow = view.findViewById(R.id.TVFollow);
+
+            this.list_image = view.findViewById(R.id.list_image);
+
+            this.img_Option = view.findViewById(R.id.img_Option);
+
+            this.tv_user_followers_count = view.findViewById(R.id.tv_user_followers_count);
+            this.ll_FArrow = view.findViewById(R.id.ll_FArrow);
+            this.ll_rating=view.findViewById( R.id.ll_rating );
+            this.iv_rating=view.findViewById( R.id.iv_rating );
+            /*if(isAll){
+                this.ll_FArrow.setVisibility(View.GONE);
+            }*/
+
+            LLContent = view.findViewById(R.id.LLContent);
+            LLContent.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putSerializable("BlogObject", getItem(getAdapterPosition()));
+                    blogprofile.putExtras(bundle);
+                    blogprofile.putExtra("boxTitle", "Latest");
+                    curr_context.startActivity(blogprofile);
+                }
+            });
+
+
+            TVFollow.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Post_List_Data blog = getItem(getAdapterPosition());
+                    if(!blog.getIsFollowed()) {
+                        blog.setIsFollowed( true );
+
+                        TVFollow.setText("FOLLOW");
+                        myWorldActionListener.onClick( getAdapterPosition(),"followed",blog.getBlogId(),true,blog.getUserId(),blog.getUserName(),blog.getTitle());
+                    } else {
+                        blog.setIsFollowed( false );
+
+                        TVFollow.setText("UN FOLLOW");
+                        username=blog.getUserName();
+                        myWorldActionListener.onClick( getAdapterPosition(),"followed",blog.getBlogId(),false,blog.getUserId(),blog.getUserName(),blog.getTitle());
+
+                    }
+                }
+            });
+
+            this.img_Option.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    blog = getItem(getAdapterPosition());
+                    final String UserId = preferences.getString("UserId", "0");
+
+                    String shareContent = String.format("\"%s\" by %s \n\n %s \n Read more %s @WritOn %s", blog.getTitle(), blog.getUserName(), Html.fromHtml(
+                            !AppUtils.isNull( blog.getLongDescription() ) ? blog.getLongDescription() : blog.getShortDescription()), blog.getCategory(), "https://goo.gl/Cx4oPk");
+                    //if (!blog.getUserID().equals(UserId)) {
+                    String[] arrString = {"Report", "Share"};
+                    showPopupMenu(arrString, shareContent, blog.getBlogId());
+                    /*} else {
+                        String[] arrString = {"Share"};
+                        showPopupMenu(arrString, shareContent);
+                    }*/
+
+                }
+            });
+
+
+            list_image.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Post_List_Data show = getItem(getAdapterPosition());
+                    if (!show.getUserId().equals(userData.getId())) {
+                        Intent blogprofile = new Intent(curr_context, Blog_Profile.class);
+                        blogprofile.putExtra("UserID", show.getUserId());
+                        curr_context.startActivity(blogprofile);
+                    } else {
+                        Fragment fragment = new Home_Fragment2();
+                        ((Home_Activity) curr_activity).replaceFragment(fragment);
+                    }
+                }
+            });
+
+
+            this.IVBookmarked.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    blog = getItem(getAdapterPosition());
+                    BookMark_List_Data bookMark_list_data=new BookMark_List_Data(blog);
+                    if (blog.getIsBookmarked()) {
+                        //unbookmarkRequest(userData.getId(), blog.getBlogId());
+                        //blog.setIsBookmarked(false);
+                        oud_Viewmodel.updateBookmark(bookMark_list_data,false);
+                        IVBookmarked.setImageResource(R.drawable.bookmarkblue);
+                        //getBMStat();
+                    } else {
+                        oud_Viewmodel.updateBookmark(bookMark_list_data,true);
+                        //fcmNotify("bookmark");
+                        //fcmNotifyAll("bookmark");
+                        //bookmarkRequest(userData.getId(), blog.getBlogId());
+                        //blog.setIsBookmarked(true);
+                        IVBookmarked.setImageResource(R.drawable.bookmarkyellow);
+                        //getBMStat();
+                    }
+
+
+
+
+                }
+            });
+
+
+            ll_rating.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    blog=getItem(getAdapterPosition());
+                    if (blog.getIsRated()) {
+                        //addRating(blogID, userData.getId(), "0");
+                        int i = blog.getRatingCount()-1;
+                        blog.setRatingCount(i);
+                        blog.setIsRated(false);
+                        //TVRating.setText(Integer.parseInt(TVRating.getText().toString())+1);
+                        oud_Viewmodel.updateRateRoom(blog.getBlogId(), false,i,blog.getUserId(),blog.getUserName(),blog.getTitle());
+                        iv_rating.setImageResource(R.drawable.starblue);
+
+                    } else {
+                        //addRating(blogID, userData.getId(), "1");
+                        //fcmNotify("rate", cuuBlog.getTitle());
+                        //fcmNotifyAll("rate", cuuBlog.getTitle());
+                        int i = blog.getRatingCount()+1;
+                        blog.setRatingCount(i);
+                        blog.setIsRated(true);
+                        oud_Viewmodel.updateRateRoom(blog.getBlogId(), true,i,blog.getUserId(),blog.getUserName(),blog.getTitle());
+                        iv_rating.setImageResource(R.drawable.staryellow);
+
+                    }
+                }
+            });
+
+        }
+
+    }
+
+    private void showPopupMenu(final String[] arrString, final String shareContent, final String blogID) {
+        AlertDialog.Builder builderSingle = new AlertDialog.Builder(curr_activity);
+        //String[] arr = {"Report"};
+        builderSingle.setCancelable(true);
+        builderSingle.setItems(arrString, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if(arrString[which].equals("Report")){
+                    Intent blogprofile = new Intent(curr_context, Report.class);
+                    blogprofile.putExtra("blogID", blogID);
+                    curr_context.startActivity(blogprofile);
+                } else if(arrString[which].equals("Share")){
+                    share(shareContent);
+                }
+            }
+        });
+        builderSingle.show();
+
+    }
+
+
+
+    private void share(String shareContent){
+        Intent sendIntent = new Intent();
+        // Set the action to be performed i.e 'Send Data'
+        sendIntent.setAction(Intent.ACTION_SEND);
+        // Add the text to the intent
+        sendIntent.putExtra(Intent.EXTRA_TEXT, shareContent);
+        // Set the type of data i.e 'text/plain'
+        sendIntent.setType("text/plain");
+        //intent.setData(Uri.parse("market://details?id=com.ibitvalley.writon"));
+        // Launches the activity; Open 'Text editor' if you set it as default app to handle Text
+        curr_activity.startActivity(sendIntent);
+    }
+
+}

@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#e8e8e8"
-    tools:context="com.ibitvalley.writon.Fragment.NotificationFragment">
+    tools:context="com.ibitvalley.writon.fragment.NotificationFragment">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView1"

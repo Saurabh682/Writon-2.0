@@ -1,65 +1,86 @@
 package com.ibitvalley.writon.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Followers implements Serializable{
+public class Followers implements Serializable, Parcelable
+{
 
-    private String user_name;
-    private String username;
-    private String user_followers_count;
-    private String User_ID;
+    @SerializedName("success")
+    @Expose
+    private String success;
+    @SerializedName("message")
+    @Expose
+    private String message;
+    @SerializedName("data")
+    @Expose
+    private List<followData> data = new ArrayList<followData>();
+    public final static Parcelable.Creator<Followers> CREATOR = new Creator<Followers>() {
 
-    private String user_image;
 
-    public String getUser_image() {
-        return user_image;
+        @SuppressWarnings({
+                "unchecked"
+        })
+        public Followers createFromParcel(Parcel in) {
+            return new Followers(in);
+        }
+
+        public Followers[] newArray(int size) {
+            return (new Followers[size]);
+        }
+
+    }
+            ;
+    private final static long serialVersionUID = 3491706475413850047L;
+
+    protected Followers(Parcel in) {
+        this.success = ((String) in.readValue((String.class.getClassLoader())));
+        this.message = ((String) in.readValue((String.class.getClassLoader())));
+        in.readList(this.data, (com.ibitvalley.writon.model.followData.class.getClassLoader()));
     }
 
-    public void setUser_image(String user_image) {
-        this.user_image = user_image;
+    public Followers() {
     }
 
-    private boolean is_followed;
-
-    public String getUser_name() {
-        return user_name;
+    public String getSuccess() {
+        return success;
     }
 
-    public void setUser_name(String user_name) {
-        this.user_name = user_name;
+    public void setSuccess(String success) {
+        this.success = success;
     }
 
-    public String getUsername() {
-        return username;
+    public String getMessage() {
+        return message;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public String getUser_followers_count() {
-        return user_followers_count;
+    public List<followData> getData() {
+        return data;
     }
 
-    public void setUser_followers_count(String user_followers_count) {
-        this.user_followers_count = user_followers_count;
+    public void setData(List<followData> data) {
+        this.data = data;
     }
 
-    public String getUser_id() {
-        return User_ID;
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(success);
+        dest.writeValue(message);
+        dest.writeList(data);
     }
 
-    public void setUser_id(String user_id) {
-        this.User_ID = user_id;
+    public int describeContents() {
+        return 0;
     }
-
-    public boolean isIs_followed() {
-        return is_followed;
-    }
-
-    public void setIs_followed(boolean is_followed) {
-        this.is_followed = is_followed;
-    }
-
 
 }

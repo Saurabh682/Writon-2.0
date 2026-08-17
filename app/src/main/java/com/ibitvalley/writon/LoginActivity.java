@@ -1,21 +1,31 @@
 package com.ibitvalley.writon;
 
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -43,12 +53,24 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.gson.Gson;
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+import com.google.gson.JsonElement;
+import com.ibitvalley.writon.databinding.ActivityLoginBinding;
+import com.ibitvalley.writon.classes.model.LoginBody;
+import com.ibitvalley.writon.custom_ui.WritOnProgressDialog;
+import com.ibitvalley.writon.classes.model.SignupBody;
+import com.ibitvalley.writon.classes.model.SignupResponse;
+import com.ibitvalley.writon.classes.model.SocialLoginBody;
+import com.ibitvalley.writon.googleAnalytics.MyApplication;
 import com.ibitvalley.writon.classes.UserInfo;
 import com.ibitvalley.writon.model.Blog;
+import com.ibitvalley.writon.model.DefaultResponse;
+import com.ibitvalley.writon.model.LoginUserDetails;
 import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.retroFit.RetroFitClient;
+import com.ibitvalley.writon.retroFit.ServiceGenerator;
+import com.ibitvalley.writon.utils.AppUtils;
 import com.ibitvalley.writon.utils.Const;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
@@ -56,6 +78,10 @@ import com.ibitvalley.writon.webapi.WebApiParams;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
 import com.ibitvalley.writon.webapi.util.SmartPostWebRequest;
+import com.takusemba.spotlight.OnSpotlightListener;
+import com.takusemba.spotlight.Spotlight;
+import com.takusemba.spotlight.Target;
+import com.takusemba.spotlight.shape.Circle;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,60 +89,63 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
-public class LoginActivity extends AppCompatActivity {
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
+import retrofit2.Call;
+import retrofit2.Callback;
+import smartdevelop.ir.eram.showcaseviewlib.GuideView;
+import smartdevelop.ir.eram.showcaseviewlib.config.DismissType;
+import smartdevelop.ir.eram.showcaseviewlib.config.Gravity;
 
+public class LoginActivity extends BaseActivity {
 
-    Button login_button;
-    TextView LVSignUP, TVEmailText, TVPasswordText;
-    EditText ETEmail, ETPassword;
-    TextView forgotBtn;
+    private ActivityLoginBinding binding;
     CallbackManager callbackManager;
-    LinearLayout btnFblogin, btnGoogleLogin;
-    LoginButton loginButton;
     Typeface tf;
 
     private FirebaseAuth mAuth;
     //private CallbackManager mCallbackManager;
 
-    // Google Sign-UP
-
-    private static final String TAG = "AndroidClarified";
-    private GoogleSignInClient googleSignInClient;
-
-
+    // Google Sign-UP removed for email-only login
+    private static final String TAG = "LoginActivity";
+    // private GoogleSignInClient googleSignInClient;
+    private boolean isCallingFacebook=false;
+    private TinyDB tinydb;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        setContentView(R.layout.activity_login);
-        //getSupportActionBar().hide();
-
+        
+        binding = ActivityLoginBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        
+        tinydb = new TinyDB(getApplicationContext());
 
         tf = Typeface.createFromAsset(getAssets(),"Lato-Regular.ttf");
-        callbackManager = CallbackManager.Factory.create();
-        login_button = (Button) findViewById(R.id.login_button);
-        login_button.setTypeface(tf);
+        
+        binding.loginButton.setTypeface(tf);
+        binding.TVEmailText.setTypeface(tf);
+        binding.TVPasswordText.setTypeface(tf);
+        binding.ETEmail.setTypeface(tf);
+        binding.ETPassword.setTypeface(tf);
+        binding.LVSignUP.setTypeface(tf);
+        binding.forgotBtn.setTypeface(tf);
 
-        TVEmailText = (TextView) findViewById(R.id.TVEmailText);
-        TVEmailText.setTypeface(tf);
-        TVPasswordText = (TextView) findViewById(R.id.TVPasswordText);
-        TVPasswordText.setTypeface(tf);
-        btnFblogin = (LinearLayout) findViewById(R.id.btnFblogin);
-
-        btnGoogleLogin = (LinearLayout) findViewById(R.id.btnGoogleLogin);
-
-        ETEmail = (EditText) findViewById(R.id.ETEmail);
-        ETEmail.setTypeface(tf);
-        ETPassword = (EditText) findViewById(R.id.ETPassword);
-        ETPassword.setTypeface(tf);
-        LVSignUP = (TextView) findViewById(R.id.LVSignUP);
-        LVSignUP.setTypeface(tf);
-        forgotBtn = (TextView) findViewById(R.id.forgotBtn);
-        forgotBtn.setTypeface(tf);
+        binding.helpTxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String mailto = "mailto:help@writon.co";
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO);
+                emailIntent.setData(Uri.parse(mailto));
+                startActivity(emailIntent);
+            }
+        });
 
 
         FirebaseAnalytics mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
@@ -125,95 +154,82 @@ public class LoginActivity extends AppCompatActivity {
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.LOGIN, bundle);
 
 
-        String token = String.valueOf(FirebaseInstanceId.getInstance().getToken());
+        FirebaseMessaging.getInstance().getToken()
+                .addOnCompleteListener(new com.google.android.gms.tasks.OnCompleteListener<String>() {
+                    @Override
+                    public void onComplete(@NonNull Task<String> task) {
+                        if (task.isSuccessful()) {
+                            String token = task.getResult();
+                            Log.d(TAG, "FCM Token: " + token);
+                        }
+                    }
+                });
 
 
-        // Google Sign-UP
-
+        // Google Sign-UP removed for email-only login
+        /*
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
 
         googleSignInClient = GoogleSignIn.getClient(this, gso);
+        */
 
-        String email = String.valueOf(getIntent().getStringExtra("EmailID"));
-        String password = String.valueOf(getIntent().getStringExtra("Password"));
-        if(email.length() > 10 && password.length() > 2){
-            ETEmail.setText(email);
-            ETPassword.setText(password);
+        String email = getIntent().getStringExtra("EmailID");
+        String password = getIntent().getStringExtra("Password");
+        if (email != null && !email.isEmpty() && password != null && !password.isEmpty()) {
+            binding.ETEmail.setText(email);
+            binding.ETPassword.setText(password);
+            tinydb.putBoolean("rememberMe", true);
             validateUser();
         }
 
-        forgotBtn.setOnClickListener(new View.OnClickListener() {
+        binding.forgotBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                AppUtils.avoidMultipleClicks( binding.forgotBtn );
                 showAlertDialog();
             }
         });
-        btnFblogin.setOnClickListener(new View.OnClickListener() {
+        binding.btnFblogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*callFacebook();
-                MyApplication.getInstance().trackEvent("Facebook Login", "Facebook Login Button", "User Click on facebook login button.");
-                MyApplication.getInstance().trackScreenView("Facebook Login Screen");*/
-                // Initialize Firebase Auth
-                //mAuth = FirebaseAuth.getInstance();
-
-                // Check if user is signed in (non-null) and update UI accordingly.
-                //FirebaseUser currentUser = mAuth.getCurrentUser();
-                //updateUI(currentUser);
-
-                // Initialize Facebook Login button
-
-                callFacebook();
-
-
-                /*LoginButton loginButton = findViewById(R.id.buttonFacebookLogin);
-                loginButton.setReadPermissions("email", "public_profile");
-                loginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
-                    @Override
-                    public void onSuccess(LoginResult loginResult) {
-                        Log.d("FB Login", "facebook:onSuccess:" + loginResult);
-                        handleFacebookAccessToken(loginResult.getAccessToken());
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        Log.d("FB Login", "facebook:onCancel");
-                        // ...
-                    }
-
-                    @Override
-                    public void onError(FacebookException error) {
-                        Log.d("FB Login", "facebook:onError", error);
-                        // ...
-                    }
-                });*/
+                // AppUtils.avoidMultipleClicks( binding.btnFblogin );
+                // callFacebook();
             }
         });
 
-        btnGoogleLogin.setOnClickListener(new View.OnClickListener() {
+        binding.btnGoogleLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*
+                disableEnableControls( false,binding.container );
+                showProgressDialog(true);
+                AppUtils.avoidMultipleClicks( binding.btnGoogleLogin );
+
+                isCallingFacebook=false;
                 Intent signInIntent = googleSignInClient.getSignInIntent();
                 startActivityForResult(signInIntent, 101);
                 MyApplication.getInstance().trackEvent("Login Screen", "User Click on login button.", "Google Login Button");
                 MyApplication.getInstance().trackScreenView("Login Screen");
+                */
             }
         });
 
 
 
-        login_button.setOnClickListener(new View.OnClickListener() {
+        binding.loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                AppUtils.avoidMultipleClicks( binding.loginButton );
                 validateUser();
             }
         });
 
-        LVSignUP.setOnClickListener(new View.OnClickListener() {
+        binding.LVSignUP.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                AppUtils.avoidMultipleClicks( binding.LVSignUP );
                 Intent home = new Intent(LoginActivity.this, Signup.class);
                 MyApplication.getInstance().trackEvent("Login Screen", "User clicked SignUp button", "Signup Button");
                 MyApplication.getInstance().trackScreenView("Login Screen");
@@ -222,129 +238,100 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        binding.checkboxRememeberMe.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView , boolean isChecked) {
+                tinydb.putBoolean( "rememberMe",isChecked );
+            }
+        } );
 
+    }
+
+
+    private void disableEnableControls(boolean enable, ViewGroup vg){
+        for (int i = 0; i < vg.getChildCount(); i++){
+            View child = vg.getChildAt(i);
+            child.setEnabled(enable);
+            if (child instanceof ViewGroup){
+                disableEnableControls(enable, (ViewGroup)child);
+            }
+        }
     }
 
 
     private void validateUser() {
-
         MyApplication.getInstance().trackEvent("Login Screen", "User Click on login button.", "Login Button");
         MyApplication.getInstance().trackScreenView("Login Screen");
-        //ETEmail.setText("saurabh.682@gmail.com");
-        //ETPassword.setText("Tarzan#4321");
-//      ETEmail.setText("admin");
-//      ETPassword.setText("1234567");
-        final String email = ETEmail.getText().toString().trim();
-        final String password = ETPassword.getText().toString().trim();
 
-        HashMap<String, String> hmLoginParams = WebApiParams.getLoginParams(email, password);
-        SmartPostWebRequest loginRequest = new SmartPostWebRequest(WebConstants.Login_Api, LoginActivity.this, true, hmLoginParams, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            User user = new Gson().fromJson(jsonResponse.getJSONObject("data").toString(), User.class);
-                            WritOnPreference.getInstance(LoginActivity.this).saveUserDetails(user);
+        final String emailOrPenName = binding.ETEmail.getText().toString().trim();
+        final String password = binding.ETPassword.getText().toString().trim();
+
+        if (emailOrPenName.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Please enter all details", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        SharedPreferences preferences = getApplicationContext().getSharedPreferences("mPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(Constants.KEY_PREF_PASS, password);
+        editor.apply();
+
+        disableEnableControls(false, binding.container);
+        showProgressDialog(true);
+
+        RetroFitClient apiService = ServiceGenerator.getRetrofit().create(RetroFitClient.class);
+        LoginBody loginBody = new LoginBody(emailOrPenName, password);
+
+        Single<LoginUserDetails> call = apiService.login(loginBody);
+
+        call.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<LoginUserDetails>() {
+                    @Override
+                    public void accept(LoginUserDetails loginUserDetails) throws Exception {
+                        disableEnableControls(true, binding.container);
+                        showProgressDialog(false);
+
+                        if (loginUserDetails.getUser() != null) {
+                            tinydb.putString("userEmail", loginUserDetails.getUser().getEmail());
+                            WritOnPreference.getInstance(LoginActivity.this).saveUserDetails(loginUserDetails.getUser());
+                            tinydb.putString("userId", loginUserDetails.getUser().getId());
+
                             Intent home = new Intent(LoginActivity.this, Home_Activity.class);
                             home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(home);
+                            finish();
                         } else {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
+                            String message = loginUserDetails.getMessage();
+                            Toast.makeText(getApplicationContext(), message != null ? message : "Login failed", Toast.LENGTH_LONG).show();
                         }
-
                     }
-                } catch (JSONException e) {
-                    //e.printStackTrace();
-                    Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-                return null;
-            }
-
-            @Override
-            public void onError(VolleyError error) {
-                Toast.makeText(LoginActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
-        VolleySingleton.getInstance().addToRequestQueue(loginRequest);
-    }
-
-
-
-    private void login()
-    {
-
-        if (!ETEmail.getText().toString().trim().equals("") && !ETPassword.getText().toString().trim().equals("")) {
-            RequestQueue requestQueue;
-            final ProgressDialog dialog = new ProgressDialog(LoginActivity.this);
-            dialog.setMessage("Logging, Please wait...");
-            dialog.show();
-            requestQueue = Volley.newRequestQueue(getApplicationContext());
-            String loginURL = String.format(Const.BASE_URL + "Login?Email=%s&Password=%s", ETEmail.getText().toString().trim(), ETPassword.getText().toString().trim());
-            Log.d("URL", loginURL);
-            loginURL = loginURL.replace(" ", "%20");
-            JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, loginURL, null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            dialog.dismiss();
-                            Log.d("True", "");
-                            try {
-                                if (response.get("success").toString() == "true") {
-                                    UserInfo.UserId = response.get("UserId").toString();
-                                    UserInfo.Name = response.get("Name").toString();
-                                    UserInfo.Email = response.get("Email").toString();
-                                    UserInfo.DOB = response.get("DOB").toString();
-                                    SharedPreferences preferences = getApplicationContext().getSharedPreferences("mPrefs", MODE_PRIVATE);
-                                    SharedPreferences.Editor editor = preferences.edit();
-                                    editor.putString(Constants.KEY_PREF_USERID, UserInfo.UserId);
-                                    editor.putString(Constants.KEY_PREF_U_NAME, UserInfo.Name);
-                                    editor.putString(Constants.KEY_PREF_U_EMAIL, UserInfo.Email);
-                                    editor.putString(Constants.KEY_PREF_U_DOB, UserInfo.DOB);
-                                    editor.putString(Constants.KEY_PREF_DISPLAY_NAME, response.get("UserName").toString());
-                                    // New Changes...(01-11-2016)
-
-                                    editor.putString(Constants.KEY_PREF_WORKINGON, response.get("WorkingOn").toString());
-                                    editor.putString(Constants.KEY_PREF_INTRO, response.get("Introducation").toString());
-                                    editor.putString(Constants.KEY_PREF_QUOTEOFDAY, response.get("QuoteofDay").toString());
-                                    editor.putString(Constants.KEY_PREF_FOLLOWINGCOUNT, response.get("FollowingCount").toString());
-                                    editor.putString(Constants.KEY_PREF_FOLLOWERCOUNT, response.get("FollowersCount").toString());
-                                    editor.putString(Constants.KEY_PREF_BLOGPUBLISHCOUNT, response.get("BlogPublishCount").toString());
-                                    editor.putString(Constants.KEY_PREF_U_AVATOR_CODE, response.get("AvatorCode").toString());
-//
-                                    editor.apply();
-                                    Intent home = new Intent(LoginActivity.this, Home_Activity.class);
-                                    startActivity(home);
-                                    finish();
-                                    //progress.dismiss();
-                                } else {
-                                    Toast.makeText(LoginActivity.this, response.get("message").toString(), Toast.LENGTH_LONG).show();
-                                }
-                            } catch (JSONException ex) {
-                                //progress.dismiss();
-                                Log.d("JSON Exception", ex.getMessage());
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        disableEnableControls(true, binding.container);
+                        showProgressDialog(false);
+                        String errorMsg = throwable.getMessage();
+                        if (throwable instanceof retrofit2.HttpException) {
+                            retrofit2.HttpException httpException = (retrofit2.HttpException) throwable;
+                            if (httpException.code() == 401) {
+                                errorMsg = "Invalid email/pen name or password";
                             }
                         }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            dialog.dismiss();
-                            error.printStackTrace();
-                            Log.e("Volley", "Error");
-                        }
+                        Toast.makeText(getApplicationContext(), errorMsg, Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "UnSuccessful >>" + throwable.getMessage());
                     }
-            );
-            jor.setRetryPolicy(new DefaultRetryPolicy(20000, 3, 0.0f));
-            requestQueue.add(jor);
-        } else {
-            Log.e("Blank Field", "Why it's blank?");
-            Toast.makeText(getApplicationContext(), "User name and Password Can't be blank.", Toast.LENGTH_LONG).show();
-        }
+                });
     }
+
+
+
+    /*
+    private void login()
+    {
+        // Dead code removed
+    }
+    */
 
     /*@Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -354,12 +341,16 @@ public class LoginActivity extends AppCompatActivity {
 
 
     private void callFacebook() {
+        disableEnableControls( false,binding.container );
+        showProgressDialog(true);
+        isCallingFacebook=true;
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "email", "user_birthday"));
         LoginManager.getInstance().registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(final LoginResult loginResult) {
                         // App code
+
                         System.out.println("Result : " + loginResult.getAccessToken());
                         GraphRequest request = GraphRequest.newMeRequest(loginResult.getAccessToken(),
                                 new GraphRequest.GraphJSONObjectCallback() {
@@ -410,28 +401,46 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        super.onActivityResult(requestCode, resultCode, data);
-        callbackManager.onActivityResult(requestCode, resultCode, data);
+        /*
+        if ( isCallingFacebook )
+        {
 
+            callbackManager.onActivityResult(requestCode, resultCode, data);
+            super.onActivityResult(requestCode, resultCode, data);
 
-
-
-
-        if (resultCode == Activity.RESULT_OK)
-            switch (requestCode) {
-                case 101:
-                    try {
-                        // The Task returned from this call is always completed, no need to attach
-                        // a listener.
-                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-                        GoogleSignInAccount account = task.getResult(ApiException.class);
-                        onLoggedIn(account);
-                    } catch (ApiException e) {
-                        // The ApiException status code indicates the detailed failure reason.
-                        Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
-                    }
-                    break;
+        }
+        else
+        {
+        */
+            super.onActivityResult(requestCode, resultCode, data);
+            if (resultCode == Activity.RESULT_OK)
+                switch (requestCode) {
+                    case 101:
+                        disableEnableControls( true,binding.container );
+                        showProgressDialog(false);
+                        /*
+                        try {
+                            // The Task returned from this call is always completed, no need to attach
+                            // a listener.
+                            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+                            GoogleSignInAccount account = task.getResult(ApiException.class);
+                            onLoggedIn(account);
+                        } catch (ApiException e) {
+                            // The ApiException status code indicates the detailed failure reason.
+                            Log.w(TAG, "signInResult:failed code=" + e.getStatusCode());
+                        }
+                        */
+                        break;
+                }
+            else
+            {
+                disableEnableControls( true,binding.container );
+                showProgressDialog(false);
             }
+
+        // }
+
+
     }
 
 
@@ -467,39 +476,42 @@ public class LoginActivity extends AppCompatActivity {
 
     private void callSocialLoginAPI(final String userId, final String fEmail, final String Name, String provider) {
 
-        HashMap <String, String> hmLoginParams = WebApiParams.getRegistrationParamsFB(Name, fEmail, userId, provider);
-        SmartPostWebRequest loginRequest = new SmartPostWebRequest(WebConstants.SocialRegister_API, LoginActivity.this, true, hmLoginParams, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            User user = new Gson().fromJson(jsonResponse.getJSONObject("data").toString(), User.class);
-                            WritOnPreference.getInstance(LoginActivity.this).saveUserDetails(user);
-                            Intent home = new Intent(LoginActivity.this, Home_Activity.class);
-                            home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(home);
-                        } else {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
-                        }
+        RetroFitClient registerClient = ServiceGenerator.getRetrofit().create(RetroFitClient.class);
 
-                    }
-                } catch (JSONException e) {
-                    //e.printStackTrace();
-                    Toast.makeText(LoginActivity.this, e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-                return null;
+        registerClient.socialSignup( Name,Name,fEmail,"","",provider,userId).enqueue( new Callback<SignupResponse>() {
+            @Override
+            public void onResponse(Call<SignupResponse> call , retrofit2.Response<SignupResponse> response) {
+                disableEnableControls( true,binding.container );
+                showProgressDialog(false);
+                     if (response.body().getSuccess() == 2  || response.body().getSuccess()==1) {
+                         tinydb.putString("userEmail", fEmail);
+                         tinydb.putString("userEmail", fEmail);
+                        WritOnPreference.getInstance(LoginActivity.this).saveUserDetails(response.body().getData());
+                        Intent home = new Intent(LoginActivity.this, Home_Activity.class);
+                        home.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(home);
+                    } else {
+                         String message = response.body().getMessage();
+                         Toast.makeText( LoginActivity.this , message , Toast.LENGTH_LONG ).show();
+                     }
+
             }
 
             @Override
-            public void onError(VolleyError error) {
-                Toast.makeText(LoginActivity.this, error.getMessage(), Toast.LENGTH_LONG).show();
+            public void onFailure(Call<SignupResponse> call , Throwable t) {
+                disableEnableControls( true,binding.container );
+                showProgressDialog(false);
+                Toast.makeText( LoginActivity.this , t.getMessage() , Toast.LENGTH_LONG ).show();
+
             }
-        });
-        VolleySingleton.getInstance().addToRequestQueue(loginRequest);
+        } );
+
+
+    }
+
+    private void showUserNameDialog()
+    {
+
     }
 
 
@@ -523,43 +535,27 @@ public class LoginActivity extends AppCompatActivity {
                 ETEmail.setError(null);
                 if (ETEmail.getText().toString().trim().length() > 4 && ETEmail.getText().toString().contains("@")) {
                     RequestQueue requestQueue;
-                    final ProgressDialog Pdialog = new ProgressDialog(LoginActivity.this);
-                    Pdialog.setMessage("Logging, Please wait...");
-                    Pdialog.show();
-                    requestQueue = Volley.newRequestQueue(getApplicationContext());
-                    String loginURL = String.format(Const.BASE_URL + "ForgotPassword?Email=%s", ETEmail.getText().toString().trim());
-                    Log.d("URL", loginURL);
-                    loginURL = loginURL.replace(" ", "%20");
-                    JsonObjectRequest jor = new JsonObjectRequest(Request.Method.GET, loginURL, null,
-                            new Response.Listener<JSONObject>() {
+                    WritOnProgressDialog.getInstance().showProgress(LoginActivity.this, "Logging, Please wait...");
+                    RetroFitClient forgetPassword = ServiceGenerator.getRetrofit().create(RetroFitClient.class);
+                    forgetPassword.forgetPassword( ETEmail.getText().toString().trim() ).subscribeOn( Schedulers.io() )
+                            .observeOn( AndroidSchedulers.mainThread() ).subscribe(
+                            new Consumer<DefaultResponse>() {
                                 @Override
-                                public void onResponse(JSONObject response) {
-                                    Pdialog.dismiss();
-                                    Log.d("True", "");
-                                    try {
-                                        if (response.get("success").toString() == "true") {
-                                            dialog.dismiss();
-                                            Toast.makeText(LoginActivity.this, response.get("message").toString(), Toast.LENGTH_LONG).show();
-                                        } else {
-                                            Toast.makeText(LoginActivity.this, response.get("message").toString(), Toast.LENGTH_LONG).show();
-                                        }
-                                    } catch (JSONException ex) {
-                                        Pdialog.dismiss();
-                                        Log.d("JSON Exception", ex.getMessage());
-                                    }
+                                public void accept(DefaultResponse defaultResponse) throws Exception {
+                                    WritOnProgressDialog.getInstance().hideProgress();
+//                                    if ( defaultResponse.getSuccess() )
+                                    Toast.makeText(LoginActivity.this, defaultResponse.getMessage(), Toast.LENGTH_LONG).show();
+
                                 }
-                            },
-                            new Response.ErrorListener() {
+                            } , new Consumer<Throwable>() {
                                 @Override
-                                public void onErrorResponse(VolleyError error) {
-                                    Pdialog.dismiss();
-                                    error.printStackTrace();
-                                    Log.e("Volley", "Error");
+                                public void accept(Throwable throwable) throws Exception {
+                                    WritOnProgressDialog.getInstance().hideProgress();
+                                    Toast.makeText(LoginActivity.this, throwable.getMessage(), Toast.LENGTH_LONG).show();
+
                                 }
-                            }
-                    );
-                    jor.setRetryPolicy(new DefaultRetryPolicy(20000, 3, 0.0f));
-                    requestQueue.add(jor);
+                            } );
+
                 } else {
                     ETEmail.setError("Please Enter a Valid Email.");
                     ETEmail.requestFocus();
@@ -567,5 +563,12 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
         dialog.show();
+    }
+
+    void showProgressDialog(boolean isVisible)
+    {
+
+        binding.progressBar.setVisibility( isVisible? View.VISIBLE:View.GONE );
+
     }
 }

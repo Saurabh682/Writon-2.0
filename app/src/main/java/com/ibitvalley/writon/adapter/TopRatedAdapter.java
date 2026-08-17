@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.os.Parcelable;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,13 +28,13 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.Blog_Profile;
-import com.ibitvalley.writon.Fragment.Home_Fragment2;
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
+import com.ibitvalley.writon.fragment.Home_Fragment2;
 import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.Report;
 import com.ibitvalley.writon.ShowBlogDetails;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
@@ -53,13 +54,15 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.ImagecategoryViewHolder> {
     private Context curr_context;
     private Activity curr_activity;
-    ArrayList<TrendingPost_Model> arrappliedjob;
+    ArrayList<Post_List_Data> arrappliedjob;
     SharedPreferences preferences;
     Typeface tf;
     User userData;
     private String bTitle;
+    private String username;
+    private String screenName;
 
-    public TopRatedAdapter(Activity curr_activity, Context curr_context, ArrayList<TrendingPost_Model> arrappliedjob) {
+    public TopRatedAdapter(Activity curr_activity, Context curr_context, ArrayList<Post_List_Data> arrappliedjob,String screenName) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
@@ -79,10 +82,11 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
     public void onBindViewHolder(final TopRatedAdapter.ImagecategoryViewHolder holder, final int position) {
         System.out.println("Entering onbind");
 
-        final TrendingPost_Model show = arrappliedjob.get(position);
+        final Post_List_Data show = arrappliedjob.get(position);
         bTitle = show.getTitle();
+        username = show.getUserName();
         holder.TVCategory.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
-        holder.Username.setText(show.getUser_name());
+        holder.Username.setText(show.getUserName());
         holder.TVTitle.setText(show.getTitle());
         if(show.getShortDescription() != null){
             holder.TVShortDesc.setText(Html.fromHtml(String.valueOf(show.getShortDescription())));
@@ -90,31 +94,26 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
             holder.TVShortDesc.setText(Html.fromHtml(String.valueOf(show.getLongDescription())));
         }
 
-        if (show.isBookMark()) {
-            holder.IVBookmarked.setImageResource(R.drawable.bookmarknew);
+        if (show.getIsBookmarked()) {
+            holder.IVBookmarked.setImageResource(R.drawable.bookmarkyellow);
         } else {
             holder.IVBookmarked.setImageResource(R.drawable.bookmarkblue);
         }
 
-        if(show.isIs_followed()) {
+        if(show.getIsFollowed()) {
             holder.TVFollow.setText("UN FOLLOW");
         } else {
             holder.TVFollow.setText("FOLLOW");
         }
 
-        holder.TVViewCount.setText(show.getView_count());
-        holder.TVCommentCount.setText(show.getComments_count());
-        holder.TVRating.setText(show.getVotes_count());
-        holder.tv_user_followers_count.setText(String.format("%s FOLLOWERS", show.getUser_followers_count()));
-        if(show.getUser_image() != null){
-            Picasso.get().load(show.getUser_image()).placeholder(R.drawable.usermale).into(holder.list_image);
+        holder.TVViewCount.setText(""+show.getViewCount());
+        holder.TVCommentCount.setText(""+show.getCommentsCount());
+//        holder.TVRating.setText(show.getVotes_count());
+        holder.tv_user_followers_count.setText(String.format("%s FOLLOWERS", show.getUserFollowersCount()));
+        if(show.getUserImage() != null){
+            Picasso.get().load(show.getUserImage()).placeholder(R.drawable.generic_male).into(holder.list_image);
         }
-        //holder.IVProgileImage.setImageResource(AvtarUtil.getAvtarDrawableByType(show.getAvatorCode()));
-//        if(position ==0){
-//            holder.right_arrow.setVisibility(View.VISIBLE);
-//        } else {
-//            holder.right_arrow.setVisibility(View.INVISIBLE);
-//        }
+
 
     }
 
@@ -202,7 +201,8 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
                 public void onClick(View v) {
                     //Intent blogprofile = new Intent(curr_context, ShowBlog.class);
                     Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
+                    blogprofile.putExtra("BlogObject",
+                            (Parcelable) arrappliedjob.get(getAdapterPosition()) );
                     blogprofile.putExtra("boxTitle", "Trending");
                     curr_context.startActivity(blogprofile);
                 }
@@ -211,17 +211,18 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
             this.IVBookmarked.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    TrendingPost_Model blog = arrappliedjob.get(getPosition());
+                    Post_List_Data blog = arrappliedjob.get(getAdapterPosition());
 
-                    if (blog.isBookMark()) {
+                    if (blog.getIsBookmarked()) {
                         unbookmarkRequest(userData.getId(), blog.getBlogId());
-                        blog.setBookMark(false);
-                        IVBookmarked.setImageResource(R.drawable.unbookmark);
+                        blog.setIsBookmarked(false);
+                        IVBookmarked.setImageResource(R.drawable.bookmarkblue);
                     } else {
                         fcmNotify("bookmark");
+                        fcmNotifyAll("bookmark");
                         bookmarkRequest(userData.getId(), blog.getBlogId());
-                        blog.setBookMark(true);
-                        IVBookmarked.setImageResource(R.drawable.bookmarknew);
+                        blog.setIsBookmarked(true);
+                        IVBookmarked.setImageResource(R.drawable.bookmarkyellow);
                     }
                 }
             });
@@ -230,16 +231,18 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
                 @Override
                 public void onClick(View v) {
                     //final String followUserID, final String userID
-                    TrendingPost_Model blog = arrappliedjob.get(getPosition());
-                    if(blog.isIs_followed()) {
+                    Post_List_Data blog = arrappliedjob.get(getAdapterPosition());
+                    if(blog.getIsFollowed()) {
                         fcmNotify("follow");
-                        blog.setIs_followed(false);
+                        fcmNotifyAll("follow");
+
+                        blog.setIsFollowed(false);
                         TVFollow.setText("FOLLOW");
-                        unFollowUser(blog.getUser_id(), userData.getId());
+                        unFollowUser(blog.getUserId(), userData.getId());
                     } else {
-                        blog.setIs_followed(true);
+                        blog.setIsFollowed(true);
                         TVFollow.setText("UN FOLLOW");
-                        followUser(blog.getUser_id(), userData.getId());
+                        followUser(blog.getUserId(), userData.getId());
                     }
                 }
             });
@@ -249,11 +252,12 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
             list_image.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    TrendingPost_Model show = arrappliedjob.get(getPosition());
-                    if (!show.getUser_id().equals(userData.getId())) {
+                    Post_List_Data show = arrappliedjob.get(getAdapterPosition());
+                    if (!show.getUserId().equals(userData.getId())) {
                         Intent blogprofile = new Intent(curr_context, Blog_Profile.class);
-                        blogprofile.putExtra("BlogObject", arrappliedjob.get(getPosition()));
-                        blogprofile.putExtra("UserID", show.getUser_id());
+                        blogprofile.putExtra("BlogObject",
+                                (Parcelable) arrappliedjob.get(getAdapterPosition()) );
+                        blogprofile.putExtra("UserID", show.getUserId());
                         curr_context.startActivity(blogprofile);
                     } else {
                         Fragment fragment = new Home_Fragment2();
@@ -267,13 +271,13 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
             this.img_Option.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    TrendingPost_Model blog = arrappliedjob.get(getPosition());
+                    Post_List_Data blog = arrappliedjob.get(getAdapterPosition());
                     //final String UserId = preferences.getString("UserId", "0");
 
-                    String shareContent = String.format("\"%s\" by %s \n\n %s \n Read more %s @WritOn %s", blog.getTitle(), blog.getUser_name(),  Html.fromHtml(blog.getLongDescription()), blog.getCategory(), "https://goo.gl/Cx4oPk");
+                    String shareContent = String.format("\"%s\" by %s \n\n %s \n Read more %s @WritOn %s", blog.getTitle(), blog.getUserName(),  Html.fromHtml(blog.getLongDescription()), blog.getCategory(), "https://goo.gl/Cx4oPk");
                     //if (!blog.getUserID().equals(UserId)) {
                     String[] arrString = {"Report", "Share"};
-                    showPopupMenu(arrString, shareContent, blog.getBlogID());
+                    showPopupMenu(arrString, shareContent, blog.getBlogId());
                     /*} else {
                         String[] arrString = {"Share"};
                         showPopupMenu(arrString, shareContent);
@@ -440,6 +444,48 @@ public class TopRatedAdapter extends RecyclerView.Adapter<TopRatedAdapter.Imagec
                     public void onResponse(String response) {
                         // Display the first 500 characters of the response string.
                         System.out.println("Response is: "+ response);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                System.out.println("That didn't work!");
+            }
+        });
+
+        // Add the request to the RequestQueue.
+        queue.add(stringRequest);
+
+    }
+    private void fcmNotifyAll(String who) {
+        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
+        String urlExt = "";
+        // Instantiate the RequestQueue.
+        switch (who) {
+            case "bookmark":
+                urlExt = userData2.getId()+"&sp="+userData2.getUsername()+" has bookmarked a post. &tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
+                break;
+            case "follow":
+                urlExt = userData2.getId()+"&sp="+userData2.getUsername()+" has started following a new user. &tp="+userData2.getUsername()+" has started following "+username;
+                break;
+            case "rate":
+                urlExt = userData2.getId()+"&sp="+userData2.getUsername()+" has rated a post. &tp="+bTitle+" has been rated by "+userData2.getUsername();
+                break;
+
+            //default:
+            //console.log('Sorry, we are out of ' + expr + '.');
+        }
+
+
+        RequestQueue queue = Volley.newRequestQueue(curr_context);
+        String url ="https://www.writon.co/Mine/fcm_noti_multiuser.php?id="+urlExt ;
+        Log.i("FCM-Notify Single: ", url);
+        // Request a string response from the provided URL.
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        // Display the first 500 characters of the response string.
+                        Log.d("FCM-Notify Single", "onResponse() returned: " + response);
                     }
                 }, new Response.ErrorListener() {
             @Override

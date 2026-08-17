@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/itemView"
     android:layout_width="match_parent"
     android:layout_height="300dp"
@@ -124,7 +125,7 @@
                         android:id="@+id/right_arrow"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
-                        android:tint="@color/colorPrimary"
+                        app:tint="@color/colorPrimary"
                         android:layout_marginRight="-6dp"
                         android:src="@drawable/right_arrow" />
                 </LinearLayout>

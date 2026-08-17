@@ -15,18 +15,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.TrendingPost_Model;
+import com.ibitvalley.writon.model.DefaultResponse;
+import com.ibitvalley.writon.model.UserModel;
 import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.retroFit.RetroFitClient;
+import com.ibitvalley.writon.retroFit.ServiceGenerator;
+import com.ibitvalley.writon.utils.AppUtils;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
@@ -41,6 +41,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -49,15 +52,17 @@ import static android.content.Context.MODE_PRIVATE;
  */
 
 public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdapter.ImagecategoryViewHolder> {
+    private static final String TAG = "TAG";
     private Context curr_context;
     private Activity curr_activity;
-    private ArrayList<TrendingPost_Model> arrappliedjob;
+    private ArrayList<UserModel> arrappliedjob;
     private SharedPreferences preferences;
     private Typeface tf;
     private User userData;
     private String bTitle;
+    private String username;
 
-    public TrendingUsersAdapter(Activity curr_activity, Context curr_context, ArrayList<TrendingPost_Model> arrappliedjob) {
+    public TrendingUsersAdapter(Activity curr_activity, Context curr_context, ArrayList<UserModel> arrappliedjob) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
@@ -76,8 +81,9 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
     @Override
     public void onBindViewHolder(final ImagecategoryViewHolder holder, final int position) {
 
-        final TrendingPost_Model show = arrappliedjob.get(position);
+        final UserModel show = arrappliedjob.get(position);
         bTitle = show.getTitle();
+        username = show.getUser_name();
         holder.Username.setText(show.getUsername());
         holder.tv_user_followers_count.setText(String.format("%s Followers", show.getFollowers_count()));
 
@@ -101,22 +107,6 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
             return 0;
         }
     }
-
-
-
-    private void share(String shareContent){
-        Intent sendIntent = new Intent();
-        // Set the action to be performed i.e 'Send Data'
-        sendIntent.setAction(Intent.ACTION_SEND);
-        // Add the text to the intent
-        sendIntent.putExtra(Intent.EXTRA_TEXT, shareContent);
-        // Set the type of data i.e 'text/plain'
-        sendIntent.setType("text/plain");
-        //intent.setData(Uri.parse("market://details?id=com.ibitvalley.writon"));
-        // Launches the activity; Open 'Text editor' if you set it as default app to handle Text
-        curr_activity.startActivity(sendIntent);
-    }
-
 
 
     public class ImagecategoryViewHolder extends RecyclerView.ViewHolder {
@@ -144,16 +134,16 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
                 @Override
                 public void onClick(View v) {
                     //final String followUserID, final String userID
-                    TrendingPost_Model blog = arrappliedjob.get(getPosition());
+                    UserModel blog = arrappliedjob.get(getPosition());
                     if(!blog.isIs_followed()) {
-                        fcmNotify("follow");
+                        AppUtils.fcm_noti_single( userData.getId() ,"follow",userData.getUsername(),bTitle);
                         blog.setIs_followed(true);
                         TVFollow.setText("UN FOLLOW");
-                        followUser(blog.getUserID(), userData.getId());
+                        updateFollow(true,userData.getName(),blog.getUserID(),bTitle,userData.getId());
                     } else {
                         blog.setIs_followed(false);
                         TVFollow.setText("FOLLOW");
-                        unFollowUser(blog.getUserID(), userData.getId());
+                        updateFollow(false,userData.getName(),blog.getUserID(),bTitle,userData.getId());
                     }
                 }
             });
@@ -163,112 +153,33 @@ public class TrendingUsersAdapter extends RecyclerView.Adapter<TrendingUsersAdap
     }
 
 
-    private void followUser(final String followUserID, final String userID) {
-        HashMap<String, String> hmHomeParam = new HashMap <>();
-        hmHomeParam.put("FollowerID", followUserID);
-        hmHomeParam.put("UserID", userID);
-        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
+    private void updateFollow(Boolean Follow, String writerName, String bId, String postTitle, String otherUserID) {
+        RetroFitClient PostList = ServiceGenerator.getRetrofit().create(RetroFitClient.class);
+        Call<DefaultResponse> call = null;
+//        if(Follow) {
+            call = PostList.follow(userData.getAccess_token(),bId, String.valueOf(userData.getId()!=null? userData.getId():userData.getuId()));
+//        }else{
+//            call = PostList.unfollow(userData.getAccess_token(),bId, String.valueOf(userData.getId()!=null? userData.getId():userData.getuId()));
+//        }
 
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    int status = jsonResponse.getInt("success");
-                    if (status == 1) {
-                        String message = jsonResponse.getString("message");
-                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                    } else{
-                        String message = jsonResponse.getString("message");
-                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+        call.enqueue(new Callback<DefaultResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<DefaultResponse> call, @NonNull Response<DefaultResponse> response) {
+                assert response.body() != null;
+                Log.i(TAG, "onResponse Follow: " + response.body());
+                if(Follow) {
+                    AppUtils.fcm_noti_single( otherUserID,"bookmark",writerName,postTitle );
+                    AppUtils.fcm_noti_single( otherUserID,"bookmark",writerName,postTitle );
                 }
-                return null;
             }
+
             @Override
-            public void onError(VolleyError error) {
-                Log.d("","");
+            public void onFailure(@NonNull Call <DefaultResponse> call, @NonNull Throwable t) {
+                String message = t.toString();
+                Log.d(TAG,"UnSuccessful Follow>>"+ message);
             }
         });
-        VolleySingleton.getInstance().addToRequestQueue(mainCategory);
     }
-
-
-    private void unFollowUser(final String followUserID, final String userID) {
-        HashMap<String, String> hmHomeParam = new HashMap <>();
-        hmHomeParam.put("FollowerID", followUserID);
-        hmHomeParam.put("UserID", userID);
-        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.un_follow_user, curr_activity, false, hmHomeParam, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        } else {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-            @Override
-            public void onError(VolleyError error) {
-                Log.d("","");
-            }
-        });
-        VolleySingleton.getInstance().addToRequestQueue(mainCategory);
-    }
-
-
-    private void fcmNotify(String who) {
-        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
-        String urlExt = "";
-        // Instantiate the RequestQueue.
-        switch (who) {
-            case "bookmark":
-                urlExt = userData.getId()+"&sp=your post is getting popular&tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
-                break;
-            case "follow":
-                urlExt = userData.getId()+"&sp=you are getting noticed&tp="+userData2.getUsername()+" has started following you. Keep up your writing";
-                break;
-
-            //default:
-            //console.log('Sorry, we are out of ' + expr + '.');
-        }
-
-
-        RequestQueue queue = Volley.newRequestQueue(curr_context);
-        String url ="https://www.writon.co/Mine/fcm_noti_single.php?id="+urlExt ;
-        System.out.println("Bookmark Notify: "+url);
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        System.out.println("Response is: "+ response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println("That didn't work!");
-            }
-        });
-
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
-
-    }
-
-
 
 }
 

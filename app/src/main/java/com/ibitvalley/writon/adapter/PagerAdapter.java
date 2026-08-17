@@ -1,39 +1,50 @@
 package com.ibitvalley.writon.adapter;
 
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
+import com.ibitvalley.writon.fragment.PagerM;
+import com.ibitvalley.writon.R;
 
-import com.ibitvalley.writon.Fragment.FragmentA;
+import java.util.List;
 
-import java.util.ArrayList;
+public class PagerAdapter extends RecyclerView.Adapter {
+    private List<PagerM> pagerMList;
 
-/**
- * Created by Android_PC on 18-07-2016.
- */
-public class PagerAdapter extends FragmentPagerAdapter {
+    class PagerViewHolder extends RecyclerView.ViewHolder {
+        private TextView txtDescription;
 
-    public static ArrayList<String> imagesList;
-    public PagerAdapter(FragmentManager fm, ArrayList<String> images) {
-        super(fm);
-        this.imagesList=images;
-    }
-
-    @Override
-    public Fragment getItem(int i) {
-        switch(i) {
-            //fragment A
-            //case 0: return FragmentA.newInstance("");
-
-            default: return FragmentA.newInstance(imagesList.get(i));
+        public PagerViewHolder(@NonNull View itemView) {
+            super(itemView);
+            txtDescription = itemView.findViewById(R.id.text1);
         }
     }
 
-    //no of pager wants ..
+    public PagerAdapter(List<PagerM> pagerMList) {
+        this.pagerMList = pagerMList;
+    }
+
+    @NonNull
     @Override
-    public int getCount() {
-        return imagesList.size();
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_collection_object, parent, false);
+        return new PagerViewHolder(view);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+        PagerViewHolder viewHolder = (PagerViewHolder) holder;
+        PagerM pagerM = pagerMList.get(position);
+        viewHolder.txtDescription.setText(pagerM.getPagerDescription());
+    }
+
+    @Override
+    public int getItemCount() {
+        return pagerMList.size();
     }
 }

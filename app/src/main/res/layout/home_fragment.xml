@@ -38,9 +38,9 @@
                 android:layout_marginRight="45dp"
                 android:layout_marginTop="2dp"
                 android:padding="5dp"
-                android:tint="@color/colorPrimary"
+                app:tint="@color/colorPrimary"
                 android:visibility="gone"
-                android:src="@drawable/ic_autorenew_black_24dp" />
+                app:srcCompat="@drawable/ic_autorenew_black_24dp" />
 
 
            <LinearLayout
@@ -59,8 +59,8 @@
                    android:layout_marginTop="2dp"
                    android:padding="5dp"
                    android:visibility="visible"
-                   android:tint="@color/colorPrimary"
-                   android:src="@drawable/ic_search_black_24dp" />
+                   app:tint="@color/colorPrimary"
+                   app:srcCompat="@drawable/ic_search_black_24dp" />
 
 
                <ImageView
@@ -108,7 +108,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_alignParentRight="true"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     android:visibility="gone"
                     android:src="@drawable/right_arrow"/>
 
@@ -160,7 +160,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_alignParentRight="true"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     android:visibility="gone"
                     android:src="@drawable/right_arrow"/>
 
@@ -212,7 +212,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_alignParentRight="true"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     android:visibility="gone"
                     android:src="@drawable/right_arrow"/>
 
@@ -265,7 +265,7 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_alignParentRight="true"
-                    android:tint="@color/colorPrimary"
+                    app:tint="@color/colorPrimary"
                     android:visibility="gone"
                     android:src="@drawable/right_arrow"/>
 
@@ -336,7 +336,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/rl7"
             android:layout_below="@+id/rl6">
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView7"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -349,7 +349,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/rl8"
             android:layout_below="@+id/rl7">
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerView8"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -412,7 +412,7 @@
                 android:elevation="0dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_create_black_24dp"
+                app:srcCompat="@drawable/ic_create_black_24dp"
                 app:backgroundTint="@android:color/holo_green_light"
                 app:fabSize="mini" />
 
@@ -575,7 +575,7 @@
                 android:elevation="0dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_create_black_24dp"
+                app:srcCompat="@drawable/ic_create_black_24dp"
                 app:backgroundTint="@android:color/holo_green_dark"
                 app:fabSize="mini" />
 

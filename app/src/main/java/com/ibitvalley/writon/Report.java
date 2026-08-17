@@ -11,7 +11,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.VolleyError;
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+import com.ibitvalley.writon.googleAnalytics.MyApplication;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.User;
 import com.ibitvalley.writon.utils.VolleySingleton;
@@ -26,7 +26,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Report extends AppCompatActivity {
+public class Report extends BaseActivity {
 
 
     TextView tv_creatorName, tv_shortDesc, tv_elase;

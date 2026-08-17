@@ -13,8 +13,6 @@
     android:padding="5dp"
     tools:context="com.ibitvalley.writon.Feed">
 
-
-
         <RelativeLayout
             android:layout_width="fill_parent"
             android:layout_height="match_parent"
@@ -96,8 +94,24 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/thumbnail"
                 android:layout_marginTop="20dp"
+                android:visibility="gone"
                 android:layout_marginRight="6dp"
                 android:orientation="vertical">
+
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:text="1"
+                    android:textSize="20sp"
+                    android:id="@+id/list"
+                    />
+                <androidx.appcompat.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="30dp"
+                    android:text="Intro"
+                    android:textSize="20sp"
+                    android:id="@+id/intro"
+                    />
 
 
             </LinearLayout>

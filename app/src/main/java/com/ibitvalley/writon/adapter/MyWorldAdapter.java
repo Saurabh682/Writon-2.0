@@ -5,8 +5,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.media.Image;
+import android.os.Bundle;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextPaint;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,15 +27,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.VolleyError;
 import com.ibitvalley.writon.Blog_Profile;
+import com.ibitvalley.writon.MyWorldActionListener;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.Report;
 import com.ibitvalley.writon.ShowBlogDetails;
+import com.ibitvalley.writon.classes.view_model.OUD_Viewmodel;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.TrendingPost_Model;
+import com.ibitvalley.writon.model.MyWorldModel;
+import com.ibitvalley.writon.model.UserModel;
+import com.ibitvalley.writon.utils.AppUtils;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.webapi.WebConstants;
 import com.ibitvalley.writon.webapi.util.OnResponseListener;
@@ -34,10 +52,13 @@ import com.squareup.picasso.Picasso;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -46,255 +67,240 @@ import static android.content.Context.MODE_PRIVATE;
  * Created by  on 30-09-2016.
  */
 
-public class MyWorldAdapter extends RecyclerView.Adapter<MyWorldAdapter.ImagecategoryViewHolder> {
-    private Context curr_context;
-    private Activity curr_activity;
-    ArrayList<TrendingPost_Model> arrappliedjob;
+public class MyWorldAdapter extends RecyclerView.Adapter<MyWorldAdapter.MyWorldViewHolder> {
+
+    ArrayList<MyWorldModel> myWorldModels;
     SharedPreferences preferences;
     Typeface tf;
-    public MyWorldAdapter(Activity curr_activity, Context curr_context, ArrayList<TrendingPost_Model> arrappliedjob) {
-        this.curr_activity = curr_activity;
-        this.curr_context = curr_context;
-        this.arrappliedjob = arrappliedjob;
-        preferences = curr_activity.getSharedPreferences("mPrefs", MODE_PRIVATE);
-        System.out.println("Array Size In Adapter : " + arrappliedjob.size());
-        tf = Typeface.createFromAsset(curr_context.getAssets(),"Lato-Regular.ttf");
+    Activity activity;
+    Context context;
+    MyWorldActionListener myWorldActionListener;
+    public MyWorldAdapter(Activity activity , Context context , ArrayList<MyWorldModel> myWorldModels, MyWorldActionListener myWorldActionListener) {
+        this.myWorldModels = myWorldModels;
+        this.context = context;
+        this.activity = activity;
+        this.myWorldActionListener=myWorldActionListener;
     }
 
     @Override
-    public ImagecategoryViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.myworld_list_item_view, parent, false);
-        return new ImagecategoryViewHolder(itemView);
+    public MyWorldViewHolder onCreateViewHolder(ViewGroup parent , int viewType) {
+        View itemView = LayoutInflater.from( parent.getContext() ).inflate(
+                R.layout.myworld_list_item_view , parent , false );
+        return new MyWorldViewHolder( itemView );
     }
 
     @Override
-    public void onBindViewHolder(final ImagecategoryViewHolder holder, final int position) {
-        System.out.println("Entering onbind");
+    public void onBindViewHolder(final MyWorldViewHolder holder , final int position) {
+        MyWorldModel myWorldModel = myWorldModels.get( position );
 
-        final TrendingPost_Model show = arrappliedjob.get(position);
-        // holder.Username.setText(show.getUser_name());
-        holder.nameone.setText(Html.fromHtml(show.getMessage()));
-        holder.tv_duration.setText(show.getHuman_date());
+        Picasso.get().load( myWorldModel.getUserImage() ).placeholder( R.drawable.usermale ).into(
+                holder.thumbnail );
+        String titleStr = myWorldModel.getUserName() + " " + getActionString( myWorldModel.getAction() );
+        String descStr=getDescriptionString( myWorldModel.getAction(),myWorldModel);
+        holder.txt_title.setText( titleStr );
+        holder.txt_description.setText( descStr );
 
-        if (show.getBlogreferenced() != null) {
-            holder.tv_FollowUserName.setVisibility(View.GONE);
-            holder.TVCategory.setVisibility(View.VISIBLE);
-            holder.Username.setVisibility(View.VISIBLE);
-            holder.TVCategory.setVisibility(View.VISIBLE);
-            holder.TVShortDesc.setVisibility(View.VISIBLE);
-            holder.TVShortDesc.setText(Html.fromHtml(String.valueOf(show.getBlogreferenced().getTitle())));
-            holder.TVCategory.setText(String.format("%s, %s (%s)", show.getBlogreferenced().getCategory(), show.getBlogreferenced().getSubCat(), show.getBlogreferenced().getLanguage()));
-            holder.TVViewCount.setText(show.getBlogreferenced().getView_count());
-            holder.TVCommentCount.setText(show.getBlogreferenced().getComments_count());
-            holder.TVRating.setText(show.getBlogreferenced().getVotes_count());
-            holder.Username.setText(show.getBlogreferenced().getUser_name());
+        if ( myWorldModel.getAction().equalsIgnoreCase( "followed" ) )
+        {
+            holder.txt_follow.setVisibility(  View.VISIBLE  );
+            holder.img_action.setVisibility(  View.GONE  );
+        }
 
-        } else if (show.getUserReferenced() != null) {
-            holder.Username.setVisibility(View.GONE);
-            holder.TVCategory.setVisibility(View.GONE);
-            holder.TVShortDesc.setVisibility(View.GONE);
-            holder.tv_FollowUserName.setVisibility(View.VISIBLE);
-            holder.tv_FollowUserName.setText(show.getUserReferenced().getUsername());
+        else
+        {
+            setActionImage(holder.img_action,myWorldModel.getAction());
+            holder.img_action.setVisibility(  View.VISIBLE  );
+            holder.txt_follow.setVisibility(  View.GONE  );
+        }
+
+        holder.txt_follow.setText( myWorldModel.isFollowed() ? "UN FOLLOW" : "FOLLOW" );
+
+        holder.img_action.setImageDrawable( myWorldModel.getAction().equalsIgnoreCase( "rated" ) ?
+                (myWorldModel.isRated() ? context.getResources().getDrawable( R.drawable.starnewselected ) : context.getResources().getDrawable( R.drawable.starblue )) :
+                (myWorldModel.isBookmarked() ? context.getResources().getDrawable( R.drawable.bookmarknew ) : context.getResources().getDrawable( R.drawable.bookmarkblue )) );
+        holder.txt_follow.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                doAction(position,myWorldModel.getAction(),myWorldModel.getBlogId(),!myWorldModel.isFollowed(),myWorldModel.getOtherUserId(),myWorldModel.getOtherUserName(),myWorldModel.getTitle());
+            }
+        } );
+
+        holder.img_action.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (myWorldModel.getAction().equalsIgnoreCase( "rated" )  )
+                    doAction(position,myWorldModel.getAction(),myWorldModel.getBlogId(),!myWorldModel.isRated(),myWorldModel.getOtherUserId(),myWorldModel.getOtherUserName(),myWorldModel.getTitle());
+                else
+                    myWorldActionListener.onClickBookmark( position,myWorldModel,!myWorldModel.isBookmarked() );
+
+            }
+        } );
+
+
+        addClickableLink( titleStr , holder.txt_title , myWorldModel );
+        addClickableLink( descStr , holder.txt_description , myWorldModel );
+
+    }
+
+
+    private void setActionImage(ImageView actionImage,String action)
+    {
+        if ( action.equalsIgnoreCase( "rated" ) )
+            actionImage.setImageDrawable( context.getResources().getDrawable( R.drawable.starblue ) );
+        else if (  action.equalsIgnoreCase( "bookmark" ) )
+            actionImage.setImageDrawable( context.getResources().getDrawable( R.drawable.bookmarkblue ) );
+        else if (  action.equalsIgnoreCase( "posted" ) )
+            actionImage.setImageDrawable( context.getResources().getDrawable( R.drawable.bookmarkblue ) );
+    }
+
+    private String getActionString(String action) {
+        if ( action.equalsIgnoreCase( "Followed" ) )
+            return "has started following";
+        else if ( action.equalsIgnoreCase( "posted" ) )
+            return "has posted";
+        else if ( action.equalsIgnoreCase( "bookmark" ) )
+            return "has bookmarked";
+        else if ( action.equalsIgnoreCase( "rated" ) )
+            return "has rated";
+        else
+            return "-";
+    }
+
+    private String getDescriptionString(String action,MyWorldModel myWorldModel)
+    {
+        if ( action.equalsIgnoreCase( "Followed" ) )
+            return myWorldModel.getOtherUserName();
+        else
+            return AppUtils.ifItsEmpty( myWorldModel.getTitle(),"-" )+" by " + myWorldModel.getOtherUserName();
+    }
+
+    private void addClickableLink(String str, TextView textView,MyWorldModel myWorldModel)
+    {
+        SpannableString ss = new SpannableString(str);
+
+        if ( str.contains( myWorldModel.getUserName() ) )
+        {
+            int indx1=str.indexOf( myWorldModel.getUserName() );
+            int indx2=str.indexOf(myWorldModel.getUserName(), indx1) + String.valueOf(myWorldModel.getUserName()).length();
+
+
+
+            ss.setSpan(new ClickableSpan() {
+                @Override
+                public void onClick(View textView) {
+                    goToProfile(myWorldModel.getUserId());
+                }
+                @Override
+                public void updateDrawState(TextPaint ds) {
+                    super.updateDrawState(ds);
+                    ds.setUnderlineText(false);
+                }
+            }, indx1, indx2, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            ss.setSpan(new ForegroundColorSpan( ContextCompat.getColor(context, R.color.newBlue)), str.indexOf( myWorldModel.getUserName()), str.indexOf( myWorldModel.getUserName())+String.valueOf( myWorldModel.getUserName()).length(), 0);
+
+        }
+
+        if ( str.contains( myWorldModel.getOtherUserName() ) )
+        {
+            int indx3=str.indexOf( myWorldModel.getOtherUserName() );
+            int indx4=str.indexOf(myWorldModel.getOtherUserName(), indx3) + String.valueOf(myWorldModel.getOtherUserName()).length();
+
+            ss.setSpan(new ClickableSpan() {
+                @Override
+                public void onClick(View textView) {
+                    goToProfile(myWorldModel.getOtherUserId());
+                }
+                @Override
+                public void updateDrawState(TextPaint ds) {
+                    super.updateDrawState(ds);
+                    ds.setUnderlineText(false);
+                }
+            }, indx3, indx4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            ss.setSpan(new ForegroundColorSpan( ContextCompat.getColor(context, R.color.newBlue)), str.indexOf( myWorldModel.getOtherUserName()), str.indexOf( myWorldModel.getOtherUserName())+String.valueOf( myWorldModel.getOtherUserName()).length(), 0);
+
         }
 
 
-        if (show.getUserReferenced() != null){
-            //Picasso.with(curr_context).load(show.getUserReferenced().getImageUrl()).placeholder(R.drawable.usermale).into(holder.list_image);
-         }
+        if ( !AppUtils.isNull( myWorldModel.getTitle() ) &&  str.contains( myWorldModel.getTitle() ) )
+        {
+            int indx3=str.indexOf( myWorldModel.getTitle() );
+            int indx4=str.indexOf(myWorldModel.getTitle(), indx3) + String.valueOf(myWorldModel.getTitle()).length();
 
-         if(show.getUserCreated() != null){
-             Picasso.get().load(show.getUserCreated().getImageUrl()).placeholder(R.drawable.usermale).into(holder.list_imageone);
-         }
+            ss.setSpan(new ClickableSpan() {
+                @Override
+                public void onClick(View textView) {
+                    goToBlog(myWorldModel.getBlogId(),myWorldModel.getOtherUserId());
+                }
+                @Override
+                public void updateDrawState(TextPaint ds) {
+                    super.updateDrawState(ds);
+                    ds.setUnderlineText(false);
+                }
+            }, indx3, indx4, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            ss.setSpan(new ForegroundColorSpan( ContextCompat.getColor(context, R.color.newBlue)), str.indexOf( myWorldModel.getTitle()), str.indexOf( myWorldModel.getTitle())+String.valueOf( myWorldModel.getTitle()).length(), 0);
+
+        }
 
 
+        textView.setMovementMethod( LinkMovementMethod.getInstance());
+        textView.setText( ss,TextView.BufferType.SPANNABLE );
 
 
-         /*if (show.isBookMark()) {
-            holder.IVBookmarked.setColorFilter(ContextCompat.getColor(curr_activity, R.color.colorGreen));
-        } else {
-            holder.IVBookmarked.setColorFilter(ContextCompat.getColor(curr_activity, R.color.colorGrey));
-        }*/
-
-//
-        //  holder.tv_user_followers_count.setText(String.format("%s FOLLOWERS", show.getUser_followers_count()));
-        //holder.IVProgileImage.setImageResource(AvtarUtil.getAvtarDrawableByType(show.getAvatorCode()));
-//        if(position ==0){
-//            holder.right_arrow.setVisibility(View.VISIBLE);
-//        } else {
-//            holder.right_arrow.setVisibility(View.INVISIBLE);
-//        }
 
     }
 
+    private void doAction(int position,String action,String blogId,boolean follow,String userId,String username,String title)
+    {
+        myWorldActionListener.onClick(position, action, blogId, follow,userId, username,title);
+    }
+
+    private void goToProfile(String userId)
+    {
+        Intent blogprofile = new Intent(activity, Blog_Profile.class);
+        blogprofile.putExtra("UserID", userId);
+        activity.startActivity(blogprofile);
+    }
+
+    private void goToBlog(String blogId,String userId)
+    {
+        Intent blogprofile = new Intent(context, ShowBlogDetails.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("blogId", blogId);
+        bundle.putSerializable("userId", userId);
+        blogprofile.putExtras(bundle);
+        blogprofile.putExtra("boxTitle", "MyWorld");
+        activity.startActivity(blogprofile);
+    }
 
     @Override
     public int getItemCount() {
-        if (arrappliedjob != null) {
-            return arrappliedjob.size();
+        if (myWorldModels != null) {
+            return myWorldModels.size();
         } else {
             return 0;
         }
     }
 
-    private void showPopupMenu(final String[] arrString, final String shareContent) {
-        AlertDialog.Builder builderSingle = new AlertDialog.Builder(curr_activity);
-        //String[] arr = {"Report"};
-        builderSingle.setCancelable(true);
-        builderSingle.setItems(arrString, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if(arrString[which].equals("Report")){
-                    Intent blogprofile = new Intent(curr_context, Report.class);
-                    curr_context.startActivity(blogprofile);
-                } else if(arrString[which].equals("Share")){
-                    share(shareContent);
-                }
-            }
-        });
-        builderSingle.show();
-    }
 
-    private void share(String shareContent){
-        Intent sendIntent = new Intent();
-        // Set the action to be performed i.e 'Send Data'
-        sendIntent.setAction(Intent.ACTION_SEND);
-        // Add the text to the intent
-        sendIntent.putExtra(Intent.EXTRA_TEXT, shareContent);
-        // Set the type of data i.e 'text/plain'
-        sendIntent.setType("text/plain");
-        //intent.setData(Uri.parse("market://details?id=com.ibitvalley.writon"));
-        // Launches the activity; Open 'Text editor' if you set it as default app to handle Text
-        curr_activity.startActivity(sendIntent);
-    }
+    public class MyWorldViewHolder extends RecyclerView.ViewHolder {
 
-    public class ImagecategoryViewHolder extends RecyclerView.ViewHolder {
-        TextView Username, nameone, TVShortDesc, TVCategory, TVbookmarkCount, TVCommentCount, TVRating, blogType, TVViewCount,
-                tv_user_followers_count, tv_duration, tv_FollowUserName;
-        CircleImageView IVProgileImage;
-        ImageView IVBookmarked, drawer, right_arrow;
-        CircleImageView list_image, list_imageone;
-        LinearLayout LLContent;
-        TextView TVHeader1;
-        public ImagecategoryViewHolder(View view) {
+        @BindView( R.id.thumbnail )
+        CircleImageView thumbnail;
+        @BindView( R.id.txt_title )
+        TextView txt_title;
+        @BindView( R.id.txt_description )
+        TextView txt_description;
+        @BindView( R.id.txt_follow )
+        TextView txt_follow;
+        @BindView( R.id.img_action )
+        ImageView img_action;
+
+        public MyWorldViewHolder(View view) {
             super(view);
-
-            // this.TVHeader1 = (TextView) view.findViewById(R.id.TVHeader1);
-            // this.TVHeader1.setText("TRENDING");
-            this.Username = (TextView) view.findViewById(R.id.name);
-            this.Username.setTypeface(tf);
-            this.nameone = (TextView) view.findViewById(R.id.nameone);
-            this.nameone.setTypeface(tf);
-
-            this.tv_duration = (TextView) view.findViewById(R.id.tv_duration);
-            this.tv_duration.setTypeface(tf);
-
-            this.tv_FollowUserName = (TextView) view.findViewById(R.id.tv_FollowUserName);
-            this.tv_FollowUserName.setTypeface(tf);
-
-            this.TVShortDesc = (TextView) view.findViewById(R.id.TVShortDesc);
-            this.TVShortDesc.setTypeface(tf);
-            this.TVCategory = (TextView) view.findViewById(R.id.TVCategory);
-            this.TVCategory.setTypeface(tf);
-
-            //this.list_image = (CircleImageView) view.findViewById(R.id.list_image);
-            this.list_imageone = (CircleImageView) view.findViewById(R.id.list_imageone);
-
-            //this.blogType = (TextView) view.findViewById(R.id.blogType);
-            //this.blogType.setTypeface(tf);
-            //this.blogType.setText("Latest");
-            this.IVBookmarked = (ImageView) view.findViewById(R.id.IVBookmarked);
-            this.TVViewCount = (TextView) view.findViewById(R.id.TVViewCount);
-            this.TVbookmarkCount = (TextView) view.findViewById(R.id.TVbookmarkCount);
-            this.TVCommentCount = (TextView) view.findViewById(R.id.TVCommentCount);
-            this.TVRating = (TextView) view.findViewById(R.id.TVRating);
-            // this.tv_user_followers_count = (TextView) view.findViewById(R.id.tv_user_followers_count);
-            //this.right_arrow = (ImageView) view.findViewById(R.id.right_arrow);
-            LLContent = (LinearLayout) view.findViewById(R.id.activity_feed);
-            LLContent.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    //Intent blogprofile = new Intent(curr_context, ShowBlog.class);
-                    if(arrappliedjob.get(getPosition()).getBlogreferenced() != null) {
-
-                        TrendingPost_Model objTrending = new TrendingPost_Model();
-                        objTrending.setBlogID(arrappliedjob.get(getPosition()).getBlogreferenced().getBlogId());
-                        objTrending.setCategory(arrappliedjob.get(getPosition()).getBlogreferenced().getCategory());
-                        objTrending.setSubCat(arrappliedjob.get(getPosition()).getBlogreferenced().getSubCat());
-                        objTrending.setTitle(arrappliedjob.get(getPosition()).getBlogreferenced().getTitle());
-                        objTrending.setShortDescription(arrappliedjob.get(getPosition()).getBlogreferenced().getShortDescription());
-                        objTrending.setLongDescription(arrappliedjob.get(getPosition()).getBlogreferenced().getLongDescription());
-                        objTrending.setLanguage(arrappliedjob.get(getPosition()).getBlogreferenced().getLanguage());
-                        objTrending.setView_count(arrappliedjob.get(getPosition()).getBlogreferenced().getView_count());
-                        objTrending.setComments_count(arrappliedjob.get(getPosition()).getBlogreferenced().getComments_count());
-                        objTrending.setView_count(arrappliedjob.get(getPosition()).getBlogreferenced().getView_count());
-                        objTrending.setVotes_count(arrappliedjob.get(getPosition()).getBlogreferenced().getVotes_count());
-                        objTrending.setUserID(arrappliedjob.get(getPosition()).getBlogreferenced().getUser_id());
-                        objTrending.setUser_name(arrappliedjob.get(getPosition()).getBlogreferenced().getUser_name());
-                        objTrending.setUser_followers_count(arrappliedjob.get(getPosition()).getBlogreferenced().getUser_followers_count());
-                        objTrending.setBookMark(arrappliedjob.get(getPosition()).getBlogreferenced().getIs_bookmarked());
-
-                        Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
-                        blogprofile.putExtra("BlogObject", objTrending);
-                        blogprofile.putExtra("boxTitle", "Trending");
-                        curr_context.startActivity(blogprofile);
-
-                    }else if(arrappliedjob.get(getPosition()).getUserCreated() != null) {
-                        Intent blogprofile = new Intent(curr_context, Blog_Profile.class);
-                        blogprofile.putExtra("UserID", arrappliedjob.get(getPosition()).getUserCreated().getId());
-                        curr_context.startActivity(blogprofile);
-                    }
-                }
-            });
-
-            /*this.IVBookmarked.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    TrendingPost_Model blog = arrappliedjob.get(getPosition());
-                    SharedPreferences preferences = curr_context.getSharedPreferences("mPrefs", MODE_PRIVATE);
-                    bookmarkRequest(preferences.getString("UserId", ""), blog.getBlogId());
-                    if (blog.isBookMark()) {
-                        blog.setBookMark(false);
-                        IVBookmarked.setColorFilter(ContextCompat.getColor(curr_activity, R.color.colorGrey));
-                    } else {
-                        blog.setBookMark(true);
-                        IVBookmarked.setColorFilter(ContextCompat.getColor(curr_activity, R.color.colorGreen));
-                    }
-                }
-            });*/
+            ButterKnife.bind( this,view);
 
         }
-    }
-
-    private void bookmarkRequest(final String UserID, final String BlogID) {
-        HashMap<String, String> hmHomeParam = new HashMap <>();
-        hmHomeParam.put("blogid", BlogID);
-        hmHomeParam.put("userid", UserID);
-        SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.mark_bookmark_api, curr_activity, false, hmHomeParam, new OnResponseListener() {
-            @Override
-            public ArrayList<Blog> onSuccess(Object result) {
-                try {
-                    JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }else{
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-            @Override
-            public void onError(VolleyError error) {
-                Log.d("","");
-            }
-        });
-        VolleySingleton.getInstance().addToRequestQueue(mainCategory);
     }
 
 }

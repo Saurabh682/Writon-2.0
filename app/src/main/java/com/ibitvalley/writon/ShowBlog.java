@@ -11,11 +11,9 @@ import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,7 +30,7 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+import com.ibitvalley.writon.googleAnalytics.MyApplication;
 import com.ibitvalley.writon.model.AvtarUtil;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.utils.Const;
@@ -45,7 +43,7 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-public class ShowBlog extends AppCompatActivity {
+public class ShowBlog extends BaseActivity {
 
     TextView TVComment, TVWriterName, TVCategory, TVShortDesc, TVTitle, TVBloggerName, TVbookmarkCount, TVCommentCount, TVRating, TVType;
     Button BTReadOn;
@@ -105,7 +103,7 @@ public class ShowBlog extends AppCompatActivity {
             @Override
             public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
                 //String rating=String.valueOf(ratingbar1.getRating());
-                if(!preferences.getString("UserId", "").toString().equals(currBlog.getUserID().toString())) {
+                if(!preferences.getString("UserId", "").equals( currBlog.getUserID() )) {
                     blogRating(currBlog.getBlogId(), preferences.getString("UserId", ""), String.valueOf(Math.round(rating)));
                 } else {
                     ratingbar1.setRating(0.0f);
@@ -156,7 +154,7 @@ public class ShowBlog extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                //final String[] arr;
-                if (!currBlog.getUserID().equals(preferences.getString("UserId", "").toString())) {
+                if (!currBlog.getUserID().equals( preferences.getString("UserId", "") )) {
                     String[] arr = {"Share", "Follow", "Report"};
                     showPopupMenu(currBlog, arr);
                 } else {

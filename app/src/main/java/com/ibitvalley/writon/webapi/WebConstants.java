@@ -5,11 +5,11 @@ public class WebConstants {
 
     //public static final String BASE_URL = "http://n100.online/";
 
-    public static final String HTTPS_VERIFY_URL = "";
+    //public static final String HTTPS_VERIFY_URL = "";
 
 
-    public static final String BASE_URL = "https://www.writon.co/api/v1/";
-    public static final String NEW_BASE_URL = "https://www.writon.co/Mine/";
+    public static final String BASE_URL = "http://10.0.2.2:3001/api/v1/";
+    public static final String NEW_BASE_URL = "http://10.0.2.2:3001/api/v1/auth/";
 
 
     public static final String Login_Api = BASE_URL + "login";
@@ -39,7 +39,7 @@ public class WebConstants {
     public static final String add_comment_url = BASE_URL + "AddComment";
     public static final String delete_post_url = BASE_URL + "delete-post";
     public static final String delete_comment_url = BASE_URL + "delete-comment";
-    public static final String add_rating_url = BASE_URL +"AddRating";
+    public static final String add_rating_url = NEW_BASE_URL +"RatePost.php";
 
     public static final String drafts_api = BASE_URL + "drafts";
     public static final String top_rated = NEW_BASE_URL + "MostRatedPost.php";
@@ -48,11 +48,13 @@ public class WebConstants {
     public static final String user_profile = BASE_URL + "user-profile";
     public static final String user_update_profile = NEW_BASE_URL + "UserProfileUpdate.php";
 
+    //public static final String userList = NEW_BASE_URL + "userList.php";
+
 
     public static final String chanhe_password = BASE_URL + "change-password";
 
 
-    public static final String MAIN_CATEGORY_API = BASE_URL + "api/vender/GetVendor";
+    /*public static final String MAIN_CATEGORY_API = BASE_URL + "api/vender/GetVendor";
     public static final String Sub_CATEGORY_API = BASE_URL + "api/vender/GetCategory";
     public static final String Sub_CATEGORY2_API = BASE_URL + "api/vender/GetSubCategory?CategoryId=%s";
     public static final String ProductList_API = BASE_URL + "api/Product/GetProduct?VendorId=%s&CategoryId=%s";
@@ -62,7 +64,7 @@ public class WebConstants {
     public static  String PLACE_ORDER_API_URL = BASE_URL + "api/Order/PlaceOrder";
     public static String GET_ORDER_API_URL = BASE_URL + "api/Order/OrderHistory";
     public static String GET_ORDERDETAILS_API_URL = BASE_URL + "api/Order/OrderDetails";
-    public static  String GET_DELIVERY_ADDRESS_URL = BASE_URL + "api/User/GetCustomerAddress?CustomerId=%s";
+    public static  String GET_DELIVERY_ADDRESS_URL = BASE_URL + "api/User/GetCustomerAddress?CustomerId=%s";*/
 
 
 

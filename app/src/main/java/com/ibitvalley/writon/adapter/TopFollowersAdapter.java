@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
+import android.os.Parcelable;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -21,21 +22,17 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.ibitvalley.writon.Blog_Profile;
-import com.ibitvalley.writon.Fragment.Home_Fragment2;
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
+import com.ibitvalley.writon.fragment.Home_Fragment2;
 import com.ibitvalley.writon.Home_Activity;
 import com.ibitvalley.writon.R;
 import com.ibitvalley.writon.Report;
 import com.ibitvalley.writon.ShowBlogDetails;
 import com.ibitvalley.writon.model.Blog;
-import com.ibitvalley.writon.model.TrendingPost_Model;
 import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.utils.AppUtils;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebConstants;
@@ -54,15 +51,17 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import static android.content.Context.MODE_PRIVATE;
 
 public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapter.ImagecategoryViewHolder> {
+    private final User userData2;
     private Context curr_context;
     private Activity curr_activity;
-    private ArrayList<TrendingPost_Model> arrappliedjob;
+    private ArrayList<Post_List_Data> arrappliedjob;
     private SharedPreferences preferences;
     private Typeface tf;
     private User userData;
     private String bTitle;
+    private String username;
 
-    public TopFollowersAdapter(Activity curr_activity, Context curr_context, ArrayList<TrendingPost_Model> arrappliedjob) {
+    public TopFollowersAdapter(Activity curr_activity, Context curr_context, ArrayList<Post_List_Data> arrappliedjob) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
@@ -70,6 +69,8 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
         System.out.println("Array Size In Adapter : " + arrappliedjob.size());
         userData = WritOnPreference.getInstance(curr_context).getUserDetails();
         tf = Typeface.createFromAsset(curr_context.getAssets(),"Lato-Regular.ttf");
+        userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
+
     }
 
     @NonNull
@@ -83,10 +84,11 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
     public void onBindViewHolder(final TopFollowersAdapter.ImagecategoryViewHolder holder, final int position) {
         System.out.println("Entering onbind");
 
-        final TrendingPost_Model show = arrappliedjob.get(position);
+        final Post_List_Data show = arrappliedjob.get(position);
         bTitle = show.getTitle();
+        username = show.getUserName();
         holder.TVCategory.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
-        holder.Username.setText(show.getUser_name());
+        holder.Username.setText(show.getUserName());
         holder.TVTitle.setText(show.getTitle());
         if(show.getShortDescription() != null){
             holder.TVShortDesc.setText(Html.fromHtml(String.valueOf(show.getShortDescription())));
@@ -94,25 +96,25 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
             holder.TVShortDesc.setText(Html.fromHtml(String.valueOf(show.getLongDescription())));
         }
 
-        if (show.isBookMark()) {
+        if (show.getIsBookmarked()) {
             holder.IVBookmarked.setImageResource(R.drawable.bookmarknew);
         } else {
             holder.IVBookmarked.setImageResource(R.drawable.unbookmark);
         }
 
-        if(show.isIs_followed()) {
+        if(show.getIsFollowed()) {
             holder.TVFollow.setText("UN FOLLOW");
         } else {
             holder.TVFollow.setText("FOLLOW");
         }
 
 
-        holder.TVViewCount.setText(show.getView_count());
-        holder.TVCommentCount.setText(show.getComments_count());
-        holder.TVRating.setText(show.getVotes_count());
-        holder.tv_user_followers_count.setText(String.format("%s FOLLOWERS", show.getUser_followers_count()));
-        if(show.getUser_image() != null){
-            Picasso.get().load(show.getUser_image()).placeholder(R.drawable.usermale).into(holder.list_image);
+        holder.TVViewCount.setText(show.getViewCount());
+        holder.TVCommentCount.setText(show.getCommentsCount());
+//        holder.TVRating.setText(show.getvo());
+        holder.tv_user_followers_count.setText(String.format("%s FOLLOWERS", show.getUserFollowersCount()));
+        if(show.getUserImage() != null){
+            Picasso.get().load(show.getUserImage()).placeholder(R.drawable.usermale).into(holder.list_image);
         }
         //holder.IVProgileImage.setImageResource(AvtarUtil.getAvtarDrawableByType(show.getAvatorCode()));
 //        if(position ==0){
@@ -206,7 +208,8 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
                 public void onClick(View v) {
                     //Intent blogprofile = new Intent(curr_context, ShowBlog.class);
                     Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
+                    blogprofile.putExtra("BlogObject",
+                            (Parcelable) arrappliedjob.get(getAdapterPosition()) );
                     System.out.println("POSITION is: "+ getAdapterPosition());
                     blogprofile.putExtra("boxTitle", "Trending");
                     curr_context.startActivity(blogprofile);
@@ -217,16 +220,20 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
             this.IVBookmarked.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    TrendingPost_Model blog = arrappliedjob.get(getPosition());
-                    if (blog.isBookMark()) {
+                    Post_List_Data blog = arrappliedjob.get(getPosition());
+                    if (blog.getIsBookmarked()) {
                         unbookmarkRequest(userData.getId(), blog.getBlogId());
-                        blog.setBookMark(false);
-                        IVBookmarked.setImageResource(R.drawable.unbookmark);
+                        blog.setIsBookmarked(false);
+                        IVBookmarked.setImageResource(R.drawable.bookmarkblue);
                     } else {
-                        fcmNotify("bookmark");
+                        //FCM maybe need to change parameters here
+                        AppUtils.fcm_noti_single(userData.getId(),"bookmark", userData2.getUsername(),bTitle );
+                        AppUtils.fcm_noti_Multi(userData.getId(),"bookmarked", userData2.getUsername(),userData2.getUsername(),bTitle ,blog.getBlogId(),userData2.getId());
+
+
                         bookmarkRequest(userData.getId(), blog.getBlogId());
-                        blog.setBookMark(true);
-                        IVBookmarked.setImageResource(R.drawable.bookmarknew);
+                        blog.setIsBookmarked(true);
+                        IVBookmarked.setImageResource(R.drawable.bookmarkyellow);
                     }
                 }
             });
@@ -236,16 +243,19 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
                 @Override
                 public void onClick(View v) {
                     //final String followUserID, final String userID
-                    TrendingPost_Model blog = arrappliedjob.get(getPosition());
-                    if(blog.isIs_followed()) {
-                        fcmNotify("follow");
-                        blog.setIs_followed(false);
+                    Post_List_Data blog = arrappliedjob.get(getPosition());
+                    if(blog.getIsFollowed()) {
+                        //FCM maybe need to change parameters here
+                        AppUtils.fcm_noti_single(userData.getId(),"follow", userData2.getUsername(),bTitle );
+                        AppUtils.fcm_noti_Multi(userData.getId(),"followed", userData2.getUsername(),userData2.getUsername(),bTitle ,blog.getBlogId(),userData2.getId());
+
+                        blog.setIsFollowed(false);
                         TVFollow.setText("FOLLOW");
-                        unFollowUser(blog.getUser_id(), userData.getId());
+                        unFollowUser(blog.getUserId(), userData.getId());
                     } else {
-                        blog.setIs_followed(true);
+                        blog.setIsFollowed(true);
                         TVFollow.setText("UN FOLLOW");
-                        followUser(blog.getUser_id(), userData.getId());
+                        followUser(blog.getUserId(), userData.getId());
                     }
                 }
             });
@@ -254,13 +264,13 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
             this.img_Option.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    TrendingPost_Model blog = arrappliedjob.get(getPosition());
+                    Post_List_Data blog = arrappliedjob.get(getPosition());
                     final String UserId = preferences.getString("UserId", "0");
 
-                    String shareContent = String.format("\"%s\" by %s \n\n %s \n Read more %s @WritOn %s", blog.getTitle(), blog.getUser_name(),  Html.fromHtml(blog.getLongDescription()), blog.getCategory(), "https://goo.gl/Cx4oPk");
+                    String shareContent = String.format("\"%s\" by %s \n\n %s \n Read more %s @WritOn %s", blog.getTitle(), blog.getUserName(),  Html.fromHtml(blog.getLongDescription()), blog.getCategory(), "https://goo.gl/Cx4oPk");
                     //if (!blog.getUserID().equals(UserId)) {
                     String[] arrString = {"Report", "Share"};
-                    showPopupMenu(arrString, shareContent, blog.getBlogID());
+                    showPopupMenu(arrString, shareContent, blog.getBlogId());
                     /*} else {
                         String[] arrString = {"Share"};
                         showPopupMenu(arrString, shareContent);
@@ -272,11 +282,12 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
             list_image.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    TrendingPost_Model show = arrappliedjob.get(getPosition());
-                    if (!show.getUser_id().equals(userData.getId())) {
+                    Post_List_Data show = arrappliedjob.get(getPosition());
+                    if (!show.getUserId().equals(userData.getId())) {
                         Intent blogprofile = new Intent(curr_context, Blog_Profile.class);
-                        blogprofile.putExtra("BlogObject", arrappliedjob.get(getPosition()));
-                        blogprofile.putExtra("UserID", show.getUser_id());
+                        blogprofile.putExtra("BlogObject",
+                                (Parcelable) arrappliedjob.get(getPosition()) );
+                        blogprofile.putExtra("UserID", show.getUserId());
                         curr_context.startActivity(blogprofile);
                     } else {
                         Fragment fragment = new Home_Fragment2();
@@ -393,15 +404,13 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
             public ArrayList<Blog> onSuccess(Object result) {
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
-                    if (jsonResponse != null) {
-                        Integer status = jsonResponse.getInt("success");
-                        if (status == 1) {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        } else {
-                            String message = jsonResponse.getString("message");
-                            Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
-                        }
+                    int status = jsonResponse.getInt("success");
+                    if (status == 1) {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
+                    } else {
+                        String message = jsonResponse.getString("message");
+                        Toast.makeText(curr_activity, message, Toast.LENGTH_LONG).show();
                     }
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -416,45 +425,6 @@ public class TopFollowersAdapter extends RecyclerView.Adapter<TopFollowersAdapte
         VolleySingleton.getInstance().addToRequestQueue(mainCategory);
     }
 
-    private void fcmNotify(String who) {
-        User userData2 = WritOnPreference.getInstance(curr_context.getApplicationContext()).getUserDetails();
-        String urlExt = "";
-        // Instantiate the RequestQueue.
-        switch (who) {
-            case "bookmark":
-                urlExt = userData.getId()+"&sp=your post is getting popular&tp="+bTitle+" has been bookmarked by "+userData2.getUsername();
-                break;
-            case "follow":
-                urlExt = userData.getId()+"&sp=you are getting noticed&tp="+userData2.getUsername()+" has started following you. Keep up your writing";
-                break;
-
-            //default:
-            //console.log('Sorry, we are out of ' + expr + '.');
-        }
-
-
-        RequestQueue queue = Volley.newRequestQueue(curr_context);
-        String url ="https://www.writon.co/Mine/fcm_noti_single.php?id="+urlExt ;
-        System.out.println("Bookmark Notify: "+url);
-        // Request a string response from the provided URL.
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        // Display the first 500 characters of the response string.
-                        System.out.println("Response is: "+ response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                System.out.println("That didn't work!");
-            }
-        });
-
-        // Add the request to the RequestQueue.
-        queue.add(stringRequest);
-
-    }
 
 
 

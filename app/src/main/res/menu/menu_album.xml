@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools">
 
 
+    <item
+        android:id="@+id/action_UpdateProfile"
+        android:orderInCategory="100"
+        android:title="Update Profile"
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_change_password"

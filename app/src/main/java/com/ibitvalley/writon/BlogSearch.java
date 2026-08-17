@@ -36,7 +36,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.Gson;
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
+import com.ibitvalley.writon.googleAnalytics.MyApplication;
 import com.ibitvalley.writon.adapter.BlogSearchAdapter;
 import com.ibitvalley.writon.model.Blog;
 
@@ -51,8 +52,8 @@ public class BlogSearch extends AppCompatActivity implements
         SearchView.OnQueryTextListener {
 
 
-    ArrayList<Blog> myblogArrayList;
-    ArrayList<Blog> searchList;
+    ArrayList<Post_List_Data> myblogArrayList;
+    ArrayList<Post_List_Data> searchList;
     BlogSearchAdapter adapter;
     RecyclerView recyclerView1;
     private Context curr_context;
@@ -302,7 +303,7 @@ public class BlogSearch extends AppCompatActivity implements
                                 JSONArray arr = obj.getJSONArray("data");
                                 for (int i = 0; i < arr.length(); i++) {
                                     String blogString = arr.get(i).toString();
-                                    Blog blog = new Gson().fromJson(blogString, Blog.class);
+                                    Post_List_Data blog = new Gson().fromJson(blogString, Post_List_Data.class);
                                     myblogArrayList.add(blog);
                                 }
                                 if (myblogArrayList.isEmpty()) {

@@ -1,30 +1,27 @@
 package com.ibitvalley.writon;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.Html;
-import android.transition.Slide;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.InflateException;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -35,12 +32,16 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.ibitvalley.writon.GoogleAnalytics.MyApplication;
 import com.ibitvalley.writon.adapter.DiscusListAdapter;
 import com.ibitvalley.writon.adapter.MyBlogAdapter;
+import com.ibitvalley.writon.classes.model.Posts_List;
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
 import com.ibitvalley.writon.constants.PrefrenceConstants;
 import com.ibitvalley.writon.model.Blog;
 import com.ibitvalley.writon.model.User;
+import com.ibitvalley.writon.retroFit.RetroFitClient;
+import com.ibitvalley.writon.retroFit.ServiceGenerator;
+import com.ibitvalley.writon.utils.AppUtils;
 import com.ibitvalley.writon.utils.VolleySingleton;
 import com.ibitvalley.writon.utils.WritOnPreference;
 import com.ibitvalley.writon.webapi.WebApiParams;
@@ -56,18 +57,22 @@ import org.json.JSONObject;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
 //import com.squareup.picasso.Picasso;
 
-public class Blog_Profile extends AppCompatActivity {
+public class Blog_Profile extends BaseActivity {
 
 
-    TextView  TVPubCount, TVFollowers, TVFollowing, tv_about, tv_posted, tv_discussion, TVname, ETQofDay, ETIntro, ETWorkiingon, Text6;
+    TextView  TVPubCount, TVFollowers, TVFollowing, tv_about, tv_posted, tv_discussion, TVname, ETQofDay, ETIntro, ETWorkiingon;
     Button btnLogout;
     SharedPreferences preferences;
-    CircleImageView image, image6;
+    CircleImageView image;
     ImageView IVEdit, IVSeeting;
     Activity curr_activity;
     Context curr_context;
@@ -76,108 +81,32 @@ public class Blog_Profile extends AppCompatActivity {
     RecyclerView recyclerView1, recview_discussion;
     LinearLayout ll_about, ll_posted, ll_discussion;
     DiscusListAdapter adapter;
-    CollapsingToolbarLayout collapsingToolbarLayout;
 
     User userData;
-    String userID = "", userNameAppbar;
+    String userID = "";
+
+    TextView userHeader;
+    CollapsingToolbarLayout collapsingToolbarLayout;
+    AppBarLayout appBarLayout;
     Toolbar toolbar;
+    TextView txt_workingon,txt_introduction,txt_quote;
+    ProgressBar progressBar;
 
-    private static final String EXTRA_IMAGE = "com.antonioleiva.materializeyourapp.extraImage";
-    private static final String EXTRA_TITLE = "com.antonioleiva.materializeyourapp.extraTitle";
-    // CollapsingToolbarLayout collapsingToolbarLayout;
-
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         //requestWindowFeature(Window.FEATURE_NO_TITLE);
         super.onCreate(savedInstanceState);
         //getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        userID = getIntent().getStringExtra("UserID");
 
-
-        initActivityTransitions();
-        getUserProfile();
         setContentView(R.layout.activity_blog__profile);
 
-        initControls();
         //getSupportActionBar().hide();
 
+        userID = getIntent().getStringExtra("UserID");
 
-        //collapsingToolbarLayout = findViewById(R.id.collapsing_toolbar);
-        //collapsingToolbarLayout.setExpandedTitleColor(getResources().getColor(android.R.color.transparent));
-        //collapsingToolbarLayout.setCollapsedTitleTypeface(tf);
+        initControls();
 
-
-
-        toolbar = findViewById(R.id.toolbar);
-        toolbar.setVisibility(View.GONE);
-
-
-        //toolbar
-
-        //toolbar.setAnimation();
-        //toolbar.setCollapseIcon(getResources().getDrawable(android.R.drawable.sym_def_app_icon));
-
-
-        AppBarLayout appBarLayout;
-        appBarLayout = findViewById(R.id.appbar05);
-        appBarLayout.addOnOffsetChangedListener(new AppBarLayout.OnOffsetChangedListener() {
-            @Override
-            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
-
-                if (Math.abs(verticalOffset)-appBarLayout.getTotalScrollRange() == 0)
-                {
-                    //  Collapsed
-                    //toolbar.setAlpha(1f);
-                    toolbar.setAlpha(0f);
-                    toolbar.setVisibility(View.VISIBLE);
-                    toolbar.animate()
-                            .alpha(1f)
-                            .setDuration(200)
-                            .setListener(null);
-
-                }
-                else
-                {
-                    //Expanded
-                    /*AlphaAnimation animation1 = new AlphaAnimation(1f, 0f);
-                    animation1.setDuration(100);
-                    animation1.setStartOffset(1000);
-                    animation1.setFillAfter(true);
-                    toolbar.startAnimation(animation1);*/
-                    toolbar.setAlpha(1f);
-                    toolbar.animate()
-                            .alpha(0f)
-                            .setDuration(200)
-                            .setListener(new AnimatorListenerAdapter() {
-                                @Override
-                                public void onAnimationEnd(Animator animation) {
-                                    toolbar.setVisibility(View.GONE);
-                                }
-                            });
-                    //toolbar.setAlpha(0f);
-
-                }
-            }
-        });
-
-
-        MyApplication.getInstance().trackEvent("User Profile", "View Other Users Profile", "Othe User Profile");
-        MyApplication.getInstance().trackScreenView("Other User Profile");
-    }
-
-
-
-
-
-    private void initActivityTransitions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            android.transition.Slide transition = new Slide();
-            transition.excludeTarget(android.R.id.statusBarBackground, true);
-            getWindow().setEnterTransition(transition);
-            getWindow().setReturnTransition(transition);
-        }
+        getUserProfile();
     }
 
 
@@ -195,14 +124,16 @@ public class Blog_Profile extends AppCompatActivity {
 
             final String UserId = preferences.getString(Constants.KEY_PREF_USERID, "0");
 
-            TVname = findViewById(R.id.TVname);
-            Text6 = findViewById(R.id.Text6);
+            TVname = (TextView) findViewById(R.id.TVname);
             TVname.setTypeface(tf);
-            ETQofDay = findViewById(R.id.ETQofDay);
+            ETQofDay = (TextView) findViewById(R.id.ETQofDay);
             ETQofDay.setTypeface(tf);
-            ETIntro = findViewById(R.id.ETIntro);
+            ETIntro = (TextView) findViewById(R.id.ETIntro);
             ETIntro.setTypeface(tf);
-            ETWorkiingon = findViewById(R.id.ETWorkiingon);
+            ETWorkiingon = (TextView) findViewById(R.id.ETWorkiingon);
+            userHeader=findViewById( R.id.Text6 );
+            collapsingToolbarLayout=findViewById( R.id.collapsing_toolbar );
+            appBarLayout=findViewById( R.id.appbar05 );
             ETWorkiingon.setTypeface(tf);
             TVname.setEnabled(false);
             ETQofDay.setEnabled(false);
@@ -215,18 +146,18 @@ public class Blog_Profile extends AppCompatActivity {
             tv_discussion = (TextView) findViewById(R.id.tv_discussion);
 
             ll_about = (LinearLayout) findViewById(R.id.ll_about);
-            //ll_about.setVisibility(View.GONE);
             ll_posted = (LinearLayout) findViewById(R.id.ll_posted);
-            //ll_posted.setVisibility(View.VISIBLE);
             //ll_discussion = (LinearLayout) findViewById(R.id.ll_discussion);
 
             recyclerView1 = (RecyclerView) findViewById(R.id.recyclerView1);
             recview_discussion = (RecyclerView) findViewById(R.id.recview_discussion);
-
+            toolbar=findViewById( R.id.toolbar );
             tv_about.setTextColor(Color.parseColor("#2196f3"));
             tv_about.setText(Html.fromHtml("<u>About</u>"));
-
-
+            progressBar=findViewById( R.id.progress_bar );
+            txt_workingon=findViewById( R.id.txt_working_on );
+            txt_introduction=findViewById( R.id.txt_introduction );
+            txt_quote=findViewById( R.id.txt_quote );
             tv_about.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -240,7 +171,7 @@ public class Blog_Profile extends AppCompatActivity {
 //                    tv_discussion.setTextColor(Color.parseColor("#5c5c5c"));
 //                    tv_discussion.setText(Html.fromHtml("Discussion"));
 
-
+                    //
 
                     ll_about.setVisibility(View.VISIBLE);
                     ll_posted.setVisibility(View.GONE);
@@ -270,14 +201,49 @@ public class Blog_Profile extends AppCompatActivity {
                 }
             });
 
+
+//            appBarLayout.addOnOffsetChangedListener(new   AppBarLayout.OnOffsetChangedListener() {
+//                @Override
+//                public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+//                    float percentage = ((float)Math.abs(verticalOffset)/appBarLayout.getTotalScrollRange());
+////                    fadedView.setAlpha(percentage);
+//                    if (percentage > 0.8) {
+////                        collapsingToolbar.setTitle("Collapsed");
+//                        Toast.makeText( getApplicationContext(),"Collapsed",Toast.LENGTH_LONG ).show();
+//                    } else {
+////                        collapsingToolbar.setTitle("Expanded");
+//                        Toast.makeText( getApplicationContext(),"Expanded",Toast.LENGTH_LONG ).show();
+//                    }
+//                }
+//            });
+
+
+
+            appBarLayout.addOnOffsetChangedListener(new   AppBarLayout.OnOffsetChangedListener() {
+                @Override
+                public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                    if (verticalOffset == -collapsingToolbarLayout.getHeight() + toolbar.getHeight()) {
+                        //toolbar is collapsed here
+                        //write your code here
+                    }
+
+                    if (((float)Math.abs(verticalOffset) - appBarLayout.getTotalScrollRange() == 0)) {
+                        toolbar.setVisibility( View.VISIBLE );
+                    } else if (verticalOffset == 0) {
+                        toolbar.setVisibility( View.GONE );
+                    } else {
+                        // Idle
+                    }
+                }
+            });
+
+
             btnLogout = (Button) findViewById(R.id.btnLogout);
             btnLogout.setTypeface(tf);
             TVPubCount = (TextView) findViewById(R.id.TVPubCount);
             TVFollowers = (TextView) findViewById(R.id.TVFollowers);
             TVFollowing = (TextView) findViewById(R.id.TVFollowing);
             image = (CircleImageView) findViewById(R.id.image);
-            IVEdit = (ImageView) findViewById(R.id.IVEdit);
-            image6 = (CircleImageView) findViewById(R.id.image6);
 
         } catch (InflateException e) {
         }
@@ -286,21 +252,22 @@ public class Blog_Profile extends AppCompatActivity {
 
     private void loadTrendingPost() {
 
+
         HashMap<String, String> hmHomeParam = new HashMap <>();
         hmHomeParam.put("page", "1");
         hmHomeParam.put("UserID", userID);
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.published_Post, curr_context, false, hmHomeParam, new OnResponseListener() {
             @Override
             public ArrayList<Blog> onSuccess(Object result) {
+                showProgressBar(false);
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
                     if (status == 1) {
                         JSONObject jsonResponseMain = jsonResponse.getJSONObject("data");
                         JSONArray arrMainCategoryJson = jsonResponseMain.optJSONArray("data");
-                        Type type = new TypeToken<ArrayList<Blog>>() {}.getType();
-                        assert arrMainCategoryJson != null;
-                        ArrayList<Blog> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
+                        Type type = new TypeToken<List<Post_List_Data>>() {}.getType();
+                        List<Post_List_Data> trending_post = new Gson().fromJson(arrMainCategoryJson.toString(), type);
                         displayLTrendingPost(trending_post);
                     }else{
                         String message = jsonResponse.getString("message");
@@ -312,16 +279,41 @@ public class Blog_Profile extends AppCompatActivity {
                 return null;
             }
             @Override
-            public void onError(VolleyError error) {
+            public void onError(VolleyError error)
+            {
+                showProgressBar(false);
                 Log.d("","");
             }
         });
         VolleySingleton.getInstance().addToRequestQueue(mainCategory);
+
+//        showProgressBar(true);
+//        RetroFitClient publishedPosts = ServiceGenerator.getRetrofitOld().create(RetroFitClient.class);
+//        publishedPosts.getPublishedPosts( userData.getAccess_token(),userID,"1" )
+//                .subscribeOn( Schedulers.io() )
+//                .observeOn( AndroidSchedulers.mainThread() )
+//                .subscribe( new Consumer<Posts_List>() {
+//                    @Override
+//                    public void accept(Posts_List posts_list) throws Exception {
+//                        showProgressBar(false);
+//                        if ( !AppUtils.isNull( posts_list ) && !AppUtils.isNull( posts_list.getData() ) )
+//                            displayLTrendingPost( posts_list.getData() );
+//
+//                        Log.d( "publised posts", posts_list.getData().get( 0 ).getTitle() );
+//                    }
+//                } , new Consumer<Throwable>() {
+//                    @Override
+//                    public void accept(Throwable throwable) throws Exception {
+//                        showProgressBar(false);
+//                        Log.d( "publised posts"," posts_list.getData().get( 0 ).getTitle()" );
+//                    }
+//                } );
+
     }
 
 
     MyBlogAdapter myBlogAdapter;
-    private void displayLTrendingPost(ArrayList<Blog> trendingBlog){
+    private void displayLTrendingPost(List<Post_List_Data> trendingBlog){
         myBlogAdapter = new MyBlogAdapter(Blog_Profile.this, curr_context, trendingBlog, "Latest");
         LinearLayoutManager layoutManager = new LinearLayoutManager(curr_context);
         recyclerView1.setLayoutManager(layoutManager);
@@ -334,11 +326,13 @@ public class Blog_Profile extends AppCompatActivity {
 
     private void getUserProfile(){
 
+        showProgressBar(true);
         HashMap<String, String> hmUserProfileParams = WebApiParams.getyserProfileParam(userID);
 
         SmartPostWebRequest mainCategory = new SmartPostWebRequest(WebConstants.user_profile, curr_context, false, hmUserProfileParams, new OnResponseListener() {
             @Override
             public ArrayList<Blog> onSuccess(Object result) {
+                showProgressBar(false);
                 try {
                     JSONObject jsonResponse = new JSONObject(result.toString());
                     int status = jsonResponse.getInt("success");
@@ -354,16 +348,22 @@ public class Blog_Profile extends AppCompatActivity {
                         }
                     }
                 } catch (JSONException e) {
+                    showProgressBar(false);
+
                     e.printStackTrace();
                 }
                 return null;
             }
             @Override
             public void onError(VolleyError error) {
+
+                showProgressBar(false);
                 Log.d("","");
             }
         });
         VolleySingleton.getInstance().addToRequestQueue(mainCategory);
+
+
     }
 
 
@@ -372,12 +372,7 @@ public class Blog_Profile extends AppCompatActivity {
 
         //JSONObject jsonobject= (JSONObject) userData.get(0);
         TVname.setText(jsonobject.get("username").toString());
-        Text6.setText(jsonobject.get("username").toString());
-        userNameAppbar = jsonobject.get("username").toString();
-        //System.out.println(userNameAppbar);
-
-        //collapsingToolbarLayout.setTitle(userNameAppbar);
-        System.out.println(userNameAppbar);
+        userHeader.setText(jsonobject.get("username").toString());
         TVPubCount.setText(jsonobject.get("published_count").toString());
         TVFollowers.setText(jsonobject.get("followers_count").toString());
         TVFollowing.setText(jsonobject.get("following_count").toString());
@@ -385,24 +380,24 @@ public class Blog_Profile extends AppCompatActivity {
         if (!jsonobject.get("QuoteofDay").toString().equals("null")) {
             ETQofDay.setText(jsonobject.get("QuoteofDay").toString());
         } else {
-            ETQofDay.setText("");
-        }
+            ETQofDay.setText("-");
+            ETQofDay.setGravity( Gravity.CENTER );        }
 
         if (!jsonobject.get("Introducation").toString().equals("null")) {
             ETIntro.setText(jsonobject.get("Introducation").toString());
         } else {
-            ETIntro.setText("");
-        }
+            ETIntro.setText("-");
+            ETIntro.setGravity( Gravity.CENTER );        }
 
         if (!jsonobject.get("WorkingOn").toString().equals("null")) {
             ETWorkiingon.setText(jsonobject.get("WorkingOn").toString());
         } else {
-            ETWorkiingon.setText("");
+            ETWorkiingon.setText("-");
+            ETWorkiingon.setGravity( Gravity.CENTER );
         }
 
         if (!jsonobject.get("image_url").toString().equals("null")) {
             Picasso.get().load(jsonobject.get("image_url").toString()).placeholder(R.drawable.usermale).into(image);
-            Picasso.get().load(jsonobject.get("image_url").toString()).placeholder(R.drawable.usermale).into(image6);
         }
     }
 
@@ -427,7 +422,7 @@ public class Blog_Profile extends AppCompatActivity {
 
 
         SharedPreferences.Editor editorClear = curr_activity.getSharedPreferences(PrefrenceConstants.KEY_USER_JSON_DETAILS, 0).edit();
-        editorClear.clear();
+        editorClear .clear();
         editorClear.apply();
 
         Intent intent = new Intent(curr_activity, LoginActivity.class);
@@ -463,5 +458,20 @@ public class Blog_Profile extends AppCompatActivity {
         return super.onContextItemSelected(item);
     }
 
+    public void showProgressBar(boolean showProgressBar)
+    {
+        progressBar.setVisibility( showProgressBar? View.VISIBLE  :  View.GONE  );
+    }
+
+    @Override
+    public void onBackPressed() {
+        if ( isTaskRoot() )
+        {
+            Intent home = new Intent(Blog_Profile.this, Home_Activity.class);
+            startActivity(home);
+            finish();
+        }else
+            super.onBackPressed();
+    }
 }
 

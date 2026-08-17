@@ -468,7 +468,6 @@
 
                         android:layout_height="wrap_content"
                         android:id="@+id/tv_posted"
-                        android:layout_centerHorizontal="true"
                         android:text="Posted"
                         android:gravity="center"
                         android:textStyle="bold"
@@ -506,32 +505,19 @@
                     android:layout_marginTop="5dp"
                     android:orientation="vertical">
 
-                    <ImageView
-                        android:id="@+id/IVEdit"
-                        android:layout_width="50dp"
-                        android:layout_height="50dp"
-                        android:layout_alignParentRight="true"
-                        android:layout_gravity="end"
-                        android:layout_marginStart="56dp"
-                        android:layout_marginLeft="56dp"
-                        android:layout_toEndOf="@+id/ll1"
-                        android:layout_toRightOf="@+id/ll1"
-                        android:padding="10dp"
-                        android:src="@drawable/user_change_edit"
-                        android:tint="@color/lightBlue" />
 
                     <LinearLayout
                         android:id="@+id/ll1"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
                         android:layout_marginTop="20dp"
+                        android:elevation="@dimen/_5sdp"
+
                         android:layout_alignParentTop="true"
                         android:layout_centerHorizontal="true"
                         android:orientation="vertical"
                         android:gravity="center">
-
-
 
                         <TextView
                             android:layout_width="200dp"
@@ -541,12 +527,13 @@
                             android:gravity="center"
                             android:textColor="@color/colorGrey"
                             android:textSize="18dp" />
-                        <EditText
+                        <TextView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:id="@+id/ETQofDay"
                             android:textColor="#263238"
                             android:text=""
+                            android:elevation="@dimen/_5sdp"
                             android:padding="5dp"
                             android:gravity="center"
                             android:maxLines="3"
@@ -563,6 +550,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="100dp"
                         android:layout_alignTop="@+id/ll1"
+                        android:elevation="@dimen/_5sdp"
+
                         android:orientation="vertical"
                         android:gravity="center">
                         <TextView
@@ -573,11 +562,12 @@
                             android:layout_gravity="center"
                             android:textAlignment="center"
                             android:text="Introduction"
+                            android:elevation="@dimen/_5sdp"
 
                             android:textStyle="bold"
                             android:textColor="@color/colorGrey"
                             android:textSize="18dp" />
-                        <EditText
+                        <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:id="@+id/ETIntro"
@@ -596,9 +586,12 @@
 
 
                     <LinearLayout
+                        android:id="@+id/ll3"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="100dp"
+                        android:elevation="@dimen/_5sdp"
+
                         android:layout_alignTop="@+id/ll2"
                         android:orientation="vertical"
                         android:gravity="center">
@@ -611,7 +604,7 @@
                             android:textColor="@color/colorGrey"
                             android:textSize="18dp" />
 
-                        <EditText
+                        <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:id="@+id/ETWorkiingon"
@@ -619,6 +612,7 @@
                             android:textColor="#263238"
                             android:text=""
                             android:maxLines="8"
+
                             android:padding="5dp"
                             android:gravity="center"
                             android:layout_gravity="center"
@@ -638,13 +632,26 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:orientation="vertical">
-
+                    <ProgressBar
+                        android:id="@+id/progress_bar2"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        />
 
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recyclerView1"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:elevation="10dp" />
+
+                    <TextView
+                        android:id="@+id/tvPosted_NtS"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Your Posts will be listed here - No Post yet!"
+                        android:visibility="invisible"
+                        android:layout_gravity="center_horizontal"
+                        />
 
 
 
@@ -661,12 +668,24 @@
                     android:layout_marginTop="5dp"
                     android:orientation="vertical">
 
-
+                    <ProgressBar
+                        android:id="@+id/progress_bar"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        />
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recview_discussion"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:elevation="10dp" />
+                    <TextView
+                        android:id="@+id/tvDiscuss_NtS"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Your comments will be shown here - No Comments yet!"
+                        android:visibility="invisible"
+                        android:layout_gravity="center_horizontal"
+                        />
 
 
 

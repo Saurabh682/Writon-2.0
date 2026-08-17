@@ -3,6 +3,7 @@ package com.ibitvalley.writon.adapter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.ibitvalley.writon.R;
-import com.ibitvalley.writon.ShowBlog;
 import com.ibitvalley.writon.ShowBlogDetails;
+import com.ibitvalley.writon.classes.roomdataclasses.Post_List_Data;
 import com.ibitvalley.writon.model.AvtarUtil;
 import com.ibitvalley.writon.model.Blog;
 
@@ -27,9 +28,9 @@ import java.util.ArrayList;
 public class BlogSearchAdapter extends RecyclerView.Adapter<BlogSearchAdapter.ImagecategoryViewHolder> {
     private Context curr_context;
     private Activity curr_activity;
-    private ArrayList<Blog> arrappliedjob;
+    private ArrayList<Post_List_Data> arrappliedjob;
 
-    public BlogSearchAdapter(Activity curr_activity, Context curr_context, ArrayList<Blog> arrappliedjob) {
+    public BlogSearchAdapter(Activity curr_activity, Context curr_context, ArrayList<Post_List_Data> arrappliedjob) {
         this.curr_activity = curr_activity;
         this.curr_context = curr_context;
         this.arrappliedjob = arrappliedjob;
@@ -48,12 +49,12 @@ public class BlogSearchAdapter extends RecyclerView.Adapter<BlogSearchAdapter.Im
     public void onBindViewHolder(final BlogSearchAdapter.ImagecategoryViewHolder holder, final int position) {
 
         //System.out.println("Entering onbind");
-        final Blog show = arrappliedjob.get(position);
+        final Post_List_Data show = arrappliedjob.get(position);
         //holder.category.setText(show.getCategory());
         //holder.category.setText(String.format("%s, %s (%s)", show.getCategory(), show.getSubCat(), show.getLanguage()));
-        holder.TVWrite.setText(String.format("%s (%s, %s)", show.getUser_name(), show.getCategory(), show.getSubCat()));
+        holder.TVWrite.setText(String.format("%s (%s, %s)", show.getUserName(), show.getCategory(), show.getSubCat()));
         holder.TVTitle.setText(show.getTitle());
-        holder.list_image2.setImageResource(AvtarUtil.getAvtarDrawableByType(show.getAvatorCode()));
+//        holder.list_image2.setImageResource(AvtarUtil.getAvtarDrawableByType(show.getUserImage()));
         //holder.ShortDesc.setText(Html.fromHtml(String.valueOf(show.getShortDescription())));
     }
 
@@ -79,17 +80,15 @@ public class BlogSearchAdapter extends RecyclerView.Adapter<BlogSearchAdapter.Im
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                   /* Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
-                    System.out.println("The Fuck: "+getAdapterPosition());
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
-                    curr_activity.startActivity(blogprofile);*/
 
                     Intent blogprofile = new Intent(curr_context, ShowBlogDetails.class);
-                    blogprofile.putExtra("BlogObject", arrappliedjob.get(getAdapterPosition()));
-                    System.out.println("POSITION is: "+ getAdapterPosition());
-                    blogprofile.putExtra("boxTitle", "Latest");
+                    Bundle bundle=new Bundle(  );
+                    bundle.putSerializable( "BlogObject", arrappliedjob.get(getAdapterPosition()) );
+                    blogprofile.putExtra("boxTitle", "Search");
                     blogprofile.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    blogprofile.putExtras( bundle );
                     curr_context.startActivity(blogprofile);
+
                 }
             });
         }
