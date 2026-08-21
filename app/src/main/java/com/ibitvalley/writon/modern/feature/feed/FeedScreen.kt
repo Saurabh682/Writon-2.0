@@ -1,279 +1,282 @@
 package com.ibitvalley.writon.modern.feature.feed
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 
 val CATEGORIES = listOf("All", "Essays", "Poetry", "Tech", "Philosophy", "Fiction", "Culture")
 
-@OptIn(ExperimentalMaterial3Api::class)
+private val HomeEditorialFamily = FontFamily(
+    Font(R.font.source_serif_4_regular, FontWeight.Normal),
+    Font(R.font.source_serif_4_semibold, FontWeight.SemiBold),
+    Font(R.font.source_serif_4_semibold, FontWeight.Bold)
+)
+
+private val HomeSurface = Color(0xFFFFFDF9)
+private val HomeInk = Color(0xFF151718)
+private val HomeMuted = Color(0xFF6D6963)
+private val HomeBorder = Color(0xFFE9E1D7)
+private val HomeChip = Color(0xFFF2ECE4)
+
 @Composable
 fun FeedScreen(
     viewModel: FeedViewModel,
     onStoryClick: (String) -> Unit,
-    onWriteClick: () -> Unit
+    onWriteClick: () -> Unit,
+    onLibraryClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     val posts by viewModel.posts.collectAsState()
-    val listState = rememberLazyListState(
-        initialFirstVisibleItemIndex = viewModel.scrollIndex,
-        initialFirstVisibleItemScrollOffset = viewModel.scrollOffset
-    )
+    var currentIndex by rememberSaveable { mutableIntStateOf(0) }
+    val safeIndex = currentIndex.coerceIn(0, posts.lastIndex.coerceAtLeast(0))
 
-    // Sync scroll state back to ViewModel whenever it changes
-    LaunchedEffect(listState) {
-        snapshotFlow { Pair(listState.firstVisibleItemIndex, listState.firstVisibleItemScrollOffset) }
-            .collect { (index, offset) ->
-                viewModel.scrollIndex = index
-                viewModel.scrollOffset = offset
-            }
+    LaunchedEffect(posts.size) {
+        if (currentIndex > posts.lastIndex) currentIndex = 0
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "WritOn.",
-                        fontFamily = FontFamily.Serif,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
-                    )
-                },
-                actions = {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.BookmarkBorder, contentDescription = "Library")
-                    }
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BrandBeige)
-            )
-        },
-        containerColor = BrandBeige
-    ) { innerPadding ->
+    Column(
+        modifier = Modifier.fillMaxSize().background(BrandBeige).padding(horizontal = 20.dp, vertical = 16.dp)
+    ) {
+        HomeHeader(onLibraryClick = onLibraryClick, onProfileClick = onProfileClick)
+        Spacer(Modifier.height(20.dp))
         if (posts.isEmpty()) {
-            Box(modifier = Modifier.padding(innerPadding).fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = BrandRed)
-            }
+            EmptyDiscovery(modifier = Modifier.weight(1f))
         } else {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .fillMaxSize()
-            ) {
-                items(posts) { post ->
-                    Box(modifier = Modifier.fillParentMaxHeight()) {
-                        FeedCard(
-                            post = post,
-                            onReadClick = { onStoryClick(post.id) },
-                            onApplaud = { viewModel.toggleLike(post.id, post.isLiked, post.likesCnt) }
-                        )
+            AnimatedContent(
+                targetState = safeIndex,
+                modifier = Modifier.weight(1f),
+                transitionSpec = {
+                    if (targetState > initialState) {
+                        (slideInVertically(animationSpec = tween(320)) { fullHeight -> fullHeight } +
+                            fadeIn(animationSpec = tween(220)) +
+                            scaleIn(initialScale = 0.985f, animationSpec = tween(320))) togetherWith
+                            (slideOutVertically(animationSpec = tween(280)) { fullHeight -> -fullHeight } +
+                                fadeOut(animationSpec = tween(180)) +
+                                scaleOut(targetScale = 0.985f, animationSpec = tween(280)))
+                    } else {
+                        (slideInVertically(animationSpec = tween(320)) { fullHeight -> -fullHeight } +
+                            fadeIn(animationSpec = tween(220)) +
+                            scaleIn(initialScale = 0.985f, animationSpec = tween(320))) togetherWith
+                            (slideOutVertically(animationSpec = tween(280)) { fullHeight -> fullHeight } +
+                                fadeOut(animationSpec = tween(180)) +
+                                scaleOut(targetScale = 0.985f, animationSpec = tween(280)))
                     }
-                }
+                },
+                label = "homeStoryCard"
+            ) { index ->
+                val post = posts[index]
+                DiscoveryStoryCard(
+                    post = post,
+                    modifier = Modifier.fillMaxSize(),
+                    onRead = { onStoryClick(post.id) },
+                    onPrevious = { if (index > 0) currentIndex = index - 1 },
+                    onNext = { if (index < posts.lastIndex) currentIndex = index + 1 },
+                    onApplaud = { viewModel.toggleLike(post.id, post.isLiked, post.likesCnt) },
+                    onAuthorClick = onProfileClick
+                )
             }
         }
     }
 }
 
 @Composable
-fun FeedCard(
-    post: PostEntity,
-    onReadClick: () -> Unit,
-    onApplaud: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .clip(RoundedCornerShape(32.dp))
-            .background(Color.White)
-            .pointerInput(post.id) {
-                detectTapGestures(
-                    onTap = { onReadClick() },
-                    onDoubleTap = { onApplaud() }
-                )
-            }
-    ) {
-        // Image as a side element (matches design better)
-        post.coverImage?.let {
-            AsyncImage(
-                model = it,
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxHeight(0.7f)
-                    .fillMaxWidth(0.6f)
-                    .align(Alignment.BottomEnd)
-                    .offset(x = 60.dp, y = (-40).dp)
-                    .alpha(0.8f),
-                contentScale = ContentScale.Fit
-            )
+private fun HomeHeader(onLibraryClick: () -> Unit, onProfileClick: () -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        WritOnBrandMark(width = 118.dp)
+        Spacer(Modifier.weight(1f))
+        IconButton(onClick = onLibraryClick) {
+            Image(painterResource(R.drawable.ic_bookmark), contentDescription = "Open Library", modifier = Modifier.size(28.dp))
         }
-
-        // Content Column
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp)
+        Spacer(Modifier.width(12.dp))
+        Surface(
+            modifier = Modifier.size(44.dp).semantics { contentDescription = "Open profile"; role = Role.Button },
+            shape = CircleShape,
+            color = HomeChip,
+            border = BorderStroke(1.dp, BrandRed.copy(alpha = .45f)),
+            onClick = onProfileClick
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(
-                    color = BrandRed.copy(alpha = 0.05f),
-                    shape = RoundedCornerShape(4.dp)
-                ) {
-                    Text(
-                        text = post.category.uppercase(),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                        color = BrandRed,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-                }
-                Text(
-                    text = " • ${post.readingTimeMin} min read",
-                    fontSize = 12.sp,
-                    color = Color.Gray,
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = post.title,
-                style = MaterialTheme.typography.headlineLarge,
-                fontFamily = FontFamily.Serif,
-                fontWeight = FontWeight.Bold,
-                fontSize = 32.sp,
-                lineHeight = 40.sp,
-                modifier = Modifier.fillMaxWidth(0.8f)
-            )
-
-            Box(
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .width(40.dp)
-                    .height(4.dp)
-                    .background(BrandRed)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            post.summary?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = Color.DarkGray,
-                    lineHeight = 26.sp,
-                    modifier = Modifier.fillMaxWidth(0.65f)
-                )
-            }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Author Section
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                AsyncImage(
-                    model = post.authorAvatarUrl ?: "https://ui-avatars.com/api/?name=${post.authorName}",
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                )
-                Column(modifier = Modifier.padding(start = 12.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(text = post.authorName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Icon(
-                            Icons.Default.Verified,
-                            contentDescription = null,
-                            tint = BrandRed,
-                            modifier = Modifier.size(14.dp).padding(start = 4.dp)
-                        )
-                    }
-                    Text(text = "@${post.authorPenName}", color = Color.Gray, fontSize = 13.sp)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.speech),
-                    contentDescription = null,
-                    tint = if (post.isLiked) BrandRed else Color.Black.copy(alpha = 0.6f),
-                    modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    text = if (post.likesCnt >= 1000) String.format(java.util.Locale.getDefault(), "%.1fK", post.likesCnt / 1000.0) else post.likesCnt.toString(),
-                    modifier = Modifier.padding(start = 8.dp),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 14.sp,
-                    color = if (post.isLiked) BrandRed else Color.Black
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Bottom Nav Hints
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .clip(RoundedCornerShape(24.dp))
-                    .background(BrandBeige.copy(alpha = 0.5f))
-                    .padding(horizontal = 24.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = BrandRed)
-                    Column(modifier = Modifier.padding(start = 12.dp)) {
-                        Text("Read", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Text("Swipe right", color = Color.Gray, fontSize = 12.sp)
-                    }
-                }
-                
-                VerticalDivider(modifier = Modifier.height(40.dp).padding(horizontal = 16.dp), color = Color.LightGray)
-
-                Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.ArrowUpward, contentDescription = null, tint = BrandRed)
-                    Column(modifier = Modifier.padding(start = 12.dp)) {
-                        Text("Next", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Text("Swipe up", color = Color.Gray, fontSize = 12.sp)
-                    }
-                }
+            Box(contentAlignment = Alignment.Center) {
+                Image(painterResource(R.drawable.ic_profile), contentDescription = null, modifier = Modifier.size(25.dp))
             }
         }
     }
 }
+
+@Composable
+private fun DiscoveryStoryCard(
+    post: PostEntity,
+    modifier: Modifier,
+    onRead: () -> Unit,
+    onPrevious: () -> Unit,
+    onNext: () -> Unit,
+    onApplaud: () -> Unit,
+    onAuthorClick: () -> Unit
+) {
+    Surface(
+        modifier = modifier
+            .fillMaxWidth()
+            .pointerInput(post.id) {
+                awaitEachGesture {
+                    awaitFirstDown(requireUnconsumed = false)
+                    var dragX = 0f
+                    var dragY = 0f
+                    var pressed = true
+                    while (pressed) {
+                        val event = awaitPointerEvent()
+                        event.changes.forEach { change ->
+                            dragX += change.positionChange().x
+                            dragY += change.positionChange().y
+                            pressed = change.pressed
+                            change.consume()
+                        }
+                    }
+                    when {
+                        dragX > 90f -> onRead()
+                        dragY < -90f -> onNext()
+                        dragY > 90f -> onPrevious()
+                    }
+                }
+            }
+            .semantics { contentDescription = "${post.title}. Swipe right to read, or vertically to browse stories." },
+        shape = RoundedCornerShape(28.dp),
+        color = HomeSurface,
+        border = BorderStroke(1.dp, HomeBorder),
+        shadowElevation = 4.dp
+    ) {
+        Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(shape = RoundedCornerShape(16.dp), color = HomeChip) {
+                    Text(
+                        post.category.uppercase(),
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = .7.sp,
+                        color = BrandRed
+                    )
+                }
+                Spacer(Modifier.weight(1f))
+                Image(painterResource(R.drawable.ic_clock_muted), contentDescription = null, modifier = Modifier.size(21.dp))
+                Spacer(Modifier.width(7.dp))
+                Text("${post.readingTimeMin} min read", fontSize = 14.sp, color = HomeMuted)
+            }
+            Spacer(Modifier.height(24.dp))
+            Text(
+                post.title,
+                style = MaterialTheme.typography.displayLarge.copy(fontFamily = HomeEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 48.sp, lineHeight = 51.sp),
+                color = HomeInk,
+                maxLines = 3,
+                overflow = TextOverflow.Ellipsis
+            )
+            post.summary?.takeIf { it.isNotBlank() }?.let { summary ->
+                Spacer(Modifier.height(18.dp))
+                Text(summary, fontSize = 18.sp, lineHeight = 26.sp, color = HomeInk, maxLines = 3, overflow = TextOverflow.Ellipsis)
+            }
+            post.coverImage?.takeIf { it.isNotBlank() }?.let { imageUrl ->
+                Spacer(Modifier.height(22.dp))
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = "Cover image for ${post.title}",
+                    modifier = Modifier.fillMaxWidth().height(210.dp).clip(RoundedCornerShape(18.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            } ?: Spacer(Modifier.weight(1f))
+            Spacer(Modifier.height(18.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                AuthorAvatar(post.authorAvatarUrl, post.authorName, onAuthorClick)
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(post.authorName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = HomeInk, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text("@${post.authorPenName}", fontSize = 14.sp, color = HomeMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                IconButton(onClick = onApplaud, modifier = Modifier.size(46.dp)) {
+                    Image(painterResource(R.drawable.ic_applaud), contentDescription = if (post.isLiked) "Remove applaud" else "Applaud", modifier = Modifier.size(29.dp))
+                }
+                Text(formatApplauds(post.likesCnt), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = if (post.isLiked) BrandRed else HomeInk)
+            }
+        }
+    }
+}
+
+@Composable
+private fun AuthorAvatar(avatarUrl: String?, authorName: String, onClick: () -> Unit) {
+    Surface(modifier = Modifier.size(48.dp), shape = CircleShape, color = HomeChip, border = BorderStroke(1.dp, HomeBorder), onClick = onClick) {
+        if (avatarUrl.isNullOrBlank()) {
+            Box(contentAlignment = Alignment.Center) { Text(authorName.firstOrNull()?.uppercaseChar()?.toString() ?: "W", fontWeight = FontWeight.SemiBold, color = HomeInk) }
+        } else {
+            AsyncImage(model = avatarUrl, contentDescription = "Open ${authorName}'s profile", modifier = Modifier.fillMaxSize().clip(CircleShape), contentScale = ContentScale.Crop)
+        }
+    }
+}
+
+@Composable
+private fun EmptyDiscovery(modifier: Modifier = Modifier) {
+    Surface(modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp), color = HomeSurface, border = BorderStroke(1.dp, HomeBorder)) {
+        Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Text("No stories to discover yet", style = MaterialTheme.typography.titleLarge.copy(fontFamily = HomeEditorialFamily), color = HomeInk)
+            Text("Come back shortly for fresh writing.", modifier = Modifier.padding(top = 8.dp), color = HomeMuted)
+        }
+    }
+}
+
+private fun formatApplauds(count: Int): String = if (count >= 1000) String.format(java.util.Locale.getDefault(), "%.1fK", count / 1000.0) else count.toString()

@@ -1,28 +1,25 @@
 package com.ibitvalley.writon.modern.core.designsystem.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Bookmark
-import androidx.compose.material.icons.filled.BookmarkBorder
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
-import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
 
 @Composable
 fun StoryCard(
@@ -36,12 +33,12 @@ fun StoryCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick(post.id) },
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = SurfacePaper)
     ) {
-        Column(modifier = Modifier.padding(vertical = 12.dp)) {
+        Column(modifier = Modifier.padding(WritOnSpacing.sm)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(WritOnSpacing.md)
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -50,28 +47,27 @@ fun StoryCard(
                             name = post.authorName,
                             size = 20.dp
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(WritOnSpacing.xs))
                         Text(
                             text = post.authorName,
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Medium
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(WritOnSpacing.xs))
                     Text(
                         text = post.title,
-                        fontSize = 18.sp,
+                        style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily.Serif,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
                     post.summary?.let {
-                        Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(WritOnSpacing.xxs))
                         Text(
                             text = it,
-                            fontSize = 14.sp,
-                            color = Color.Gray,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
                         )
@@ -84,13 +80,13 @@ fun StoryCard(
                         contentDescription = null,
                         modifier = Modifier
                             .size(80.dp)
-                            .clip(RoundedCornerShape(8.dp)),
+                            .clip(RoundedCornerShape(WritOnRadius.field)),
                         contentScale = ContentScale.Crop
                     )
                 }
             }
             
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(WritOnSpacing.sm))
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -100,42 +96,42 @@ fun StoryCard(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = "${post.readingTimeMin} min read",
-                        fontSize = 12.sp,
-                        color = Color.Gray
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(WritOnSpacing.xs))
                     Surface(
-                        color = Color.Gray.copy(alpha = 0.1f),
-                        shape = RoundedCornerShape(4.dp)
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(WritOnRadius.field)
                     ) {
                         Text(
                             text = post.category,
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            fontSize = 10.sp,
-                            color = Color.Gray
+                            modifier = Modifier.padding(horizontal = WritOnSpacing.xs, vertical = WritOnSpacing.xxs),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = onLikeClick, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            imageVector = if (post.isLiked) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                            contentDescription = "Like",
-                            tint = if (post.isLiked) BrandRed else Color.Gray,
-                            modifier = Modifier.size(18.dp)
+                        Image(
+                            painterResource(if (post.isLiked) R.drawable.ic_heart_filled_orange else R.drawable.ic_heart_muted),
+                            contentDescription = "Like", modifier = Modifier.size(18.dp)
                         )
                     }
-                    Text(text = post.likesCnt.toString(), fontSize = 12.sp, color = Color.Gray)
+                    Text(
+                        text = post.likesCnt.toString(),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                     
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(WritOnSpacing.xs))
                     
                     IconButton(onClick = onBookmarkClick, modifier = Modifier.size(32.dp)) {
-                        Icon(
-                            imageVector = if (post.isBookmarked) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                            contentDescription = "Bookmark",
-                            tint = if (post.isBookmarked) BrandRed else Color.Gray,
-                            modifier = Modifier.size(18.dp)
+                        Image(
+                            painterResource(if (post.isBookmarked) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark_muted),
+                            contentDescription = "Bookmark", modifier = Modifier.size(18.dp)
                         )
                     }
                 }

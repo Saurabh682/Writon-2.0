@@ -1,93 +1,274 @@
 package com.ibitvalley.writon.modern.feature.library
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import com.ibitvalley.writon.modern.core.database.model.PostEntity
-import com.ibitvalley.writon.modern.core.designsystem.components.EmptyState
-import com.ibitvalley.writon.modern.core.designsystem.components.ModernTabRow
-import com.ibitvalley.writon.modern.core.designsystem.components.ModernTopBar
-import com.ibitvalley.writon.modern.core.designsystem.components.StoryCard
+import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
+import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 
-@OptIn(ExperimentalMaterial3Api::class)
+private val LibraryEditorialFamily = FontFamily(
+    Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
+    Font(R.font.source_serif_4_semibold, weight = FontWeight.SemiBold),
+    Font(R.font.source_serif_4_semibold, weight = FontWeight.Bold)
+)
+
+private enum class LibraryTab(val label: String) {
+    Saved("Saved"), History("History"), Applauds("Applauds"), Collections("Collections")
+}
+
+private data class LibraryStory(
+    val id: String,
+    val category: String,
+    val title: String,
+    val summary: String,
+    val authorName: String,
+    val readingTime: Int,
+    val applauds: Int
+)
+
 @Composable
-fun LibraryScreen() {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Saved", "Applauded", "History", "Following")
+fun LibraryScreen(
+    onStoryClick: (String) -> Unit = {},
+    onSearchClick: () -> Unit = {},
+    onHistoryClick: () -> Unit = {}
+) {
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+    var newestFirst by remember { mutableStateOf(true) }
+    var bookmarkedIds by remember { mutableStateOf(savedStories.map { it.id }.toSet()) }
+    val selectedTab = LibraryTab.entries[selectedTabIndex]
+    val visibleStories = when (selectedTab) {
+        LibraryTab.Saved -> savedStories
+        LibraryTab.History -> savedStories.dropLast(1).reversed()
+        LibraryTab.Applauds -> savedStories.sortedByDescending { it.applauds }
+        LibraryTab.Collections -> emptyList()
+    }.let { stories -> if (newestFirst) stories else stories.reversed() }
 
-    Scaffold(
-        topBar = {
-            ModernTopBar(title = "Library")
-        },
-        containerColor = BrandBeige
-    ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
-            ModernTabRow(
-                selectedTabIndex = selectedTab,
-                tabs = tabs,
-                onTabSelected = { selectedTab = it }
-            )
-
-            val mockPosts = remember {
-                listOf(
-                    PostEntity(
-                        id = "1",
-                        authorId = "a1",
-                        authorName = "Maya Lin",
-                        authorPenName = "maya",
-                        authorAvatarUrl = null,
-                        title = "The Architecture of Solitude",
-                        slug = "arch-solitude",
-                        summary = "Finding peace in the quiet moments of design and life.",
-                        content = "",
-                        category = "Essays",
-                        coverImage = "https://images.unsplash.com/photo-1499750310107-5fef28a66643",
-                        readingTimeMin = 5,
-                        likesCnt = 124,
-                        commentsCnt = 12,
-                        bookmarksCnt = 45,
-                        isBookmarked = true,
-                        createdAt = "2026-08-14T10:00:00Z"
-                    )
-                )
-            }
-
-            if (selectedTab == 0 && mockPosts.isNotEmpty()) {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(mockPosts) { post ->
-                        StoryCard(
-                            post = post,
-                            onClick = { /* Navigate to reader */ }
-                        )
-                    }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = WritOnSpacing.lg, end = WritOnSpacing.lg, top = WritOnSpacing.md, bottom = WritOnSpacing.xl),
+        verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)
+    ) {
+        item { LibraryHeader(onSearchClick) }
+        item {
+            LibraryFilters(
+                selectedIndex = selectedTabIndex,
+                onSelected = { index ->
+                    if (LibraryTab.entries[index] == LibraryTab.History) onHistoryClick()
+                    else selectedTabIndex = index
                 }
-            } else {
-                EmptyState(
-                    message = "Nothing here yet. Explore more to fill your library!",
-                    icon = { Icon(Icons.Default.Inbox, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.LightGray) }
+            )
+        }
+        item { LibrarySectionHeader(selectedTab, visibleStories.size, newestFirst, onToggleOrder = { newestFirst = !newestFirst }) }
+        if (visibleStories.isEmpty()) {
+            item { EmptyLibraryCollections() }
+        } else {
+            items(visibleStories, key = { it.id }) { story ->
+                LibraryStoryCard(
+                    story = story,
+                    isBookmarked = story.id in bookmarkedIds,
+                    onClick = { onStoryClick(story.id) },
+                    onToggleBookmark = {
+                        bookmarkedIds = bookmarkedIds.let { ids ->
+                            if (story.id in ids) ids - story.id else ids + story.id
+                        }
+                    }
                 )
             }
         }
     }
 }
+
+@Composable
+private fun LibraryHeader(onSearchClick: () -> Unit) {
+    Column {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            WritOnBrandMark(width = 108.dp)
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = onSearchClick) { Image(painterResource(R.drawable.ic_search), contentDescription = "Search", modifier = Modifier.size(24.dp)) }
+            IconButton(onClick = { }) { Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "More library options", modifier = Modifier.size(24.dp)) }
+        }
+        Spacer(Modifier.height(WritOnSpacing.lg))
+        Text(
+            text = "Library",
+            style = MaterialTheme.typography.displayLarge.copy(fontFamily = LibraryEditorialFamily, fontSize = 42.sp, lineHeight = 48.sp)
+        )
+        Spacer(Modifier.height(WritOnSpacing.xs))
+        Text(
+            text = "Your saved stories, reading history and more.",
+            style = MaterialTheme.typography.bodyLarge.copy(fontFamily = LibraryEditorialFamily, fontSize = 18.sp, lineHeight = 25.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(WritOnSpacing.sm))
+        Surface(color = BrandRed, shape = CircleShape, modifier = Modifier.width(72.dp).height(4.dp)) { }
+        Spacer(Modifier.height(WritOnSpacing.md))
+    }
+}
+
+@Composable
+private fun LibraryFilters(selectedIndex: Int, onSelected: (Int) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(WritOnSpacing.xs)
+    ) {
+        LibraryTab.entries.forEachIndexed { index, tab ->
+            val selected = index == selectedIndex
+            Surface(
+                shape = RoundedCornerShape(WritOnRadius.pill),
+                color = if (selected) BrandRed.copy(alpha = 0.12f) else Color.Transparent,
+                modifier = Modifier.clip(RoundedCornerShape(WritOnRadius.pill)).clickable { onSelected(index) }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = if (selected) 12.dp else 8.dp, vertical = 9.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val icon = when (tab) {
+                        LibraryTab.Saved -> if (selected) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark_muted
+                        LibraryTab.History -> R.drawable.ic_history_muted
+                        LibraryTab.Applauds -> null
+                        LibraryTab.Collections -> R.drawable.ic_collection_muted
+                    }
+                    if (tab == LibraryTab.Applauds) {
+                        Image(painterResource(R.drawable.ic_applaud), contentDescription = null, modifier = Modifier.size(20.dp))
+                    } else {
+                        Image(painterResource(icon!!), contentDescription = null, modifier = Modifier.size(20.dp))
+                    }
+                    Spacer(Modifier.width(WritOnSpacing.xxs))
+                    Text(tab.label, style = MaterialTheme.typography.labelLarge)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LibrarySectionHeader(tab: LibraryTab, count: Int, newestFirst: Boolean, onToggleOrder: () -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth().padding(top = WritOnSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = when (tab) {
+                LibraryTab.Saved -> "Saved Stories"
+                LibraryTab.History -> "Reading History"
+                LibraryTab.Applauds -> "Applauded Stories"
+                LibraryTab.Collections -> "Collections"
+            },
+            style = MaterialTheme.typography.headlineMedium.copy(fontFamily = LibraryEditorialFamily)
+        )
+        Spacer(Modifier.weight(1f))
+        Text("$count stories", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.width(WritOnSpacing.md))
+        Row(
+            modifier = Modifier.clip(RoundedCornerShape(WritOnRadius.field)).clickable(onClick = onToggleOrder).padding(vertical = WritOnSpacing.xs),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(if (newestFirst) "Newest" else "Oldest", style = MaterialTheme.typography.labelLarge, color = BrandRed)
+            Spacer(Modifier.width(WritOnSpacing.xs))
+            Text("⌄", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+@Composable
+private fun LibraryStoryCard(story: LibraryStory, isBookmarked: Boolean, onClick: () -> Unit, onToggleBookmark: () -> Unit) {
+    var menuExpanded by remember { mutableStateOf(false) }
+    Surface(
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(WritOnRadius.card)).clickable(onClick = onClick),
+        shape = RoundedCornerShape(WritOnRadius.card),
+        color = SurfacePaper,
+        tonalElevation = WritOnElevation.flat,
+        shadowElevation = WritOnElevation.raised
+    ) {
+        Box(Modifier.fillMaxWidth().padding(WritOnSpacing.lg)) {
+            Column(modifier = Modifier.padding(end = 40.dp)) {
+                Text(story.category.uppercase(), style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 1.1.sp), color = BrandRed)
+                Spacer(Modifier.height(WritOnSpacing.xs))
+                Text(
+                    story.title,
+                    style = MaterialTheme.typography.headlineMedium.copy(fontFamily = LibraryEditorialFamily, fontSize = 23.sp, lineHeight = 28.sp),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(WritOnSpacing.xs))
+                Text(
+                    story.summary,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp, lineHeight = 21.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(WritOnSpacing.sm))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(shape = CircleShape, color = BrandBeige, modifier = Modifier.size(38.dp)) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Text(initialsOf(story.authorName), style = MaterialTheme.typography.labelMedium)
+                        }
+                    }
+                    Spacer(Modifier.width(WritOnSpacing.sm))
+                    Text(story.authorName, style = MaterialTheme.typography.bodySmall)
+                    Text("  •  ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("${story.readingTime} min", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(WritOnSpacing.sm))
+                    Image(painterResource(R.drawable.ic_applaud), contentDescription = "Applauds", modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(WritOnSpacing.xxs))
+                    Text(story.applauds.toString(), style = MaterialTheme.typography.bodySmall, color = BrandRed)
+                }
+            }
+            Column(modifier = Modifier.align(Alignment.TopEnd), horizontalAlignment = Alignment.CenterHorizontally) {
+                IconButton(onClick = onToggleBookmark) {
+                    Image(painterResource(if (isBookmarked) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark), contentDescription = if (isBookmarked) "Remove saved story" else "Save story", modifier = Modifier.size(24.dp))
+                }
+                Box {
+                    IconButton(onClick = { menuExpanded = true }) { Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "Story options", modifier = Modifier.size(24.dp)) }
+                    DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                        DropdownMenuItem(text = { Text("Remove from library") }, onClick = { menuExpanded = false; onToggleBookmark() })
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyLibraryCollections() {
+    Surface(shape = RoundedCornerShape(WritOnRadius.card), color = SurfacePaper, modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(WritOnSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(painterResource(R.drawable.ic_collection_muted), contentDescription = null, modifier = Modifier.size(40.dp))
+            Spacer(Modifier.height(WritOnSpacing.sm))
+            Text("No collections yet", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(WritOnSpacing.xxs))
+            Text("Save stories to build a collection around your next idea.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+private fun initialsOf(name: String): String = name.split(" ").mapNotNull { it.firstOrNull()?.uppercaseChar()?.toString() }.take(2).joinToString("")
+
+private val savedStories = listOf(
+    LibraryStory("architecture-solitude", "Essay", "The Architecture of Solitude", "A reflection on how silence shapes the lives we build.", "Arjun Kapoor", 6, 324),
+    LibraryStory("letters-left-behind", "Poetry", "Letters to the Things I Left Behind", "Sometimes the hardest goodbyes are the ones we never say out loud.", "Sara Roy", 4, 187),
+    LibraryStory("last-train-home", "Micro Fiction", "The Last Train Home", "He bought a one-way ticket. The train had other plans.", "Zain D’souza", 7, 256),
+    LibraryStory("what-we-owe", "Philosophy", "What We Owe Ourselves", "On showing up, even when no one is watching.", "Maya Lin", 5, 412)
+)

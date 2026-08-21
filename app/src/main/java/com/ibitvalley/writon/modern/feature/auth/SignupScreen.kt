@@ -9,9 +9,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -30,10 +27,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager
+import com.ibitvalley.writon.modern.core.network.NetworkClient
+import com.ibitvalley.writon.modern.core.network.model.UpsertMyProfileRequestDto
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnTheme
+import kotlinx.coroutines.launch
 
-private val BrandBeigeColor = Color(0xFFF9F7F2)
-private val BrandRedColor = Color(0xFFB0301B)
+private val BrandBeigeColor = Color(0xFFF8F4EE)
+private val BrandRedColor = Color(0xFFE75A2A)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +51,9 @@ fun SignupScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     var agreeToTerms by remember { mutableStateOf(false) }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var authError by remember { mutableStateOf<String?>(null) }
+    val coroutineScope = rememberCoroutineScope()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -70,11 +74,7 @@ fun SignupScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBackClick) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.Black
-                    )
+                    Image(painterResource(R.drawable.ic_back), contentDescription = "Back", modifier = Modifier.size(24.dp))
                 }
 
                 Text(
@@ -99,13 +99,13 @@ fun SignupScreen(
                     lineHeight = 44.sp,
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color.Black
+                color = Color(0xFF151718)
             )
 
             Text(
                 text = "Join a community of writers and readers.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color.Gray,
+                color = Color(0xFF6D6963),
                 modifier = Modifier.padding(top = 12.dp)
             )
 
@@ -125,7 +125,7 @@ fun SignupScreen(
                 value = fullName,
                 onValueChange = { fullName = it },
                 placeholder = "Enter your full name",
-                leadingIcon = Icons.Default.Person
+                leadingIcon = R.drawable.ic_profile
             )
 
             SignupTextField(
@@ -133,7 +133,7 @@ fun SignupScreen(
                 value = email,
                 onValueChange = { email = it },
                 placeholder = "Enter your email address",
-                leadingIcon = Icons.Default.Email
+                leadingIcon = R.drawable.ic_email
             )
 
             SignupTextField(
@@ -141,7 +141,7 @@ fun SignupScreen(
                 value = username,
                 onValueChange = { username = it },
                 placeholder = "Choose a username",
-                leadingIcon = Icons.Default.AlternateEmail,
+                leadingIcon = R.drawable.ic_mention,
                 helperText = "This will be your unique identity on WritOn."
             )
 
@@ -189,7 +189,7 @@ fun SignupScreen(
                         append(".")
                     },
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = Color(0xFF6D6963),
                     modifier = Modifier.padding(top = 12.dp)
                 )
             }
@@ -198,7 +198,50 @@ fun SignupScreen(
 
             // Create Account Button
             Button(
-                onClick = onCreateAccountClick,
+                onClick = {
+                    authError = null
+                    isSubmitting = true
+                    FirebaseAuthManager.createAccount(
+                        email = email,
+                        password = password,
+                        onSuccess = {
+                            FirebaseAuthManager.syncNetworkAuthToken { hasToken ->
+                                if (!hasToken) {
+                                    isSubmitting = false
+                                    authError = "Your account was created, but the session could not be verified."
+                                    return@syncNetworkAuthToken
+                                }
+
+                                coroutineScope.launch {
+                                    runCatching {
+                                        NetworkClient.apiService.upsertMyProfile(
+                                            UpsertMyProfileRequestDto(
+                                                penName = username,
+                                                fullName = fullName
+                                            )
+                                        )
+                                    }.onSuccess { response ->
+                                        isSubmitting = false
+                                        if (response.isSuccessful) {
+                                            onCreateAccountClick()
+                                        } else {
+                                            authError = "Your account was created, but the profile could not be saved."
+                                        }
+                                    }.onFailure {
+                                        isSubmitting = false
+                                        authError = "Your account was created, but the profile could not be saved."
+                                    }
+                                }
+                            }
+                        },
+                        onError = { message ->
+                            isSubmitting = false
+                            authError = message
+                        }
+                    )
+                },
+                enabled = fullName.isNotBlank() && email.isNotBlank() && username.isNotBlank() &&
+                    password.length >= 8 && password == confirmPassword && agreeToTerms && !isSubmitting,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -206,9 +249,18 @@ fun SignupScreen(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    text = "Create Account",
+                    text = if (isSubmitting) "Creating account…" else "Create Account",
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
+                    color = Color(0xFFFFFDF9)
+                )
+            }
+
+            authError?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 12.dp)
                 )
             }
 
@@ -219,14 +271,14 @@ fun SignupScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 16.dp)
             ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.LightGray)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE9E1D7))
                 Text(
                     text = "or sign up with",
                     modifier = Modifier.padding(horizontal = 16.dp),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = Color(0xFF6D6963)
                 )
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.LightGray)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE9E1D7))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -261,14 +313,14 @@ fun SignupTextField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    leadingIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    leadingIcon: Int,
     helperText: String? = null
 ) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            color = Color.Black,
+            color = Color(0xFF151718),
             modifier = Modifier.padding(bottom = 8.dp)
         )
         OutlinedTextField(
@@ -276,24 +328,24 @@ fun SignupTextField(
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(placeholder) },
-            leadingIcon = { Icon(leadingIcon, contentDescription = null) },
+            leadingIcon = { Image(painterResource(leadingIcon), contentDescription = null, modifier = Modifier.size(22.dp)) },
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color.Black,
+                focusedTextColor = Color(0xFF151718),
+                unfocusedTextColor = Color(0xFF151718),
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
                 focusedBorderColor = BrandRedColor,
-                unfocusedBorderColor = Color.Gray,
+                unfocusedBorderColor = Color(0xFF6D6963),
                 focusedLeadingIconColor = BrandRedColor,
-                unfocusedLeadingIconColor = Color.Gray
+                unfocusedLeadingIconColor = Color(0xFF6D6963)
             )
         )
         if (helperText != null) {
             Text(
                 text = helperText,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
+                color = Color(0xFF6D6963),
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
@@ -314,7 +366,7 @@ fun SignupPasswordField(
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            color = Color.Black,
+            color = Color(0xFF151718),
             modifier = Modifier.padding(bottom = 8.dp)
         )
         OutlinedTextField(
@@ -322,34 +374,34 @@ fun SignupPasswordField(
             onValueChange = onValueChange,
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text(placeholder) },
-            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+            leadingIcon = { Image(painterResource(R.drawable.ic_lock), contentDescription = null, modifier = Modifier.size(22.dp)) },
             trailingIcon = {
-                val icon = if (visible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                val icon = if (visible) R.drawable.ic_eye else R.drawable.ic_eye_off
                 IconButton(onClick = onVisibilityToggle) {
-                    Icon(icon, contentDescription = null)
+                    Image(painterResource(icon), contentDescription = null, modifier = Modifier.size(22.dp))
                 }
             },
             visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedTextColor = Color.Black,
-                unfocusedTextColor = Color.Black,
+                focusedTextColor = Color(0xFF151718),
+                unfocusedTextColor = Color(0xFF151718),
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
                 focusedBorderColor = BrandRedColor,
-                unfocusedBorderColor = Color.Gray,
+                unfocusedBorderColor = Color(0xFF6D6963),
                 focusedLeadingIconColor = BrandRedColor,
-                unfocusedLeadingIconColor = Color.Gray,
+                unfocusedLeadingIconColor = Color(0xFF6D6963),
                 focusedTrailingIconColor = BrandRedColor,
-                unfocusedTrailingIconColor = Color.Gray
+                unfocusedTrailingIconColor = Color(0xFF6D6963)
             )
         )
         if (helperText != null) {
             Text(
                 text = helperText,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
+                color = Color(0xFF6D6963),
                 modifier = Modifier.padding(top = 4.dp)
             )
         }
@@ -367,8 +419,8 @@ fun SocialSignupButton(
         onClick = onClick,
         modifier = modifier.height(56.dp),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, Color.LightGray),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+        border = BorderStroke(1.dp, Color(0xFFE9E1D7)),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF151718))
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Image(

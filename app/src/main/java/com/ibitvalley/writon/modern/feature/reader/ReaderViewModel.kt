@@ -33,7 +33,14 @@ class ReaderViewModel(
     val commentText = MutableStateFlow("")
 
     init {
+        refreshPost()
         refreshComments()
+    }
+
+    private fun refreshPost() {
+        viewModelScope.launch {
+            repository.refreshPostDetail(postId)
+        }
     }
 
     private fun refreshComments() {

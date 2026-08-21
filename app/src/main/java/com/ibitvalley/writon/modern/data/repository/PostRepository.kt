@@ -37,6 +37,38 @@ class PostRepository(
         return commentDao.getCommentsByPostId(postId)
     }
 
+    suspend fun refreshPostDetail(postId: String) = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.getPostDetail(postId)
+            if (response.isSuccessful && response.body() != null) {
+                val dto = response.body()!!.post
+                val entity = PostEntity(
+                    id = dto.id,
+                    authorId = dto.author.id,
+                    authorName = dto.author.fullName,
+                    authorPenName = dto.author.penName,
+                    authorAvatarUrl = dto.author.avatarUrl,
+                    title = dto.title,
+                    slug = dto.slug,
+                    summary = dto.summary,
+                    content = dto.content,
+                    category = dto.category,
+                    coverImage = dto.coverImage,
+                    readingTimeMin = dto.readingTimeMin,
+                    likesCnt = dto.likesCnt,
+                    commentsCnt = dto.commentsCnt,
+                    bookmarksCnt = dto.bookmarksCnt,
+                    isLiked = dto.isLiked,
+                    isBookmarked = dto.isBookmarked,
+                    createdAt = dto.createdAt
+                )
+                postDao.insertPost(entity)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
     suspend fun refreshComments(postId: String) = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getComments(postId)
@@ -103,7 +135,8 @@ class PostRepository(
                     searchQuery = query
                 )
                 if (response.isSuccessful && response.body() != null) {
-                    val postEntities = response.body()!!.posts.map { dto ->
+                    val payload = response.body()!!
+                    val postEntities = payload.posts.map { dto ->
                         PostEntity(
                             id = dto.id,
                             authorId = dto.author.id,
@@ -124,6 +157,13 @@ class PostRepository(
                             isBookmarked = dto.isBookmarked,
                             createdAt = dto.createdAt
                         )
+                    }
+
+                    // The unfiltered home feed is a server-owned snapshot. Replacing it
+                    // prevents legacy mock posts from remaining visible after a successful
+                    // sync, while failed requests continue to use the offline Room cache.
+                    if (categoryQuery == null && query.isNullOrBlank() && tab == "latest") {
+                        postDao.clearAll()
                     }
                     postDao.insertPosts(postEntities)
                 }

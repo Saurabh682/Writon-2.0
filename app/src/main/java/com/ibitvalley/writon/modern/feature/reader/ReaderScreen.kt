@@ -1,352 +1,238 @@
 package com.ibitvalley.writon.modern.feature.reader
 
-import androidx.compose.foundation.background
+import android.content.Context
+import android.content.Intent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.Bookmark
-import androidx.compose.material.icons.outlined.BookmarkBorder
-import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import android.content.Intent
-import java.util.Locale
 import coil.compose.AsyncImage
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
-import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnTheme
+import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import kotlinx.coroutines.launch
+
+private val ReaderEditorialFamily = FontFamily(
+    Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
+    Font(R.font.source_serif_4_semibold, weight = FontWeight.SemiBold),
+    Font(R.font.source_serif_4_semibold, weight = FontWeight.Bold)
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReaderScreen(
-    viewModel: ReaderViewModel,
-    onBackClick: () -> Unit
-) {
+fun ReaderScreen(viewModel: ReaderViewModel, onBackClick: () -> Unit) {
     val post by viewModel.post.collectAsState()
-    val commentText by viewModel.commentText.collectAsState()
+    val comments by viewModel.comments.collectAsState()
     val scrollState = rememberScrollState()
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(end = 48.dp),
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        // Progress Segments Mock
-                        repeat(4) { index ->
-                            Box(
-                                modifier = Modifier
-                                    .padding(horizontal = 2.dp)
-                                    .weight(1f)
-                                    .height(4.dp)
-                                    .clip(RoundedCornerShape(2.dp))
-                                    .background(if (index == 0) BrandRed else Color.LightGray)
-                            )
-                        }
-                    }
-                },
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
+                title = {},
+                navigationIcon = { IconButton(onClick = onBackClick) { Image(painterResource(R.drawable.ic_back), "Back", Modifier.size(24.dp)) } },
                 actions = {
-                    IconButton(onClick = { viewModel.toggleBookmark() }) {
-                        Icon(
-                            imageVector = if (post?.isBookmarked == true) Icons.Default.Bookmark else Icons.Outlined.BookmarkBorder,
-                            contentDescription = "Bookmark",
-                            tint = if (post?.isBookmarked == true) BrandRed else Color.Black
-                        )
+                    IconButton(onClick = {}) { Text("Aa", style = MaterialTheme.typography.titleLarge.copy(fontFamily = ReaderEditorialFamily)) }
+                    IconButton(onClick = viewModel::toggleBookmark) {
+                        Image(painterResource(if (post?.isBookmarked == true) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark), if (post?.isBookmarked == true) "Remove bookmark" else "Save story", Modifier.size(24.dp))
                     }
-                    IconButton(onClick = { /* More actions */ }) {
-                        Icon(Icons.Default.MoreHoriz, contentDescription = "More")
-                    }
+                    IconButton(onClick = { post?.let { shareStory(context, it) } }) { Image(painterResource(R.drawable.ic_share), "Share story", Modifier.size(24.dp)) }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = BrandBeige)
             )
         },
         bottomBar = {
-            Surface(
-                modifier = Modifier.fillMaxWidth(),
-                color = BrandBeige,
-                tonalElevation = 8.dp
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    AsyncImage(
-                        model = "https://ui-avatars.com/api/?name=User",
-                        contentDescription = null,
-                        modifier = Modifier.size(40.dp).clip(CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    OutlinedTextField(
-                        value = commentText,
-                        onValueChange = { 
-                            viewModel.commentText.value = it 
-                        },
-                        placeholder = { Text("Write a response...", fontSize = 14.sp) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(28.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedContainerColor = Color.White,
-                            focusedContainerColor = Color.White,
-                            unfocusedBorderColor = Color.LightGray.copy(alpha = 0.5f),
-                            focusedBorderColor = BrandRed
-                        ),
-                        singleLine = true,
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                            imeAction = androidx.compose.ui.text.input.ImeAction.Send
-                        ),
-                        keyboardActions = androidx.compose.foundation.text.KeyboardActions(
-                            onSend = { viewModel.submitComment("Testing User") }
-                        )
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    IconButton(
-                        onClick = { viewModel.submitComment("Testing User") },
-                        modifier = Modifier
-                            .size(48.dp)
-                            .clip(CircleShape)
-                            .background(BrandRed)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowUpward,
-                            contentDescription = "Send",
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
+            post?.let { story ->
+                ReaderActionTray(
+                    post = story,
+                    onApplaud = viewModel::toggleLike,
+                    onComment = { scope.launch { scrollState.animateScrollTo(scrollState.maxValue) } },
+                    onSave = viewModel::toggleBookmark,
+                    onShare = { shareStory(context, story) }
+                )
             }
         },
         containerColor = BrandBeige
     ) { innerPadding ->
-        post?.let { p ->
+        post?.let { story ->
+            val paragraphs = remember(story.content) {
+                story.content
+                    .lineSequence()
+                    .filterNot { it.trimStart().startsWith("#") }
+                    .joinToString("\n")
+                    .split(Regex("\\n\\s*\\n"))
+                    .map(String::trim)
+                    .filter(String::isNotEmpty)
+            }
             Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .verticalScroll(scrollState)
-                    .padding(24.dp)
+                modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(scrollState)
+                    .padding(horizontal = WritOnSpacing.lg).padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.xxl)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = p.category.uppercase(),
-                        color = BrandRed,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 1.sp
-                    )
-                    Text(
-                        text = " • ${p.readingTimeMin} min read",
-                        fontSize = 12.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(start = 8.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
+                Text(story.category.uppercase(), style = MaterialTheme.typography.labelLarge, color = BrandRed, letterSpacing = 1.1.sp)
+                Spacer(Modifier.height(WritOnSpacing.md))
                 Text(
-                    text = p.title,
-                    style = MaterialTheme.typography.headlineLarge,
-                    fontFamily = FontFamily.Serif,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 36.sp,
-                    lineHeight = 44.sp
+                    story.title,
+                    style = MaterialTheme.typography.displayLarge.copy(
+                        fontFamily = ReaderEditorialFamily,
+                        fontSize = 38.sp,
+                        lineHeight = 46.sp,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-
-                Box(
-                    modifier = Modifier
-                        .padding(top = 16.dp)
-                        .width(40.dp)
-                        .height(4.dp)
-                        .background(BrandRed)
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                p.summary?.let {
+                story.summary?.let { summary ->
+                    Spacer(Modifier.height(WritOnSpacing.lg))
                     Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = Color.DarkGray,
-                        lineHeight = 26.sp
+                        summary,
+                        style = MaterialTheme.typography.bodyLarge.copy(fontFamily = ReaderEditorialFamily, fontSize = 18.sp, lineHeight = 28.sp, fontWeight = FontWeight.Bold),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Author Row
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    AsyncImage(
-                        model = p.authorAvatarUrl ?: "https://ui-avatars.com/api/?name=${p.authorName}",
-                        contentDescription = null,
-                        modifier = Modifier.size(56.dp).clip(CircleShape)
-                    )
-                    Column(modifier = Modifier.padding(start = 12.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(text = p.authorName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                            Icon(
-                                Icons.Default.Verified,
-                                contentDescription = null,
-                                tint = BrandRed,
-                                modifier = Modifier.size(14.dp).padding(start = 4.dp)
-                            )
-                        }
-                        Text(text = "@${p.authorPenName}", color = Color.Gray, fontSize = 13.sp)
-                        Text(text = "April 28, 2025 • 7:30 AM", color = Color.Gray, fontSize = 11.sp)
-                    }
+                Spacer(Modifier.height(WritOnSpacing.xl))
+                ReaderAuthorMetadata(story)
+                HorizontalDivider(Modifier.padding(vertical = WritOnSpacing.xl), color = MaterialTheme.colorScheme.outlineVariant)
+                if (paragraphs.isEmpty()) {
+                    Text("This story has no text yet.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    ReaderBody(paragraphs)
                 }
-
-                HorizontalDivider(modifier = Modifier.padding(vertical = 24.dp), color = Color.LightGray)
-
-                // Body Content
-                Text(
-                    text = p.content,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontFamily = FontFamily.Serif,
-                    lineHeight = 28.sp,
-                    color = Color.Black
-                )
-
-                Spacer(modifier = Modifier.height(48.dp))
-
-                // Interaction Stats
-                val context = LocalContext.current
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Applaud
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable { viewModel.toggleLike() }
-                                .padding(vertical = 4.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.speech),
-                                contentDescription = "Like",
-                                tint = if (p.isLiked) BrandRed else Color.Black.copy(alpha = 0.6f),
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = if (p.likesCnt >= 1000) String.format(Locale.getDefault(), "%.1fK", p.likesCnt / 1000.0) else p.likesCnt.toString(),
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.width(40.dp))
-                        
-                        // Comment
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.chat), 
-                                contentDescription = null, 
-                                tint = Color.Black.copy(alpha = 0.6f), 
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = p.commentsCnt.toString(), 
-                                fontSize = 16.sp, 
-                                fontWeight = FontWeight.Bold,
-                                color = Color.Black
-                            )
-                        }
-                    }
-                    
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Save
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable { viewModel.toggleBookmark() }
-                                .padding(horizontal = 4.dp, vertical = 4.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.bookmark),
-                                contentDescription = null,
-                                tint = if (p.isBookmarked) BrandRed else Color.Black,
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Save",
-                                fontSize = 16.sp,
-                                color = Color.Black
-                            )
-                        }
-                        
-                        Spacer(modifier = Modifier.width(24.dp))
-                        
-                        // Share
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(8.dp))
-                                .clickable {
-                                    val sendIntent: Intent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_TEXT, "Check out this story: ${p.title}\n\nhttps://writon.co/posts/${p.slug}")
-                                        type = "text/plain"
-                                    }
-                                    val shareIntent = Intent.createChooser(sendIntent, null)
-                                    context.startActivity(shareIntent)
-                                }
-                                .padding(horizontal = 4.dp, vertical = 4.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_share), 
-                                contentDescription = null, 
-                                tint = Color.Black, 
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Share", 
-                                fontSize = 16.sp,
-                                color = Color.Black
-                            )
-                        }
-                    }
+                Spacer(Modifier.height(WritOnSpacing.xxl))
+                Text("Responses (${comments.size.coerceAtLeast(story.commentsCnt)})", style = MaterialTheme.typography.headlineSmall)
+                Spacer(Modifier.height(WritOnSpacing.md))
+                if (comments.isEmpty()) {
+                    Text("No responses yet.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else comments.forEach { comment ->
+                    ReaderComment(comment.authorName, comment.authorAvatarUrl, comment.content, comment.createdAt)
+                    Spacer(Modifier.height(WritOnSpacing.lg))
                 }
             }
         }
     }
+}
+
+@Composable
+private fun ReaderAuthorMetadata(post: PostEntity) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        AsyncImage(
+            model = post.authorAvatarUrl ?: "https://ui-avatars.com/api/?name=${post.authorName}", contentDescription = post.authorName,
+            modifier = Modifier.size(56.dp).clip(CircleShape), contentScale = ContentScale.Crop
+        )
+        Spacer(Modifier.width(WritOnSpacing.md))
+        Column {
+            Text(
+                post.authorName,
+                style = MaterialTheme.typography.bodyLarge.copy(fontFamily = ReaderEditorialFamily, fontWeight = FontWeight.Bold)
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("${post.readingTimeMin} min read", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("  •  ", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("${post.likesCnt} applauds", style = MaterialTheme.typography.bodyMedium, color = BrandRed)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReaderBody(paragraphs: List<String>) {
+    val style = MaterialTheme.typography.bodyLarge.copy(fontFamily = ReaderEditorialFamily, fontSize = 20.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold)
+    val first = paragraphs.first()
+    Row(verticalAlignment = Alignment.Top) {
+        Text(first.take(1), style = MaterialTheme.typography.displayLarge.copy(fontFamily = ReaderEditorialFamily, fontSize = 56.sp, lineHeight = 54.sp, fontWeight = FontWeight.Bold), modifier = Modifier.padding(end = WritOnSpacing.xs, top = 2.dp))
+        Text(first.drop(1).trimStart(), style = style, modifier = Modifier.weight(1f))
+    }
+    paragraphs.drop(1).forEach { paragraph ->
+        Spacer(Modifier.height(WritOnSpacing.lg))
+        Text(paragraph, style = style)
+    }
+}
+
+@Composable
+private fun ReaderActionTray(post: PostEntity, onApplaud: () -> Unit, onComment: () -> Unit, onSave: () -> Unit, onShare: () -> Unit) {
+    Surface(color = BrandBeige) {
+        Surface(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = WritOnSpacing.md, vertical = WritOnSpacing.sm),
+            shape = RoundedCornerShape(WritOnRadius.feature), color = SurfacePaper,
+            tonalElevation = WritOnElevation.flat, shadowElevation = WritOnElevation.raised
+        ) {
+            Row(Modifier.fillMaxWidth().padding(vertical = WritOnSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
+                ReaderTrayAction("Applaud", post.likesCnt, onApplaud, post.isLiked) {
+                    Image(painterResource(R.drawable.ic_applaud), null, Modifier.size(26.dp))
+                }
+                ReaderTrayDivider()
+                ReaderTrayAction("Comment", post.commentsCnt, onComment) { Image(painterResource(R.drawable.ic_comment), null, Modifier.size(26.dp)) }
+                ReaderTrayDivider()
+                ReaderTrayAction("Save", null, onSave, post.isBookmarked) {
+                    Image(painterResource(if (post.isBookmarked) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark), null, Modifier.size(26.dp))
+                }
+                ReaderTrayDivider()
+                ReaderTrayAction("Share", null, onShare) { Image(painterResource(R.drawable.ic_share), null, Modifier.size(26.dp)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RowScope.ReaderTrayAction(label: String, count: Int?, onClick: () -> Unit, isAccent: Boolean = false, icon: @Composable () -> Unit) {
+    val color = if (isAccent) BrandRed else MaterialTheme.colorScheme.onSurface
+    Column(
+        Modifier.weight(1f).clip(RoundedCornerShape(WritOnRadius.field)).clickable(onClick = onClick).padding(vertical = WritOnSpacing.xs),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            CompositionLocalProvider(LocalContentColor provides color) { icon() }
+            count?.let { Spacer(Modifier.width(WritOnSpacing.xs)); Text(it.toString(), style = MaterialTheme.typography.labelLarge, color = color) }
+        }
+        Spacer(Modifier.height(WritOnSpacing.xxs))
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@Composable
+private fun ReaderTrayDivider() = VerticalDivider(Modifier.height(52.dp), color = MaterialTheme.colorScheme.outlineVariant)
+
+@Composable
+private fun ReaderComment(name: String, avatarUrl: String?, content: String, timestamp: String) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        AsyncImage(avatarUrl ?: "https://ui-avatars.com/api/?name=$name", name, Modifier.size(36.dp).clip(CircleShape), contentScale = ContentScale.Crop)
+        Spacer(Modifier.width(WritOnSpacing.sm))
+        Column(Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(name, style = MaterialTheme.typography.titleMedium)
+                Spacer(Modifier.width(WritOnSpacing.xs))
+                Text(timestamp.take(10), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(WritOnSpacing.xxs))
+            Text(content, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}
+
+private fun shareStory(context: Context, post: PostEntity) {
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        putExtra(Intent.EXTRA_TEXT, "Check out this story: ${post.title}\\n\\nhttps://writon.co/posts/${post.slug}")
+        type = "text/plain"
+    }
+    context.startActivity(Intent.createChooser(intent, null))
 }

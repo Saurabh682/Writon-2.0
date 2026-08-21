@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#2196f3</color>
-    <color name="colorPrimaryDark">#2196f3</color>
-    <!--<color name="colorPrimaryDark">#1976D2</color>-->
-    <color name="colorAccent">#2196f3</color>
-    <color name="newBlue">#73B2E0</color>
-    <color name="colorBlack">#000000</color>
-    <color name="colorWhite">#ffffff</color>
-    <color name="colorLessWhite">#FAFAFA</color>
-    <color name="colorLightWhite">#d4d2d2</color>
-    <color name="colorLightGrey">#e9e6e6</color>
-    <color name="colorGrey">#5c5c5c</color>
-    <color name="colorGreyLight">#8A8A8A</color>
+    <color name="colorPrimary">#6D6963</color>
+    <color name="colorPrimaryDark">#6D6963</color>
+    <!--<color name="colorPrimaryDark">#6D6963</color>-->
+    <color name="colorAccent">#6D6963</color>
+    <color name="newBlue">#6D6963</color>
+    <color name="colorBlack">#151718</color>
+    <color name="colorWhite">#FFFDF9</color>
+    <color name="colorLessWhite">#F8F4EE</color>
+    <color name="colorLightWhite">#E9E1D7</color>
+    <color name="colorLightGrey">#E9E1D7</color>
+    <color name="colorGrey">#6D6963</color>
+    <color name="colorGreyLight">#6D6963</color>
 
-    <color name="newColorGrey">#97A0C6</color>
-    <color name="newColorYellow">#FFE600</color>
-    <color name="newRedColor">#FF7878</color>
-    <color name="colorGreen">#24d600</color>
-    <color name="sTab">#2196f3</color>colorFacebook
-    <color name="usTab">#1976D2</color>
-    <color name="colorFacebook">#013364</color>
-    <color name="bgColor">#f2efed</color>
-    <color name="textViewBg">#e6e6e6</color>
-    <color name="grey">#E5E7ED</color>
-    <color name="green">#158B10</color>
+    <color name="newColorGrey">#6D6963</color>
+    <color name="newColorYellow">#6D6963</color>
+    <color name="newRedColor">#E75A2A</color>
+    <color name="colorGreen">#151718</color>
+    <color name="sTab">#6D6963</color>colorFacebook
+    <color name="usTab">#6D6963</color>
+    <color name="colorFacebook">#151718</color>
+    <color name="bgColor">#F2ECE4</color>
+    <color name="textViewBg">#E9E1D7</color>
+    <color name="grey">#E9E1D7</color>
+    <color name="green">#151718</color>
     <color name="textGreen">@color/green</color>
-    <color name="lightBlue">#61B7FE</color>
+    <color name="lightBlue">#6D6963</color>
     <!-- Screens background color-->
-    <color name="bg_screen1">#f64c73</color>
-    <color name="bg_screen2">#20d2bb</color>
-    <color name="bg_screen3">#3395ff</color>
-    <color name="bg_screen4">#c873f4</color>
+    <color name="bg_screen1">#E75A2A</color>
+    <color name="bg_screen2">#6D6963</color>
+    <color name="bg_screen3">#6D6963</color>
+    <color name="bg_screen4">#E9E1D7</color>
 
     <!-- dots inactive colors -->
-    <color name="dot_dark_screen1">#d1395c</color>
-    <color name="dot_dark_screen2">#14a895</color>
-    <color name="dot_dark_screen3">#2278d4</color>
-    <color name="dot_dark_screen4">#a854d4</color>
+    <color name="dot_dark_screen1">#E75A2A</color>
+    <color name="dot_dark_screen2">#6D6963</color>
+    <color name="dot_dark_screen3">#6D6963</color>
+    <color name="dot_dark_screen4">#6D6963</color>
 
     <!-- dots active colors -->
-    <color name="dot_light_screen1">#f98da5</color>
-    <color name="dot_light_screen2">#8cf9eb</color>
-    <color name="dot_light_screen3">#93c6fd</color>
-    <color name="dot_light_screen4">#e4b5fc</color>
+    <color name="dot_light_screen1">#E75A2A</color>
+    <color name="dot_light_screen2">#E9E1D7</color>
+    <color name="dot_light_screen3">#E9E1D7</color>
+    <color name="dot_light_screen4">#E9E1D7</color>
 
 
-    <color name="purple">#8676FB</color>
-    <color name="purpleLight">#E7E4FE</color>
-    <color name="greyblue">#97A0C6</color>
-    <color name="verylightPurple">#f5f4f9</color>
-    <color name="spotlightBackground">#BF000000</color>
+    <color name="purple">#6D6963</color>
+    <color name="purpleLight">#F2ECE4</color>
+    <color name="greyblue">#6D6963</color>
+    <color name="verylightPurple">#F2ECE4</color>
+    <color name="spotlightBackground">#151718</color>
 
 
     <array name="array_dot_active">

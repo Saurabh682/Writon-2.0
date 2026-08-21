@@ -20,6 +20,22 @@ class EditorViewModel(
 
     val aiSuggestion = MutableStateFlow<String?>(null)
 
+    fun updateTitle(value: String) {
+        title.value = value
+    }
+
+    fun updateContent(value: String) {
+        content.value = value
+    }
+
+    fun updateSummary(value: String) {
+        summary.value = value
+    }
+
+    fun updateCategory(value: String) {
+        category.value = value
+    }
+
     fun runAICopilot(action: String) {
         viewModelScope.launch {
             val text = content.value

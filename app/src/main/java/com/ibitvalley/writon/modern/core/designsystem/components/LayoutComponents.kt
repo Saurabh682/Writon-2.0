@@ -6,12 +6,8 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
-import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,12 +18,17 @@ fun ModernTopBar(
     actions: @Composable RowScope.() -> Unit = {},
 ) {
     TopAppBar(
-        title = { Text(title, fontWeight = FontWeight.Bold, fontSize = 20.sp) },
+        title = {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleLarge
+            )
+        },
         navigationIcon = navigationIcon ?: {},
         actions = actions,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = BrandBeige,
-            titleContentColor = Color.Black
+            containerColor = MaterialTheme.colorScheme.background,
+            titleContentColor = MaterialTheme.colorScheme.onBackground
         ),
         modifier = modifier
     )
@@ -42,15 +43,15 @@ fun ModernTabRow(
 ) {
     ScrollableTabRow(
         selectedTabIndex = selectedTabIndex,
-        containerColor = BrandBeige,
-        contentColor = BrandRed,
-        edgePadding = 16.dp,
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor = MaterialTheme.colorScheme.primary,
+        edgePadding = WritOnSpacing.md,
         divider = {},
         modifier = modifier,
         indicator = { tabPositions ->
             TabRowDefaults.SecondaryIndicator(
                 Modifier.tabIndicatorOffset(tabPositions[selectedTabIndex]),
-                color = BrandRed
+                color = MaterialTheme.colorScheme.primary
             )
         }
     ) {
@@ -61,8 +62,8 @@ fun ModernTabRow(
                 text = { 
                     Text(
                         text = title,
-                        fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal,
-                        fontSize = 14.sp
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (selectedTabIndex == index) FontWeight.Bold else FontWeight.Normal
                     ) 
                 }
             )
@@ -79,17 +80,16 @@ fun EmptyState(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .padding(WritOnSpacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         icon?.invoke()
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(WritOnSpacing.md))
         Text(
             text = message,
-            color = Color.Gray,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Medium
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

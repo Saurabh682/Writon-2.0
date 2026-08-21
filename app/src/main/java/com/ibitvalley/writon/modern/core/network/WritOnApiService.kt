@@ -6,6 +6,14 @@ import retrofit2.http.*
 
 interface WritOnApiService {
 
+    @GET("api/v1/me")
+    suspend fun getMyProfile(): Response<MyProfileResponseDto>
+
+    @PUT("api/v1/me")
+    suspend fun upsertMyProfile(
+        @Body request: UpsertMyProfileRequestDto
+    ): Response<MyProfileResponseDto>
+
     @GET("api/v1/posts")
     suspend fun getPosts(
         @Query("category") category: String? = null,

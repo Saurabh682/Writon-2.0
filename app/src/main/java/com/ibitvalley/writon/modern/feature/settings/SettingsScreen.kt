@@ -1,142 +1,189 @@
 package com.ibitvalley.writon.modern.feature.settings
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ibitvalley.writon.modern.core.designsystem.components.ModernTopBar
+import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
-import androidx.compose.runtime.*
+import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 
-@OptIn(ExperimentalMaterial3Api::class)
+private val SettingsEditorialFamily = FontFamily(
+    Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
+    Font(R.font.source_serif_4_semibold, weight = FontWeight.SemiBold),
+    Font(R.font.source_serif_4_semibold, weight = FontWeight.Bold)
+)
+
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit,
-    onInterestsClick: () -> Unit
+    onInterestsClick: () -> Unit,
+    onSearchClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    onSavedStoriesClick: () -> Unit = {},
+    onLogOut: () -> Unit = {}
 ) {
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var emailUpdatesEnabled by remember { mutableStateOf(false) }
+    var showAboutDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            ModernTopBar(
-                title = "Settings",
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        },
-        containerColor = BrandBeige
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier.padding(innerPadding).fillMaxSize(),
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            item {
-                SettingsSection("Account")
-                SettingsItem("Edit Profile", Icons.Default.Person)
-                SettingsItem("Account Settings", Icons.Default.Settings)
-                SettingsItem("Privacy", Icons.Default.Shield)
-                SettingsItem("Blocked Users", Icons.Default.Block)
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                SettingsSection("Preferences")
-                SettingsItem(
-                    title = "Content Preferences", 
-                    icon = Icons.Default.GridOn,
-                    onClick = onInterestsClick
-                )
-                SettingsItem("Reading Preferences", Icons.Default.MenuBook)
-                SettingsItem(
-                    title = "Notifications", 
-                    icon = Icons.Default.Notifications,
-                    trailing = {
-                        Switch(
-                            checked = notificationsEnabled,
-                            onCheckedChange = { notificationsEnabled = it },
-                            colors = SwitchDefaults.colors(checkedThumbColor = BrandRed, checkedTrackColor = BrandRed.copy(alpha = 0.5f))
-                        )
-                    }
-                )
-                SettingsItem(
-                    title = "Email Updates", 
-                    icon = Icons.Default.Mail,
-                    trailing = {
-                        Switch(
-                            checked = emailUpdatesEnabled,
-                            onCheckedChange = { emailUpdatesEnabled = it },
-                            colors = SwitchDefaults.colors(checkedThumbColor = BrandRed, checkedTrackColor = BrandRed.copy(alpha = 0.5f))
-                        )
-                    }
-                )
-                SettingsItem("App Appearance", Icons.Default.Brightness6, "Light")
+    if (showAboutDialog) {
+        AlertDialog(
+            onDismissRequest = { showAboutDialog = false },
+            title = { Text("About WritOn", fontFamily = SettingsEditorialFamily) },
+            text = { Text("WritOn 1.0.0\nA calm place to read, write, and support thoughtful stories.") },
+            confirmButton = {
+                TextButton(onClick = { showAboutDialog = false }) { Text("Close", color = BrandRed) }
+            }
+        )
+    }
 
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = { /* Logout logic */ },
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandRed.copy(alpha = 0.1f), contentColor = BrandRed),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text("Logout", fontWeight = FontWeight.Bold)
-                }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
+        verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
+    ) {
+        item { SettingsHeader(onSearchClick) }
+        item {
+            SettingsSection("PREFERENCES") {
+                SettingsRow("Appearance", "Theme, font size, line height", R.drawable.ic_sun_orange, enabled = false)
+                SettingsRow("Reading", "Choose your reading interests", R.drawable.ic_book_orange, onClick = onInterestsClick)
+                SettingsRow("Notifications", "View activity and reminders", R.drawable.ic_notification_orange, onClick = onNotificationsClick)
+                SettingsRow("Applause", "Vibration and effects", icon = null, useApplaudIcon = true, enabled = false)
+                SettingsRow("Saving & Downloads", "View saved stories and offline cache", R.drawable.ic_bookmark_orange, onClick = onSavedStoriesClick)
+            }
+        }
+        item {
+            SettingsSection("ACCOUNT") {
+                SettingsRow("Account", "Profile editing", avatar = "AK", enabled = false)
+                SettingsRow("Privacy", "Privacy controls", R.drawable.ic_shield_orange, enabled = false)
+                SettingsRow("Help & Support", "FAQs and contact us", R.drawable.ic_help_orange, enabled = false)
+                SettingsRow("About WritOn", "Version 1.0.0", R.drawable.ic_info_orange, onClick = { showAboutDialog = true })
+            }
+        }
+        item {
+            SettingsSection("MORE") {
+                SettingsRow("Log out", "", R.drawable.ic_logout_orange, accent = true, onClick = onLogOut)
             }
         }
     }
 }
 
 @Composable
-fun SettingsSection(title: String) {
-    Text(
-        text = title,
-        fontWeight = FontWeight.Bold,
-        fontSize = 14.sp,
-        modifier = Modifier.padding(vertical = 8.dp)
-    )
+private fun SettingsHeader(onSearchClick: () -> Unit) {
+    Column {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            WritOnBrandMark(width = 108.dp)
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = onSearchClick) { Image(painterResource(R.drawable.ic_search), contentDescription = "Search", modifier = Modifier.size(24.dp)) }
+            IconButton(onClick = { }) { Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "More settings options", modifier = Modifier.size(24.dp)) }
+        }
+        Spacer(Modifier.height(WritOnSpacing.lg))
+        Text(
+            "Settings",
+            style = MaterialTheme.typography.displayLarge.copy(fontFamily = SettingsEditorialFamily, fontSize = 36.sp, lineHeight = 42.sp)
+        )
+        Spacer(Modifier.height(WritOnSpacing.xs))
+        Text(
+            "Personalize your experience.",
+            style = MaterialTheme.typography.bodyLarge.copy(fontFamily = SettingsEditorialFamily, fontSize = 16.sp, lineHeight = 22.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(Modifier.height(WritOnSpacing.md))
+        Surface(color = BrandRed, shape = CircleShape, modifier = Modifier.width(72.dp).height(4.dp)) { }
+    }
 }
 
 @Composable
-fun SettingsItem(
-    title: String, 
-    icon: ImageVector, 
-    value: String? = null, 
-    trailing: @Composable (() -> Unit)? = null,
+private fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Column {
+        Text(
+            title,
+            style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 1.1.sp),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(bottom = WritOnSpacing.sm)
+        )
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(WritOnRadius.card),
+            color = SurfacePaper,
+            tonalElevation = WritOnElevation.flat,
+            shadowElevation = WritOnElevation.raised
+        ) {
+            Column(content = content)
+        }
+    }
+}
+
+@Composable
+private fun SettingsRow(
+    title: String,
+    subtitle: String,
+    icon: Int? = null,
+    useApplaudIcon: Boolean = false,
+    avatar: String? = null,
+    accent: Boolean = false,
+    enabled: Boolean = true,
     onClick: () -> Unit = {}
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp), tint = Color.Black)
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(title, modifier = Modifier.weight(1f), fontSize = 16.sp)
-        if (value != null) {
-            Text(value, color = Color.Gray, fontSize = 14.sp, modifier = Modifier.padding(end = 8.dp))
+    val color = when {
+        !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
+        accent -> BrandRed
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(WritOnRadius.field))
+                .clickable(enabled = enabled, onClick = onClick)
+                .padding(horizontal = WritOnSpacing.md, vertical = WritOnSpacing.xs),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            when {
+                avatar != null -> Surface(shape = CircleShape, color = BrandBeige, modifier = Modifier.size(40.dp)) {
+                    Box(contentAlignment = Alignment.Center) { Text(avatar, style = MaterialTheme.typography.labelLarge) }
+                }
+                useApplaudIcon -> Image(painterResource(R.drawable.ic_applaud), contentDescription = null, modifier = Modifier.size(26.dp))
+                icon != null -> Image(painterResource(icon), contentDescription = null, modifier = Modifier.size(26.dp))
+            }
+            Spacer(Modifier.width(WritOnSpacing.md))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleLarge.copy(fontSize = 17.sp, lineHeight = 22.sp), color = color)
+                if (subtitle.isNotBlank() || !enabled) {
+                    Spacer(Modifier.height(WritOnSpacing.xxs))
+                    Text(
+                        if (enabled) subtitle else "$subtitle · Coming soon",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, lineHeight = 17.sp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            if (enabled) {
+                Image(painterResource(R.drawable.ic_chevron_right_muted), contentDescription = null, modifier = Modifier.size(20.dp))
+            }
         }
-        if (trailing != null) {
-            trailing()
-        } else {
-            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.LightGray)
-        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f), modifier = Modifier.padding(horizontal = WritOnSpacing.md))
     }
 }

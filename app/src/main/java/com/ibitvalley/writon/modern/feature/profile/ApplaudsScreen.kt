@@ -1,114 +1,288 @@
 package com.ibitvalley.writon.modern.feature.profile
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.R
-import com.ibitvalley.writon.modern.core.designsystem.components.ModernTabRow
-import com.ibitvalley.writon.modern.core.designsystem.components.ModernTopBar
-import com.ibitvalley.writon.modern.core.designsystem.components.UserListItem
-import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
+import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 
-@OptIn(ExperimentalMaterial3Api::class)
+private val ApplaudsEditorialFamily = FontFamily(
+    Font(R.font.source_serif_4_regular, FontWeight.Normal),
+    Font(R.font.source_serif_4_semibold, FontWeight.SemiBold),
+    Font(R.font.source_serif_4_semibold, FontWeight.Bold)
+)
+
+private data class ApplaudedStory(
+    val id: String,
+    val kind: String,
+    val title: String,
+    val author: String,
+    val time: String,
+    val coverTone: Color,
+    val coverLabel: String,
+    val hasCover: Boolean = true
+)
+
+private val applaudedStories = listOf(
+    ApplaudedStory("letters", "Stories", "Letters to the Things I Left Behind", "Sara Roy", "2m ago", Color(0xFF6D6963), "Warm\nwindow"),
+    ApplaudedStory("solitude", "Articles", "The Architecture of Solitude", "Arjun Mehta", "15m ago", Color(0xFF6D6963), "Still\nwater"),
+    ApplaudedStory("train", "Stories", "The Last Train Home", "Maya Lin", "1h ago", Color(0xFF6D6963), "Last\ntrain"),
+    ApplaudedStory("ourselves", "Articles", "What We Owe Ourselves", "Karan Malhotra", "3h ago", Color(0xFF151718), "Night\nsky"),
+    ApplaudedStory("waves", "Poems", "Small Moments, Big Waves", "Diya Sharma", "5h ago", Color(0xFF6D6963), "Paper\nboat")
+)
+
 @Composable
-fun ApplaudsScreen(onBackClick: () -> Unit) {
-    var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("People", "Stories", "Timeline")
+fun ApplaudsScreen(
+    onBackClick: () -> Unit = {},
+    onStoryClick: (String) -> Unit = {},
+    onSearchClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {}
+) {
+    var selectedTab by rememberSaveable { mutableStateOf("All") }
+    var applaudedIds by rememberSaveable { mutableStateOf(applaudedStories.map { it.id }.toSet()) }
+    var expandedStoryId by rememberSaveable { mutableStateOf<String?>(null) }
+    val stories = applaudedStories.filter { it.id in applaudedIds && (selectedTab == "All" || it.kind == selectedTab) }
+    val totalApplauds = 132 - (applaudedStories.size - applaudedIds.size)
 
-    Scaffold(
-        topBar = {
-            ModernTopBar(
-                title = "Applauds",
-                navigationIcon = {
-                    IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                },
-                actions = {
-                    TextButton(onClick = { /* Filter menu */ }) {
-                        Text("All Time", color = Color.Black)
-                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.Black)
-                    }
-                }
-            )
-        },
-        containerColor = BrandBeige
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier.padding(innerPadding).fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Spacer(modifier = Modifier.height(32.dp))
-            
-            // Large Applaud Icon
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(BrandRed.copy(alpha = 0.1f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.speech), // Mock icon
-                    contentDescription = null,
-                    tint = BrandRed,
-                    modifier = Modifier.size(60.dp)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text("2,432", fontSize = 36.sp, fontWeight = FontWeight.Bold)
-            Text("Total Applauds", color = Color.Gray, fontSize = 14.sp)
-            Text("+348 this month", color = Color(0xFF4CAF50), fontSize = 14.sp, modifier = Modifier.padding(top = 4.dp))
-
-            Spacer(modifier = Modifier.height(48.dp))
-
-            ModernTabRow(
-                selectedTabIndex = selectedTab,
-                tabs = tabs,
-                onTabSelected = { selectedTab = it }
-            )
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(16.dp)
-            ) {
-                if (selectedTab == 0) {
-                    items(listOf("Aiden Cross", "Isha Verma", "Maya Patel", "Julian Ross")) { name ->
-                        UserListItem(
-                            name = name,
-                            penName = name.replace(" ", "").lowercase(),
-                            avatarUrl = "https://ui-avatars.com/api/?name=$name",
-                            trailingContent = {
-                                Text("24s ago", color = Color.Gray, fontSize = 12.sp)
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = WritOnSpacing.lg, end = WritOnSpacing.lg, top = WritOnSpacing.md, bottom = WritOnSpacing.xl),
+        verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
+    ) {
+        item { ApplaudsHeader(onSearchClick, onSettingsClick) }
+        item { ApplaudsTabs(selectedTab, onSelect = { selectedTab = it }) }
+        item { ApplaudsSummary(totalApplauds) }
+        if (stories.isEmpty()) {
+            item { EmptyApplauds(selectedTab) }
+        } else {
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    color = Color(0xFFFFFDF9),
+                    shape = RoundedCornerShape(WritOnRadius.feature),
+                    shadowElevation = WritOnElevation.raised
+                ) {
+                    Column {
+                        stories.forEachIndexed { index, story ->
+                            ApplaudedStoryRow(
+                                story = story,
+                                expanded = expandedStoryId == story.id,
+                                onClick = { onStoryClick(story.id) },
+                                onToggleApplaud = {
+                                    applaudedIds = if (story.id in applaudedIds) applaudedIds - story.id else applaudedIds + story.id
+                                },
+                                onMoreClick = { expandedStoryId = story.id },
+                                onDismissMore = { expandedStoryId = null },
+                                onRemove = {
+                                    applaudedIds = applaudedIds - story.id
+                                    expandedStoryId = null
+                                }
+                            )
+                            if (index < stories.lastIndex) {
+                                androidx.compose.material3.HorizontalDivider(color = Color(0xFFE9E1D7), modifier = Modifier.padding(start = WritOnSpacing.md))
                             }
-                        )
-                    }
-                } else {
-                    item {
-                        com.ibitvalley.writon.modern.core.designsystem.components.EmptyState(message = "No data for ${tabs[selectedTab].lowercase()}.")
+                        }
                     }
                 }
             }
+        }
+        item { ApplaudsFooter() }
+    }
+}
+
+@Composable
+private fun ApplaudsHeader(onSearchClick: () -> Unit, onSettingsClick: () -> Unit) {
+    Column {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            WritOnBrandMark(width = 108.dp)
+            Spacer(Modifier.weight(1f))
+            IconButton(onClick = onSearchClick) { Image(painterResource(R.drawable.ic_search), contentDescription = "Search", modifier = Modifier.size(24.dp)) }
+            IconButton(onClick = onSettingsClick) { Image(painterResource(R.drawable.ic_settings), contentDescription = "Settings", modifier = Modifier.size(24.dp)) }
+        }
+        Text(
+            "Applauds",
+            modifier = Modifier.padding(top = 48.dp),
+            style = MaterialTheme.typography.displayLarge.copy(fontFamily = ApplaudsEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 48.sp)
+        )
+        Text(
+            "Stories you applauded.",
+            modifier = Modifier.padding(top = WritOnSpacing.xs),
+            style = MaterialTheme.typography.titleLarge.copy(fontFamily = ApplaudsEditorialFamily, fontSize = 17.sp),
+            color = Color(0xFF6D6963)
+        )
+    }
+}
+
+@Composable
+private fun ApplaudsTabs(selectedTab: String, onSelect: (String) -> Unit) {
+    val tabs = listOf("All", "Stories", "Poems", "Articles")
+    Row(modifier = Modifier.fillMaxWidth()) {
+        tabs.forEach { tab ->
+            Column(
+                modifier = Modifier.weight(1f).clickable { onSelect(tab) },
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    tab,
+                    fontSize = 15.sp,
+                    color = if (tab == selectedTab) BrandRed else Color(0xFF6D6963),
+                    fontWeight = if (tab == selectedTab) FontWeight.Medium else FontWeight.Normal
+                )
+                Spacer(Modifier.height(13.dp))
+                Surface(
+                    modifier = Modifier.fillMaxWidth().height(if (tab == selectedTab) 3.dp else 1.dp),
+                    color = if (tab == selectedTab) BrandRed else Color(0xFFE9E1D7)
+                ) {}
+            }
+        }
+    }
+}
+
+@Composable
+private fun ApplaudsSummary(total: Int) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFFFFFDF9),
+        shape = RoundedCornerShape(WritOnRadius.feature),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(painterResource(R.drawable.ic_applaud), contentDescription = null, modifier = Modifier.size(52.dp))
+            Spacer(Modifier.width(WritOnSpacing.lg))
+            Column {
+                Text(
+                    total.toString(),
+                    style = MaterialTheme.typography.displaySmall.copy(fontFamily = ApplaudsEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 40.sp)
+                )
+                Text("Total applauds", fontSize = 15.sp, color = Color(0xFF6D6963))
+            }
+            Spacer(Modifier.weight(1f))
+            androidx.compose.material3.VerticalDivider(modifier = Modifier.height(52.dp), color = Color(0xFFE9E1D7))
+            Spacer(Modifier.width(WritOnSpacing.lg))
+            Text("Keep supporting\ngreat writers!", fontSize = 15.sp, lineHeight = 21.sp, color = Color(0xFF6D6963))
+        }
+    }
+}
+
+@Composable
+private fun ApplaudedStoryRow(
+    story: ApplaudedStory,
+    expanded: Boolean,
+    onClick: () -> Unit,
+    onToggleApplaud: () -> Unit,
+    onMoreClick: () -> Unit,
+    onDismissMore: () -> Unit,
+    onRemove: () -> Unit
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().heightIn(min = 112.dp).clickable(onClick = onClick).padding(horizontal = WritOnSpacing.md, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        if (story.hasCover) {
+            StoryCover(story)
+            Spacer(Modifier.width(WritOnSpacing.md))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                story.title,
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = ApplaudsEditorialFamily, fontSize = 21.sp, lineHeight = 25.sp, fontWeight = FontWeight.SemiBold),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text("by ${story.author}", modifier = Modifier.padding(top = 5.dp), fontSize = 15.sp, color = Color(0xFF6D6963), maxLines = 1)
+        }
+        Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.Center) {
+            Text(story.time, fontSize = 13.sp, color = Color(0xFF6D6963))
+            Row(modifier = Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onToggleApplaud, modifier = Modifier.size(40.dp)) {
+                    Image(painterResource(R.drawable.ic_applaud), contentDescription = "Remove applaud", modifier = Modifier.size(26.dp))
+                }
+                Box {
+                    IconButton(onClick = onMoreClick, modifier = Modifier.size(36.dp)) {
+                        Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "Story options", modifier = Modifier.size(24.dp))
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = onDismissMore) {
+                        DropdownMenuItem(text = { Text("Remove from applauds") }, onClick = onRemove)
+                        DropdownMenuItem(text = { Text("Share") }, onClick = onDismissMore)
+                        DropdownMenuItem(text = { Text("Open author") }, onClick = onDismissMore)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StoryCover(story: ApplaudedStory) {
+    Surface(
+        modifier = Modifier.size(72.dp),
+        color = story.coverTone,
+        shape = RoundedCornerShape(WritOnRadius.field)
+    ) {
+        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.SpaceBetween) {
+            Surface(shape = CircleShape, color = Color(0xFFFFFDF9).copy(alpha = 0.25f), modifier = Modifier.size(18.dp)) {}
+            Text(story.coverLabel, color = Color(0xFFFFFDF9), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, lineHeight = 15.sp)
+        }
+    }
+}
+
+@Composable
+private fun EmptyApplauds(tab: String) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Image(painterResource(R.drawable.ic_applaud), contentDescription = null, modifier = Modifier.size(38.dp))
+        Text("No $tab applauds yet", modifier = Modifier.padding(top = WritOnSpacing.sm), style = MaterialTheme.typography.titleLarge.copy(fontFamily = ApplaudsEditorialFamily))
+    }
+}
+
+@Composable
+private fun ApplaudsFooter() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFFF2ECE4),
+        shape = RoundedCornerShape(WritOnRadius.field)
+    ) {
+        Row(
+            modifier = Modifier.padding(WritOnSpacing.md),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("♡", color = BrandRed, fontSize = 39.sp)
+            Spacer(Modifier.width(WritOnSpacing.md))
+            Text("Your applause encourages writers\nand helps stories reach more readers.", modifier = Modifier.weight(1f), fontSize = 14.sp, lineHeight = 20.sp, color = Color(0xFF6D6963))
+            Text("Thank you!", color = BrandRed, fontSize = 15.sp, fontWeight = FontWeight.Medium)
         }
     }
 }

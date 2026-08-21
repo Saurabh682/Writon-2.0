@@ -1,6 +1,7 @@
 package com.ibitvalley.writon.modern.feature.welcome
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -11,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -20,9 +22,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnTheme
+import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
+import com.ibitvalley.writon.R
 
-private val BrandBeigeColor = Color(0xFFF9F7F2)
-private val BrandRedColor = Color(0xFFB0301B)
+private val BrandBeigeColor = Color(0xFFF8F4EE)
+private val BrandRedColor = Color(0xFFE75A2A)
 
 @Composable
 fun WelcomeScreen(
@@ -33,23 +37,25 @@ fun WelcomeScreen(
         modifier = Modifier.fillMaxSize(),
         color = BrandBeigeColor
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 32.dp),
-            horizontalAlignment = Alignment.Start
-        ) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painterResource(R.drawable.welcome_feather),
+                contentDescription = null,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 70.dp)
+                    .size(230.dp)
+            )
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 32.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
             Spacer(modifier = Modifier.height(64.dp))
 
             // Logo Header
-            Text(
-                text = "WritOn",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    fontSize = 48.sp,
-                    fontWeight = FontWeight.Bold
-                ),
-                color = Color.Black
-            )
+            WritOnBrandMark(width = 192.dp)
 
             Text(
                 text = "EDITORIAL 2.0",
@@ -77,7 +83,7 @@ fun WelcomeScreen(
                     lineHeight = 48.sp,
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color.Black
+                color = Color(0xFF151718)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -121,7 +127,7 @@ fun WelcomeScreen(
                 Text(
                     text = "Get Started",
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
+                    color = Color(0xFFFFFDF9)
                 )
             }
 
@@ -134,7 +140,7 @@ fun WelcomeScreen(
                     .height(56.dp),
                 border = BorderStroke(1.dp, BrandRedColor),
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF151718))
             ) {
                 Text(
                     text = "I already have an account",
@@ -157,12 +163,13 @@ fun WelcomeScreen(
                     }
                 },
                 style = MaterialTheme.typography.bodySmall,
-                color = Color.Gray,
+                color = Color(0xFF6D6963),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(32.dp))
+            }
         }
     }
 }
@@ -190,7 +197,7 @@ fun PageIndicator(isSelected: Boolean) {
         modifier = Modifier
             .size(8.dp)
             .clip(CircleShape)
-            .background(if (isSelected) BrandRedColor else Color.LightGray)
+            .background(if (isSelected) BrandRedColor else Color(0xFFE9E1D7))
     )
 }
 

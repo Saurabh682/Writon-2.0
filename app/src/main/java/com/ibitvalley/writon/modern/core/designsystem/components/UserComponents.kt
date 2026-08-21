@@ -17,7 +17,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 
 @Composable
 fun UserAvatar(
@@ -40,13 +41,13 @@ fun UserAvatar(
             modifier = modifier
                 .size(size)
                 .clip(CircleShape)
-                .background(Color.LightGray),
+                .background(MaterialTheme.colorScheme.surfaceVariant),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = name.take(1).uppercase(),
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 fontSize = (size.value * 0.4).sp
             )
         }
@@ -63,12 +64,12 @@ fun FollowButton(
         onClick = onClick,
         modifier = modifier.height(36.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isFollowing) Color.Transparent else BrandRed,
-            contentColor = if (isFollowing) BrandRed else Color.White
+            containerColor = if (isFollowing) Color.Transparent else MaterialTheme.colorScheme.primary,
+            contentColor = if (isFollowing) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
         ),
-        border = if (isFollowing) androidx.compose.foundation.BorderStroke(1.dp, BrandRed) else null,
-        shape = RoundedCornerShape(18.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
+        border = if (isFollowing) androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.primary) else null,
+        shape = RoundedCornerShape(WritOnRadius.pill),
+        contentPadding = PaddingValues(horizontal = WritOnSpacing.md, vertical = 0.dp)
     ) {
         Text(
             text = if (isFollowing) "Following" else "Follow",
@@ -91,14 +92,14 @@ fun UserListItem(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 8.dp),
+            .padding(vertical = WritOnSpacing.xs),
         verticalAlignment = Alignment.CenterVertically
     ) {
         UserAvatar(url = avatarUrl, name = name)
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(WritOnSpacing.sm))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            Text(text = "@$penName", color = Color.Gray, fontSize = 12.sp)
+            Text(text = name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text(text = "@$penName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         trailingContent?.invoke()
     }

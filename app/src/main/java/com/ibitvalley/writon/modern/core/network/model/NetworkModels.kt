@@ -90,3 +90,28 @@ data class CreatePostRequestDto(
 data class UserProfileResponseDto(
     @SerializedName("user") val user: AuthorDto
 )
+
+data class MyProfileDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("email") val email: String?,
+    @SerializedName("penName") val penName: String,
+    @SerializedName("fullName") val fullName: String,
+    @SerializedName("bio") val bio: String?,
+    @SerializedName("avatarUrl") val avatarUrl: String?,
+    @SerializedName("location") val location: String?,
+    @SerializedName("joinedAt") val joinedAt: String,
+    @SerializedName("followersCount") val followersCount: Int,
+    @SerializedName("followingCount") val followingCount: Int
+)
+
+data class MyProfileResponseDto(
+    @SerializedName("profile") val profile: MyProfileDto
+)
+
+data class UpsertMyProfileRequestDto(
+    @SerializedName("penName") val penName: String,
+    @SerializedName("fullName") val fullName: String,
+    @SerializedName("bio") val bio: String? = null,
+    @SerializedName("avatarUrl") val avatarUrl: String? = null,
+    @SerializedName("location") val location: String? = null
+)

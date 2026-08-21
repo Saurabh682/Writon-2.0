@@ -3,21 +3,15 @@ package com.ibitvalley.writon.modern.feature.auth
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -31,10 +25,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnTheme
 
-private val BrandBeigeColor = Color(0xFFF9F7F2)
-private val BrandRedColor = Color(0xFFB0301B)
+private val BrandBeigeColor = Color(0xFFF8F4EE)
+private val BrandRedColor = Color(0xFFE75A2A)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,6 +41,8 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+    var isSubmitting by remember { mutableStateOf(false) }
+    var authError by remember { mutableStateOf<String?>(null) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -58,13 +55,17 @@ fun LoginScreen(
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Back Button
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.Black
-                )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBackClick) {
+                    Image(painterResource(R.drawable.ic_back), contentDescription = "Back", modifier = Modifier.size(24.dp))
+                }
+                TextButton(onClick = onBackClick) {
+                    Text("Skip", color = BrandRedColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -76,13 +77,13 @@ fun LoginScreen(
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Bold
                 ),
-                color = Color.Black
+                color = Color(0xFF151718)
             )
 
             Text(
                 text = "Glad to see you again.",
                 style = MaterialTheme.typography.bodyLarge,
-                color = Color.Gray,
+                color = Color(0xFF6D6963),
                 modifier = Modifier.padding(top = 8.dp)
             )
 
@@ -100,7 +101,7 @@ fun LoginScreen(
             Text(
                 text = "Email or Username",
                 style = MaterialTheme.typography.labelLarge,
-                color = Color.Black,
+                color = Color(0xFF151718),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             OutlinedTextField(
@@ -108,17 +109,17 @@ fun LoginScreen(
                 onValueChange = { email = it },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Enter your email or username") },
-                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                leadingIcon = { Image(painterResource(R.drawable.ic_email), contentDescription = null, modifier = Modifier.size(22.dp)) },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
+                    focusedTextColor = Color(0xFF151718),
+                    unfocusedTextColor = Color(0xFF151718),
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedBorderColor = BrandRedColor,
-                    unfocusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color(0xFF6D6963),
                     focusedLeadingIconColor = BrandRedColor,
-                    unfocusedLeadingIconColor = Color.Gray
+                    unfocusedLeadingIconColor = Color(0xFF6D6963)
                 )
             )
 
@@ -127,7 +128,7 @@ fun LoginScreen(
             Text(
                 text = "Password",
                 style = MaterialTheme.typography.labelLarge,
-                color = Color.Black,
+                color = Color(0xFF151718),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
             OutlinedTextField(
@@ -135,25 +136,25 @@ fun LoginScreen(
                 onValueChange = { password = it },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Enter your password") },
-                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                leadingIcon = { Image(painterResource(R.drawable.ic_lock), contentDescription = null, modifier = Modifier.size(22.dp)) },
                 trailingIcon = {
-                    val image = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
+                    val image = if (passwordVisible) R.drawable.ic_eye else R.drawable.ic_eye_off
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(imageVector = image, contentDescription = null)
+                        Image(painterResource(image), contentDescription = null, modifier = Modifier.size(22.dp))
                     }
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedTextColor = Color.Black,
-                    unfocusedTextColor = Color.Black,
+                    focusedTextColor = Color(0xFF151718),
+                    unfocusedTextColor = Color(0xFF151718),
                     focusedContainerColor = Color.Transparent,
                     unfocusedContainerColor = Color.Transparent,
                     focusedBorderColor = BrandRedColor,
-                    unfocusedBorderColor = Color.Gray,
+                    unfocusedBorderColor = Color(0xFF6D6963),
                     focusedLeadingIconColor = BrandRedColor,
-                    unfocusedLeadingIconColor = Color.Gray
+                    unfocusedLeadingIconColor = Color(0xFF6D6963)
                 )
             )
 
@@ -171,7 +172,23 @@ fun LoginScreen(
 
             // Sign In Button
             Button(
-                onClick = onSignInClick,
+                onClick = {
+                    authError = null
+                    isSubmitting = true
+                    FirebaseAuthManager.signIn(
+                        email = email,
+                        password = password,
+                        onSuccess = {
+                            isSubmitting = false
+                            onSignInClick()
+                        },
+                        onError = { message ->
+                            isSubmitting = false
+                            authError = message
+                        }
+                    )
+                },
+                enabled = email.isNotBlank() && password.isNotBlank() && !isSubmitting,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -179,9 +196,18 @@ fun LoginScreen(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    text = "Sign In",
+                    text = if (isSubmitting) "Signing in…" else "Sign In",
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
+                    color = Color(0xFFFFFDF9)
+                )
+            }
+
+            authError?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(top = 12.dp)
                 )
             }
 
@@ -192,14 +218,14 @@ fun LoginScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 16.dp)
             ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.LightGray)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE9E1D7))
                 Text(
                     text = "or continue with",
                     modifier = Modifier.padding(horizontal = 16.dp),
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
+                    color = Color(0xFF6D6963)
                 )
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.LightGray)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE9E1D7))
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -234,6 +260,7 @@ fun LoginScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 32.dp)
+                    .clickable { onSignUpClick() }
             )
         }
     }
@@ -251,8 +278,8 @@ fun SocialButton(
             .fillMaxWidth()
             .height(56.dp),
         shape = RoundedCornerShape(12.dp),
-        border = BorderStroke(1.dp, Color.LightGray),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Black)
+        border = BorderStroke(1.dp, Color(0xFFE9E1D7)),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF151718))
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
