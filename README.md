@@ -1,135 +1,100 @@
-# 🖋️ WritOn 2.0 — Modern Full-Stack Publishing Platform
+# WritOn 2.0
 
-> A multi-platform publishing platform (Web + Android + High-Performance Backend) sharing a unified database, offline outbox synchronization, and a **zero-cloud-cost on-device/in-browser AI engine**.
+WritOn is an Android-first editorial publishing app. The active production path is a Kotlin/Jetpack Compose client backed by a Fastify API and Supabase Postgres.
 
----
-
-## 🏛️ System Architecture
+## Active architecture
 
 ```mermaid
-graph TB
-    subgraph Clients
-        Web["🌐 Web Client (React 19 + Vite + Tailwind)"]
-        Android["📱 Android App (Kotlin + Jetpack Compose)"]
-    end
-
-    subgraph "Zero-Cost Local AI Engine"
-        WebAI["⚡ Web Speech TTS & In-Browser AI Engine"]
-        AndroidAI["🧠 On-Device Gemma 2B & Heuristic Summarizer"]
-    end
-
-    subgraph "Offline Persistence & Outbox Sync"
-        WebCache["💾 LocalStorage & Session Cache"]
-        AndroidDB["📦 Room SQLite DB + WorkManager Outbox"]
-    end
-
-    subgraph "Shared Backend & Hosting"
-        API["⚡ Hono Node.js REST API (Port 3001)"]
-        DB[("🗄️ SQLite / MySQL / PostgreSQL via Drizzle ORM")]
-    end
-
-    Web <--> WebAI
-    Android <--> AndroidAI
-    Web <--> WebCache
-    Android <--> AndroidDB
-    WebCache <--> API
-    AndroidDB <--> API
-    API <--> DB
+flowchart LR
+  Android[Android app\nCompose + Room] -->|Firebase ID token| API[Fastify API]
+  Android -->|offline mutations| Room[Room outbox + WorkManager]
+  Room -->|retry when online| API
+  API -->|service credentials| Firebase[Firebase Admin]
+  API --> Postgres[Supabase Postgres]
 ```
 
----
+- Active server entry point: `server/src/server.js`
+- Active database: Supabase Postgres
+- Authentication: Firebase Authentication ID tokens verified by Firebase Admin
+- Offline writes: Room outbox retried by WorkManager
 
-## 📦 Project Structure
+`server/src/index.ts`, `server/src/routes/`, and the SQLite/Drizzle files are legacy code retained for migration reference. They are not the deployment entry point.
 
-```text
-WritOn-PowerUp/
-├── server/                         # High-Performance Node.js / Hono Backend
-│   ├── src/
-│   │   ├── auth/                   # JWT & Bcrypt password utils
-│   │   ├── db/                     # Drizzle ORM schema, SQLite db, seed script
-│   │   ├── routes/                 # auth, posts, comments, users, media
-│   │   └── index.ts                # Server entry point
-│   ├── test/                       # Vitest integration test suite
-│   └── Dockerfile                  # Multi-stage production container
-│
-├── web/                            # Modern Editorial Web Application
-│   ├── src/
-│   │   ├── components/             # FeedView, StoryReader, StoryEditor, AuthorProfile, AuthModal
-│   │   ├── context/                # AuthContext (JWT session management)
-│   │   ├── lib/                    # API client, Zero-Cost Client AI Engine, Web Speech Audio
-│   │   └── types.ts                # Domain types & interfaces
-│   └── Dockerfile                  # Production Nginx container
-│
-├── app/                            # Modern Native Android Application
-│   └── src/main/java/.../modern/
-│       ├── core/designsystem/      # Compose Editorial Theme, Typography, Colors
-│       ├── core/network/           # Retrofit 2 + OkHttp + JWT AuthInterceptor
-│       ├── core/database/          # AndroidX Room DB (Post, User, OutboxMutation entities)
-│       ├── core/ai/                # On-Device Gemma 2B AI Engine interface
-│       ├── data/repository/        # Offline-first PostRepository with Kotlin Flow
-│       ├── data/sync/              # AndroidX WorkManager OutboxSyncWorker
-│       ├── feature/                # Compose FeedScreen, ReaderScreen, EditorScreen, ProfileScreen
-│       └── WritOnModernActivity.kt # Compose Navigation Host
-│
-├── docker-compose.yml              # 1-Click Containerized Full-Stack Deployment
-└── ecosystem.config.cjs            # PM2 Cluster Config for VPS / cPanel hosting
-```
+## Run the API locally
 
----
-
-## ⚡ Quickstart
-
-### 1. Run the Backend API (`server/`)
-```bash
+```powershell
 cd server
+Copy-Item .env.example .env
 npm install
-npm run db:seed     # Seeds initial realistic authors, stories, comments, likes
-npm run dev         # Launches Hono API on http://localhost:3001
+npm run dev
+Invoke-RestMethod http://localhost:3001/health
 ```
 
-Run test suite:
-```bash
-npm test            # Runs Vitest test suite (11/11 tests passing)
+Set these values in `server/.env` locally, or in your host's encrypted environment-variable settings when deploying:
+
+- `DATABASE_URL` — Supabase Postgres connection string
+- `FIREBASE_SERVICE_ACCOUNT_JSON` — one-line Firebase service-account JSON
+- `CORS_ORIGINS` — comma-separated HTTPS origins in production
+
+Never commit `.env`, Firebase JSON, a database URL, or Android signing keys.
+
+## Deploy the API to Render
+
+`render.yaml` deploys the Docker-based Fastify service from `server/Dockerfile`, exposes the `/health` check, and keeps credentials out of Git.
+
+1. Push these changes to GitHub.
+2. In Render, select **New → Blueprint**, connect the WritOn repository, then select `render.yaml`.
+3. Provide the three prompted secrets:
+   - `DATABASE_URL`: the Supabase Postgres connection URI.
+   - `FIREBASE_SERVICE_ACCOUNT_JSON`: minified contents of the Firebase Admin service-account JSON.
+   - `CORS_ORIGINS`: the exact HTTPS web origin, such as `https://writon.example`. Use a temporary HTTPS placeholder if the Android app is the only client for now.
+4. After the deploy is healthy, copy the generated `https://…onrender.com` URL into `WRITON_RELEASE_API_BASE_URL`.
+
+Render Blueprints support Docker build contexts, health-check paths, and dashboard-supplied `sync: false` secrets; the generated service URL is public HTTPS. [Render Blueprint reference](https://render.com/docs/blueprint-spec)
+
+## Android API configuration
+
+Copy `gradle.properties.example` to either the project `gradle.properties` or your user Gradle properties, then set the appropriate endpoint:
+
+```properties
+# Emulator debug build
+WRITON_DEBUG_API_BASE_URL=http://10.0.2.2:3001/
+
+# Physical device debug build (your computer's LAN address)
+# WRITON_DEBUG_API_BASE_URL=http://192.168.x.x:3001/
+
+# Release builds must use a real HTTPS API host.
+WRITON_RELEASE_API_BASE_URL=https://api.your-domain.example/
 ```
 
-### 2. Run the Web Application (`web/`)
-```bash
-cd web
-npm install
-npm run dev         # Launches Vite dev server on http://localhost:3000
+Debug permits HTTP for local development. Release builds permit HTTPS only and redact authorization tokens from logs.
+
+## Android release signing
+
+Copy `keystore.properties.example` to the ignored `keystore.properties` and provide a newly generated upload key. The former tracked upload key has been removed from Git tracking; rotate it in Google Play Console before any production release.
+
+## API surface
+
+| Method | Endpoint | Requires a Firebase token |
+| --- | --- | --- |
+| `GET` | `/health` | No |
+| `GET`, `PUT` | `/api/v1/me` | Yes |
+| `GET`, `POST` | `/api/v1/posts` | GET no, POST yes |
+| `GET` | `/api/v1/posts/:idOrSlug` | No |
+| `POST` | `/api/v1/posts/:id/like` | Yes |
+| `POST` | `/api/v1/posts/:id/bookmark` | Yes |
+| `GET`, `POST` | `/api/v1/comments/:postId` | GET no, POST yes |
+| `GET` | `/api/v1/users/:idOrPenName` | No |
+| `POST` | `/api/v1/users/:id/follow` | Yes |
+
+## Verification
+
+```powershell
+cd server
+npm run build
+npm test                 # Fastify API contract tests
+npm run test:legacy      # optional Hono/SQLite migration-reference tests
+Invoke-RestMethod http://localhost:3001/health
 ```
 
-### 3. Run with Docker Compose
-```bash
-docker compose up --build
-```
-
----
-
-## 📡 REST API Reference
-
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/v1/auth/register` | Register new user & issue JWT | No |
-| `POST` | `/api/v1/auth/login` | Login user & issue JWT | No |
-| `GET` | `/api/v1/auth/me` | Current authenticated user profile | Yes |
-| `GET` | `/api/v1/posts` | Paginated stories (`?category=x&tab=latest\|trending\|following&q=search`) | Optional |
-| `GET` | `/api/v1/posts/:id_or_slug` | Story details + interaction state | Optional |
-| `POST` | `/api/v1/posts` | Publish new story | Yes |
-| `PUT` | `/api/v1/posts/:id` | Update story | Yes |
-| `DELETE` | `/api/v1/posts/:id` | Delete story | Yes |
-| `POST` | `/api/v1/posts/:id/like` | Toggle applause / like | Yes |
-| `POST` | `/api/v1/posts/:id/bookmark`| Toggle bookmark | Yes |
-| `GET` | `/api/v1/comments/:postId` | Fetch threaded comments tree | No |
-| `POST` | `/api/v1/comments/:postId` | Add comment or nested reply | Yes |
-| `GET` | `/api/v1/users/:id_or_penName` | Fetch author profile & metrics | Optional |
-| `POST` | `/api/v1/users/:id/follow` | Toggle follow / unfollow | Yes |
-| `POST` | `/api/v1/media/upload` | Multipart image upload | Yes |
-
----
-
-## 🧠 Zero-Cost Local AI Engine Capabilities
-
-- **Reader AI Insights**: In-browser/on-device automatic TL;DR extraction, 3-bullet core takeaways, and tone classification without sending private story contents to third-party paid APIs.
-- **AI Writing Copilot**: On-the-fly syntax tightening, literary tone enrichment, and headline generation.
-- **Audio Story Narration**: High-fidelity Web Speech & Android TTS narration with speed rate controls (1.0x, 1.25x, 1.5x).
+Add broader authenticated Fastify integration coverage before a public release.

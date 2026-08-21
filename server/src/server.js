@@ -1,5 +1,7 @@
 import 'dotenv/config';
-import { readFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
@@ -7,30 +9,9 @@ import pg from 'pg';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { z } from 'zod';
+import { loadFirebaseServiceAccount, loadRuntimeConfig } from './config.js';
 
 const { Pool } = pg;
-
-const fastify = Fastify({ logger: true });
-const port = Number(process.env.PORT || 3001);
-
-if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL is missing. Add it to your .env file.');
-}
-
-const serviceAccount = JSON.parse(
-  await readFile(
-    new URL('../serviceAccountKey.json', import.meta.url),
-    'utf8'
-  )
-);
-
-const firebaseApp = getApps().length
-  ? getApps()[0]
-  : initializeApp({
-      credential: cert(serviceAccount),
-    });
-
-const firebaseAuth = getAuth(firebaseApp);
 
 const profileInputSchema = z.object({
   penName: z.string().trim().toLowerCase().min(3).max(32)
@@ -49,12 +30,42 @@ const postsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 
-const database = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
+const postInputSchema = z.object({
+  title: z.string().trim().min(3).max(160),
+  content: z.string().trim().min(1).max(100_000),
+  summary: z.string().trim().max(500).nullable().optional(),
+  category: z.string().trim().min(2).max(80),
+  coverImage: z.string().url().max(2_000).nullable().optional(),
+  isPublished: z.boolean().default(true),
 });
 
-await fastify.register(cors, { origin: true });
+const commentInputSchema = z.object({
+  content: z.string().trim().min(1).max(5_000),
+});
+
+const postIdSchema = z.string().uuid();
+const profileIdentifierSchema = z.string().trim().min(1).max(200);
+
+export async function buildServer({ runtimeConfig, pool, auth } = {}) {
+const fastify = Fastify({ logger: true });
+const config = runtimeConfig ?? loadRuntimeConfig();
+const serviceAccount = auth ? null : await loadFirebaseServiceAccount(config);
+const firebaseApp = auth
+  ? null
+  : (getApps().length
+    ? getApps()[0]
+    : initializeApp({ credential: cert(serviceAccount) }));
+const firebaseAuth = auth ?? getAuth(firebaseApp);
+
+const database = pool ?? new Pool({
+  connectionString: config.databaseUrl,
+  max: config.databasePoolMax,
+  ssl: { rejectUnauthorized: config.databaseSslRejectUnauthorized },
+});
+
+await fastify.register(cors, {
+  origin: config.environment === 'production' ? config.corsOrigins : true,
+});
 await fastify.register(helmet);
 
 async function requireUser(request, reply) {
@@ -126,10 +137,119 @@ function postSelectSql(whereClause) {
       select 1 from public.bookmarks bookmark
       where bookmark.post_id = p.id and bookmark.user_id = $1
     ) as "isBookmarked",
-    false as "isFollowingAuthor"
+    exists(
+      select 1 from public.follows follow
+      where follow.follower_id = $1 and follow.following_id = author.id
+    ) as "isFollowingAuthor"
   from public.posts p
   inner join public.profiles author on author.id = p.author_id
   ${whereClause}`;
+}
+
+function toAuthor(row) {
+  return {
+    id: row.id,
+    penName: row.pen_name,
+    fullName: row.full_name,
+    avatarUrl: row.avatar_url,
+    bio: row.bio,
+    quoteOfDay: null,
+    followersCnt: row.followers_count,
+    followingCnt: row.following_count,
+  };
+}
+
+function createSlug(title) {
+  const readablePart = title
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 72) || 'story';
+
+  return `${readablePart}-${randomUUID().slice(0, 8)}`;
+}
+
+function calculateReadingTime(content) {
+  const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(wordCount / 200));
+}
+
+function parsePostId(request, reply) {
+  const postId = postIdSchema.safeParse(request.params.id ?? request.params.postId);
+  if (!postId.success) {
+    reply.code(400).send({ error: 'Invalid story identifier' });
+    return null;
+  }
+  return postId.data;
+}
+
+function parseProfileIdentifier(request, reply) {
+  const identifier = profileIdentifierSchema.safeParse(request.params.idOrPenName ?? request.params.id);
+  if (!identifier.success) {
+    reply.code(400).send({ error: 'Invalid profile identifier' });
+    return null;
+  }
+  return identifier.data;
+}
+
+async function fetchInteractionPost(client, postId, userId) {
+  const result = await client.query(
+    `select id, author_id, likes_count, bookmarks_count, comments_count
+     from public.posts
+     where id = $1 and status = 'published' and is_public = true
+     for update`,
+    [postId]
+  );
+  return result.rows[0] ?? null;
+}
+
+async function togglePostRelation({ postId, userId, table, counterColumn }) {
+  const client = await database.connect();
+
+  try {
+    await client.query('begin');
+    const post = await fetchInteractionPost(client, postId, userId);
+    if (!post) {
+      await client.query('rollback');
+      return null;
+    }
+
+    const existing = await client.query(
+      `select 1 from public.${table} where post_id = $1 and user_id = $2`,
+      [postId, userId]
+    );
+
+    const enabled = existing.rowCount === 0;
+    if (enabled) {
+      await client.query(
+        `insert into public.${table} (post_id, user_id) values ($1, $2)`,
+        [postId, userId]
+      );
+    } else {
+      await client.query(
+        `delete from public.${table} where post_id = $1 and user_id = $2`,
+        [postId, userId]
+      );
+    }
+
+    const updated = await client.query(
+      `update public.posts
+       set ${counterColumn} = greatest(${counterColumn} + $2, 0), updated_at = now()
+       where id = $1
+       returning ${counterColumn} as count`,
+      [postId, enabled ? 1 : -1]
+    );
+    await client.query('commit');
+
+    return { enabled, count: updated.rows[0].count };
+  } catch (error) {
+    await client.query('rollback');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 function toProfile(row) {
@@ -251,6 +371,268 @@ fastify.get('/api/v1/posts/:idOrSlug', async (request, reply) => {
   return { post: result.rows[0] };
 });
 
+fastify.post(
+  '/api/v1/posts',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const parsed = postInputSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({
+        error: 'Invalid story data',
+        details: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    await ensureProfile(request.user);
+    const story = parsed.data;
+    const result = await database.query(
+      `insert into public.posts (
+        slug, author_id, title, summary, content, category, cover_image_url,
+        status, is_public, reading_time_min, published_at
+      ) values ($1, $2, $3, $4, $5, $6, $7, $8, true, $9, case when $8 = 'published' then now() else null end)
+      returning id`,
+      [
+        createSlug(story.title),
+        request.user.uid,
+        story.title,
+        story.summary ?? null,
+        story.content,
+        story.category,
+        story.coverImage ?? null,
+        story.isPublished ? 'published' : 'draft',
+        calculateReadingTime(story.content),
+      ]
+    );
+
+    const postResult = await database.query(
+      `${postSelectSql('where p.id = $2')}`,
+      [request.user.uid, result.rows[0].id]
+    );
+    return reply.code(201).send({ post: postResult.rows[0] });
+  }
+);
+
+fastify.post(
+  '/api/v1/posts/:id/like',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const postId = parsePostId(request, reply);
+    if (!postId) return;
+
+    await ensureProfile(request.user);
+    const interaction = await togglePostRelation({
+      postId,
+      userId: request.user.uid,
+      table: 'post_applauds',
+      counterColumn: 'likes_count',
+    });
+    if (!interaction) return reply.code(404).send({ error: 'Story not found' });
+
+    return { liked: interaction.enabled, likesCount: interaction.count };
+  }
+);
+
+fastify.post(
+  '/api/v1/posts/:id/bookmark',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const postId = parsePostId(request, reply);
+    if (!postId) return;
+
+    await ensureProfile(request.user);
+    const interaction = await togglePostRelation({
+      postId,
+      userId: request.user.uid,
+      table: 'bookmarks',
+      counterColumn: 'bookmarks_count',
+    });
+    if (!interaction) return reply.code(404).send({ error: 'Story not found' });
+
+    return { bookmarked: interaction.enabled, bookmarksCount: interaction.count };
+  }
+);
+
+fastify.get('/api/v1/comments/:postId', async (request, reply) => {
+  const postId = parsePostId(request, reply);
+  if (!postId) return;
+
+  const result = await database.query(
+    `select
+      comment.id::text as id,
+      comment.post_id::text as "postId",
+      comment.author_id as "authorId",
+      null::text as "parentId",
+      comment.content,
+      comment.created_at as "createdAt",
+      json_build_object(
+        'id', author.id,
+        'penName', author.pen_name,
+        'fullName', author.full_name,
+        'avatarUrl', author.avatar_url,
+        'bio', author.bio,
+        'quoteOfDay', null,
+        'followersCnt', author.followers_count,
+        'followingCnt', author.following_count
+      ) as author,
+      '[]'::json as replies
+    from public.comments comment
+    inner join public.posts post on post.id = comment.post_id
+    inner join public.profiles author on author.id = comment.author_id
+    where comment.post_id = $1 and post.status = 'published' and post.is_public = true
+    order by comment.created_at asc`,
+    [postId]
+  );
+
+  return { comments: result.rows, total: result.rowCount };
+});
+
+fastify.post(
+  '/api/v1/comments/:postId',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const postId = parsePostId(request, reply);
+    if (!postId) return;
+    const parsed = commentInputSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({
+        error: 'Invalid comment data',
+        details: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    await ensureProfile(request.user);
+    const client = await database.connect();
+    try {
+      await client.query('begin');
+      const post = await fetchInteractionPost(client, postId, request.user.uid);
+      if (!post) {
+        await client.query('rollback');
+        return reply.code(404).send({ error: 'Story not found' });
+      }
+
+      const inserted = await client.query(
+        `insert into public.comments (post_id, author_id, content)
+         values ($1, $2, $3)
+         returning id, post_id, author_id, content, created_at`,
+        [postId, request.user.uid, parsed.data.content]
+      );
+      await client.query(
+        `update public.posts set comments_count = comments_count + 1, updated_at = now() where id = $1`,
+        [postId]
+      );
+      const author = await client.query(
+        `select id, pen_name, full_name, avatar_url, bio, followers_count, following_count
+         from public.profiles where id = $1`,
+        [request.user.uid]
+      );
+      await client.query('commit');
+
+      const comment = inserted.rows[0];
+      return reply.code(201).send({
+        comment: {
+          id: comment.id,
+          postId: comment.post_id,
+          authorId: comment.author_id,
+          parentId: null,
+          content: comment.content,
+          createdAt: comment.created_at,
+          author: toAuthor(author.rows[0]),
+          replies: [],
+        },
+      });
+    } catch (error) {
+      await client.query('rollback');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+);
+
+fastify.get('/api/v1/users/:idOrPenName', async (request, reply) => {
+  const identifier = parseProfileIdentifier(request, reply);
+  if (!identifier) return;
+
+  const result = await database.query(
+    `select id, pen_name, full_name, avatar_url, bio, followers_count, following_count
+     from public.profiles
+     where id = $1 or lower(pen_name) = lower($1)
+     limit 1`,
+    [identifier]
+  );
+  if (result.rowCount === 0) return reply.code(404).send({ error: 'Writer not found' });
+
+  return { user: toAuthor(result.rows[0]) };
+});
+
+fastify.post(
+  '/api/v1/users/:id/follow',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const profileId = parseProfileIdentifier(request, reply);
+    if (!profileId) return;
+    if (profileId === request.user.uid) {
+      return reply.code(400).send({ error: 'You cannot follow yourself' });
+    }
+
+    await ensureProfile(request.user);
+    const client = await database.connect();
+    try {
+      await client.query('begin');
+      const target = await client.query(
+        `select id from public.profiles where id = $1 for update`,
+        [profileId]
+      );
+      if (target.rowCount === 0) {
+        await client.query('rollback');
+        return reply.code(404).send({ error: 'Writer not found' });
+      }
+
+      const existing = await client.query(
+        `select 1 from public.follows where follower_id = $1 and following_id = $2`,
+        [request.user.uid, profileId]
+      );
+      const following = existing.rowCount === 0;
+      if (following) {
+        await client.query(
+          `insert into public.follows (follower_id, following_id) values ($1, $2)`,
+          [request.user.uid, profileId]
+        );
+      } else {
+        await client.query(
+          `delete from public.follows where follower_id = $1 and following_id = $2`,
+          [request.user.uid, profileId]
+        );
+      }
+
+      const targetProfile = await client.query(
+        `update public.profiles
+         set followers_count = greatest(followers_count + $2, 0), updated_at = now()
+         where id = $1
+         returning followers_count`,
+        [profileId, following ? 1 : -1]
+      );
+      await client.query(
+        `update public.profiles
+         set following_count = greatest(following_count + $2, 0), updated_at = now()
+         where id = $1`,
+        [request.user.uid, following ? 1 : -1]
+      );
+      await client.query('commit');
+
+      return {
+        following,
+        followersCount: targetProfile.rows[0].followers_count,
+      };
+    } catch (error) {
+      await client.query('rollback');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+);
+
 fastify.put(
   '/api/v1/me',
   { preHandler: requireUser },
@@ -299,9 +681,19 @@ fastify.put(
   }
 );
 
-try {
-  await fastify.listen({ port, host: '0.0.0.0' });
-} catch (error) {
-  fastify.log.error(error);
-  process.exit(1);
+  return fastify;
+}
+
+const isEntrypoint = process.argv[1]
+  && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+if (isEntrypoint) {
+  const runtimeConfig = loadRuntimeConfig();
+  const fastify = await buildServer({ runtimeConfig });
+  try {
+    await fastify.listen({ port: runtimeConfig.port, host: '0.0.0.0' });
+  } catch (error) {
+    fastify.log.error(error);
+    process.exit(1);
+  }
 }

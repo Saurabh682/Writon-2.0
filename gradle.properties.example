@@ -1,0 +1,11 @@
+# Add these properties to a local Gradle properties file; do not commit a production URL
+# until the API is deployed behind HTTPS.
+
+# Android emulator
+WRITON_DEBUG_API_BASE_URL=http://10.0.2.2:3001/
+
+# Physical device on the same Wi-Fi network (replace with your computer's LAN IP)
+# WRITON_DEBUG_API_BASE_URL=http://192.168.1.10:3001/
+
+# Required for a usable release build. The release variant accepts HTTPS only.
+WRITON_RELEASE_API_BASE_URL=https://api.your-domain.example/

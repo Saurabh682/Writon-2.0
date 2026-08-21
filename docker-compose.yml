@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   writon-backend:
     build:
@@ -12,12 +10,15 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3001
-      - JWT_SECRET=writon-production-secure-jwt-secret-key
-      - DATABASE_PATH=/data/writon.db
-    volumes:
-      - writon-data:/data
-      - writon-uploads:/app/uploads
-
+      - DATABASE_URL=${DATABASE_URL:?Set DATABASE_URL through your deployment secret store.}
+      - CORS_ORIGINS=${CORS_ORIGINS:?Set CORS_ORIGINS to your web application's HTTPS origin.}
+      - FIREBASE_SERVICE_ACCOUNT_JSON=${FIREBASE_SERVICE_ACCOUNT_JSON:?Set FIREBASE_SERVICE_ACCOUNT_JSON through your deployment secret store.}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
   writon-web:
     build:
       context: ./web
@@ -28,7 +29,3 @@ services:
       - "3000:80"
     depends_on:
       - writon-backend
-
-volumes:
-  writon-data:
-  writon-uploads:

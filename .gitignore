@@ -2,11 +2,17 @@
 .idea/
 *.iml
 .gradle/
+.gradle-jdk17-check/
 build/
 captures/
 .externalNativeBuild/
 .cxx/
 local.properties
+keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pem
 
 # Output files
 *.apk

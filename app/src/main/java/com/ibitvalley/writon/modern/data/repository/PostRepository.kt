@@ -112,16 +112,12 @@ class PostRepository(
             val response = apiService.addComment(postId, mapOf("content" to content))
             if (response.isSuccessful) {
                 refreshComments(postId)
+            } else {
+                queueComment(postId, content)
             }
             Unit
         } catch (e: Exception) {
-            outboxDao.enqueueMutation(
-                OutboxMutationEntity(
-                    mutationType = "ADD_COMMENT",
-                    targetId = postId,
-                    payloadJson = gson.toJson(mapOf("content" to content))
-                )
-            )
+            queueComment(postId, content)
         }
     }
 
@@ -182,16 +178,12 @@ class PostRepository(
         postDao.updateLikeStatus(postId, newLiked, newCount)
 
         try {
-            apiService.toggleLike(postId)
+            val response = apiService.toggleLike(postId)
+            if (!response.isSuccessful) {
+                queueMutation("LIKE", postId)
+            }
         } catch (e: Exception) {
-            // Enqueue outbox mutation for background sync
-            outboxDao.enqueueMutation(
-                OutboxMutationEntity(
-                    mutationType = "LIKE",
-                    targetId = postId,
-                    payloadJson = "{}"
-                )
-            )
+            queueMutation("LIKE", postId)
         }
     }
 
@@ -203,16 +195,12 @@ class PostRepository(
         postDao.updateBookmarkStatus(postId, newBookmarked, newCount)
 
         try {
-            apiService.toggleBookmark(postId)
+            val response = apiService.toggleBookmark(postId)
+            if (!response.isSuccessful) {
+                queueMutation("BOOKMARK", postId)
+            }
         } catch (e: Exception) {
-            // Enqueue outbox mutation for background sync
-            outboxDao.enqueueMutation(
-                OutboxMutationEntity(
-                    mutationType = "BOOKMARK",
-                    targetId = postId,
-                    payloadJson = "{}"
-                )
-            )
+            queueMutation("BOOKMARK", postId)
         }
     }
 
@@ -231,18 +219,43 @@ class PostRepository(
                 val response = apiService.createPost(request)
                 if (response.isSuccessful) {
                     refreshPosts()
+                } else {
+                    queuePost(request)
                 }
                 Unit
             } catch (e: Exception) {
-                // Enqueue outbox draft for sync
-                outboxDao.enqueueMutation(
-                    OutboxMutationEntity(
-                        mutationType = "CREATE_POST",
-                        targetId = "local_${System.currentTimeMillis()}",
-                        payloadJson = gson.toJson(request)
-                    )
-                )
+                queuePost(request)
             }
         }
+    }
+
+    private suspend fun queueComment(postId: String, content: String) {
+        outboxDao.enqueueMutation(
+            OutboxMutationEntity(
+                mutationType = "ADD_COMMENT",
+                targetId = postId,
+                payloadJson = gson.toJson(mapOf("content" to content))
+            )
+        )
+    }
+
+    private suspend fun queueMutation(type: String, postId: String) {
+        outboxDao.enqueueMutation(
+            OutboxMutationEntity(
+                mutationType = type,
+                targetId = postId,
+                payloadJson = "{}"
+            )
+        )
+    }
+
+    private suspend fun queuePost(request: CreatePostRequestDto) {
+        outboxDao.enqueueMutation(
+            OutboxMutationEntity(
+                mutationType = "CREATE_POST",
+                targetId = "local_${System.currentTimeMillis()}",
+                payloadJson = gson.toJson(request)
+            )
+        )
     }
 }

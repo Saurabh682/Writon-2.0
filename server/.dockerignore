@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+serviceAccountKey.json
+writon.db
+writon.db-shm
+writon.db-wal
+uploads/
+backups/
+test/
+npm-debug.log*

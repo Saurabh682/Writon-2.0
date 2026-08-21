@@ -100,6 +100,19 @@ fun WritOnNavigation(
     val feedViewModel = remember { FeedViewModel(repository) }
     val editorViewModel = remember { EditorViewModel(repository) }
     val coroutineScope = rememberCoroutineScope()
+    val continueAfterAuthentication = {
+        FirebaseAuthManager.syncNetworkAuthToken { hasToken ->
+            if (!hasToken) {
+                Log.w("WritOnAuth", "Authentication succeeded but no Firebase token was available.")
+            } else if (userPreferences.isOnboardingComplete) {
+                navController.navigate(WritOnRoute.Home.route) {
+                    popUpTo(WritOnRoute.Welcome.route) { inclusive = true }
+                }
+            } else {
+                navController.navigate(WritOnRoute.Interests.createRoute())
+            }
+        }
+    }
     val startDestination = remember {
         if (FirebaseAuth.getInstance().currentUser == null) {
             WritOnRoute.Welcome.route
@@ -148,15 +161,7 @@ fun WritOnNavigation(
             composable(WritOnRoute.Login.route) {
                 LoginScreen(
                     onBackClick = { navController.popBackStack() },
-                    onSignInClick = {
-                        if (userPreferences.isOnboardingComplete) {
-                            navController.navigate(WritOnRoute.Home.route) {
-                                popUpTo(WritOnRoute.Welcome.route) { inclusive = true }
-                            }
-                        } else {
-                            navController.navigate(WritOnRoute.Interests.createRoute())
-                        }
-                    },
+                    onSignInClick = continueAfterAuthentication,
                     onSignUpClick = { navController.navigate(WritOnRoute.Signup.route) }
                 )
             }
@@ -164,15 +169,7 @@ fun WritOnNavigation(
                 SignupScreen(
                     onBackClick = { navController.popBackStack() },
                     onSignInClick = { navController.navigate(WritOnRoute.Login.route) },
-                    onCreateAccountClick = {
-                        if (userPreferences.isOnboardingComplete) {
-                            navController.navigate(WritOnRoute.Home.route) {
-                                popUpTo(WritOnRoute.Welcome.route) { inclusive = true }
-                            }
-                        } else {
-                            navController.navigate(WritOnRoute.Interests.createRoute())
-                        }
-                    }
+                    onCreateAccountClick = continueAfterAuthentication
                 )
             }
             composable(

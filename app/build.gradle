@@ -7,6 +7,28 @@ apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'com.jakewharton.butterknife'
 
+def signingProperties = new Properties()
+def signingPropertiesFile = rootProject.file('keystore.properties')
+if (signingPropertiesFile.exists()) {
+    signingPropertiesFile.withInputStream { signingProperties.load(it) }
+}
+
+def releaseSigningKeys = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
+def releaseSigningConfigured = releaseSigningKeys.every { signingProperties.getProperty(it)?.trim() }
+if (signingPropertiesFile.exists() && !releaseSigningConfigured) {
+    throw new GradleException('keystore.properties must define storeFile, storePassword, keyAlias, and keyPassword.')
+}
+
+def buildConfigString = { value ->
+    "\"${value.replace('\\', '\\\\').replace('\"', '\\\"')}\""
+}
+def debugApiBaseUrl = providers.gradleProperty('WRITON_DEBUG_API_BASE_URL')
+    .orElse('http://10.0.2.2:3001/')
+    .get()
+def releaseApiBaseUrl = providers.gradleProperty('WRITON_RELEASE_API_BASE_URL')
+    .orElse('https://api.example.com/')
+    .get()
+
 configurations.all {
     resolutionStrategy.eachDependency { DependencyResolveDetails details ->
         if (details.requested.group == 'org.jetbrains.kotlin') {
@@ -43,10 +65,12 @@ android {
 
     signingConfigs {
         release {
-            keyAlias 'writeon'
-            keyPassword 'writeon@123'
-            storeFile file("../writeon.jks")
-            storePassword 'writeon@123'
+            if (releaseSigningConfigured) {
+                keyAlias signingProperties.getProperty('keyAlias')
+                keyPassword signingProperties.getProperty('keyPassword')
+                storeFile rootProject.file(signingProperties.getProperty('storeFile'))
+                storePassword signingProperties.getProperty('storePassword')
+            }
         }
 
     }
@@ -69,10 +93,18 @@ android {
         }
     }
     buildTypes {
+        debug {
+            buildConfigField 'String', 'API_BASE_URL', buildConfigString(debugApiBaseUrl)
+            manifestPlaceholders.usesCleartextTraffic = true
+        }
         release {
+            buildConfigField 'String', 'API_BASE_URL', buildConfigString(releaseApiBaseUrl)
+            manifestPlaceholders.usesCleartextTraffic = false
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            if (releaseSigningConfigured) {
+                signingConfig signingConfigs.release
+            }
         }
     }
     compileOptions {

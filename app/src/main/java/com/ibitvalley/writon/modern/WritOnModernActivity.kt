@@ -5,10 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.navigation.compose.rememberNavController
 import com.ibitvalley.writon.modern.core.database.WritOnDatabase
+import com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager
 import com.ibitvalley.writon.modern.core.preferences.UserPreferences
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnTheme
 import com.ibitvalley.writon.modern.core.network.NetworkClient
 import com.ibitvalley.writon.modern.data.repository.PostRepository
+import com.ibitvalley.writon.modern.data.sync.OutboxSyncScheduler
 import com.ibitvalley.writon.modern.ui.navigation.WritOnNavigation
 
 class WritOnModernActivity : ComponentActivity() {
@@ -22,9 +24,7 @@ class WritOnModernActivity : ComponentActivity() {
 
         database = WritOnDatabase.getDatabase(this)
         userPreferences = UserPreferences(this)
-        
-        // FOR TESTING: Set a dummy token
-        NetworkClient.setAuthToken("test-token-julian-ross")
+        FirebaseAuthManager.syncNetworkAuthToken()
 
         repository = PostRepository(
             apiService = NetworkClient.apiService,
@@ -32,6 +32,7 @@ class WritOnModernActivity : ComponentActivity() {
             commentDao = database.commentDao(),
             outboxDao = database.outboxDao()
         )
+        OutboxSyncScheduler.schedule(applicationContext)
 
         setContent {
             WritOnTheme(darkTheme = false) { // Force light mode for "Editorial 2.0" look

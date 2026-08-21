@@ -1,5 +1,6 @@
 package com.ibitvalley.writon.modern.core.network
 
+import com.ibitvalley.writon.BuildConfig
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -9,8 +10,9 @@ import java.util.concurrent.TimeUnit
 
 object NetworkClient {
 
-    // Default to Android emulator host alias for localhost:3001
-    private const val BASE_URL = "http://10.0.2.2:3001/"
+    private val baseUrl = BuildConfig.API_BASE_URL.trim().let {
+        if (it.endsWith('/')) it else "$it/"
+    }
     private var userAuthToken: String? = null
 
     fun setAuthToken(token: String?) {
@@ -30,7 +32,12 @@ object NetworkClient {
     }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
+        redactHeader("Authorization")
     }
 
     private val okHttpClient = OkHttpClient.Builder()
@@ -42,7 +49,7 @@ object NetworkClient {
 
     val apiService: WritOnApiService by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

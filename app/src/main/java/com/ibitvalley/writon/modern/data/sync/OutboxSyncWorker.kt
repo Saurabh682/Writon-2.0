@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
+import com.google.gson.JsonParser
 import com.ibitvalley.writon.modern.core.database.WritOnDatabase
 import com.ibitvalley.writon.modern.core.network.NetworkClient
 import com.ibitvalley.writon.modern.core.network.model.CreatePostRequestDto
@@ -56,6 +57,25 @@ class OutboxSyncWorker(
                             allSuccessful = false
                         }
                     }
+                    "ADD_COMMENT" -> {
+                        val content = JsonParser.parseString(mutation.payloadJson)
+                            .asJsonObject
+                            .get("content")
+                            ?.asString
+                            ?.trim()
+                            .orEmpty()
+                        if (content.isBlank()) {
+                            allSuccessful = false
+                            continue
+                        }
+                        val response = apiService.addComment(mutation.targetId, mapOf("content" to content))
+                        if (response.isSuccessful) {
+                            outboxDao.markMutationSynced(mutation.mutationId)
+                        } else {
+                            allSuccessful = false
+                        }
+                    }
+                    else -> allSuccessful = false
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
