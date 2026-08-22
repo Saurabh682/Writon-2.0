@@ -92,15 +92,13 @@ android {
         debug {
             buildConfigField 'String', 'API_BASE_URL', buildConfigString(debugApiBaseUrl)
             manifestPlaceholders.usesCleartextTraffic = true
+            signingConfig signingConfigs.debug
         }
         release {
             buildConfigField 'String', 'API_BASE_URL', buildConfigString(releaseApiBaseUrl)
             manifestPlaceholders.usesCleartextTraffic = false
-            minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            if (releaseSigningConfigured) {
-                signingConfig signingConfigs.release
-            }
+            minifyEnabled false
+            signingConfig signingConfigs.debug
         }
     }
 }
