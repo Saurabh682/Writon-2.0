@@ -1,0 +1,463 @@
+package com.ibitvalley.writon.modern.feature.comments
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.database.model.CommentEntity
+import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
+import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
+import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+
+private val CommentsEditorialFamily = FontFamily(
+    Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
+    Font(R.font.source_serif_4_semibold, weight = FontWeight.SemiBold),
+    Font(R.font.source_serif_4_semibold, weight = FontWeight.Bold)
+)
+
+data class DisplayComment(
+    val id: String,
+    val authorName: String,
+    val authorAvatarUrl: String?,
+    val content: String,
+    val timeAgo: String,
+    val applaudsCount: Int = 0,
+    val repliesCount: Int = 0,
+    val isApplauded: Boolean = false,
+    val replies: List<DisplayComment> = emptyList()
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CommentsScreen(
+    comments: List<CommentEntity>,
+    currentUserInitials: String = "You",
+    totalCount: Int = comments.size,
+    onBackClick: () -> Unit,
+    onSubmitComment: (String, String?) -> Unit,
+    onApplaudComment: (String) -> Unit = {}
+) {
+    var commentInput by remember { mutableStateOf("") }
+    var replyingTo by remember { mutableStateOf<DisplayComment?>(null) }
+    var sortExpanded by remember { mutableStateOf(false) }
+    var selectedSort by remember { mutableStateOf("Most recent") }
+
+    // Map Room CommentEntity list or enrich with mock items if empty for demo
+    val displayComments = remember(comments, selectedSort) {
+        val baseList = if (comments.isNotEmpty()) {
+            comments.mapIndexed { index, entity ->
+                DisplayComment(
+                    id = entity.id,
+                    authorName = entity.authorName,
+                    authorAvatarUrl = entity.authorAvatarUrl,
+                    content = entity.content,
+                    timeAgo = formatTimeAgo(entity.createdAt, index),
+                    applaudsCount = (45 - index * 7).coerceAtLeast(3),
+                    repliesCount = if (index == 0) 12 else if (index == 1) 4 else if (index == 3) 2 else 0
+                )
+            }
+        } else {
+            listOf(
+                DisplayComment("1", "Meera Iyer", null, "Beautifully written. This is exactly what I needed to read today.", "2h ago", 45, 12),
+                DisplayComment("2", "Rohan Sharma", null, "Slowing down helped me reconnect with the things I love. Thank you!", "5h ago", 23, 4),
+                DisplayComment("3", "Ananya Patel", null, "So honest and relatable. The section on boundaries really resonated with me.", "8h ago", 17, 0),
+                DisplayComment("4", "Vikram Desai", null, "Loved the practical takeaways. Already applying a few of these.", "12h ago", 31, 2),
+                DisplayComment("5", "Ishita Nair", null, "This gave me a new perspective. Thank you for sharing your journey.", "1d ago", 19, 0)
+            )
+        }
+
+        when (selectedSort) {
+            "Top applauds" -> baseList.sortedByDescending { it.applaudsCount }
+            "Oldest" -> baseList.reversed()
+            else -> baseList
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "Comments",
+                            style = MaterialTheme.typography.headlineSmall.copy(
+                                fontFamily = CommentsEditorialFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 23.sp
+                            ),
+                            color = Color(0xFF191715)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            displayComments.size.coerceAtLeast(totalCount).toString(),
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            ),
+                            color = BrandRed
+                        )
+                    }
+                },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Image(painterResource(R.drawable.ic_back), contentDescription = "Back", modifier = Modifier.size(24.dp))
+                    }
+                },
+                actions = {
+                    Box {
+                        TextButton(onClick = { sortExpanded = true }) {
+                            Text(selectedSort, color = Color(0xFF6D6963), fontSize = 14.sp)
+                            Text(" ∨", color = Color(0xFF6D6963), fontSize = 12.sp)
+                        }
+                        DropdownMenu(expanded = sortExpanded, onDismissRequest = { sortExpanded = false }) {
+                            DropdownMenuItem(text = { Text("Most recent") }, onClick = { selectedSort = "Most recent"; sortExpanded = false })
+                            DropdownMenuItem(text = { Text("Top applauds") }, onClick = { selectedSort = "Top applauds"; sortExpanded = false })
+                            DropdownMenuItem(text = { Text("Oldest") }, onClick = { selectedSort = "Oldest"; sortExpanded = false })
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = BrandBeige)
+            )
+        },
+        containerColor = BrandBeige
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(horizontal = WritOnSpacing.lg)
+        ) {
+            Spacer(Modifier.height(WritOnSpacing.sm))
+
+            // Comment Composer Card
+            Surface(
+                shape = RoundedCornerShape(24.dp),
+                color = SurfacePaper,
+                border = BorderStroke(1.dp, Color(0xFFE9E1D7)),
+                tonalElevation = WritOnElevation.flat,
+                shadowElevation = 1.dp,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                    if (replyingTo != null) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+                        ) {
+                            Text(
+                                "Replying to @${replyingTo?.authorName}",
+                                fontSize = 12.sp,
+                                color = BrandRed,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            IconButton(onClick = { replyingTo = null }, modifier = Modifier.size(18.dp)) {
+                                Image(painterResource(R.drawable.ic_close), contentDescription = "Cancel reply", modifier = Modifier.size(12.dp))
+                            }
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // User Avatar
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFFEBE3D7),
+                            modifier = Modifier.size(38.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    currentUserInitials.take(2).uppercase(),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF5A524A)
+                                )
+                            }
+                        }
+
+                        Spacer(Modifier.width(12.dp))
+
+                        // TextField
+                        TextField(
+                            value = commentInput,
+                            onValueChange = { commentInput = it },
+                            placeholder = {
+                                Text(
+                                    if (replyingTo != null) "Write your reply..." else "Write a thoughtful comment...",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color(0xFF8C867D)
+                                )
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                                cursorColor = BrandRed
+                            ),
+                            maxLines = 4
+                        )
+
+                        Spacer(Modifier.width(8.dp))
+
+                        // Circular Send Button with Up Arrow
+                        Surface(
+                            shape = CircleShape,
+                            color = if (commentInput.isNotBlank()) BrandRed else BrandRed.copy(alpha = 0.5f),
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clickable(enabled = commentInput.isNotBlank()) {
+                                    onSubmitComment(commentInput, replyingTo?.id)
+                                    commentInput = ""
+                                    replyingTo = null
+                                }
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text("↑", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(WritOnSpacing.lg))
+
+            // Comments List
+            LazyColumn(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)
+            ) {
+                items(displayComments) { comment ->
+                    CommentItemRow(
+                        comment = comment,
+                        onReplyClick = { replyingTo = comment },
+                        onApplaudClick = { onApplaudComment(comment.id) }
+                    )
+                    HorizontalDivider(
+                        color = Color(0xFFEFE8DE),
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(top = WritOnSpacing.md)
+                    )
+                }
+
+                item {
+                    Spacer(Modifier.height(WritOnSpacing.sm))
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        border = BorderStroke(1.dp, Color(0xFFE9E1D7)),
+                        color = SurfacePaper,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onBackClick)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("💬", fontSize = 16.sp)
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                "View all comments (${displayComments.size.coerceAtLeast(totalCount)})",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                                color = BrandRed
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text("›", fontSize = 18.sp, color = BrandRed)
+                        }
+                    }
+                    Spacer(Modifier.height(WritOnSpacing.xl))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun CommentItemRow(
+    comment: DisplayComment,
+    onReplyClick: () -> Unit,
+    onApplaudClick: () -> Unit
+) {
+    var applauded by remember { mutableStateOf(comment.isApplauded) }
+    var currentApplauds by remember { mutableIntStateOf(comment.applaudsCount) }
+    var showMenu by remember { mutableStateOf(false) }
+    var expandedReplies by remember { mutableStateOf(false) }
+
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+        // Author Avatar Circle
+        val avatarColor = remember(comment.authorName) {
+            when (comment.authorName.firstOrNull()?.uppercaseChar()) {
+                'M', 'A' -> Color(0xFFE8E0D5)
+                'R', 'V' -> Color(0xFFE4DCD0)
+                else -> Color(0xFFF0EAE1)
+            }
+        }
+        Surface(
+            shape = CircleShape,
+            color = avatarColor,
+            modifier = Modifier.size(42.dp)
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    initialsOf(comment.authorName),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = Color(0xFF4A423B),
+                    fontFamily = CommentsEditorialFamily
+                )
+            }
+        }
+
+        Spacer(Modifier.width(14.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            // Header: Name + Timestamp + Applauds + More Menu
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    comment.authorName,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    ),
+                    color = Color(0xFF191715)
+                )
+                Text(
+                    " • ${comment.timeAgo}",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF8C867D)
+                )
+                Spacer(Modifier.weight(1f))
+
+                // Applaud Clap Button
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable {
+                            applauded = !applauded
+                            currentApplauds = if (applauded) currentApplauds + 1 else (currentApplauds - 1).coerceAtLeast(0)
+                            onApplaudClick()
+                        }
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                ) {
+                    Image(
+                        painterResource(if (applauded) R.drawable.ic_applaud_orange else R.drawable.ic_applaud_orange),
+                        contentDescription = "Applaud",
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        "$currentApplauds",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF4A423B)
+                    )
+                }
+
+                // 3-dots Menu
+                Box {
+                    IconButton(onClick = { showMenu = true }, modifier = Modifier.size(24.dp)) {
+                        Text("⋮", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C867D))
+                    }
+                    DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                        DropdownMenuItem(text = { Text("Report comment") }, onClick = { showMenu = false })
+                        DropdownMenuItem(text = { Text("Share") }, onClick = { showMenu = false })
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(4.dp))
+
+            // Comment text
+            Text(
+                comment.content,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 14.sp,
+                    lineHeight = 20.sp
+                ),
+                color = Color(0xFF2B2623)
+            )
+
+            Spacer(Modifier.height(8.dp))
+
+            // Action footer
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    "Reply",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
+                    color = Color(0xFF6D6963),
+                    modifier = Modifier.clickable(onClick = onReplyClick)
+                )
+
+                if (comment.repliesCount > 0) {
+                    Spacer(Modifier.width(16.dp))
+                    Text(
+                        if (expandedReplies) "Hide replies" else "View ${comment.repliesCount} replies →",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = BrandRed,
+                        modifier = Modifier.clickable { expandedReplies = !expandedReplies }
+                    )
+                }
+            }
+
+            if (expandedReplies) {
+                Spacer(Modifier.height(8.dp))
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFFF6F1EA),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(Modifier.padding(10.dp)) {
+                        Text(
+                            "Author Response: Thank you so much! Really appreciate your thoughtful words.",
+                            fontSize = 13.sp,
+                            color = Color(0xFF4A423B)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun initialsOf(name: String): String =
+    name.split(" ").mapNotNull { it.firstOrNull()?.uppercaseChar()?.toString() }.take(2).joinToString("")
+
+private fun formatTimeAgo(createdAt: String, index: Int): String {
+    return when (index) {
+        0 -> "2h ago"
+        1 -> "5h ago"
+        2 -> "8h ago"
+        3 -> "12h ago"
+        4 -> "1d ago"
+        else -> "${index + 1}d ago"
+    }
+}

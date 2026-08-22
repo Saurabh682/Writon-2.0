@@ -199,24 +199,25 @@ fun ReaderScreen(
         ModalBottomSheet(
             onDismissRequest = { showCommentsSheet = false },
             sheetState = sheetState,
-            containerColor = SurfacePaper,
+            containerColor = BrandBeige,
             dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.outlineVariant) }
         ) {
-            CommentsPaneContent(
+            val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+            val authorName = user?.displayName ?: user?.email?.substringBefore("@") ?: "You"
+            com.ibitvalley.writon.modern.feature.comments.CommentsScreen(
                 comments = comments,
-                commentInput = commentInput,
-                onCommentChange = { viewModel.commentText.value = it },
-                onSubmit = {
-                    val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                currentUserInitials = authorName,
+                totalCount = comments.size.coerceAtLeast(post?.commentsCnt ?: 0),
+                onBackClick = { showCommentsSheet = false },
+                onSubmitComment = { content, _ ->
                     if (user == null) {
                         showCommentsSheet = false
                         onLoginRequired()
                     } else {
-                        val authorName = user.displayName ?: user.email?.substringBefore("@") ?: "Writer"
+                        viewModel.commentText.value = content
                         viewModel.submitComment(authorName)
                     }
-                },
-                onClose = { showCommentsSheet = false }
+                }
             )
         }
     }

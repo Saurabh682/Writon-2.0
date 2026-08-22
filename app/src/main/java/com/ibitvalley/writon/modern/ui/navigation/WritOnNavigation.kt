@@ -75,6 +75,9 @@ sealed class WritOnRoute(val route: String) {
     object Reader : WritOnRoute("reader/{storyId}") {
         fun createRoute(storyId: String) = "reader/$storyId"
     }
+    object Comments : WritOnRoute("comments/{storyId}") {
+        fun createRoute(storyId: String) = "comments/$storyId"
+    }
 }
 
 private data class BottomNavItem(
@@ -365,6 +368,31 @@ fun WritOnNavigation(
                     onLoginRequired = openLogin
                 )
             }
+            composable(WritOnRoute.Comments.route) { backStackEntry ->
+                val storyId = backStackEntry.arguments?.getString("storyId") ?: ""
+                val readerViewModel = remember(storyId) {
+                    ReaderViewModel(storyId, repository)
+                }
+                val comments by readerViewModel.comments.collectAsState()
+                val post by readerViewModel.post.collectAsState()
+                val user = FirebaseAuth.getInstance().currentUser
+                val authorName = user?.displayName ?: user?.email?.substringBefore("@") ?: "You"
+
+                com.ibitvalley.writon.modern.feature.comments.CommentsScreen(
+                    comments = comments,
+                    currentUserInitials = authorName,
+                    totalCount = comments.size.coerceAtLeast(post?.commentsCnt ?: 0),
+                    onBackClick = { navController.popBackStack() },
+                    onSubmitComment = { content, _ ->
+                        if (user == null) {
+                            openLogin()
+                        } else {
+                            readerViewModel.commentText.value = content
+                            readerViewModel.submitComment(authorName)
+                        }
+                    }
+                )
+            }
         }
     }
 }
@@ -381,6 +409,7 @@ private fun WritOnBottomNavigation(
     // Define routes that should hide the bottom bar
     val hideBottomBarRoutes = listOf(
         WritOnRoute.Reader.route,
+        WritOnRoute.Comments.route,
         WritOnRoute.Publish.route,
         WritOnRoute.Welcome.route,
         WritOnRoute.Login.route,
