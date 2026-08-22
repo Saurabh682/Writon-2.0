@@ -344,9 +344,12 @@ fun WritOnNavigation(
                     ProfileScreen(
                         viewModel = profileViewModel,
                         onBackClick = { navController.popBackStack() },
+                        onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) },
+                        onWriteClick = { navController.navigate(WritOnRoute.Write.route) },
                         onApplaudsClick = { navController.navigate(WritOnRoute.Applauds.route) },
                         onSettingsClick = { navController.navigate(WritOnRoute.Settings.route) }
                     )
+
                 } else {
                     LaunchedEffect(Unit) { openLogin() }
                 }

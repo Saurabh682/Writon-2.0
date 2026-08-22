@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.ibitvalley.writon.modern.core.database.dao.UserDao
 import com.ibitvalley.writon.modern.core.network.WritOnApiService
 import com.ibitvalley.writon.modern.core.network.model.MyProfileDto
+import com.ibitvalley.writon.modern.core.network.model.PostDto
+
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -16,6 +18,12 @@ class ProfileViewModel(
 
     private val _userProfile = MutableStateFlow<MyProfileDto?>(null)
     val userProfile: StateFlow<MyProfileDto?> = _userProfile
+
+    private val _userStories = MutableStateFlow<List<PostDto>>(emptyList())
+    val userStories: StateFlow<List<PostDto>> = _userStories
+
+    private val _highlights = MutableStateFlow<List<PostDto>>(emptyList())
+    val highlights: StateFlow<List<PostDto>> = _highlights
 
     val isLoading = MutableStateFlow(false)
 
@@ -29,7 +37,16 @@ class ProfileViewModel(
             try {
                 val response = apiService.getMyProfile()
                 if (response.isSuccessful && response.body() != null) {
-                    _userProfile.value = response.body()!!.profile
+                    val profile = response.body()!!.profile
+                    _userProfile.value = profile
+
+                    val authorQuery = profile.penName.ifBlank { profile.fullName }
+                    val postsResponse = apiService.getPosts(searchQuery = authorQuery.ifBlank { null }, limit = 20)
+                    if (postsResponse.isSuccessful && postsResponse.body() != null) {
+                        val posts = postsResponse.body()!!.posts
+                        _userStories.value = posts
+                        _highlights.value = posts.sortedByDescending { it.likesCnt }
+                    }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -1,5 +1,6 @@
 package com.ibitvalley.writon.modern.feature.profile
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.network.model.PostDto
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
@@ -38,26 +40,39 @@ private val ProfileEditorialFamily = FontFamily(
 fun ProfileScreen(
     viewModel: ProfileViewModel,
     onBackClick: () -> Unit,
+    onStoryClick: (String) -> Unit = {},
+    onWriteClick: () -> Unit = {},
     onApplaudsClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
 ) {
     val user by viewModel.userProfile.collectAsState()
+    val stories by viewModel.userStories.collectAsState()
+    val highlights by viewModel.highlights.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
     var overflowExpanded by remember { mutableStateOf(false) }
-    val name = user?.fullName ?: "Your profile"
+
+    val name = user?.fullName ?: "Your Profile"
     val penName = user?.penName ?: ""
-    val bio = user?.bio?.takeIf { it.isNotBlank() } ?: "Add a bio to tell readers about your writing."
+    val bio = user?.bio?.takeIf { it.isNotBlank() } ?: "Essayist, architectural critic, and student of quiet spaces. Writing about design systems, stillness, and human craft."
     val initials = initialsOf(name)
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text("Writer Profile", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily)) },
-                navigationIcon = { IconButton(onClick = onBackClick) { Image(painterResource(R.drawable.ic_back), contentDescription = "Back", modifier = Modifier.size(24.dp)) } },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Image(painterResource(R.drawable.ic_back), contentDescription = "Back", modifier = Modifier.size(24.dp))
+                    }
+                },
                 actions = {
-                    IconButton(onClick = { }) { Image(painterResource(R.drawable.ic_share), contentDescription = "Share profile", modifier = Modifier.size(24.dp)) }
+                    IconButton(onClick = { }) {
+                        Image(painterResource(R.drawable.ic_share), contentDescription = "Share profile", modifier = Modifier.size(24.dp))
+                    }
                     Box {
-                        IconButton(onClick = { overflowExpanded = true }) { Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "Profile options", modifier = Modifier.size(24.dp)) }
+                        IconButton(onClick = { overflowExpanded = true }) {
+                            Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "Profile options", modifier = Modifier.size(24.dp))
+                        }
                         DropdownMenu(expanded = overflowExpanded, onDismissRequest = { overflowExpanded = false }) {
                             DropdownMenuItem(text = { Text("Settings") }, onClick = { overflowExpanded = false; onSettingsClick() })
                         }
@@ -74,10 +89,29 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
         ) {
             item { ProfileIdentity(name, penName, bio, initials, user?.location, user?.joinedAt) }
-            item { ProfileStats(user?.storiesCount ?: 0, user?.applaudsReceived ?: 0, user?.followersCount ?: 0, user?.followingCount ?: 0, onApplaudsClick) }
-            item { ProfileAbout(name, bio) }
+            item { ProfileStats(stories.size.coerceAtLeast(user?.storiesCount ?: 0), user?.applaudsReceived ?: 0, user?.followersCount ?: 0, user?.followingCount ?: 0, onApplaudsClick) }
             item { ProfileTabs(selectedTab) { selectedTab = it } }
-            item { ProfileTopStories() }
+
+            when (selectedTab) {
+                0 -> item { ProfileAboutTab(name, bio, user?.location, user?.joinedAt, user?.quoteOfDay) }
+                1 -> {
+                    if (stories.isEmpty()) {
+                        item { ProfileEmptyTab("stories", onWriteClick) }
+                    } else {
+                        items(stories.size) { index ->
+                            ProfileStoryCard(story = stories[index], onClick = { onStoryClick(stories[index].id) })
+                        }
+                    }
+                }
+                2 -> item { ProfileSeriesTab(stories = stories, onStoryClick = onStoryClick, onWriteClick = onWriteClick) }
+                3 -> item {
+                    ProfileHighlightsTab(
+                        highlights = highlights,
+                        onStoryClick = onStoryClick,
+                        onSeeAllClick = { selectedTab = 1 }
+                    )
+                }
+            }
         }
     }
 }
@@ -95,7 +129,7 @@ private fun ProfileIdentity(name: String, penName: String, bio: String, initials
                 color = BrandRed,
                 shape = CircleShape,
                 modifier = Modifier.align(Alignment.BottomEnd).size(32.dp),
-                border = androidx.compose.foundation.BorderStroke(2.dp, MaterialTheme.colorScheme.background)
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.background)
             ) {
                 Box(contentAlignment = Alignment.Center) { Text("★", color = Color(0xFFFFFDF9), fontSize = 15.sp) }
             }
@@ -115,18 +149,18 @@ private fun ProfileIdentity(name: String, penName: String, bio: String, initials
             Spacer(Modifier.height(WritOnSpacing.sm))
             if (!location.isNullOrBlank() || !joinedAt.isNullOrBlank()) Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.xxs)) {
                 if (!location.isNullOrBlank()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(painterResource(R.drawable.ic_location), contentDescription = null, modifier = Modifier.size(15.dp))
-                    Spacer(Modifier.width(WritOnSpacing.xxs))
-                    Text(location, style = MaterialTheme.typography.bodySmall)
-                }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(painterResource(R.drawable.ic_location), contentDescription = null, modifier = Modifier.size(15.dp))
+                        Spacer(Modifier.width(WritOnSpacing.xxs))
+                        Text(location, style = MaterialTheme.typography.bodySmall)
+                    }
                 }
                 if (!joinedAt.isNullOrBlank()) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Image(painterResource(R.drawable.ic_calendar), contentDescription = null, modifier = Modifier.size(15.dp))
-                    Spacer(Modifier.width(WritOnSpacing.xxs))
-                    Text("Joined ${joinedAt.take(10)}", style = MaterialTheme.typography.bodySmall)
-                }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(painterResource(R.drawable.ic_calendar), contentDescription = null, modifier = Modifier.size(15.dp))
+                        Spacer(Modifier.width(WritOnSpacing.xxs))
+                        Text("Joined ${joinedAt.take(10)}", style = MaterialTheme.typography.bodySmall)
+                    }
                 }
             }
         }
@@ -164,47 +198,80 @@ private fun ProfileStat(value: String, label: String, accent: Boolean = true, mo
 }
 
 @Composable
-private fun ProfileAbout(name: String, bio: String) {
-    val firstName = name.substringBefore(' ')
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(WritOnRadius.card),
-        color = SurfacePaper,
-        tonalElevation = WritOnElevation.flat,
-        shadowElevation = WritOnElevation.raised
-    ) {
-        Column(Modifier.padding(WritOnSpacing.md)) {
-            Text("About $firstName", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
-            Spacer(Modifier.height(WritOnSpacing.sm))
-            Text(bio, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(WritOnSpacing.md))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(painterResource(R.drawable.ic_bookmark_orange), contentDescription = null, modifier = Modifier.size(24.dp))
-                Spacer(Modifier.width(WritOnSpacing.sm))
-                Text("Your WritOn profile", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-    }
-}
-
-@Composable
 private fun ProfileTabs(selectedTab: Int, onSelected: (Int) -> Unit) {
     val tabs = listOf("About", "Stories", "Series", "Highlights")
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         tabs.forEachIndexed { index, title ->
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clip(RoundedCornerShape(WritOnRadius.field)).clickable { onSelected(index) }.padding(vertical = WritOnSpacing.xs)) {
-                Text(title, style = MaterialTheme.typography.titleMedium, color = if (index == selectedTab) BrandRed else MaterialTheme.colorScheme.onSurface)
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(WritOnRadius.field))
+                    .clickable { onSelected(index) }
+                    .padding(vertical = WritOnSpacing.xs)
+            ) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = if (index == selectedTab) FontWeight.Bold else FontWeight.Normal),
+                    color = if (index == selectedTab) BrandRed else MaterialTheme.colorScheme.onSurface
+                )
                 Spacer(Modifier.height(WritOnSpacing.xs))
-                Surface(color = if (index == selectedTab) BrandRed else Color.Transparent, modifier = Modifier.width(64.dp).height(3.dp), shape = CircleShape) { }
+                Surface(
+                    color = if (index == selectedTab) BrandRed else Color.Transparent,
+                    modifier = Modifier.width(64.dp).height(3.dp),
+                    shape = CircleShape
+                ) { }
             }
         }
     }
 }
 
 @Composable
-private fun ProfileTopStories() {
+private fun ProfileAboutTab(name: String, bio: String, location: String?, joinedAt: String?, quoteOfDay: String?) {
+    val firstName = name.substringBefore(' ')
+    Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(WritOnRadius.card),
+            color = SurfacePaper,
+            tonalElevation = WritOnElevation.flat,
+            shadowElevation = WritOnElevation.raised
+        ) {
+            Column(Modifier.padding(WritOnSpacing.md)) {
+                Text("About $firstName", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
+                Spacer(Modifier.height(WritOnSpacing.sm))
+                Text(bio, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp, lineHeight = 22.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                quoteOfDay?.takeIf { it.isNotBlank() }?.let { quote ->
+                    Spacer(Modifier.height(WritOnSpacing.md))
+                    Surface(
+                        color = Color(0xFFFBF8F3),
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, Color(0xFFE9E1D7)),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text("MOTTO / QUOTE", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BrandRed, letterSpacing = 1.sp)
+                            Spacer(Modifier.height(4.dp))
+                            Text("\"$quote\"", fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(WritOnSpacing.md))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(painterResource(R.drawable.ic_bookmark_orange), contentDescription = null, modifier = Modifier.size(22.dp))
+                    Spacer(Modifier.width(WritOnSpacing.sm))
+                    Text("Writer on WritOn since ${joinedAt?.take(4) ?: "2024"}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileStoryCard(story: PostDto, onClick: () -> Unit) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(WritOnRadius.card),
         color = SurfacePaper,
         tonalElevation = WritOnElevation.flat,
@@ -212,13 +279,166 @@ private fun ProfileTopStories() {
     ) {
         Column(Modifier.padding(WritOnSpacing.md)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Top Stories", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
+                Surface(shape = RoundedCornerShape(12.dp), color = Color(0xFFF2ECE4)) {
+                    Text(
+                        story.category.uppercase(),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = BrandRed
+                    )
+                }
                 Spacer(Modifier.weight(1f))
-                Text("See all", style = MaterialTheme.typography.titleMedium, color = BrandRed)
-                Image(painterResource(R.drawable.ic_forward_muted), contentDescription = "See all stories", modifier = Modifier.size(20.dp))
+                Text("${story.readingTimeMin} min read", fontSize = 13.sp, color = Color(0xFF6D6963))
             }
             Spacer(Modifier.height(WritOnSpacing.sm))
-            Text("Published stories will appear here.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                story.title,
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = ProfileEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 21.sp),
+                color = Color(0xFF191715),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            story.summary?.takeIf { it.isNotBlank() }?.let { summary ->
+                Spacer(Modifier.height(WritOnSpacing.xs))
+                Text(summary, fontSize = 14.sp, lineHeight = 20.sp, color = Color(0xFF6D6963), maxLines = 2, overflow = TextOverflow.Ellipsis)
+            }
+            Spacer(Modifier.height(WritOnSpacing.md))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = "Applauds", modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("${story.likesCnt} applauds", fontSize = 13.sp, color = Color(0xFF191715), fontWeight = FontWeight.Medium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileSeriesTab(stories: List<PostDto>, onStoryClick: (String) -> Unit, onWriteClick: () -> Unit) {
+    val categories = stories.map { it.category }.distinct()
+    if (categories.isEmpty()) {
+        ProfileEmptyTab("series", onWriteClick)
+    } else {
+        Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)) {
+            categories.forEach { category ->
+                val categoryStories = stories.filter { it.category == category }
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(WritOnRadius.card),
+                    color = SurfacePaper,
+                    tonalElevation = WritOnElevation.flat,
+                    shadowElevation = WritOnElevation.raised
+                ) {
+                    Column(Modifier.padding(WritOnSpacing.md)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "$category Collection",
+                                style = MaterialTheme.typography.titleLarge.copy(fontFamily = ProfileEditorialFamily, fontWeight = FontWeight.SemiBold)
+                            )
+                            Spacer(Modifier.weight(1f))
+                            Text("${categoryStories.size} parts", style = MaterialTheme.typography.labelMedium, color = BrandRed)
+                        }
+                        Spacer(Modifier.height(WritOnSpacing.sm))
+                        categoryStories.take(3).forEach { story ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { onStoryClick(story.id) }
+                                    .padding(vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("•", color = BrandRed, modifier = Modifier.padding(end = 8.dp))
+                                Text(story.title, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 15.sp)
+                                Image(painterResource(R.drawable.ic_forward_muted), contentDescription = null, modifier = Modifier.size(16.dp))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileHighlightsTab(
+    highlights: List<PostDto>,
+    onStoryClick: (String) -> Unit,
+    onSeeAllClick: () -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)) {
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(WritOnRadius.card),
+            color = SurfacePaper,
+            tonalElevation = WritOnElevation.flat,
+            shadowElevation = WritOnElevation.raised
+        ) {
+            Column(Modifier.padding(WritOnSpacing.md)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Top Stories", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
+                    Spacer(Modifier.weight(1f))
+                    Row(
+                        modifier = Modifier.clickable(onClick = onSeeAllClick),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("See all", style = MaterialTheme.typography.titleMedium, color = BrandRed)
+                        Spacer(Modifier.width(4.dp))
+                        Image(painterResource(R.drawable.ic_forward_muted), contentDescription = "See all stories", modifier = Modifier.size(18.dp))
+                    }
+                }
+                Spacer(Modifier.height(WritOnSpacing.md))
+                if (highlights.isEmpty()) {
+                    Text("Published stories and writer highlights will appear here.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                } else {
+                    highlights.take(3).forEach { story ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onStoryClick(story.id) }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(story.title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text("${story.category} • ${story.readingTimeMin} min read • ${story.likesCnt} applauds", style = MaterialTheme.typography.bodySmall, color = Color(0xFF6D6963))
+                            }
+                            Image(painterResource(R.drawable.ic_forward_muted), contentDescription = "Read story", modifier = Modifier.size(18.dp))
+                        }
+                        HorizontalDivider(color = Color(0xFFE9E1D7), thickness = 0.5.dp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileEmptyTab(type: String, onAction: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(WritOnRadius.card),
+        color = SurfacePaper,
+        tonalElevation = WritOnElevation.flat,
+        shadowElevation = WritOnElevation.raised
+    ) {
+        Column(
+            modifier = Modifier.padding(WritOnSpacing.xl),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("No $type yet", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
+            Spacer(Modifier.height(WritOnSpacing.xs))
+            Text("Stories you write and publish will be presented here on your writer profile.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            Spacer(Modifier.height(WritOnSpacing.md))
+            Button(
+                onClick = onAction,
+                colors = ButtonDefaults.buttonColors(containerColor = BrandRed),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Write a Story ✍️", color = Color.White)
+            }
         }
     }
 }
@@ -227,3 +447,4 @@ private fun initialsOf(name: String): String = name.split(" ").mapNotNull { it.f
 
 private fun formatProfileCount(value: Int): String =
     if (value >= 1_000) String.format(java.util.Locale.getDefault(), "%.1fK", value / 1_000.0) else value.toString()
+
