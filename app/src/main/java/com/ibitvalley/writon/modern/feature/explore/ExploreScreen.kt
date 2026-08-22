@@ -97,7 +97,7 @@ private fun ExploreHero() {
 
 @Composable
 private fun DiscoveryCard(story: PostDto?, onRead: () -> Unit, onNextDiscovery: () -> Unit) {
-    Box(modifier = Modifier.fillMaxWidth().height(390.dp).padding(top = WritOnSpacing.sm)) {
+    Box(modifier = Modifier.fillMaxWidth().height(420.dp).padding(top = WritOnSpacing.sm)) {
         Surface(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxWidth().padding(start = 54.dp, top = 22.dp, bottom = 12.dp),
             shape = RoundedCornerShape(WritOnRadius.feature),
@@ -116,11 +116,15 @@ private fun DiscoveryCard(story: PostDto?, onRead: () -> Unit, onNextDiscovery: 
             }
         }
         Surface(
-            modifier = Modifier.align(Alignment.TopStart).width(278.dp).fillMaxHeight(),
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .width(288.dp)
+                .fillMaxHeight(),
             shape = RoundedCornerShape(WritOnRadius.feature),
             color = SurfacePaper,
             tonalElevation = WritOnElevation.flat,
-            shadowElevation = WritOnElevation.raised
+            shadowElevation = WritOnElevation.raised,
+            onClick = onRead
         ) {
             Column(modifier = Modifier.fillMaxSize().padding(WritOnSpacing.md)) {
                 Text("FOR YOU", style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 1.4.sp), color = BrandRed)
@@ -133,13 +137,17 @@ private fun DiscoveryCard(story: PostDto?, onRead: () -> Unit, onNextDiscovery: 
                 Spacer(Modifier.height(WritOnSpacing.xs))
                 Text(
                     story?.title ?: "No discovery available",
-                    style = MaterialTheme.typography.headlineLarge.copy(fontFamily = ExploreEditorialFamily, fontSize = 28.sp, lineHeight = 32.sp)
+                    style = MaterialTheme.typography.headlineLarge.copy(fontFamily = ExploreEditorialFamily, fontSize = 26.sp, lineHeight = 30.sp),
+                    maxLines = 3,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.height(WritOnSpacing.xs))
                 Text(
                     story?.summary ?: "Published stories will appear here as soon as the feed is available.",
                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 19.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 3,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.weight(1f))
                 Surface(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.width(36.dp).height(1.dp)) { }
@@ -149,18 +157,20 @@ private fun DiscoveryCard(story: PostDto?, onRead: () -> Unit, onNextDiscovery: 
                         Box(contentAlignment = Alignment.Center) { Text(story?.author?.fullName?.take(2)?.uppercase() ?: "W", style = MaterialTheme.typography.labelLarge) }
                     }
                     Spacer(Modifier.width(WritOnSpacing.sm))
-                    Column {
-                        Text(story?.author?.fullName ?: "WritOn", style = MaterialTheme.typography.titleMedium)
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(story?.author?.fullName ?: "WritOn", style = MaterialTheme.typography.titleMedium, maxLines = 1)
                         Text(story?.let { "${it.readingTimeMin} min read" } ?: "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Text(story?.let { "  •  ${it.likesCnt} applauds" } ?: "", style = MaterialTheme.typography.bodySmall, color = BrandRed, modifier = Modifier.padding(top = 20.dp))
+                    if (story != null && story.likesCnt > 0) {
+                        Text("${story.likesCnt} 👏", style = MaterialTheme.typography.bodySmall, color = BrandRed)
+                    }
                 }
                 Spacer(Modifier.height(WritOnSpacing.xs))
                 Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally).clip(RoundedCornerShape(WritOnRadius.field)).clickable(onClick = onRead).padding(horizontal = WritOnSpacing.sm, vertical = WritOnSpacing.xs),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(if (story == null) "Refresh" else "Read", style = MaterialTheme.typography.titleMedium, color = BrandRed)
+                    Text(if (story == null) "Refresh" else "Read story", style = MaterialTheme.typography.titleMedium, color = BrandRed)
                     Spacer(Modifier.width(WritOnSpacing.sm))
                     Image(painterResource(R.drawable.ic_forward_orange), contentDescription = "Read discovery", modifier = Modifier.size(24.dp))
                 }
