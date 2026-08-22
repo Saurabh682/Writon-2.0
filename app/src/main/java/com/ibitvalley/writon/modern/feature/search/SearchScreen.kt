@@ -8,8 +8,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -233,12 +237,22 @@ private fun SearchField(value: String, onValueChange: (String) -> Unit) {
                     cursorColor = BrandRed
                 )
             )
-            IconButton(onClick = { }) {
-                Image(painterResource(R.drawable.ic_filter_muted), contentDescription = "Filter search", modifier = Modifier.size(24.dp))
+            if (value.isNotEmpty()) {
+                IconButton(onClick = { onValueChange("") }, modifier = Modifier.padding(end = 4.dp)) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Clear search",
+                        tint = Color(0xFF6D6963),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            } else {
+                Spacer(Modifier.width(12.dp))
             }
         }
     }
 }
+
 
 @Composable
 private fun PopularSearches(onSelect: (String) -> Unit) {
