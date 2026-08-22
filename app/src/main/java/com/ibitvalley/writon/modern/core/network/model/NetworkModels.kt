@@ -188,8 +188,10 @@ data class MyProfileDto(
     @SerializedName("followersCount") val followersCount: Int,
     @SerializedName("followingCount") val followingCount: Int,
     @SerializedName("storiesCount") val storiesCount: Int = 0,
-    @SerializedName("applaudsReceived") val applaudsReceived: Int = 0
+    @SerializedName("applaudsReceived") val applaudsReceived: Int = 0,
+    @SerializedName("quoteOfDay") val quoteOfDay: String? = null
 )
+
 
 data class MyProfileResponseDto(
     @SerializedName("profile") val profile: MyProfileDto
