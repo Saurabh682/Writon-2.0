@@ -96,6 +96,7 @@ fun FeedScreen(
     onLoginRequired: () -> Unit = {}
 ) {
     val posts by viewModel.posts.collectAsState()
+    val isRefreshing by viewModel.isRefreshing.collectAsState()
     var currentIndex by rememberSaveable { mutableIntStateOf(0) }
     val safeIndex = currentIndex.coerceIn(0, posts.lastIndex.coerceAtLeast(0))
 
@@ -107,7 +108,29 @@ fun FeedScreen(
         modifier = Modifier.fillMaxSize().background(BrandBeige).padding(horizontal = 18.dp, vertical = 16.dp)
     ) {
         HomeHeader(onLibraryClick = onLibraryClick, onProfileClick = onProfileClick)
-        Spacer(Modifier.height(20.dp))
+        Spacer(Modifier.height(14.dp))
+
+        if (isRefreshing) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    modifier = Modifier.size(16.dp),
+                    color = BrandRed,
+                    strokeWidth = 2.dp
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Updating stories from server...",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = HomeMuted
+                )
+            }
+        }
+
         if (posts.isEmpty()) {
             EmptyDiscovery(
                 modifier = Modifier.weight(1f),
@@ -148,7 +171,9 @@ fun FeedScreen(
                             if (isAuthenticated) viewModel.toggleLike(post.id, post.isLiked, post.likesCnt)
                             else onLoginRequired()
                         },
-                        onAuthorClick = onProfileClick
+                        onAuthorClick = onProfileClick,
+                        isFirstCard = (index == 0),
+                        onRefresh = { viewModel.refreshFeed() }
                     )
                 }
             }
@@ -187,7 +212,9 @@ private fun DiscoveryStoryCard(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     onApplaud: () -> Unit,
-    onAuthorClick: () -> Unit
+    onAuthorClick: () -> Unit,
+    isFirstCard: Boolean = false,
+    onRefresh: () -> Unit = {}
 ) {
     Surface(
         modifier = modifier
@@ -211,7 +238,13 @@ private fun DiscoveryStoryCard(
                     val absY = kotlin.math.abs(dragY)
                     when {
                         absY > absX && dragY < -40f -> onNext()
-                        absY > absX && dragY > 40f -> onPrevious()
+                        absY > absX && dragY > 40f -> {
+                            if (isFirstCard) {
+                                onRefresh()
+                            } else {
+                                onPrevious()
+                            }
+                        }
                         absX > absY * 1.5f && dragX > 100f -> onRead()
                     }
                 }
