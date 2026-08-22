@@ -78,12 +78,23 @@ android {
     }
 
     signingConfigs {
+        debug {
+            storeFile file("${System.getProperty('user.home')}/.android/debug.keystore")
+            storePassword "android"
+            keyAlias "androiddebugkey"
+            keyPassword "android"
+        }
         release {
             if (releaseSigningConfigured) {
                 keyAlias signingProperties.getProperty('keyAlias')
                 keyPassword signingProperties.getProperty('keyPassword')
                 storeFile rootProject.file(signingProperties.getProperty('storeFile'))
                 storePassword signingProperties.getProperty('storePassword')
+            } else {
+                storeFile file("${System.getProperty('user.home')}/.android/debug.keystore")
+                storePassword "android"
+                keyAlias "androiddebugkey"
+                keyPassword "android"
             }
         }
     }
@@ -98,7 +109,7 @@ android {
             buildConfigField 'String', 'API_BASE_URL', buildConfigString(releaseApiBaseUrl)
             manifestPlaceholders.usesCleartextTraffic = false
             minifyEnabled false
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
 }
