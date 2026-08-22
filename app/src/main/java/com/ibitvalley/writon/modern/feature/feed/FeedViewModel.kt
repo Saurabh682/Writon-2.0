@@ -22,22 +22,25 @@ class FeedViewModel(
     var scrollIndex = 0
     var scrollOffset = 0
 
-    @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+    @OptIn(ExperimentalCoroutinesApi::class)
     val posts: StateFlow<List<PostEntity>> = combine(
         selectedCategory, 
-        _searchQuery.debounce(300)
+        _searchQuery
     ) { category, query ->
         Pair(category, query)
     }.flatMapLatest { (category, query) ->
         repository.getPostsFlow(category, query)
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.Eagerly,
         initialValue = emptyList()
     )
 
     init {
-        refreshFeed()
+        viewModelScope.launch {
+            repository.seedInitialStoriesIfEmpty()
+            refreshFeed()
+        }
     }
 
     fun selectCategory(category: String) {

@@ -22,6 +22,75 @@ class PostRepository(
     private val gson: Gson = Gson()
 ) {
 
+    suspend fun seedInitialStoriesIfEmpty() = withContext(Dispatchers.IO) {
+        val count = postDao.getPostCount()
+        if (count == 0) {
+            val initialPosts = listOf(
+                PostEntity(
+                    id = "seed-1",
+                    authorId = "author-maya",
+                    authorName = "Maya Lin",
+                    authorPenName = "mayalin",
+                    authorAvatarUrl = null,
+                    title = "The Geometry of Silence",
+                    slug = "the-geometry-of-silence",
+                    summary = "Why the most enduring structures in modern architecture are defined by the spaces they deliberately leave empty.",
+                    content = "Architecture is often celebrated for what it contains—the stone, the timber, the soaring columns of steel. But true serenity lives in the voids between them.\n\nWhen we strip away ornamentation, we create room for thought to expand. Silence becomes the primary material of design.",
+                    category = "Essays",
+                    coverImage = null,
+                    readingTimeMin = 5,
+                    likesCnt = 342,
+                    commentsCnt = 28,
+                    bookmarksCnt = 89,
+                    isLiked = false,
+                    isBookmarked = false,
+                    createdAt = "2026-08-20T10:00:00Z"
+                ),
+                PostEntity(
+                    id = "seed-2",
+                    authorId = "author-vikram",
+                    authorName = "Vikram Desai",
+                    authorPenName = "vikramd",
+                    authorAvatarUrl = null,
+                    title = "On Slow Craft and Modern Software",
+                    slug = "on-slow-craft-and-modern-software",
+                    summary = "Reflections on building systems with permanence, patience, and intentional constraints.",
+                    content = "We have traded deliberate craftsmanship for frantic iteration. In this essay, I explore what software engineering can learn from master watchmakers and bookbinders.",
+                    category = "Tech",
+                    coverImage = null,
+                    readingTimeMin = 7,
+                    likesCnt = 512,
+                    commentsCnt = 44,
+                    bookmarksCnt = 160,
+                    isLiked = false,
+                    isBookmarked = false,
+                    createdAt = "2026-08-19T14:30:00Z"
+                ),
+                PostEntity(
+                    id = "seed-3",
+                    authorId = "author-meera",
+                    authorName = "Meera Iyer",
+                    authorPenName = "meeraiyer",
+                    authorAvatarUrl = null,
+                    title = "The Poetics of Ordinary Days",
+                    slug = "the-poetics-of-ordinary-days",
+                    summary = "Finding profound creative inspiration in morning routines, quiet tea, and unhurried observations.",
+                    content = "Great art does not require monumental events. The steam rising from an enamel kettle holds as much mystery as an ocean storm if you give it your undivided attention.",
+                    category = "Culture",
+                    coverImage = null,
+                    readingTimeMin = 4,
+                    likesCnt = 280,
+                    commentsCnt = 19,
+                    bookmarksCnt = 75,
+                    isLiked = false,
+                    isBookmarked = false,
+                    createdAt = "2026-08-18T09:15:00Z"
+                )
+            )
+            postDao.insertPosts(initialPosts)
+        }
+    }
+
     fun getPostsFlow(category: String = "All", query: String = ""): Flow<List<PostEntity>> {
         return if (category == "All") {
             if (query.isEmpty()) postDao.getAllPosts() else postDao.searchAllPosts(query)

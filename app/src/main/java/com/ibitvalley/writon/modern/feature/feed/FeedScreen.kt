@@ -109,7 +109,10 @@ fun FeedScreen(
         HomeHeader(onLibraryClick = onLibraryClick, onProfileClick = onProfileClick)
         Spacer(Modifier.height(20.dp))
         if (posts.isEmpty()) {
-            EmptyDiscovery(modifier = Modifier.weight(1f))
+            EmptyDiscovery(
+                modifier = Modifier.weight(1f),
+                onRefresh = { viewModel.refreshFeed() }
+            )
         } else {
             AnimatedContent(
                 targetState = safeIndex,
@@ -133,19 +136,21 @@ fun FeedScreen(
                 },
                 label = "homeStoryCard"
             ) { index ->
-                val post = posts[index]
-                DiscoveryStoryCard(
-                    post = post,
-                    modifier = Modifier.fillMaxSize(),
-                    onRead = { onStoryClick(post.id) },
-                    onPrevious = { if (index > 0) currentIndex = index - 1 },
-                    onNext = { if (index < posts.lastIndex) currentIndex = index + 1 },
-                    onApplaud = {
-                        if (isAuthenticated) viewModel.toggleLike(post.id, post.isLiked, post.likesCnt)
-                        else onLoginRequired()
-                    },
-                    onAuthorClick = onProfileClick
-                )
+                if (index in posts.indices) {
+                    val post = posts[index]
+                    DiscoveryStoryCard(
+                        post = post,
+                        modifier = Modifier.fillMaxSize(),
+                        onRead = { onStoryClick(post.id) },
+                        onPrevious = { if (index > 0) currentIndex = index - 1 },
+                        onNext = { if (index < posts.lastIndex) currentIndex = index + 1 },
+                        onApplaud = {
+                            if (isAuthenticated) viewModel.toggleLike(post.id, post.isLiked, post.likesCnt)
+                            else onLoginRequired()
+                        },
+                        onAuthorClick = onProfileClick
+                    )
+                }
             }
         }
     }
@@ -330,13 +335,23 @@ private fun AuthorAvatar(avatarUrl: String?, authorName: String, onClick: () -> 
 }
 
 @Composable
-private fun EmptyDiscovery(modifier: Modifier = Modifier) {
+private fun EmptyDiscovery(modifier: Modifier = Modifier, onRefresh: () -> Unit = {}) {
     Surface(modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp), color = HomeSurface, border = BorderStroke(1.dp, HomeBorder)) {
         Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Text("No stories to discover yet", style = MaterialTheme.typography.titleLarge.copy(fontFamily = HomeEditorialFamily), color = HomeInk)
-            Text("Come back shortly for fresh writing.", modifier = Modifier.padding(top = 8.dp), color = HomeMuted)
+            Text("Discover Stories", style = MaterialTheme.typography.titleLarge.copy(fontFamily = HomeEditorialFamily), color = HomeInk)
+            Spacer(Modifier.height(8.dp))
+            Text("Stories are loading from writers...", color = HomeMuted)
+            Spacer(Modifier.height(16.dp))
+            androidx.compose.material3.Button(
+                onClick = onRefresh,
+                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = BrandRed),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Refresh Feed", color = Color.White)
+            }
         }
     }
 }
 
 private fun formatApplauds(count: Int): String = if (count >= 1000) String.format(java.util.Locale.getDefault(), "%.1fK", count / 1000.0) else count.toString()
+

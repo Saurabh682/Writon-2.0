@@ -46,6 +46,9 @@ interface PostDao {
     @Query("SELECT * FROM posts WHERE title LIKE '%' || :query || '%' OR summary LIKE '%' || :query || '%' OR authorName LIKE '%' || :query || '%' OR authorPenName LIKE '%' || :query || '%' ORDER BY createdAt DESC")
     suspend fun getLocalPostsMatching(query: String): List<PostEntity>
 
+    @Query("SELECT COUNT(*) FROM posts")
+    suspend fun getPostCount(): Int
+
     @Query("DELETE FROM posts")
     suspend fun clearAll()
 }
