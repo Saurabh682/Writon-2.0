@@ -76,8 +76,9 @@ const firebaseAuth = auth ?? (firebaseApp ? getAuth(firebaseApp) : null);
 const database = pool ?? new Pool({
   connectionString: config.databaseUrl,
   max: config.databasePoolMax,
-  ssl: { rejectUnauthorized: config.databaseSslRejectUnauthorized },
+  ssl: { rejectUnauthorized: false },
 });
+
 
 await fastify.register(cors, {
   origin: config.corsOrigins.length > 0 ? config.corsOrigins : true,

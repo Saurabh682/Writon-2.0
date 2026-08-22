@@ -38,10 +38,8 @@ export function loadRuntimeConfig(environment = process.env) {
     environment: values.NODE_ENV,
     port: values.PORT,
     databaseUrl: values.DATABASE_URL,
-    databasePoolMax: values.DATABASE_POOL_MAX,
-    databaseSslRejectUnauthorized: values.DATABASE_SSL_REJECT_UNAUTHORIZED
-      ? values.DATABASE_SSL_REJECT_UNAUTHORIZED === 'true'
-      : values.NODE_ENV === 'production',
+    databaseSslRejectUnauthorized: values.DATABASE_SSL_REJECT_UNAUTHORIZED === 'true',
+
     firebaseServiceAccountJson: values.FIREBASE_SERVICE_ACCOUNT_JSON,
     firebaseServiceAccountPath: values.FIREBASE_SERVICE_ACCOUNT_PATH,
     corsOrigins,
