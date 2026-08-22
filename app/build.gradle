@@ -21,10 +21,10 @@ def buildConfigString = { value ->
     "\"${value.replace('\\', '\\\\').replace('\"', '\\\"')}\""
 }
 def debugApiBaseUrl = providers.gradleProperty('WRITON_DEBUG_API_BASE_URL')
-    .orElse('http://10.0.2.2:3001/')
+    .orElse('https://writon-powerup.onrender.com/')
     .get()
 def releaseApiBaseUrl = providers.gradleProperty('WRITON_RELEASE_API_BASE_URL')
-    .orElse('https://writon-api.onrender.com/')
+    .orElse('https://writon-powerup.onrender.com/')
     .get()
 
 configurations.all {
