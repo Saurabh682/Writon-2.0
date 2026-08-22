@@ -49,6 +49,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.Font
@@ -202,6 +203,8 @@ private fun DiscoveryStoryCard(
                         dragY < -90f -> onNext()
                         dragY > 90f -> onPrevious()
                     }
+                }
+            }
             .semantics {
                 contentDescription = "${post.title}, by ${post.authorName}. ${post.readingTimeMin} minute read. Double tap or swipe right to read."
                 customActions = listOf(

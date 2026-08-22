@@ -59,3 +59,16 @@ data class CommentEntity(
     val createdAt: String,
     val parentId: String? = null
 )
+
+data class PostAuthorTuple(
+    val authorId: String,
+    val authorName: String,
+    val authorPenName: String,
+    val authorAvatarUrl: String?
+)
+
+data class PostTagTuple(
+    val name: String,
+    val count: Int
+)
+

@@ -202,3 +202,18 @@ data class UpsertMyProfileRequestDto(
     @SerializedName("avatarUrl") val avatarUrl: String? = null,
     @SerializedName("location") val location: String? = null
 )
+
+data class UsersResponseDto(
+    @SerializedName("users") val users: List<AuthorDto>,
+    @SerializedName("pagination") val pagination: PaginationDto
+)
+
+data class TagDto(
+    @SerializedName("name") val name: String,
+    @SerializedName("count") val count: Int
+)
+
+data class TagsResponseDto(
+    @SerializedName("tags") val tags: List<TagDto>
+)
+

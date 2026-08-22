@@ -13,6 +13,10 @@ interface UserDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: UserEntity)
 
+    @Query("SELECT * FROM users WHERE fullName LIKE '%' || :query || '%' OR penName LIKE '%' || :query || '%'")
+    suspend fun searchUsers(query: String): List<UserEntity>
+
     @Query("DELETE FROM users")
     suspend fun clearAll()
+
 }

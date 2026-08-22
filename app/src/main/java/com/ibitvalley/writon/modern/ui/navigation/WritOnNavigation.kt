@@ -102,7 +102,7 @@ fun WritOnNavigation(
     val editorViewModel = remember { EditorViewModel(repository) }
     val collectionsViewModel = remember { CollectionsViewModel(NetworkClient.apiService) }
     val exploreViewModel = remember { ExploreViewModel(NetworkClient.apiService) }
-    val searchViewModel = remember { SearchViewModel(NetworkClient.apiService) }
+    val searchViewModel = remember { SearchViewModel(NetworkClient.apiService, database.postDao(), database.userDao()) }
     val coroutineScope = rememberCoroutineScope()
     var firebaseUser by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
     DisposableEffect(Unit) {

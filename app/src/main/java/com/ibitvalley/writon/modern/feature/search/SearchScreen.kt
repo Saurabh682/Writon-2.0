@@ -37,7 +37,13 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import com.ibitvalley.writon.modern.core.network.model.AuthorDto
 import com.ibitvalley.writon.modern.core.network.model.PostDto
+import com.ibitvalley.writon.modern.core.network.model.TagDto
+
 
 private val SearchEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
@@ -75,9 +81,13 @@ fun SearchScreen(
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var selectedTab by rememberSaveable { mutableStateOf("Stories") }
-    val results = viewModel.results.map { it.asSearchStory() }
+    val stories = viewModel.results.map { it.asSearchStory() }
+    val writers = viewModel.writerResults
+    val tags = viewModel.tagResults
 
-    LaunchedEffect(query) { viewModel.search(query) }
+    LaunchedEffect(query, selectedTab) {
+        viewModel.search(query, selectedTab)
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -93,23 +103,80 @@ fun SearchScreen(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
-            PopularSearches(onSelect = { query = it })
+            PopularSearches(onSelect = {
+                query = it
+                selectedTab = "Stories"
+            })
         }
-        item { SearchTabs(selectedTab = selectedTab, onSelect = { selectedTab = it }) }
-        if (selectedTab == "Stories") {
-            if (results.isEmpty()) {
-                item { EmptyResults(query) }
-            } else {
-                items(results.size) { index ->
-                    SearchResultCard(story = results[index], onClick = { onStoryClick(results[index].id) })
+        item {
+            SearchTabs(
+                selectedTab = selectedTab,
+                onSelect = { selectedTab = it }
+            )
+        }
+
+        if (viewModel.isLoading) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 48.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        color = BrandRed,
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
             }
         } else {
-            item { SearchTabPlaceholder(selectedTab) }
+            when (selectedTab) {
+                "Stories" -> {
+                    if (stories.isEmpty()) {
+                        item { EmptyResults("stories", query) }
+                    } else {
+                        items(stories.size) { index ->
+                            SearchResultCard(story = stories[index], onClick = { onStoryClick(stories[index].id) })
+                        }
+                    }
+                }
+                "Writers" -> {
+                    if (writers.isEmpty()) {
+                        item { EmptyResults("writers", query) }
+                    } else {
+                        items(writers.size) { index ->
+                            SearchWriterCard(
+                                writer = writers[index],
+                                onClick = {
+                                    query = writers[index].fullName
+                                    selectedTab = "Stories"
+                                }
+                            )
+                        }
+                    }
+                }
+                "Tags" -> {
+                    if (tags.isEmpty()) {
+                        item { EmptyResults("tags", query) }
+                    } else {
+                        items(tags.size) { index ->
+                            SearchTagCard(
+                                tag = tags[index],
+                                onClick = {
+                                    query = tags[index].name
+                                    selectedTab = "Stories"
+                                }
+                            )
+                        }
+                    }
+                }
+            }
         }
+
         item { ExploreTopicsCard(onExploreClick) }
     }
 }
+
 
 @Composable
 private fun SearchHeader() {
@@ -292,24 +359,151 @@ private fun SearchCover(story: SearchStory) {
 }
 
 @Composable
-private fun EmptyResults(query: String) {
+private fun SearchWriterCard(writer: AuthorDto, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        color = Color(0xFFFFFDF9),
+        shape = RoundedCornerShape(WritOnRadius.card),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7)),
+        shadowElevation = WritOnElevation.raised
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (!writer.avatarUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = writer.avatarUrl,
+                    contentDescription = writer.fullName,
+                    modifier = Modifier.size(52.dp).clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+            } else {
+                Surface(
+                    shape = CircleShape,
+                    color = Color(0xFFF2ECE4),
+                    modifier = Modifier.size(52.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(
+                            text = writer.fullName.take(1).uppercase(),
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = SearchEditorialFamily,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandRed
+                            )
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.width(16.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = writer.fullName,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = SearchEditorialFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp
+                    )
+                )
+                Text(
+                    text = "@${writer.penName}",
+                    style = MaterialTheme.typography.bodyMedium.copy(color = BrandRed, fontSize = 14.sp)
+                )
+                if (!writer.bio.isNullOrBlank()) {
+                    Text(
+                        text = writer.bio,
+                        style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF6D6963)),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "${writer.followersCnt ?: 0} followers",
+                    style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFF6D6963))
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchTagCard(tag: TagDto, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+        color = Color(0xFFFFFDF9),
+        shape = RoundedCornerShape(WritOnRadius.field),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFFF2ECE4),
+                modifier = Modifier.size(36.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = "#",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = BrandRed
+                        )
+                    )
+                }
+            }
+
+            Spacer(Modifier.width(14.dp))
+
+            Text(
+                text = tag.name,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFamily = SearchEditorialFamily,
+                    fontWeight = FontWeight.SemiBold
+                ),
+                modifier = Modifier.weight(1f)
+            )
+
+            Surface(
+                shape = RoundedCornerShape(WritOnRadius.pill),
+                color = Color(0xFFF2ECE4)
+            ) {
+                Text(
+                    text = "${tag.count} ${if (tag.count == 1) "story" else "stories"}",
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                    style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFF6D6963))
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyResults(category: String, query: String) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(vertical = 54.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(painterResource(R.drawable.ic_search_muted), contentDescription = null, modifier = Modifier.size(38.dp))
-        Text("No stories found", modifier = Modifier.padding(top = WritOnSpacing.md), style = MaterialTheme.typography.titleLarge.copy(fontFamily = SearchEditorialFamily))
-        Text("Try another search for “$query”.", style = MaterialTheme.typography.bodyLarge, color = Color(0xFF6D6963))
+        Text("No $category found", modifier = Modifier.padding(top = WritOnSpacing.md), style = MaterialTheme.typography.titleLarge.copy(fontFamily = SearchEditorialFamily))
+        if (query.isNotBlank()) {
+            Text("Try another search for “$query”.", style = MaterialTheme.typography.bodyLarge, color = Color(0xFF6D6963))
+        } else {
+            Text("Type something to search for $category.", style = MaterialTheme.typography.bodyLarge, color = Color(0xFF6D6963))
+        }
     }
 }
 
-@Composable
-private fun SearchTabPlaceholder(tab: String) {
-    Column(modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text("$tab", style = MaterialTheme.typography.headlineMedium.copy(fontFamily = SearchEditorialFamily))
-        Text("Search across WritOn $tab.", modifier = Modifier.padding(top = WritOnSpacing.sm), color = Color(0xFF6D6963))
-    }
-}
 
 @Composable
 private fun ExploreTopicsCard(onClick: () -> Unit) {

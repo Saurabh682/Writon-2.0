@@ -55,6 +55,7 @@ dist/
 .playwright-mcp/
 graphify-out/
 scratch/
+.worktrees/
 
 # Data exports (may contain PII)
 data-exports/*.sql

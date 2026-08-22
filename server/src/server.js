@@ -140,7 +140,7 @@ function postSelectSql(whereClause, extraColumns = '') {
       'fullName', author.full_name,
       'avatarUrl', author.avatar_url,
       'bio', author.bio,
-      'quoteOfDay', null,
+      'quoteOfDay', alias.quote_of_day,
       'followersCnt', author.followers_count,
       'followingCnt', author.following_count
     ) as author,
@@ -158,6 +158,7 @@ function postSelectSql(whereClause, extraColumns = '') {
     ) as "isFollowingAuthor"
   from public.posts p
   inner join public.profiles author on author.id = p.author_id
+  left join public.legacy_import_profile_attributes alias on alias.profile_id = author.id
   ${whereClause}`;
 }
 
@@ -168,11 +169,12 @@ function toAuthor(row) {
     fullName: row.full_name,
     avatarUrl: row.avatar_url,
     bio: row.bio,
-    quoteOfDay: null,
+    quoteOfDay: row.quote_of_day ?? null,
     followersCnt: row.followers_count,
     followingCnt: row.following_count,
   };
 }
+
 
 function createSlug(title) {
   const readablePart = title
@@ -386,10 +388,14 @@ fastify.get('/api/v1/posts', async (request, reply) => {
     `${postSelectSql(`where p.status = 'published'
       and p.is_public = true
       and ($2::text is null or lower(p.category) = lower($2))
-      and ($3::text is null or p.title ilike '%' || $3 || '%'
+      and (
+        $3::text is null
+        or p.title ilike '%' || $3 || '%'
         or coalesce(p.summary, '') ilike '%' || $3 || '%'
         or author.full_name ilike '%' || $3 || '%'
-        or author.pen_name ilike '%' || $3 || '%')`)}
+        or author.pen_name ilike '%' || $3 || '%'
+        or p.content ilike '%' || $3 || '%'
+      )`)}
     order by
       case when $4 = 'popular' then p.likes_count end desc nulls last,
       p.published_at desc nulls last,
@@ -408,6 +414,21 @@ fastify.get('/api/v1/posts', async (request, reply) => {
     },
   };
 });
+
+fastify.get('/api/v1/tags', async (request) => {
+  const q = request.query.q ? String(request.query.q).trim() : null;
+  const result = await database.query(
+    `select category as name, count(*)::int as count
+     from public.posts
+     where status = 'published' and is_public = true
+       and ($1::text is null or category ilike '%' || $1 || '%')
+     group by category
+     order by count desc, category asc`,
+    [q]
+  );
+  return { tags: result.rows };
+});
+
 
 fastify.get('/api/v1/posts/:idOrSlug', async (request, reply) => {
   const idOrSlug = String(request.params.idOrSlug ?? '').trim();
@@ -615,7 +636,7 @@ fastify.get('/api/v1/comments/:postId', async (request, reply) => {
       comment.id::text as id,
       comment.post_id::text as "postId",
       comment.author_id as "authorId",
-      null::text as "parentId",
+      link.legacy_parent_id as "parentId",
       comment.content,
       comment.created_at as "createdAt",
       json_build_object(
@@ -624,7 +645,7 @@ fastify.get('/api/v1/comments/:postId', async (request, reply) => {
         'fullName', author.full_name,
         'avatarUrl', author.avatar_url,
         'bio', author.bio,
-        'quoteOfDay', null,
+        'quoteOfDay', alias.quote_of_day,
         'followersCnt', author.followers_count,
         'followingCnt', author.following_count
       ) as author,
@@ -632,8 +653,11 @@ fastify.get('/api/v1/comments/:postId', async (request, reply) => {
     from public.comments comment
     inner join public.posts post on post.id = comment.post_id
     inner join public.profiles author on author.id = comment.author_id
+    left join public.legacy_import_profile_attributes alias on alias.profile_id = author.id
+    left join public.legacy_import_comment_links link on link.comment_id = comment.id
     where comment.post_id = $1 and post.status = 'published' and post.is_public = true
     order by comment.created_at asc`,
+
     [postId]
   );
 
@@ -711,14 +735,46 @@ fastify.post(
   }
 );
 
+fastify.get('/api/v1/users', async (request) => {
+  const q = request.query.q ? String(request.query.q).trim() : null;
+  const page = Math.max(1, parseInt(request.query.page, 10) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(request.query.limit, 10) || 20));
+  const offset = (page - 1) * limit;
+
+  const result = await database.query(
+    `select p.id, p.pen_name, p.full_name, p.avatar_url, p.bio, p.followers_count, p.following_count, alias.quote_of_day
+     from public.profiles p
+     left join public.legacy_import_profile_attributes alias on alias.profile_id = p.id
+     where ($1::text is null
+        or p.full_name ilike '%' || $1 || '%'
+        or p.pen_name ilike '%' || $1 || '%'
+        or coalesce(p.bio, '') ilike '%' || $1 || '%')
+     order by p.followers_count desc, p.full_name asc
+     limit $2 offset $3`,
+    [q, limit + 1, offset]
+  );
+
+  const users = result.rows.slice(0, limit).map(toAuthor);
+  return {
+    users,
+    pagination: {
+      page,
+      limit,
+      hasMore: result.rows.length > limit,
+    },
+  };
+});
+
 fastify.get('/api/v1/users/:idOrPenName', async (request, reply) => {
+
   const identifier = parseProfileIdentifier(request, reply);
   if (!identifier) return;
 
   const result = await database.query(
-    `select id, pen_name, full_name, avatar_url, bio, followers_count, following_count
-     from public.profiles
-     where id = $1 or lower(pen_name) = lower($1)
+    `select p.id, p.pen_name, p.full_name, p.avatar_url, p.bio, p.followers_count, p.following_count, alias.quote_of_day
+     from public.profiles p
+     left join public.legacy_import_profile_attributes alias on alias.profile_id = p.id
+     where p.id = $1 or lower(p.pen_name) = lower($1)
      limit 1`,
     [identifier]
   );
@@ -726,6 +782,7 @@ fastify.get('/api/v1/users/:idOrPenName', async (request, reply) => {
 
   return { user: toAuthor(result.rows[0]) };
 });
+
 
 fastify.post(
   '/api/v1/users/:id/follow',

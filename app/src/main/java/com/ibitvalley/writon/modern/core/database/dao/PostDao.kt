@@ -37,7 +37,17 @@ interface PostDao {
     @Query("DELETE FROM posts WHERE id = :postId")
     suspend fun deletePostById(postId: String)
 
+    @Query("SELECT DISTINCT authorId, authorName, authorPenName, authorAvatarUrl FROM posts WHERE authorName LIKE '%' || :query || '%' OR authorPenName LIKE '%' || :query || '%'")
+    suspend fun getLocalAuthorsMatching(query: String): List<com.ibitvalley.writon.modern.core.database.model.PostAuthorTuple>
+
+    @Query("SELECT category as name, count(*) as count FROM posts WHERE category LIKE '%' || :query || '%' GROUP BY category")
+    suspend fun getLocalTagsMatching(query: String): List<com.ibitvalley.writon.modern.core.database.model.PostTagTuple>
+
+    @Query("SELECT * FROM posts WHERE title LIKE '%' || :query || '%' OR summary LIKE '%' || :query || '%' OR authorName LIKE '%' || :query || '%' OR authorPenName LIKE '%' || :query || '%' ORDER BY createdAt DESC")
+    suspend fun getLocalPostsMatching(query: String): List<PostEntity>
+
     @Query("DELETE FROM posts")
     suspend fun clearAll()
 }
+
 

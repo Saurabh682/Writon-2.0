@@ -23,6 +23,19 @@ interface WritOnApiService {
         @Query("limit") limit: Int = 20
     ): Response<PostsResponseDto>
 
+    @GET("api/v1/users")
+    suspend fun getUsers(
+        @Query("q") query: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<UsersResponseDto>
+
+    @GET("api/v1/tags")
+    suspend fun getTags(
+        @Query("q") query: String? = null
+    ): Response<TagsResponseDto>
+
+
     @GET("api/v1/posts/{idOrSlug}")
     suspend fun getPostDetail(
         @Path("idOrSlug") idOrSlug: String

@@ -22,7 +22,15 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import coil.compose.AsyncImage
+
+
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
@@ -48,9 +56,10 @@ fun ReaderScreen(
 ) {
     val post by viewModel.post.collectAsState()
     val comments by viewModel.comments.collectAsState()
+    val commentInput by viewModel.commentText.collectAsState()
     val scrollState = rememberScrollState()
-    val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    var showCommentsSheet by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -78,7 +87,7 @@ fun ReaderScreen(
                         if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
                         else viewModel.toggleLike()
                     },
-                    onComment = { scope.launch { scrollState.animateScrollTo(scrollState.maxValue) } },
+                    onComment = { showCommentsSheet = true },
                     onSave = {
                         if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
                         else viewModel.toggleBookmark()
@@ -100,8 +109,12 @@ fun ReaderScreen(
                     .filter(String::isNotEmpty)
             }
             Column(
-                modifier = Modifier.fillMaxSize().padding(innerPadding).verticalScroll(scrollState)
-                    .padding(horizontal = WritOnSpacing.lg).padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.xxl)
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = WritOnSpacing.lg)
+                    .padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.xxl)
             ) {
                 Text(story.category.uppercase(), style = MaterialTheme.typography.labelLarge, color = BrandRed, letterSpacing = 1.1.sp)
                 Spacer(Modifier.height(WritOnSpacing.md))
@@ -132,18 +145,83 @@ fun ReaderScreen(
                     ReaderBody(paragraphs)
                 }
                 Spacer(Modifier.height(WritOnSpacing.xxl))
-                Text("Responses (${comments.size.coerceAtLeast(story.commentsCnt)})", style = MaterialTheme.typography.headlineSmall)
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(WritOnRadius.card))
+                        .clickable { showCommentsSheet = true }
+                        .padding(vertical = WritOnSpacing.sm),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "Responses (${comments.size.coerceAtLeast(story.commentsCnt)})",
+                        style = MaterialTheme.typography.headlineSmall.copy(
+                            fontFamily = ReaderEditorialFamily,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Text(
+                        "View all",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = BrandRed
+                    )
+                }
                 Spacer(Modifier.height(WritOnSpacing.md))
                 if (comments.isEmpty()) {
-                    Text("No responses yet.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                } else comments.forEach { comment ->
-                    ReaderComment(comment.authorName, comment.authorAvatarUrl, comment.content, comment.createdAt)
-                    Spacer(Modifier.height(WritOnSpacing.lg))
+                    Text(
+                        "No responses yet. Tap to leave the first response.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.clickable { showCommentsSheet = true }
+                    )
+                } else {
+                    comments.take(3).forEach { comment ->
+                        ReaderComment(comment.authorName, comment.authorAvatarUrl, comment.content, comment.createdAt)
+                        Spacer(Modifier.height(WritOnSpacing.lg))
+                    }
+                    if (comments.size > 3) {
+                        Text(
+                            "See all ${comments.size} responses →",
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                            color = BrandRed,
+                            modifier = Modifier.clickable { showCommentsSheet = true }
+                        )
+                    }
                 }
             }
         }
     }
+
+    if (showCommentsSheet) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showCommentsSheet = false },
+            sheetState = sheetState,
+            containerColor = SurfacePaper,
+            dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.outlineVariant) }
+        ) {
+            CommentsPaneContent(
+                comments = comments,
+                commentInput = commentInput,
+                onCommentChange = { viewModel.commentText.value = it },
+                onSubmit = {
+                    val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                    if (user == null) {
+                        showCommentsSheet = false
+                        onLoginRequired()
+                    } else {
+                        val authorName = user.displayName ?: user.email?.substringBefore("@") ?: "Writer"
+                        viewModel.submitComment(authorName)
+                    }
+                },
+                onClose = { showCommentsSheet = false }
+            )
+        }
+    }
 }
+
 
 @Composable
 private fun ReaderAuthorMetadata(post: PostEntity) {
@@ -169,17 +247,60 @@ private fun ReaderAuthorMetadata(post: PostEntity) {
 
 @Composable
 private fun ReaderBody(paragraphs: List<String>) {
-    val style = MaterialTheme.typography.bodyLarge.copy(fontFamily = ReaderEditorialFamily, fontSize = 20.sp, lineHeight = 32.sp, fontWeight = FontWeight.Bold)
+    if (paragraphs.isEmpty()) return
+
+    val bodyTextStyle = MaterialTheme.typography.bodyLarge.copy(
+        fontFamily = ReaderEditorialFamily,
+        fontSize = 20.sp,
+        lineHeight = 32.sp,
+        fontWeight = FontWeight.Normal,
+        platformStyle = PlatformTextStyle(includeFontPadding = false),
+        lineHeightStyle = LineHeightStyle(
+            alignment = LineHeightStyle.Alignment.Top,
+            trim = LineHeightStyle.Trim.Both
+        )
+    )
+
     val first = paragraphs.first()
-    Row(verticalAlignment = Alignment.Top) {
-        Text(first.take(1), style = MaterialTheme.typography.displayLarge.copy(fontFamily = ReaderEditorialFamily, fontSize = 56.sp, lineHeight = 54.sp, fontWeight = FontWeight.Bold), modifier = Modifier.padding(end = WritOnSpacing.xs, top = 2.dp))
-        Text(first.drop(1).trimStart(), style = style, modifier = Modifier.weight(1f))
+    if (first.isNotBlank()) {
+        val dropCap = first.take(1)
+        val rest = first.drop(1).trimStart()
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.Top
+        ) {
+            Text(
+                text = dropCap,
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontFamily = ReaderEditorialFamily,
+                    fontSize = 62.sp,
+                    lineHeight = 54.sp,
+                    fontWeight = FontWeight.Bold,
+                    platformStyle = PlatformTextStyle(includeFontPadding = false),
+                    lineHeightStyle = LineHeightStyle(
+                        alignment = LineHeightStyle.Alignment.Top,
+                        trim = LineHeightStyle.Trim.Both
+                    )
+                ),
+                modifier = Modifier
+                    .offset(y = (-5).dp)
+                    .padding(end = 8.dp)
+            )
+            Text(
+                text = rest,
+                style = bodyTextStyle,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
+
     paragraphs.drop(1).forEach { paragraph ->
         Spacer(Modifier.height(WritOnSpacing.lg))
-        Text(paragraph, style = style)
+        Text(paragraph, style = bodyTextStyle)
     }
 }
+
 
 @Composable
 private fun ReaderActionTray(post: PostEntity, onApplaud: () -> Unit, onComment: () -> Unit, onSave: () -> Unit, onShare: () -> Unit) {
@@ -244,8 +365,158 @@ private fun ReaderComment(name: String, avatarUrl: String?, content: String, tim
 
 private fun shareStory(context: Context, post: PostEntity) {
     val intent = Intent(Intent.ACTION_SEND).apply {
-        putExtra(Intent.EXTRA_TEXT, "Check out this story: ${post.title}\\n\\nhttps://writon.co/posts/${post.slug}")
+        putExtra(Intent.EXTRA_TEXT, "Check out this story: ${post.title}\n\nhttps://writon.co/posts/${post.slug}")
         type = "text/plain"
     }
     context.startActivity(Intent.createChooser(intent, null))
 }
+
+@Composable
+private fun CommentsPaneContent(
+    comments: List<com.ibitvalley.writon.modern.core.database.model.CommentEntity>,
+    commentInput: String,
+    onCommentChange: (String) -> Unit,
+    onSubmit: () -> Unit,
+    onClose: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight(0.85f)
+            .padding(horizontal = WritOnSpacing.lg)
+    ) {
+        // Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = WritOnSpacing.md),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Responses (${comments.size})",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontFamily = ReaderEditorialFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp
+                ),
+                modifier = Modifier.weight(1f)
+            )
+            IconButton(onClick = onClose) {
+                Image(
+                    painter = painterResource(R.drawable.ic_close),
+                    contentDescription = "Close responses",
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+        // Comments List
+        if (comments.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(vertical = WritOnSpacing.xxl),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Image(
+                        painter = painterResource(R.drawable.ic_comment_muted),
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(Modifier.height(WritOnSpacing.md))
+                    Text(
+                        "No responses yet",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontFamily = ReaderEditorialFamily,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    )
+                    Spacer(Modifier.height(WritOnSpacing.xs))
+                    Text(
+                        "What are your thoughts on this story?\nBe the first to share a response.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(vertical = WritOnSpacing.md),
+                verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)
+            ) {
+                items(comments) { comment ->
+                    ReaderComment(
+                        name = comment.authorName,
+                        avatarUrl = comment.authorAvatarUrl,
+                        content = comment.content,
+                        timestamp = comment.createdAt
+                    )
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = WritOnSpacing.md),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                    )
+                }
+            }
+        }
+
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
+        // Input composer bar at bottom of pane
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = WritOnSpacing.md),
+            color = SurfacePaper
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextField(
+                    value = commentInput,
+                    onValueChange = onCommentChange,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(WritOnRadius.card)),
+                    placeholder = {
+                        Text(
+                            "What are your thoughts?",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    },
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = BrandBeige,
+                        unfocusedContainerColor = BrandBeige,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = BrandRed
+                    ),
+                    maxLines = 3
+                )
+                Spacer(Modifier.width(WritOnSpacing.sm))
+                Button(
+                    onClick = onSubmit,
+                    enabled = commentInput.isNotBlank(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BrandRed,
+                        disabledContainerColor = BrandRed.copy(alpha = 0.4f)
+                    ),
+                    shape = RoundedCornerShape(WritOnRadius.pill),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
+                ) {
+                    Text("Respond", style = MaterialTheme.typography.labelLarge, color = Color.White)
+                }
+            }
+        }
+    }
+}
+
