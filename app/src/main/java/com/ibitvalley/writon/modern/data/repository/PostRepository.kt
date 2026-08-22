@@ -225,9 +225,14 @@ class PostRepository(
                         )
                     }
 
-                    // Upsert latest posts into Room cache with OnConflictStrategy.REPLACE
-                    // Preserves local-only entries and unsynced modifications safely
-                    postDao.insertPosts(postEntities)
+                    // Synchronize Room cache with authoritative server list, removing deleted posts
+                    if (categoryQuery == null && query.isNullOrBlank() && tab == "latest") {
+                        postDao.replaceAllPosts(postEntities)
+                    } else if (categoryQuery != null && query.isNullOrBlank()) {
+                        postDao.replaceCategoryPosts(categoryQuery, postEntities)
+                    } else {
+                        postDao.insertPosts(postEntities)
+                    }
                 }
             } catch (e: Exception) {
                 // Network failure: Room offline cache will continue serving content seamlessly

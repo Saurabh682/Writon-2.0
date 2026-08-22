@@ -51,6 +51,21 @@ interface PostDao {
 
     @Query("DELETE FROM posts")
     suspend fun clearAll()
+
+    @Query("DELETE FROM posts WHERE category = :category")
+    suspend fun deletePostsByCategory(category: String)
+
+    @Transaction
+    suspend fun replaceAllPosts(posts: List<PostEntity>) {
+        clearAll()
+        insertPosts(posts)
+    }
+
+    @Transaction
+    suspend fun replaceCategoryPosts(category: String, posts: List<PostEntity>) {
+        deletePostsByCategory(category)
+        insertPosts(posts)
+    }
 }
 
 
