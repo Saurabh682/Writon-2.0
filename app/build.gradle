@@ -46,7 +46,7 @@ android {
         applicationId "com.ibitvalley.writon"
         minSdk 23
         targetSdk 35
-        versionCode 100
+        versionCode 101
         versionName '2.0.0'
         vectorDrawables.useSupportLibrary = true
 
