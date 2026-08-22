@@ -33,8 +33,6 @@ private val ProfileEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_semibold, weight = FontWeight.Bold)
 )
 
-private data class ProfileStory(val title: String, val readingTime: Int, val applauds: Int)
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
@@ -46,9 +44,9 @@ fun ProfileScreen(
     val user by viewModel.userProfile.collectAsState()
     var selectedTab by remember { mutableIntStateOf(0) }
     var overflowExpanded by remember { mutableStateOf(false) }
-    val name = user?.fullName ?: "Arjun Kapoor"
-    val penName = user?.penName ?: "arjunkapoor"
-    val bio = user?.bio ?: "Writer. Observer. Believer in the power of thoughtful words."
+    val name = user?.fullName ?: "Your profile"
+    val penName = user?.penName ?: ""
+    val bio = user?.bio?.takeIf { it.isNotBlank() } ?: "Add a bio to tell readers about your writing."
     val initials = initialsOf(name)
 
     Scaffold(
@@ -75,9 +73,9 @@ fun ProfileScreen(
             contentPadding = PaddingValues(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
             verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
         ) {
-            item { ProfileIdentity(name, penName, bio, initials) }
-            item { ProfileStats(user?.followersCnt ?: 860, onApplaudsClick) }
-            item { ProfileAbout(name) }
+            item { ProfileIdentity(name, penName, bio, initials, user?.location, user?.joinedAt) }
+            item { ProfileStats(user?.storiesCount ?: 0, user?.applaudsReceived ?: 0, user?.followersCount ?: 0, user?.followingCount ?: 0, onApplaudsClick) }
+            item { ProfileAbout(name, bio) }
             item { ProfileTabs(selectedTab) { selectedTab = it } }
             item { ProfileTopStories() }
         }
@@ -85,7 +83,7 @@ fun ProfileScreen(
 }
 
 @Composable
-private fun ProfileIdentity(name: String, penName: String, bio: String, initials: String) {
+private fun ProfileIdentity(name: String, penName: String, bio: String, initials: String, location: String?, joinedAt: String?) {
     Row(verticalAlignment = Alignment.Top) {
         Box {
             Surface(shape = CircleShape, color = Color(0xFFF2ECE4), modifier = Modifier.size(88.dp)) {
@@ -111,20 +109,24 @@ private fun ProfileIdentity(name: String, penName: String, bio: String, initials
                     Box(contentAlignment = Alignment.Center) { Text("✓", color = Color(0xFFFFFDF9), style = MaterialTheme.typography.labelMedium) }
                 }
             }
-            Text("@$penName", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (penName.isNotBlank()) Text("@$penName", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(WritOnSpacing.xxs))
             Text(bio, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 19.sp), maxLines = 3, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(WritOnSpacing.sm))
-            Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.xxs)) {
+            if (!location.isNullOrBlank() || !joinedAt.isNullOrBlank()) Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.xxs)) {
+                if (!location.isNullOrBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(painterResource(R.drawable.ic_location), contentDescription = null, modifier = Modifier.size(15.dp))
                     Spacer(Modifier.width(WritOnSpacing.xxs))
-                    Text("New Delhi, India", style = MaterialTheme.typography.bodySmall)
+                    Text(location, style = MaterialTheme.typography.bodySmall)
                 }
+                }
+                if (!joinedAt.isNullOrBlank()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(painterResource(R.drawable.ic_calendar), contentDescription = null, modifier = Modifier.size(15.dp))
                     Spacer(Modifier.width(WritOnSpacing.xxs))
-                    Text("Joined Jan 2023", style = MaterialTheme.typography.bodySmall)
+                    Text("Joined ${joinedAt.take(10)}", style = MaterialTheme.typography.bodySmall)
+                }
                 }
             }
         }
@@ -132,7 +134,7 @@ private fun ProfileIdentity(name: String, penName: String, bio: String, initials
 }
 
 @Composable
-private fun ProfileStats(followers: Int, onApplaudsClick: () -> Unit) {
+private fun ProfileStats(stories: Int, applauds: Int, followers: Int, following: Int, onApplaudsClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(WritOnRadius.card),
         color = SurfacePaper,
@@ -141,13 +143,13 @@ private fun ProfileStats(followers: Int, onApplaudsClick: () -> Unit) {
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(vertical = WritOnSpacing.lg), horizontalArrangement = Arrangement.SpaceEvenly) {
-            ProfileStat("48", "Stories\npublished")
+            ProfileStat(stories.toString(), "Stories\npublished")
             VerticalDivider(Modifier.height(54.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            ProfileStat("12.4K", "Applauds\nreceived", accent = true, modifier = Modifier.clickable(onClick = onApplaudsClick))
+            ProfileStat(formatProfileCount(applauds), "Applauds\nreceived", accent = true, modifier = Modifier.clickable(onClick = onApplaudsClick))
             VerticalDivider(Modifier.height(54.dp), color = MaterialTheme.colorScheme.outlineVariant)
             ProfileStat(followers.toString(), "Followers")
             VerticalDivider(Modifier.height(54.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            ProfileStat("312", "Following")
+            ProfileStat(following.toString(), "Following")
         }
     }
 }
@@ -162,7 +164,7 @@ private fun ProfileStat(value: String, label: String, accent: Boolean = true, mo
 }
 
 @Composable
-private fun ProfileAbout(name: String) {
+private fun ProfileAbout(name: String, bio: String) {
     val firstName = name.substringBefore(' ')
     Surface(
         modifier = Modifier.fillMaxWidth(),
@@ -174,12 +176,12 @@ private fun ProfileAbout(name: String) {
         Column(Modifier.padding(WritOnSpacing.md)) {
             Text("About $firstName", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
             Spacer(Modifier.height(WritOnSpacing.sm))
-            Text("I write to understand, to connect, and to leave behind something that stays. Words are my way of making sense of the world.", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(bio, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 20.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(WritOnSpacing.md))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(painterResource(R.drawable.ic_bookmark_orange), contentDescription = null, modifier = Modifier.size(24.dp))
                 Spacer(Modifier.width(WritOnSpacing.sm))
-                Text("Writing since 2018", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Your WritOn profile", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -201,12 +203,6 @@ private fun ProfileTabs(selectedTab: Int, onSelected: (Int) -> Unit) {
 
 @Composable
 private fun ProfileTopStories() {
-    val stories = listOf(
-        ProfileStory("The Architecture of Solitude", 6, 324),
-        ProfileStory("Letters to the Things I Left Behind", 4, 187),
-        ProfileStory("The Last Train Home", 7, 256),
-        ProfileStory("What We Owe Ourselves", 5, 412)
-    )
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(WritOnRadius.card),
@@ -221,33 +217,13 @@ private fun ProfileTopStories() {
                 Text("See all", style = MaterialTheme.typography.titleMedium, color = BrandRed)
                 Image(painterResource(R.drawable.ic_forward_muted), contentDescription = "See all stories", modifier = Modifier.size(20.dp))
             }
-            Spacer(Modifier.height(WritOnSpacing.xs))
-            stories.forEachIndexed { index, story ->
-                ProfileStoryRow(story)
-                if (index != stories.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            }
+            Spacer(Modifier.height(WritOnSpacing.sm))
+            Text("Published stories will appear here.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-    }
-}
-
-@Composable
-private fun ProfileStoryRow(story: ProfileStory) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = WritOnSpacing.md), verticalAlignment = Alignment.CenterVertically) {
-        Column(Modifier.weight(1f)) {
-            Text(story.title, style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily, fontSize = 20.sp, lineHeight = 25.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Spacer(Modifier.height(WritOnSpacing.xxs))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("${story.readingTime} min read", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("  •  ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Image(painterResource(R.drawable.ic_applaud), contentDescription = "Applauds", modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(WritOnSpacing.xxs))
-                Text(story.applauds.toString(), style = MaterialTheme.typography.bodySmall, color = BrandRed)
-            }
-        }
-        Image(painterResource(R.drawable.ic_bookmark_muted), contentDescription = "Save story", modifier = Modifier.size(25.dp))
-        Spacer(Modifier.width(WritOnSpacing.sm))
-        Image(painterResource(R.drawable.ic_more_vertical_muted), contentDescription = "Story options", modifier = Modifier.size(25.dp))
     }
 }
 
 private fun initialsOf(name: String): String = name.split(" ").mapNotNull { it.firstOrNull()?.uppercaseChar()?.toString() }.take(2).joinToString("")
+
+private fun formatProfileCount(value: Int): String =
+    if (value >= 1_000) String.format(java.util.Locale.getDefault(), "%.1fK", value / 1_000.0) else value.toString()

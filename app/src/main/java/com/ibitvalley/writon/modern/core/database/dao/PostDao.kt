@@ -34,6 +34,10 @@ interface PostDao {
     @Query("UPDATE posts SET isBookmarked = :isBookmarked, bookmarksCnt = :bookmarksCount WHERE id = :postId")
     suspend fun updateBookmarkStatus(postId: String, isBookmarked: Boolean, bookmarksCount: Int)
 
+    @Query("DELETE FROM posts WHERE id = :postId")
+    suspend fun deletePostById(postId: String)
+
     @Query("DELETE FROM posts")
     suspend fun clearAll()
 }
+

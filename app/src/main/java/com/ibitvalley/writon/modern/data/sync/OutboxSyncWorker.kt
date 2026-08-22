@@ -51,7 +51,30 @@ class OutboxSyncWorker(
                     "CREATE_POST" -> {
                         val postRequest = gson.fromJson(mutation.payloadJson, CreatePostRequestDto::class.java)
                         val response = apiService.createPost(postRequest)
-                        if (response.isSuccessful) {
+                        if (response.isSuccessful && response.body() != null) {
+                            val postDto = response.body()!!.post
+                            val postEntity = com.ibitvalley.writon.modern.core.database.model.PostEntity(
+                                id = postDto.id,
+                                authorId = postDto.author.id,
+                                authorName = postDto.author.fullName,
+                                authorPenName = postDto.author.penName,
+                                authorAvatarUrl = postDto.author.avatarUrl,
+                                title = postDto.title,
+                                slug = postDto.slug,
+                                summary = postDto.summary,
+                                content = postDto.content,
+                                category = postDto.category,
+                                coverImage = postDto.coverImage,
+                                readingTimeMin = postDto.readingTimeMin,
+                                likesCnt = postDto.likesCnt,
+                                commentsCnt = postDto.commentsCnt,
+                                bookmarksCnt = postDto.bookmarksCnt,
+                                isLiked = postDto.isLiked,
+                                isBookmarked = postDto.isBookmarked,
+                                createdAt = postDto.createdAt
+                            )
+                            db.postDao().deletePostById(mutation.targetId)
+                            db.postDao().insertPost(postEntity)
                             outboxDao.markMutationSynced(mutation.mutationId)
                         } else {
                             allSuccessful = false

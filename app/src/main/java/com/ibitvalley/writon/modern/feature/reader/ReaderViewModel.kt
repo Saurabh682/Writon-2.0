@@ -35,6 +35,7 @@ class ReaderViewModel(
     init {
         refreshPost()
         refreshComments()
+        recordReadingStart()
     }
 
     private fun refreshPost() {
@@ -46,6 +47,12 @@ class ReaderViewModel(
     private fun refreshComments() {
         viewModelScope.launch {
             repository.refreshComments(postId)
+        }
+    }
+
+    private fun recordReadingStart() {
+        viewModelScope.launch {
+            repository.recordReadingStart(postId)
         }
     }
 

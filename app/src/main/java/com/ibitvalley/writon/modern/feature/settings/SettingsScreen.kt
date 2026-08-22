@@ -165,7 +165,7 @@ private fun SettingsRow(
                 avatar != null -> Surface(shape = CircleShape, color = BrandBeige, modifier = Modifier.size(40.dp)) {
                     Box(contentAlignment = Alignment.Center) { Text(avatar, style = MaterialTheme.typography.labelLarge) }
                 }
-                useApplaudIcon -> Image(painterResource(R.drawable.ic_applaud), contentDescription = null, modifier = Modifier.size(26.dp))
+                useApplaudIcon -> Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = null, modifier = Modifier.size(26.dp))
                 icon != null -> Image(painterResource(icon), contentDescription = null, modifier = Modifier.size(26.dp))
             }
             Spacer(Modifier.width(WritOnSpacing.md))

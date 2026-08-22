@@ -76,4 +76,27 @@ describe('Fastify API contract', () => {
     expect(response.statusCode).toBe(400);
     expect(response.json().error).toBe('Invalid feed query');
   });
+
+  it('rejects private library collections before querying the database', async () => {
+    const app = await createApp();
+
+    const response = await app.inject({ method: 'GET', url: '/api/v1/me/bookmarks' });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toEqual({ error: 'Authentication required' });
+  });
+
+  it('validates story identifiers before recording reading progress', async () => {
+    const app = await createApp();
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/posts/not-a-uuid/reading-progress',
+      headers: { authorization: 'Bearer test-token' },
+      payload: { progress: 2 },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toEqual({ error: 'Invalid story identifier' });
+  });
 });

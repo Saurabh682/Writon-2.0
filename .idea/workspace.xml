@@ -29,11 +29,79 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9c6ae2d-bc2c-4dad-a201-11f11e4ca373" name="Default Changelist" comment="Till 12 June">
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/collections/CollectionsViewModel.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/explore/ExploreViewModel.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/search/SearchViewModel.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_ink.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_ink.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_ink.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_ink.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_ink.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/default_story_cover_wall.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud_ink.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud_muted.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud_orange.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud_white.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/migrations/20260822_reading_history.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/planningMode.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/planningMode.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/WritOnModernActivity.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/WritOnModernActivity.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/designsystem/components/StoryComponents.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/designsystem/components/StoryComponents.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/network/WritOnApiService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/network/WritOnApiService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/network/model/NetworkModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/network/model/NetworkModels.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/preferences/UserPreferences.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/preferences/UserPreferences.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/data/repository/PostRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/data/repository/PostRepository.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/explore/ExploreScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/explore/ExploreScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/feed/FeedScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/feed/FeedScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/library/LibraryScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/library/LibraryScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/library/ReadingHistoryScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/library/ReadingHistoryScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/notifications/NotificationsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/notifications/NotificationsScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/onboarding/InterestsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/onboarding/InterestsScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ApplaudsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ApplaudsScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ProfileScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ProfileScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ProfileViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ProfileViewModel.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/reader/ReaderScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/reader/ReaderScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/reader/ReaderViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/reader/ReaderViewModel.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/search/SearchScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/search/SearchScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/settings/SettingsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/settings/SettingsScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/welcome/WelcomeScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/welcome/WelcomeScreen.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/ui/navigation/WritOnNavigation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/ui/navigation/WritOnNavigation.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_muted.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_muted.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_orange.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_orange.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_white.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_muted.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_muted.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_orange.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_orange.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_white.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_muted.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_muted.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_orange.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_orange.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_white.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_muted.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_muted.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_orange.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_orange.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_white.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_muted.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_muted.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_orange.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_orange.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_white.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/auth/jwt.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/auth/jwt.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/auth/password.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/auth/password.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/db/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/db/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/db/schema.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/db/schema.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/db/seed.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/db/seed.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/routes/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/routes/auth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/routes/comments.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/routes/comments.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/routes/media.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/routes/media.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/routes/posts.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/routes/posts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/dist/routes/users.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/routes/users.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/server.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/test/fastify.contract.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/test/fastify.contract.test.js" afterDir="false" />
     </list>
     <list id="ce0c4f36-a9ea-4726-9ed7-f5148670e229" name="Update workspace.xml" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -81,6 +149,7 @@
         <option value="layoutResourceFile" />
         <option value="Enum" />
         <option value="Class" />
+        <option value="CMakeLists.txt" />
       </list>
     </option>
   </component>
@@ -133,7 +202,7 @@
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;D:/VibeCode/WritOn-PowerUp&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
     &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
   }
 }</component>
@@ -186,7 +255,7 @@
       <command value="device manager" />
     </option>
   </component>
-  <component name="RunManager" selected="Android App.New Run Config">
+  <component name="RunManager" selected="Android App.app">
     <configuration default="true" type="AndroidJUnit" factoryName="Android JUnit">
       <option name="TEST_OBJECT" value="class" />
       <option name="WORKING_DIRECTORY" value="$MODULE_DIR$" />
@@ -393,7 +462,7 @@
       </method>
     </configuration>
     <configuration name="app" type="AndroidRunConfigurationType" factoryName="Android App" activateToolWindowBeforeRun="false">
-      <module name="WritOn-PowerUp.app" />
+      <module name="WritOn-PowerUp.app.unitTest" />
       <option name="ANDROID_RUN_CONFIGURATION_SCHEMA_VERSION" value="1" />
       <option name="DEPLOY" value="true" />
       <option name="DEPLOY_APK_FROM_BUNDLE" value="false" />
@@ -410,8 +479,8 @@
       <option name="RESTORE_ENABLED" value="false" />
       <option name="RESTORE_FILE" value="" />
       <option name="RESTORE_FRESH_INSTALL_ONLY" value="false" />
-      <option name="CLEAR_LOGCAT" value="true" />
-      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
+      <option name="CLEAR_LOGCAT" value="false" />
+      <option name="SHOW_LOGCAT_AUTOMATICALLY" value="false" />
       <option name="TARGET_SELECTION_MODE" value="DEVICE_AND_SNAPSHOT_COMBO_BOX" />
       <option name="DEBUGGER_TYPE" value="Auto" />
       <Auto>
@@ -445,7 +514,7 @@
         <option name="ADVANCED_PROFILING_ENABLED" value="false" />
         <option name="STARTUP_PROFILING_ENABLED" value="false" />
         <option name="STARTUP_CPU_PROFILING_ENABLED" value="false" />
-        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="LeakCanary" />
+        <option name="STARTUP_CPU_PROFILING_CONFIGURATION_NAME" value="Java/Kotlin Method Trace" />
         <option name="STARTUP_NATIVE_MEMORY_PROFILING_ENABLED" value="false" />
         <option name="NATIVE_MEMORY_SAMPLE_RATE_BYTES" value="2048" />
       </Profilers>
@@ -644,11 +713,6 @@
           <option name="timeStamp" value="178" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/MyBlog.java</url>
-          <line>86</line>
-          <option name="timeStamp" value="180" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/classes/dao/DataRepository.java</url>
           <line>325</line>
           <option name="timeStamp" value="181" />
@@ -664,39 +728,9 @@
           <option name="timeStamp" value="183" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/Draft.java</url>
-          <line>81</line>
-          <option name="timeStamp" value="186" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/DraftBlogAdapter.java</url>
           <line>150</line>
           <option name="timeStamp" value="187" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/EditProfile.java</url>
-          <line>48</line>
-          <option name="timeStamp" value="188" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/EditProfile.java</url>
-          <line>140</line>
-          <option name="timeStamp" value="189" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/EditProfile.java</url>
-          <line>119</line>
-          <option name="timeStamp" value="190" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/EditProfile.java</url>
-          <line>90</line>
-          <option name="timeStamp" value="191" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/EditProfile.java</url>
-          <line>155</line>
-          <option name="timeStamp" value="192" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/LatestBlogAdapter.java</url>
@@ -717,21 +751,6 @@
           <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/fragment/LatestFragment.java</url>
           <line>137</line>
           <option name="timeStamp" value="199" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ShowBlogDetails.java</url>
-          <line>363</line>
-          <option name="timeStamp" value="200" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ShowBlogDetails.java</url>
-          <line>232</line>
-          <option name="timeStamp" value="202" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
-          <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/ShowBlogDetails.java</url>
-          <line>235</line>
-          <option name="timeStamp" value="203" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="java-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/adapter/LatestBlogAdapter.java</url>
@@ -756,12 +775,12 @@
       <map>
         <entry key="com.ibitvalley.writon">
           <value>
-            <CheckInfo lastCheckTimestamp="1786981348565" />
+            <CheckInfo lastCheckTimestamp="1787068443340" />
           </value>
         </entry>
         <entry key="com.ibitvalley.writon.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1786981348565" />
+            <CheckInfo lastCheckTimestamp="1787068443326" />
           </value>
         </entry>
       </map>

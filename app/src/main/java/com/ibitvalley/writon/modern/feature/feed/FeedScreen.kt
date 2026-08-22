@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.designsystem.components.PostCoverImage
 import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
@@ -84,7 +86,9 @@ fun FeedScreen(
     onWriteClick: () -> Unit,
     onLibraryClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    isAuthenticated: Boolean = true,
+    onLoginRequired: () -> Unit = {}
 ) {
     val posts by viewModel.posts.collectAsState()
     var currentIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -95,7 +99,7 @@ fun FeedScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(BrandBeige).padding(horizontal = 20.dp, vertical = 16.dp)
+        modifier = Modifier.fillMaxSize().background(BrandBeige).padding(horizontal = 18.dp, vertical = 16.dp)
     ) {
         HomeHeader(onLibraryClick = onLibraryClick, onProfileClick = onProfileClick)
         Spacer(Modifier.height(20.dp))
@@ -131,7 +135,10 @@ fun FeedScreen(
                     onRead = { onStoryClick(post.id) },
                     onPrevious = { if (index > 0) currentIndex = index - 1 },
                     onNext = { if (index < posts.lastIndex) currentIndex = index + 1 },
-                    onApplaud = { viewModel.toggleLike(post.id, post.isLiked, post.likesCnt) },
+                    onApplaud = {
+                        if (isAuthenticated) viewModel.toggleLike(post.id, post.isLiked, post.likesCnt)
+                        else onLoginRequired()
+                    },
                     onAuthorClick = onProfileClick
                 )
             }
@@ -195,14 +202,22 @@ private fun DiscoveryStoryCard(
                         dragY < -90f -> onNext()
                         dragY > 90f -> onPrevious()
                     }
-                }
-            }
-            .semantics { contentDescription = "${post.title}. Swipe right to read, or vertically to browse stories." },
-        shape = RoundedCornerShape(28.dp),
+            .semantics {
+                contentDescription = "${post.title}, by ${post.authorName}. ${post.readingTimeMin} minute read. Double tap or swipe right to read."
+                customActions = listOf(
+                    androidx.compose.ui.semantics.CustomAccessibilityAction("Read story") { onRead(); true },
+                    androidx.compose.ui.semantics.CustomAccessibilityAction("Next story") { onNext(); true },
+                    androidx.compose.ui.semantics.CustomAccessibilityAction("Previous story") { onPrevious(); true },
+                    androidx.compose.ui.semantics.CustomAccessibilityAction("Applaud") { onApplaud(); true }
+                )
+            },
+        onClick = onRead,
+        shape = RoundedCornerShape(24.dp),
         color = HomeSurface,
         border = BorderStroke(1.dp, HomeBorder),
-        shadowElevation = 4.dp
+        shadowElevation = 2.dp
     ) {
+
         Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(shape = RoundedCornerShape(16.dp), color = HomeChip) {
@@ -223,34 +238,45 @@ private fun DiscoveryStoryCard(
             Spacer(Modifier.height(24.dp))
             Text(
                 post.title,
-                style = MaterialTheme.typography.displayLarge.copy(fontFamily = HomeEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 48.sp, lineHeight = 51.sp),
+                style = MaterialTheme.typography.displayLarge.copy(
+                    fontFamily = HomeEditorialFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 44.sp,
+                    lineHeight = 48.sp
+                ),
                 color = HomeInk,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
             post.summary?.takeIf { it.isNotBlank() }?.let { summary ->
                 Spacer(Modifier.height(18.dp))
-                Text(summary, fontSize = 18.sp, lineHeight = 26.sp, color = HomeInk, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                Text(summary, fontSize = 17.sp, lineHeight = 24.sp, color = HomeMuted, maxLines = 3, overflow = TextOverflow.Ellipsis)
             }
-            post.coverImage?.takeIf { it.isNotBlank() }?.let { imageUrl ->
-                Spacer(Modifier.height(22.dp))
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = "Cover image for ${post.title}",
-                    modifier = Modifier.fillMaxWidth().height(210.dp).clip(RoundedCornerShape(18.dp)),
-                    contentScale = ContentScale.Crop
-                )
-            } ?: Spacer(Modifier.weight(1f))
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(22.dp))
+            PostCoverImage(
+                imageUrl = post.coverImage,
+                category = post.category,
+                contentDescription = "Cover image for ${post.title}",
+                modifier = Modifier.fillMaxWidth().height(228.dp),
+                categoryFontSize = 38.sp,
+                forceDefault = true
+            )
+            Spacer(Modifier.height(16.dp))
+            HorizontalDivider(color = HomeBorder, thickness = 1.dp)
+            Spacer(Modifier.height(14.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 AuthorAvatar(post.authorAvatarUrl, post.authorName, onAuthorClick)
                 Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(post.authorName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = HomeInk, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text("@${post.authorPenName}", fontSize = 14.sp, color = HomeMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text("@${post.authorPenName}", fontSize = 13.sp, color = HomeMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 IconButton(onClick = onApplaud, modifier = Modifier.size(46.dp)) {
-                    Image(painterResource(R.drawable.ic_applaud), contentDescription = if (post.isLiked) "Remove applaud" else "Applaud", modifier = Modifier.size(29.dp))
+                    Image(
+                        painterResource(if (post.isLiked) R.drawable.ic_applaud_orange else R.drawable.ic_applaud_muted),
+                        contentDescription = if (post.isLiked) "Remove applaud" else "Applaud",
+                        modifier = Modifier.size(29.dp)
+                    )
                 }
                 Text(formatApplauds(post.likesCnt), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = if (post.isLiked) BrandRed else HomeInk)
             }
@@ -260,7 +286,7 @@ private fun DiscoveryStoryCard(
 
 @Composable
 private fun AuthorAvatar(avatarUrl: String?, authorName: String, onClick: () -> Unit) {
-    Surface(modifier = Modifier.size(48.dp), shape = CircleShape, color = HomeChip, border = BorderStroke(1.dp, HomeBorder), onClick = onClick) {
+    Surface(modifier = Modifier.size(44.dp), shape = CircleShape, color = HomeChip, border = BorderStroke(1.dp, HomeBorder), onClick = onClick) {
         if (avatarUrl.isNullOrBlank()) {
             Box(contentAlignment = Alignment.Center) { Text(authorName.firstOrNull()?.uppercaseChar()?.toString() ?: "W", fontWeight = FontWeight.SemiBold, color = HomeInk) }
         } else {

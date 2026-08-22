@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,6 +30,7 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.network.model.PostDto
 
 private val ExploreEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
@@ -38,10 +40,13 @@ private val ExploreEditorialFamily = FontFamily(
 
 @Composable
 fun ExploreScreen(
+    viewModel: ExploreViewModel,
     onStoryClick: (String) -> Unit,
     onNextDiscovery: () -> Unit = {},
     onSearchClick: () -> Unit = {}
 ) {
+    LaunchedEffect(Unit) { viewModel.load() }
+    val discovery = viewModel.discoveries.getOrNull(viewModel.currentIndex)
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = WritOnSpacing.lg, end = WritOnSpacing.lg, top = WritOnSpacing.md, bottom = WritOnSpacing.xl),
@@ -49,8 +54,14 @@ fun ExploreScreen(
     ) {
         item { ExploreHeader(onSearchClick) }
         item { ExploreHero() }
-        item { DiscoveryCard(onRead = { onStoryClick("micro-fiction-future-self") }, onNextDiscovery = onNextDiscovery) }
-        item { ExploreHint(onNextDiscovery) }
+        item {
+            DiscoveryCard(
+                story = discovery,
+                onRead = { discovery?.let { onStoryClick(it.id) } },
+                onNextDiscovery = { viewModel.next(); onNextDiscovery() }
+            )
+        }
+        item { ExploreHint { viewModel.next(); onNextDiscovery() } }
     }
 }
 
@@ -85,7 +96,7 @@ private fun ExploreHero() {
 }
 
 @Composable
-private fun DiscoveryCard(onRead: () -> Unit, onNextDiscovery: () -> Unit) {
+private fun DiscoveryCard(story: PostDto?, onRead: () -> Unit, onNextDiscovery: () -> Unit) {
     Box(modifier = Modifier.fillMaxWidth().height(390.dp).padding(top = WritOnSpacing.sm)) {
         Surface(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxWidth().padding(start = 54.dp, top = 22.dp, bottom = 12.dp),
@@ -114,22 +125,19 @@ private fun DiscoveryCard(onRead: () -> Unit, onNextDiscovery: () -> Unit) {
             Column(modifier = Modifier.fillMaxSize().padding(WritOnSpacing.md)) {
                 Text("FOR YOU", style = MaterialTheme.typography.labelLarge.copy(letterSpacing = 1.4.sp), color = BrandRed)
                 Spacer(Modifier.height(WritOnSpacing.xs))
-                Row {
-                    Text("You’ve been reading ", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("Poetry.", style = MaterialTheme.typography.bodyMedium, color = BrandRed)
-                }
+                Text("A live recommendation from WritOn.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(WritOnSpacing.md))
                 Surface(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.width(92.dp).height(1.dp)) { }
                 Spacer(Modifier.height(WritOnSpacing.md))
-                Text("Try something new", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(story?.category?.let { "Explore $it" } ?: "Loading discoveries…", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.height(WritOnSpacing.xs))
                 Text(
-                    "Micro Fiction",
+                    story?.title ?: "No discovery available",
                     style = MaterialTheme.typography.headlineLarge.copy(fontFamily = ExploreEditorialFamily, fontSize = 28.sp, lineHeight = 32.sp)
                 )
                 Spacer(Modifier.height(WritOnSpacing.xs))
                 Text(
-                    "A 900-word story about a man who receives a letter from himself, dated ten years in the future.",
+                    story?.summary ?: "Published stories will appear here as soon as the feed is available.",
                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 19.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -138,23 +146,23 @@ private fun DiscoveryCard(onRead: () -> Unit, onNextDiscovery: () -> Unit) {
                 Spacer(Modifier.height(WritOnSpacing.sm))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Surface(shape = CircleShape, color = BrandBeige, modifier = Modifier.size(42.dp)) {
-                        Box(contentAlignment = Alignment.Center) { Text("ML", style = MaterialTheme.typography.labelLarge) }
+                        Box(contentAlignment = Alignment.Center) { Text(story?.author?.fullName?.take(2)?.uppercase() ?: "W", style = MaterialTheme.typography.labelLarge) }
                     }
                     Spacer(Modifier.width(WritOnSpacing.sm))
                     Column {
-                        Text("Maya Lin", style = MaterialTheme.typography.titleMedium)
-                        Text("3 min read", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(story?.author?.fullName ?: "WritOn", style = MaterialTheme.typography.titleMedium)
+                        Text(story?.let { "${it.readingTimeMin} min read" } ?: "", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    Text("  •  12 applauds", style = MaterialTheme.typography.bodySmall, color = BrandRed, modifier = Modifier.padding(top = 20.dp))
+                    Text(story?.let { "  •  ${it.likesCnt} applauds" } ?: "", style = MaterialTheme.typography.bodySmall, color = BrandRed, modifier = Modifier.padding(top = 20.dp))
                 }
                 Spacer(Modifier.height(WritOnSpacing.xs))
                 Row(
                     modifier = Modifier.align(Alignment.CenterHorizontally).clip(RoundedCornerShape(WritOnRadius.field)).clickable(onClick = onRead).padding(horizontal = WritOnSpacing.sm, vertical = WritOnSpacing.xs),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Read", style = MaterialTheme.typography.titleMedium, color = BrandRed)
+                    Text(if (story == null) "Refresh" else "Read", style = MaterialTheme.typography.titleMedium, color = BrandRed)
                     Spacer(Modifier.width(WritOnSpacing.sm))
-                    Image(painterResource(R.drawable.ic_forward_orange), contentDescription = "Read Micro Fiction", modifier = Modifier.size(24.dp))
+                    Image(painterResource(R.drawable.ic_forward_orange), contentDescription = "Read discovery", modifier = Modifier.size(24.dp))
                 }
             }
         }

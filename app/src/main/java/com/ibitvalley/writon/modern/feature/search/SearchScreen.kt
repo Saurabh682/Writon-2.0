@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -36,6 +37,7 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.network.model.PostDto
 
 private val SearchEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
@@ -44,6 +46,7 @@ private val SearchEditorialFamily = FontFamily(
 )
 
 private data class SearchStory(
+    val id: String,
     val title: String,
     val summary: String,
     val minutes: Int,
@@ -53,23 +56,28 @@ private data class SearchStory(
     val coverLabel: String
 )
 
-private val searchStories = listOf(
-    SearchStory("The Architecture of Solitude", "A reflection on how silence shapes the lives we build.", 6, 324, "Arjun Kapoor", Color(0xFF6D6963), "Still\nwater"),
-    SearchStory("Letters to the Things I Left Behind", "Sometimes the hardest goodbyes are the ones we never say out loud.", 4, 187, "Meera Iyer", Color(0xFF6D6963), "Warm\nwindow"),
-    SearchStory("The Last Train Home", "He bought a one-way ticket. The train had other plans.", 7, 256, "Kabir Malhotra", Color(0xFF6D6963), "Last\ntrain"),
-    SearchStory("What We Owe Ourselves", "On showing up, even when no one is watching.", 5, 412, "Ira Sharma", Color(0xFF151718), "Night\nsky")
+private fun PostDto.asSearchStory() = SearchStory(
+    id = id,
+    title = title,
+    summary = summary.orEmpty().ifBlank { "A story from ${author.fullName}." },
+    minutes = readingTimeMin,
+    applauds = likesCnt,
+    author = author.fullName,
+    coverTone = Color(0xFFF2ECE4),
+    coverLabel = category
 )
 
 @Composable
 fun SearchScreen(
+    viewModel: SearchViewModel,
     onStoryClick: (String) -> Unit,
     onExploreClick: () -> Unit = {}
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var selectedTab by rememberSaveable { mutableStateOf("Stories") }
-    val results = if (query.isBlank()) searchStories else searchStories.filter {
-        it.title.contains(query, ignoreCase = true) || it.summary.contains(query, ignoreCase = true) || it.author.contains(query, ignoreCase = true)
-    }
+    val results = viewModel.results.map { it.asSearchStory() }
+
+    LaunchedEffect(query) { viewModel.search(query) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -93,7 +101,7 @@ fun SearchScreen(
                 item { EmptyResults(query) }
             } else {
                 items(results.size) { index ->
-                    SearchResultCard(story = results[index], onClick = { onStoryClick("${index + 1}") })
+                    SearchResultCard(story = results[index], onClick = { onStoryClick(results[index].id) })
                 }
             }
         } else {
@@ -246,7 +254,9 @@ private fun SearchResultCard(story: SearchStory, onClick: () -> Unit) {
                 Row(modifier = Modifier.padding(top = 11.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text("${story.minutes} min read", fontSize = 13.sp, color = Color(0xFF6D6963))
                     Text("  •  ", color = Color(0xFF6D6963))
-                    Text("♨ ${story.applauds}", fontSize = 13.sp, color = BrandRed)
+                    Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = "Applauds", modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(story.applauds.toString(), fontSize = 13.sp, color = BrandRed)
                     Text("  •  ", color = Color(0xFF6D6963))
                     Text(story.author, fontSize = 13.sp, color = Color(0xFF6D6963), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }

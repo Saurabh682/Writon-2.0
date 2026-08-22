@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,6 +34,8 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.network.model.PostDto
+import com.ibitvalley.writon.modern.feature.collections.CollectionsViewModel
 
 private val ApplaudsEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
@@ -51,26 +54,38 @@ private data class ApplaudedStory(
     val hasCover: Boolean = true
 )
 
-private val applaudedStories = listOf(
-    ApplaudedStory("letters", "Stories", "Letters to the Things I Left Behind", "Sara Roy", "2m ago", Color(0xFF6D6963), "Warm\nwindow"),
-    ApplaudedStory("solitude", "Articles", "The Architecture of Solitude", "Arjun Mehta", "15m ago", Color(0xFF6D6963), "Still\nwater"),
-    ApplaudedStory("train", "Stories", "The Last Train Home", "Maya Lin", "1h ago", Color(0xFF6D6963), "Last\ntrain"),
-    ApplaudedStory("ourselves", "Articles", "What We Owe Ourselves", "Karan Malhotra", "3h ago", Color(0xFF151718), "Night\nsky"),
-    ApplaudedStory("waves", "Poems", "Small Moments, Big Waves", "Diya Sharma", "5h ago", Color(0xFF6D6963), "Paper\nboat")
-)
+private fun PostDto.asApplaudedStory(): ApplaudedStory {
+    val kind = when (category.lowercase()) {
+        "poetry", "poem", "shayari" -> "Poems"
+        "essay", "article", "philosophy", "journalism" -> "Articles"
+        else -> "Stories"
+    }
+    return ApplaudedStory(
+        id = id,
+        kind = kind,
+        title = title,
+        author = author.fullName,
+        time = "Recently applauded",
+        coverTone = Color(0xFFF2ECE4),
+        coverLabel = category,
+        hasCover = coverImage != null
+    )
+}
 
 @Composable
 fun ApplaudsScreen(
+    viewModel: CollectionsViewModel,
     onBackClick: () -> Unit = {},
     onStoryClick: (String) -> Unit = {},
     onSearchClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {}
 ) {
     var selectedTab by rememberSaveable { mutableStateOf("All") }
-    var applaudedIds by rememberSaveable { mutableStateOf(applaudedStories.map { it.id }.toSet()) }
     var expandedStoryId by rememberSaveable { mutableStateOf<String?>(null) }
-    val stories = applaudedStories.filter { it.id in applaudedIds && (selectedTab == "All" || it.kind == selectedTab) }
-    val totalApplauds = 132 - (applaudedStories.size - applaudedIds.size)
+    LaunchedEffect(Unit) { viewModel.loadApplauds() }
+    val stories = viewModel.applaudedPosts.map { it.asApplaudedStory() }
+        .filter { selectedTab == "All" || it.kind == selectedTab }
+    val totalApplauds = viewModel.applaudedPosts.size
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -96,15 +111,10 @@ fun ApplaudsScreen(
                                 story = story,
                                 expanded = expandedStoryId == story.id,
                                 onClick = { onStoryClick(story.id) },
-                                onToggleApplaud = {
-                                    applaudedIds = if (story.id in applaudedIds) applaudedIds - story.id else applaudedIds + story.id
-                                },
+                                onToggleApplaud = { viewModel.toggleApplaud(story.id) },
                                 onMoreClick = { expandedStoryId = story.id },
                                 onDismissMore = { expandedStoryId = null },
-                                onRemove = {
-                                    applaudedIds = applaudedIds - story.id
-                                    expandedStoryId = null
-                                }
+                                onRemove = { viewModel.toggleApplaud(story.id); expandedStoryId = null }
                             )
                             if (index < stories.lastIndex) {
                                 androidx.compose.material3.HorizontalDivider(color = Color(0xFFE9E1D7), modifier = Modifier.padding(start = WritOnSpacing.md))
@@ -178,14 +188,14 @@ private fun ApplaudsSummary(total: Int) {
             modifier = Modifier.padding(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(painterResource(R.drawable.ic_applaud), contentDescription = null, modifier = Modifier.size(52.dp))
+            Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = null, modifier = Modifier.size(52.dp))
             Spacer(Modifier.width(WritOnSpacing.lg))
             Column {
                 Text(
                     total.toString(),
                     style = MaterialTheme.typography.displaySmall.copy(fontFamily = ApplaudsEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 40.sp)
                 )
-                Text("Total applauds", fontSize = 15.sp, color = Color(0xFF6D6963))
+                Text("Stories applauded", fontSize = 15.sp, color = Color(0xFF6D6963))
             }
             Spacer(Modifier.weight(1f))
             androidx.compose.material3.VerticalDivider(modifier = Modifier.height(52.dp), color = Color(0xFFE9E1D7))
@@ -226,7 +236,7 @@ private fun ApplaudedStoryRow(
             Text(story.time, fontSize = 13.sp, color = Color(0xFF6D6963))
             Row(modifier = Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                 IconButton(onClick = onToggleApplaud, modifier = Modifier.size(40.dp)) {
-                    Image(painterResource(R.drawable.ic_applaud), contentDescription = "Remove applaud", modifier = Modifier.size(26.dp))
+                    Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = "Remove applaud", modifier = Modifier.size(26.dp))
                 }
                 Box {
                     IconButton(onClick = onMoreClick, modifier = Modifier.size(36.dp)) {
@@ -263,7 +273,7 @@ private fun EmptyApplauds(tab: String) {
         modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(painterResource(R.drawable.ic_applaud), contentDescription = null, modifier = Modifier.size(38.dp))
+        Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = null, modifier = Modifier.size(38.dp))
         Text("No $tab applauds yet", modifier = Modifier.padding(top = WritOnSpacing.sm), style = MaterialTheme.typography.titleLarge.copy(fontFamily = ApplaudsEditorialFamily))
     }
 }

@@ -30,6 +30,8 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.network.model.PostDto
+import com.ibitvalley.writon.modern.feature.collections.CollectionsViewModel
 
 private val LibraryEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
@@ -51,20 +53,37 @@ private data class LibraryStory(
     val applauds: Int
 )
 
+private fun PostDto.asLibraryStory() = LibraryStory(
+    id = id,
+    category = category,
+    title = title,
+    summary = summary.orEmpty().ifBlank { "A story from ${author.fullName}." },
+    authorName = author.fullName,
+    readingTime = readingTimeMin,
+    applauds = likesCnt
+)
+
 @Composable
 fun LibraryScreen(
+    viewModel: CollectionsViewModel,
     onStoryClick: (String) -> Unit = {},
     onSearchClick: () -> Unit = {},
     onHistoryClick: () -> Unit = {}
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var newestFirst by remember { mutableStateOf(true) }
-    var bookmarkedIds by remember { mutableStateOf(savedStories.map { it.id }.toSet()) }
     val selectedTab = LibraryTab.entries[selectedTabIndex]
+    LaunchedEffect(selectedTab) {
+        when (selectedTab) {
+            LibraryTab.Saved -> viewModel.loadSaved()
+            LibraryTab.Applauds -> viewModel.loadApplauds()
+            else -> Unit
+        }
+    }
     val visibleStories = when (selectedTab) {
-        LibraryTab.Saved -> savedStories
-        LibraryTab.History -> savedStories.dropLast(1).reversed()
-        LibraryTab.Applauds -> savedStories.sortedByDescending { it.applauds }
+        LibraryTab.Saved -> viewModel.savedPosts.map { it.asLibraryStory() }
+        LibraryTab.History -> emptyList()
+        LibraryTab.Applauds -> viewModel.applaudedPosts.map { it.asLibraryStory() }
         LibraryTab.Collections -> emptyList()
     }.let { stories -> if (newestFirst) stories else stories.reversed() }
 
@@ -90,13 +109,9 @@ fun LibraryScreen(
             items(visibleStories, key = { it.id }) { story ->
                 LibraryStoryCard(
                     story = story,
-                    isBookmarked = story.id in bookmarkedIds,
+                    isBookmarked = selectedTab == LibraryTab.Saved,
                     onClick = { onStoryClick(story.id) },
-                    onToggleBookmark = {
-                        bookmarkedIds = bookmarkedIds.let { ids ->
-                            if (story.id in ids) ids - story.id else ids + story.id
-                        }
-                    }
+                    onToggleBookmark = { viewModel.toggleBookmark(story.id) }
                 )
             }
         }
@@ -153,7 +168,7 @@ private fun LibraryFilters(selectedIndex: Int, onSelected: (Int) -> Unit) {
                         LibraryTab.Collections -> R.drawable.ic_collection_muted
                     }
                     if (tab == LibraryTab.Applauds) {
-                        Image(painterResource(R.drawable.ic_applaud), contentDescription = null, modifier = Modifier.size(20.dp))
+                        Image(painterResource(if (selected) R.drawable.ic_applaud_orange else R.drawable.ic_applaud_muted), contentDescription = null, modifier = Modifier.size(20.dp))
                     } else {
                         Image(painterResource(icon!!), contentDescription = null, modifier = Modifier.size(20.dp))
                     }
@@ -231,7 +246,7 @@ private fun LibraryStoryCard(story: LibraryStory, isBookmarked: Boolean, onClick
                     Text("  •  ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("${story.readingTime} min", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.width(WritOnSpacing.sm))
-                    Image(painterResource(R.drawable.ic_applaud), contentDescription = "Applauds", modifier = Modifier.size(20.dp))
+                    Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = "Applauds", modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(WritOnSpacing.xxs))
                     Text(story.applauds.toString(), style = MaterialTheme.typography.bodySmall, color = BrandRed)
                 }
@@ -265,10 +280,3 @@ private fun EmptyLibraryCollections() {
 }
 
 private fun initialsOf(name: String): String = name.split(" ").mapNotNull { it.firstOrNull()?.uppercaseChar()?.toString() }.take(2).joinToString("")
-
-private val savedStories = listOf(
-    LibraryStory("architecture-solitude", "Essay", "The Architecture of Solitude", "A reflection on how silence shapes the lives we build.", "Arjun Kapoor", 6, 324),
-    LibraryStory("letters-left-behind", "Poetry", "Letters to the Things I Left Behind", "Sometimes the hardest goodbyes are the ones we never say out loud.", "Sara Roy", 4, 187),
-    LibraryStory("last-train-home", "Micro Fiction", "The Last Train Home", "He bought a one-way ticket. The train had other plans.", "Zain D’souza", 7, 256),
-    LibraryStory("what-we-owe", "Philosophy", "What We Owe Ourselves", "On showing up, even when no one is watching.", "Maya Lin", 5, 412)
-)

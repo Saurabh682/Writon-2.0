@@ -9,6 +9,7 @@ import com.ibitvalley.writon.modern.core.database.model.OutboxMutationEntity
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.core.network.WritOnApiService
 import com.ibitvalley.writon.modern.core.network.model.CreatePostRequestDto
+import com.ibitvalley.writon.modern.core.network.model.ReadingProgressRequestDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -155,12 +156,8 @@ class PostRepository(
                         )
                     }
 
-                    // The unfiltered home feed is a server-owned snapshot. Replacing it
-                    // prevents legacy mock posts from remaining visible after a successful
-                    // sync, while failed requests continue to use the offline Room cache.
-                    if (categoryQuery == null && query.isNullOrBlank() && tab == "latest") {
-                        postDao.clearAll()
-                    }
+                    // Upsert latest posts into Room cache with OnConflictStrategy.REPLACE
+                    // Preserves local-only entries and unsynced modifications safely
                     postDao.insertPosts(postEntities)
                 }
             } catch (e: Exception) {
@@ -226,6 +223,17 @@ class PostRepository(
             } catch (e: Exception) {
                 queuePost(request)
             }
+        }
+    }
+
+    suspend fun recordReadingStart(postId: String) = withContext(Dispatchers.IO) {
+        try {
+            apiService.recordReadingProgress(
+                postId = postId,
+                request = ReadingProgressRequestDto(progress = 0.05f)
+            )
+        } catch (_: Exception) {
+            // Public and offline reading remain available; progress is best-effort.
         }
     }
 

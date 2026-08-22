@@ -31,7 +31,8 @@ private val BrandRedColor = Color(0xFFE75A2A)
 @Composable
 fun WelcomeScreen(
     onGetStarted: () -> Unit,
-    onLogin: () -> Unit
+    onLogin: () -> Unit,
+    onContinueAsVisitor: () -> Unit
 ) {
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -148,7 +149,18 @@ fun WelcomeScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            TextButton(
+                onClick = onContinueAsVisitor,
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 8.dp)
+            ) {
+                Text(
+                    text = "Continue as a visitor",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = BrandRedColor
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Footer
             Text(
@@ -205,6 +217,6 @@ fun PageIndicator(isSelected: Boolean) {
 @Composable
 fun WelcomeScreenPreview() {
     WritOnTheme {
-        WelcomeScreen(onGetStarted = {}, onLogin = {})
+        WelcomeScreen(onGetStarted = {}, onLogin = {}, onContinueAsVisitor = {})
     }
 }

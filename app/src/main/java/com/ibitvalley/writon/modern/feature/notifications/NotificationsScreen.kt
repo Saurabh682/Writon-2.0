@@ -13,6 +13,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -33,6 +34,8 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.network.model.NotificationDto
+import com.ibitvalley.writon.modern.feature.collections.CollectionsViewModel
 
 private val NotificationEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
@@ -53,29 +56,47 @@ private data class ActivityNotification(
     val tone: Color = Color(0xFF6D6963)
 )
 
-private val newActivity = listOf(
-    ActivityNotification("Sara Roy", "applauded your story", "Letters to the Things I Left Behind", "2m ago", NotificationKind.APPLAUD, true, true, Color(0xFF6D6963)),
-    ActivityNotification("Arjun Mehta", "commented on your story", "The Architecture of Solitude", "15m ago", NotificationKind.COMMENT, true, true, Color(0xFF6D6963)),
-    ActivityNotification("Maya Lin", "started following you", "Writer. Dreamer. Observer.", "1h ago", NotificationKind.FOLLOW, true)
-)
-
-private val earlierActivity = listOf(
-    ActivityNotification("Karan Malhotra", "applauded your story", "The Last Train Home", "3h ago", NotificationKind.APPLAUD, hasStory = true, tone = Color(0xFF6D6963)),
-    ActivityNotification("Diya Sharma", "commented on your story", "What We Owe Ourselves", "5h ago", NotificationKind.COMMENT, hasStory = true, tone = Color(0xFF151718)),
-    ActivityNotification("Arpit Kohli", "started following you", "Writer and story enthusiast.", "8h ago", NotificationKind.FOLLOW),
-    ActivityNotification("", "Your story was bookmarked", "The Architecture of Solitude", "Yesterday", NotificationKind.BOOKMARK),
-    ActivityNotification("", "Reminder: Finish your draft", "You have a draft that’s left unpublished.", "Yesterday", NotificationKind.REMINDER),
-    ActivityNotification("", "You earned a new badge", "Consistent Writer", "2d ago", NotificationKind.BADGE)
-)
+private fun NotificationDto.asActivityNotification(): ActivityNotification {
+    val notificationKind = when (kind) {
+        "applaud" -> NotificationKind.APPLAUD
+        "comment" -> NotificationKind.COMMENT
+        "follow" -> NotificationKind.FOLLOW
+        "bookmark" -> NotificationKind.BOOKMARK
+        "badge" -> NotificationKind.BADGE
+        else -> NotificationKind.REMINDER
+    }
+    return ActivityNotification(
+        name = actor?.fullName.orEmpty(),
+        action = message,
+        detail = postTitle ?: actor?.penName.orEmpty().ifBlank { "WritOn activity" },
+        time = createdAt.substringBefore('T'),
+        kind = notificationKind,
+        unread = readAt == null,
+        hasStory = postId != null,
+        tone = Color(0xFFF2ECE4)
+    )
+}
 
 @Composable
 fun NotificationsScreen(
+    viewModel: CollectionsViewModel,
     onSearchClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {}
 ) {
     var selectedFilter by rememberSaveable { mutableStateOf("All") }
-    val filteredNew = newActivity.filter { it.matches(selectedFilter) }
-    val filteredEarlier = earlierActivity.filter { it.matches(selectedFilter) }
+    LaunchedEffect(selectedFilter) {
+        viewModel.loadNotifications(
+            when (selectedFilter) {
+                "Comments" -> "comment"
+                "Applauds" -> "applaud"
+                "Follows" -> "follow"
+                else -> null
+            }
+        )
+    }
+    val activities = viewModel.notifications.map { it.asActivityNotification() }
+    val filteredNew = activities.filter { it.unread && it.matches(selectedFilter) }
+    val filteredEarlier = activities.filter { !it.unread && it.matches(selectedFilter) }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -91,6 +112,28 @@ fun NotificationsScreen(
         if (filteredEarlier.isNotEmpty()) {
             item { SectionLabel("Earlier") }
             item { NotificationGroup(filteredEarlier) }
+        }
+        if (filteredNew.isEmpty() && filteredEarlier.isEmpty()) {
+            item { EmptyNotifications() }
+        }
+    }
+}
+
+@Composable
+private fun EmptyNotifications() {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFFFFFDF9),
+        shape = RoundedCornerShape(WritOnRadius.card),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
+    ) {
+        Column(
+            modifier = Modifier.padding(28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Image(painterResource(R.drawable.ic_notification), contentDescription = null, modifier = Modifier.size(34.dp))
+            Text("No notifications yet", modifier = Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleLarge.copy(fontFamily = NotificationEditorialFamily))
+            Text("Story activity will appear here.", color = Color(0xFF6D6963))
         }
     }
 }
@@ -152,7 +195,7 @@ private fun NotificationFilters(selectedFilter: String, onSelected: (String) -> 
                 ) {
                     when (label) {
                         "Mentions" -> Text("@", fontSize = 24.sp, fontWeight = FontWeight.SemiBold, color = if (selected) BrandRed else Color(0xFF151718))
-                        "Applauds" -> Image(painterResource(R.drawable.ic_applaud), contentDescription = null, modifier = Modifier.size(23.dp))
+                        "Applauds" -> Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = null, modifier = Modifier.size(23.dp))
                         else -> icon?.let { Image(painterResource(if (selected) when (it) { R.drawable.ic_bullet_list -> R.drawable.ic_bullet_list_orange; R.drawable.ic_comment -> R.drawable.ic_comment_orange; else -> R.drawable.ic_follow_orange } else it), contentDescription = null, modifier = Modifier.size(22.dp)) }
                     }
                     Spacer(Modifier.width(8.dp))
@@ -256,7 +299,7 @@ private fun ActivityAvatar(notification: ActivityNotification) {
             }
         }
         when (notification.kind) {
-            NotificationKind.APPLAUD -> Image(painterResource(R.drawable.ic_applaud), contentDescription = "Applaud", modifier = Modifier.align(Alignment.BottomEnd).size(27.dp))
+            NotificationKind.APPLAUD -> Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = "Applaud", modifier = Modifier.align(Alignment.BottomEnd).size(27.dp))
             NotificationKind.COMMENT -> ActivityBadge(R.drawable.ic_comment, Modifier.align(Alignment.BottomEnd))
             NotificationKind.FOLLOW -> ActivityBadge(R.drawable.ic_follow, Modifier.align(Alignment.BottomEnd))
             else -> Unit

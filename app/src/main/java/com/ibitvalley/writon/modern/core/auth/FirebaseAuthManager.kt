@@ -40,6 +40,16 @@ object FirebaseAuthManager {
             }
     }
 
+    fun getFreshTokenBlocking(): String? {
+        val currentUser = auth.currentUser ?: return null
+        return try {
+            val task = currentUser.getIdToken(true)
+            com.google.android.gms.tasks.Tasks.await(task, 10, java.util.concurrent.TimeUnit.SECONDS)?.token
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun syncNetworkAuthToken(onComplete: (Boolean) -> Unit = {}) {
         val currentUser = auth.currentUser
         if (currentUser == null) {

@@ -1,8 +1,12 @@
 package com.ibitvalley.writon.modern.core.network
 
 import com.ibitvalley.writon.BuildConfig
+import com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager
+import okhttp3.Authenticator
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Response
+import okhttp3.Route
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -31,6 +35,31 @@ object NetworkClient {
         chain.proceed(builder.build())
     }
 
+    private val tokenAuthenticator = Authenticator { _: Route?, response: Response ->
+        // Prevent infinite retry loops
+        if (responseCount(response) >= 3) return@Authenticator null
+
+        val freshToken = FirebaseAuthManager.getFreshTokenBlocking()
+        if (!freshToken.isNullOrBlank()) {
+            userAuthToken = freshToken
+            response.request.newBuilder()
+                .header("Authorization", "Bearer $freshToken")
+                .build()
+        } else {
+            null
+        }
+    }
+
+    private fun responseCount(response: Response): Int {
+        var count = 1
+        var prior = response.priorResponse
+        while (prior != null) {
+            count++
+            prior = prior.priorResponse
+        }
+        return count
+    }
+
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = if (BuildConfig.DEBUG) {
             HttpLoggingInterceptor.Level.BODY
@@ -42,6 +71,7 @@ object NetworkClient {
 
     private val okHttpClient = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
+        .authenticator(tokenAuthenticator)
         .addInterceptor(loggingInterceptor)
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(15, TimeUnit.SECONDS)

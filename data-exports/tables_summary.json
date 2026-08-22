@@ -1,0 +1,365 @@
+{
+  "database": "WritOn 2.0 SQLite Database",
+  "exportedAt": "2026-08-21T03:29:37.085Z",
+  "tableCount": 6,
+  "tables": {
+    "bookmarks": {
+      "rowCount": 440,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": true
+        },
+        {
+          "name": "user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "post_id",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "isPrimaryKey": false
+        }
+      ],
+      "createSql": "CREATE TABLE bookmarks (\n    id TEXT PRIMARY KEY,\n    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,\n    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    UNIQUE(user_id, post_id)\n  )"
+    },
+    "comments": {
+      "rowCount": 804,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": true
+        },
+        {
+          "name": "post_id",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "author_id",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "parent_id",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "content",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "isPrimaryKey": false
+        }
+      ],
+      "createSql": "CREATE TABLE comments (\n    id TEXT PRIMARY KEY,\n    post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,\n    author_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    parent_id TEXT,\n    content TEXT NOT NULL,\n    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n  )"
+    },
+    "follows": {
+      "rowCount": 550,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": true
+        },
+        {
+          "name": "follower_id",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "following_id",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "isPrimaryKey": false
+        }
+      ],
+      "createSql": "CREATE TABLE follows (\n    id TEXT PRIMARY KEY,\n    follower_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    following_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    UNIQUE(follower_id, following_id)\n  )"
+    },
+    "likes": {
+      "rowCount": 6,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": true
+        },
+        {
+          "name": "user_id",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "post_id",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "isPrimaryKey": false
+        }
+      ],
+      "createSql": "CREATE TABLE likes (\n    id TEXT PRIMARY KEY,\n    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    post_id TEXT NOT NULL REFERENCES posts(id) ON DELETE CASCADE,\n    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    UNIQUE(user_id, post_id)\n  )"
+    },
+    "posts": {
+      "rowCount": 630,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": true
+        },
+        {
+          "name": "author_id",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "title",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "slug",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "summary",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "content",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "category",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": "'Essays'",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "cover_image",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "reading_time_min",
+          "type": "INTEGER",
+          "notNull": true,
+          "defaultValue": "3",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "likes_cnt",
+          "type": "INTEGER",
+          "notNull": true,
+          "defaultValue": "0",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "comments_cnt",
+          "type": "INTEGER",
+          "notNull": true,
+          "defaultValue": "0",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "bookmarks_cnt",
+          "type": "INTEGER",
+          "notNull": true,
+          "defaultValue": "0",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "is_published",
+          "type": "INTEGER",
+          "notNull": true,
+          "defaultValue": "1",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "published_at",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "isPrimaryKey": false
+        }
+      ],
+      "createSql": "CREATE TABLE posts (\n    id TEXT PRIMARY KEY,\n    author_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,\n    title TEXT NOT NULL,\n    slug TEXT NOT NULL UNIQUE,\n    summary TEXT,\n    content TEXT NOT NULL,\n    category TEXT NOT NULL DEFAULT 'Essays',\n    cover_image TEXT,\n    reading_time_min INTEGER NOT NULL DEFAULT 3,\n    likes_cnt INTEGER NOT NULL DEFAULT 0,\n    comments_cnt INTEGER NOT NULL DEFAULT 0,\n    bookmarks_cnt INTEGER NOT NULL DEFAULT 0,\n    is_published INTEGER NOT NULL DEFAULT 1,\n    published_at TEXT DEFAULT CURRENT_TIMESTAMP,\n    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n  )"
+    },
+    "users": {
+      "rowCount": 3946,
+      "columns": [
+        {
+          "name": "id",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": true
+        },
+        {
+          "name": "pen_name",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "full_name",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "email",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "password_hash",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "avatar_url",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "bio",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "quote_of_day",
+          "type": "TEXT",
+          "notNull": false,
+          "defaultValue": null,
+          "isPrimaryKey": false
+        },
+        {
+          "name": "followers_cnt",
+          "type": "INTEGER",
+          "notNull": true,
+          "defaultValue": "0",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "following_cnt",
+          "type": "INTEGER",
+          "notNull": true,
+          "defaultValue": "0",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "created_at",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "isPrimaryKey": false
+        },
+        {
+          "name": "updated_at",
+          "type": "TEXT",
+          "notNull": true,
+          "defaultValue": "CURRENT_TIMESTAMP",
+          "isPrimaryKey": false
+        }
+      ],
+      "createSql": "CREATE TABLE users (\n    id TEXT PRIMARY KEY,\n    pen_name TEXT NOT NULL UNIQUE,\n    full_name TEXT NOT NULL,\n    email TEXT NOT NULL UNIQUE,\n    password_hash TEXT,\n    avatar_url TEXT,\n    bio TEXT,\n    quote_of_day TEXT,\n    followers_cnt INTEGER NOT NULL DEFAULT 0,\n    following_cnt INTEGER NOT NULL DEFAULT 0,\n    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,\n    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP\n  )"
+    }
+  }
+}

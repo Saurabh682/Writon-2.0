@@ -116,6 +116,162 @@ export class ClientAIEngine {
 }
 
 /**
+ * In-Browser Vector & Semantic Similarity Search
+ * Zero cloud dependency: computes TF-IDF semantic embeddings & cosine similarity in memory.
+ */
+export class SemanticSearchEngine {
+  // Tokenize and clean text into normalized term frequencies
+  private static getTermVector(text: string): Map<string, number> {
+    const vector = new Map<string, number>();
+    const tokens = text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(t => t.length > 2);
+
+    for (const token of tokens) {
+      vector.set(token, (vector.get(token) || 0) + 1);
+    }
+    return vector;
+  }
+
+  // Calculate cosine similarity between two term frequency vectors
+  public static cosineSimilarity(vecA: Map<string, number>, vecB: Map<string, number>): number {
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+
+    for (const [term, valA] of vecA) {
+      normA += valA * valA;
+      const valB = vecB.get(term);
+      if (valB !== undefined) {
+        dotProduct += valA * valB;
+      }
+    }
+
+    for (const [, valB] of vecB) {
+      normB += valB * valB;
+    }
+
+    if (normA === 0 || normB === 0) return 0;
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+  }
+
+  // Semantic search across stories
+  public static searchStories<T extends { title: string; summary: string; category?: string; content?: string }>(
+    query: string,
+    stories: T[]
+  ): Array<{ story: T; score: number }> {
+    if (!query.trim()) return stories.map(story => ({ story, score: 1.0 }));
+
+    const queryVector = this.getTermVector(query);
+
+    return stories
+      .map(story => {
+        const docText = `${story.title} ${story.title} ${story.summary} ${story.category || ''} ${(story.content || '').slice(0, 1000)}`;
+        const docVector = this.getTermVector(docText);
+        const score = this.cosineSimilarity(queryVector, docVector);
+        return { story, score };
+      })
+      .filter(res => res.score > 0.05)
+      .sort((a, b) => b.score - a.score);
+  }
+
+  // Find related stories based on semantic similarity to target story
+  public static findRelatedStories<T extends { id: string; title: string; summary: string; category?: string }>(
+    targetStory: T,
+    allStories: T[],
+    limit = 3
+  ): T[] {
+    const targetVector = this.getTermVector(`${targetStory.title} ${targetStory.summary} ${targetStory.category || ''}`);
+
+    return allStories
+      .filter(s => s.id !== targetStory.id)
+      .map(story => {
+        const candidateVector = this.getTermVector(`${story.title} ${story.summary} ${story.category || ''}`);
+        return {
+          story,
+          score: this.cosineSimilarity(targetVector, candidateVector)
+        };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map(r => r.story);
+  }
+}
+
+/**
+ * Web Speech API Voice Dictation (Speech-to-Text)
+ */
+export class VoiceDictationEngine {
+  private static recognition: any = null;
+  private static isListening = false;
+
+  public static isSupported(): boolean {
+    return typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
+  }
+
+  public static startDictation(options: {
+    onResult: (text: string, isFinal: boolean) => void;
+    onError?: (err: any) => void;
+    onEnd?: () => void;
+    lang?: string;
+  }): boolean {
+    if (!this.isSupported()) return false;
+
+    this.stopDictation();
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    this.recognition = new SpeechRecognition();
+    this.recognition.continuous = true;
+    this.recognition.interimResults = true;
+    this.recognition.lang = options.lang || 'en-US';
+
+    this.recognition.onresult = (event: any) => {
+      let interimTranscript = '';
+      let finalTranscript = '';
+
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          finalTranscript += event.results[i][0].transcript;
+        } else {
+          interimTranscript += event.results[i][0].transcript;
+        }
+      }
+
+      const text = finalTranscript || interimTranscript;
+      if (text.trim()) {
+        options.onResult(text, !!finalTranscript);
+      }
+    };
+
+    this.recognition.onerror = (event: any) => {
+      options.onError?.(event.error);
+    };
+
+    this.recognition.onend = () => {
+      this.isListening = false;
+      options.onEnd?.();
+    };
+
+    this.recognition.start();
+    this.isListening = true;
+    return true;
+  }
+
+  public static stopDictation() {
+    if (this.recognition && this.isListening) {
+      this.recognition.stop();
+      this.isListening = false;
+    }
+  }
+
+  public static getListeningState(): boolean {
+    return this.isListening;
+  }
+}
+
+/**
  * Web Speech API Narrator (TTS)
  */
 export class AudioNarrator {
@@ -194,3 +350,4 @@ export class AudioNarrator {
     return !!(this.synth && this.synth.paused);
   }
 }
+

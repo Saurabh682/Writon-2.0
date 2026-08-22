@@ -14,12 +14,55 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
+import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
+
+@Composable
+fun PostCoverImage(
+    imageUrl: String?,
+    category: String,
+    contentDescription: String?,
+    modifier: Modifier = Modifier,
+    categoryFontSize: androidx.compose.ui.unit.TextUnit = 26.sp,
+    forceDefault: Boolean = false,
+) {
+    Box(
+        modifier = modifier.clip(RoundedCornerShape(WritOnRadius.field)),
+        contentAlignment = Alignment.Center
+    ) {
+        if (forceDefault || imageUrl.isNullOrBlank()) {
+            Image(
+                painter = painterResource(R.drawable.default_story_cover_wall),
+                contentDescription = contentDescription,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+            Text(
+                text = category.uppercase(),
+                color = BrandRed,
+                fontSize = categoryFontSize,
+                fontWeight = FontWeight.SemiBold,
+                letterSpacing = 1.5.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = WritOnSpacing.md)
+            )
+        } else {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = contentDescription,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+        }
+    }
+}
 
 @Composable
 fun StoryCard(
@@ -74,16 +117,13 @@ fun StoryCard(
                     }
                 }
                 
-                post.coverImage?.let {
-                    AsyncImage(
-                        model = it,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(80.dp)
-                            .clip(RoundedCornerShape(WritOnRadius.field)),
-                        contentScale = ContentScale.Crop
-                    )
-                }
+                PostCoverImage(
+                    imageUrl = post.coverImage,
+                    category = post.category,
+                    contentDescription = "Cover image for ${post.title}",
+                    modifier = Modifier.size(80.dp),
+                    categoryFontSize = 14.sp
+                )
             }
             
             Spacer(modifier = Modifier.height(WritOnSpacing.sm))

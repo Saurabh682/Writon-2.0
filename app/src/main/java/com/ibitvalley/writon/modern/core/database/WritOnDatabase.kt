@@ -35,10 +35,11 @@ abstract class WritOnDatabase : RoomDatabase() {
                     context.applicationContext,
                     WritOnDatabase::class.java,
                     "writon_modern.db"
-                ).fallbackToDestructiveMigration().build()
+                ).fallbackToDestructiveMigrationOnDowngrade().build()
                 INSTANCE = instance
                 instance
             }
         }
     }
 }
+

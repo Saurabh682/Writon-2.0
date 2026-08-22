@@ -9,10 +9,12 @@ import {
   BookOpen,
   Wand2,
   ListOrdered,
-  FileText
+  FileText,
+  Mic,
+  MicOff
 } from 'lucide-react';
 import { createStory, uploadMedia } from '../lib/api';
-import { ClientAIEngine } from '../lib/ai-engine';
+import { ClientAIEngine, VoiceDictationEngine } from '../lib/ai-engine';
 import { Category, Story } from '../types';
 
 interface StoryEditorProps {
@@ -42,11 +44,13 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({ onBack, onStoryPublish
   const [showPreview, setShowPreview] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isDictating, setIsDictating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // AI Copilot state
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [aiActionName, setAiActionName] = useState<string | null>(null);
+
 
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
   const estimatedReadTime = Math.max(1, Math.ceil(wordCount / 200));
@@ -94,6 +98,35 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({ onBack, onStoryPublish
       setSummary(aiSuggestion);
     }
     setAiSuggestion(null);
+  };
+
+  const handleToggleDictation = () => {
+    if (isDictating) {
+      VoiceDictationEngine.stopDictation();
+      setIsDictating(false);
+    } else {
+      if (!VoiceDictationEngine.isSupported()) {
+        setError('Voice dictation is not supported in this browser. Please use Chrome, Edge, or Safari.');
+        return;
+      }
+      const started = VoiceDictationEngine.startDictation({
+        onResult: (text, isFinal) => {
+          if (isFinal) {
+            setContent(prev => (prev ? `${prev} ${text}` : text));
+          }
+        },
+        onError: (err) => {
+          console.error('Dictation error:', err);
+          setIsDictating(false);
+        },
+        onEnd: () => {
+          setIsDictating(false);
+        }
+      });
+      if (started) {
+        setIsDictating(true);
+      }
+    }
   };
 
   const handlePublish = async () => {
@@ -144,6 +177,20 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({ onBack, onStoryPublish
             <span>{estimatedReadTime} min read</span>
           </div>
 
+          {/* Voice Dictation Button */}
+          <button
+            onClick={handleToggleDictation}
+            title={isDictating ? 'Stop Voice Dictation' : 'Start Voice Dictation'}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono transition-all ${
+              isDictating
+                ? 'bg-red-600 text-white animate-pulse shadow-md shadow-red-500/30'
+                : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 border border-editorial-border dark:border-darkEditorial-border'
+            }`}
+          >
+            {isDictating ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+            <span>{isDictating ? 'Recording...' : 'Voice Dictate'}</span>
+          </button>
+
           {/* Toggle Live Preview */}
           <button
             onClick={() => setShowPreview(!showPreview)}
@@ -174,6 +221,7 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({ onBack, onStoryPublish
           </button>
         </div>
       </div>
+
 
       {error && (
         <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-sm text-red-600 dark:text-red-400">

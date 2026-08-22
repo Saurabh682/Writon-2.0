@@ -41,7 +41,11 @@ private val ReaderEditorialFamily = FontFamily(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReaderScreen(viewModel: ReaderViewModel, onBackClick: () -> Unit) {
+fun ReaderScreen(
+    viewModel: ReaderViewModel,
+    onBackClick: () -> Unit,
+    onLoginRequired: () -> Unit = {}
+) {
     val post by viewModel.post.collectAsState()
     val comments by viewModel.comments.collectAsState()
     val scrollState = rememberScrollState()
@@ -55,7 +59,10 @@ fun ReaderScreen(viewModel: ReaderViewModel, onBackClick: () -> Unit) {
                 navigationIcon = { IconButton(onClick = onBackClick) { Image(painterResource(R.drawable.ic_back), "Back", Modifier.size(24.dp)) } },
                 actions = {
                     IconButton(onClick = {}) { Text("Aa", style = MaterialTheme.typography.titleLarge.copy(fontFamily = ReaderEditorialFamily)) }
-                    IconButton(onClick = viewModel::toggleBookmark) {
+                    IconButton(onClick = {
+                        if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
+                        else viewModel.toggleBookmark()
+                    }) {
                         Image(painterResource(if (post?.isBookmarked == true) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark), if (post?.isBookmarked == true) "Remove bookmark" else "Save story", Modifier.size(24.dp))
                     }
                     IconButton(onClick = { post?.let { shareStory(context, it) } }) { Image(painterResource(R.drawable.ic_share), "Share story", Modifier.size(24.dp)) }
@@ -67,9 +74,15 @@ fun ReaderScreen(viewModel: ReaderViewModel, onBackClick: () -> Unit) {
             post?.let { story ->
                 ReaderActionTray(
                     post = story,
-                    onApplaud = viewModel::toggleLike,
+                    onApplaud = {
+                        if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
+                        else viewModel.toggleLike()
+                    },
                     onComment = { scope.launch { scrollState.animateScrollTo(scrollState.maxValue) } },
-                    onSave = viewModel::toggleBookmark,
+                    onSave = {
+                        if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
+                        else viewModel.toggleBookmark()
+                    },
                     onShare = { shareStory(context, story) }
                 )
             }
@@ -178,7 +191,7 @@ private fun ReaderActionTray(post: PostEntity, onApplaud: () -> Unit, onComment:
         ) {
             Row(Modifier.fillMaxWidth().padding(vertical = WritOnSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
                 ReaderTrayAction("Applaud", post.likesCnt, onApplaud, post.isLiked) {
-                    Image(painterResource(R.drawable.ic_applaud), null, Modifier.size(26.dp))
+                    Image(painterResource(if (post.isLiked) R.drawable.ic_applaud_orange else R.drawable.ic_applaud_muted), null, Modifier.size(26.dp))
                 }
                 ReaderTrayDivider()
                 ReaderTrayAction("Comment", post.commentsCnt, onComment) { Image(painterResource(R.drawable.ic_comment), null, Modifier.size(26.dp)) }

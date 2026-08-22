@@ -30,6 +30,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -50,6 +51,9 @@ import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.network.model.ReadingHistoryItemDto
+import com.ibitvalley.writon.modern.core.network.model.ReadingHistorySummaryDto
+import com.ibitvalley.writon.modern.feature.collections.CollectionsViewModel
 
 private val HistoryEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
@@ -69,29 +73,44 @@ private data class HistoryStory(
     val author: String,
     val minutes: Int,
     val progress: Float,
+    val bookmarked: Boolean,
     val coverTone: Color,
     val coverLabel: String
 )
 
-private val historyStories = listOf(
-    HistoryStory("letters-left-behind", "Today", HistoryFilter.Poems, "Letters to the Things I Left Behind", "Sara Roy", 5, .85f, Color(0xFF6D6963), "Warm\nwindow"),
-    HistoryStory("architecture-solitude", "Today", HistoryFilter.Articles, "The Architecture of Solitude", "Arjun Mehta", 7, 1f, Color(0xFF6D6963), "Still\nwater"),
-    HistoryStory("last-train-home", "Today", HistoryFilter.Stories, "The Last Train Home", "Maya Lin", 6, .40f, Color(0xFF6D6963), "Last\ntrain"),
-    HistoryStory("what-we-owe", "Yesterday", HistoryFilter.Articles, "What We Owe Ourselves", "Karan Malhotra", 4, 1f, Color(0xFF151718), "Night\nsky"),
-    HistoryStory("silence-sunlight", "14 Aug 2025", HistoryFilter.Poems, "Of Silence and Sunlight", "Ira Sen", 3, .70f, Color(0xFF6D6963), "Quiet\nlight")
-)
+private fun ReadingHistoryItemDto.asHistoryStory(): HistoryStory {
+    val kind = when (category.lowercase()) {
+        "poetry", "poem", "shayari" -> HistoryFilter.Poems
+        "essay", "article", "philosophy", "journalism" -> HistoryFilter.Articles
+        else -> HistoryFilter.Stories
+    }
+    return HistoryStory(
+        id = id,
+        group = "Recently read",
+        kind = kind,
+        title = title,
+        author = author.fullName,
+        minutes = readingTimeMin,
+        progress = progress.coerceIn(0f, 1f),
+        bookmarked = isBookmarked,
+        coverTone = Color(0xFFF2ECE4),
+        coverLabel = category
+    )
+}
 
 @Composable
 fun ReadingHistoryScreen(
+    viewModel: CollectionsViewModel,
     onStoryClick: (String) -> Unit = {},
     onSearchClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {}
 ) {
     var filter by rememberSaveable { mutableStateOf(HistoryFilter.All) }
-    var bookmarkedIds by rememberSaveable { mutableStateOf(emptySet<String>()) }
     var menuFor by rememberSaveable { mutableStateOf<String?>(null) }
     var showTip by rememberSaveable { mutableStateOf(true) }
-    val filteredStories = historyStories.filter { filter == HistoryFilter.All || it.kind == filter }
+    LaunchedEffect(Unit) { viewModel.loadHistory() }
+    val filteredStories = viewModel.historyItems.map { it.asHistoryStory() }
+        .filter { filter == HistoryFilter.All || it.kind == filter }
     val groups = filteredStories.groupBy { it.group }
 
     LazyColumn(
@@ -101,7 +120,7 @@ fun ReadingHistoryScreen(
     ) {
         item { HistoryHeader(onSearchClick, onSettingsClick) }
         item { HistoryFilters(filter, onSelect = { filter = it }) }
-        item { HistorySummary() }
+        item { HistorySummary(viewModel.historySummary) }
         if (filteredStories.isEmpty()) {
             item { EmptyHistory(filter) }
         } else {
@@ -118,12 +137,10 @@ fun ReadingHistoryScreen(
                             stories.forEachIndexed { index, story ->
                                 HistoryRow(
                                     story = story,
-                                    bookmarked = story.id in bookmarkedIds,
+                                    bookmarked = story.bookmarked,
                                     menuExpanded = menuFor == story.id,
                                     onClick = { onStoryClick(story.id) },
-                                    onBookmark = {
-                                        bookmarkedIds = if (story.id in bookmarkedIds) bookmarkedIds - story.id else bookmarkedIds + story.id
-                                    },
+                                    onBookmark = { viewModel.toggleBookmark(story.id) },
                                     onMore = { menuFor = story.id },
                                     onDismiss = { menuFor = null }
                                 )
@@ -190,7 +207,7 @@ private fun HistoryFilters(selected: HistoryFilter, onSelect: (HistoryFilter) ->
 }
 
 @Composable
-private fun HistorySummary() {
+private fun HistorySummary(summary: ReadingHistorySummaryDto) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
@@ -203,14 +220,14 @@ private fun HistorySummary() {
             }
             Spacer(Modifier.width(20.dp))
             Column {
-                Text("57", style = MaterialTheme.typography.displaySmall.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 39.sp))
+                Text(summary.storiesRead.toString(), style = MaterialTheme.typography.displaySmall.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 39.sp))
                 Text("Stories read", fontSize = 14.sp, color = Color(0xFF6D6963))
             }
             Spacer(Modifier.weight(1f))
             VerticalDivider(modifier = Modifier.height(64.dp), color = Color(0xFFE9E1D7))
             Spacer(Modifier.width(20.dp))
             Column {
-                Text("24.3", style = MaterialTheme.typography.displaySmall.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 39.sp))
+                Text("%.1f".format(summary.hoursRead), style = MaterialTheme.typography.displaySmall.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 39.sp))
                 Text("Hours spent reading", fontSize = 14.sp, color = Color(0xFF6D6963), maxLines = 1)
             }
         }

@@ -43,6 +43,37 @@ interface WritOnApiService {
         @Path("id") postId: String
     ): Response<BookmarkResponseDto>
 
+    @GET("api/v1/me/bookmarks")
+    suspend fun getMyBookmarks(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 50
+    ): Response<PostsResponseDto>
+
+    @GET("api/v1/me/applauds")
+    suspend fun getMyApplauds(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 50
+    ): Response<PostsResponseDto>
+
+    @GET("api/v1/me/reading-history")
+    suspend fun getMyReadingHistory(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 50
+    ): Response<ReadingHistoryResponseDto>
+
+    @POST("api/v1/posts/{id}/reading-progress")
+    suspend fun recordReadingProgress(
+        @Path("id") postId: String,
+        @Body request: ReadingProgressRequestDto
+    ): Response<ReadingProgressResponseDto>
+
+    @GET("api/v1/me/notifications")
+    suspend fun getMyNotifications(
+        @Query("kind") kind: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 50
+    ): Response<NotificationsResponseDto>
+
     @GET("api/v1/comments/{postId}")
     suspend fun getComments(
         @Path("postId") postId: String
