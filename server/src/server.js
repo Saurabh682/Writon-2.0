@@ -78,8 +78,9 @@ const database = pool ?? new Pool({
 });
 
 await fastify.register(cors, {
-  origin: config.environment === 'production' ? config.corsOrigins : true,
+  origin: config.corsOrigins.length > 0 ? config.corsOrigins : true,
 });
+
 await fastify.register(helmet);
 
 async function requireUser(request, reply) {

@@ -33,11 +33,8 @@ export function loadRuntimeConfig(environment = process.env) {
     .map((origin) => origin.trim())
     .filter(Boolean) ?? [];
 
-  if (values.NODE_ENV === 'production' && corsOrigins.length === 0) {
-    throw new Error('CORS_ORIGINS is required in production. Provide a comma-separated allowlist.');
-  }
-
   return {
+
     environment: values.NODE_ENV,
     port: values.PORT,
     databaseUrl: values.DATABASE_URL,
