@@ -63,27 +63,17 @@ fun CommentsScreen(
     var sortExpanded by remember { mutableStateOf(false) }
     var selectedSort by remember { mutableStateOf("Most recent") }
 
-    // Map Room CommentEntity list or enrich with mock items if empty for demo
+    // Map Room CommentEntity list accurately to display model
     val displayComments = remember(comments, selectedSort) {
-        val baseList = if (comments.isNotEmpty()) {
-            comments.mapIndexed { index, entity ->
-                DisplayComment(
-                    id = entity.id,
-                    authorName = entity.authorName,
-                    authorAvatarUrl = entity.authorAvatarUrl,
-                    content = entity.content,
-                    timeAgo = formatTimeAgo(entity.createdAt, index),
-                    applaudsCount = (45 - index * 7).coerceAtLeast(3),
-                    repliesCount = if (index == 0) 12 else if (index == 1) 4 else if (index == 3) 2 else 0
-                )
-            }
-        } else {
-            listOf(
-                DisplayComment("1", "Meera Iyer", null, "Beautifully written. This is exactly what I needed to read today.", "2h ago", 45, 12),
-                DisplayComment("2", "Rohan Sharma", null, "Slowing down helped me reconnect with the things I love. Thank you!", "5h ago", 23, 4),
-                DisplayComment("3", "Ananya Patel", null, "So honest and relatable. The section on boundaries really resonated with me.", "8h ago", 17, 0),
-                DisplayComment("4", "Vikram Desai", null, "Loved the practical takeaways. Already applying a few of these.", "12h ago", 31, 2),
-                DisplayComment("5", "Ishita Nair", null, "This gave me a new perspective. Thank you for sharing your journey.", "1d ago", 19, 0)
+        val baseList = comments.mapIndexed { index, entity ->
+            DisplayComment(
+                id = entity.id,
+                authorName = entity.authorName,
+                authorAvatarUrl = entity.authorAvatarUrl,
+                content = entity.content,
+                timeAgo = formatTimeAgo(entity.createdAt, index),
+                applaudsCount = 0,
+                repliesCount = 0
             )
         }
 
@@ -110,7 +100,7 @@ fun CommentsScreen(
                         )
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            displayComments.size.coerceAtLeast(totalCount).toString(),
+                            displayComments.size.toString(),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 18.sp
@@ -247,50 +237,57 @@ fun CommentsScreen(
             Spacer(Modifier.height(WritOnSpacing.lg))
 
             // Comments List
-            LazyColumn(
-                modifier = Modifier.weight(1f).fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)
-            ) {
-                items(displayComments) { comment ->
-                    CommentItemRow(
-                        comment = comment,
-                        onReplyClick = { replyingTo = comment },
-                        onApplaudClick = { onApplaudComment(comment.id) }
-                    )
-                    HorizontalDivider(
-                        color = Color(0xFFEFE8DE),
-                        thickness = 1.dp,
-                        modifier = Modifier.padding(top = WritOnSpacing.md)
-                    )
-                }
-
-                item {
-                    Spacer(Modifier.height(WritOnSpacing.sm))
-                    Surface(
-                        shape = RoundedCornerShape(16.dp),
-                        border = BorderStroke(1.dp, Color(0xFFE9E1D7)),
-                        color = SurfacePaper,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(onClick = onBackClick)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("💬", fontSize = 16.sp)
-                            Spacer(Modifier.width(8.dp))
-                            Text(
-                                "View all comments (${displayComments.size.coerceAtLeast(totalCount)})",
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                                color = BrandRed
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Text("›", fontSize = 18.sp, color = BrandRed)
-                        }
+            // Comments List or Empty State
+            if (displayComments.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(vertical = 32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_comment_muted),
+                            contentDescription = null,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Spacer(Modifier.height(14.dp))
+                        Text(
+                            "No comments yet",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontFamily = CommentsEditorialFamily,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 18.sp
+                            ),
+                            color = Color(0xFF191715)
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            "Be the first to share your thoughts on this story.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF8C867D),
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
                     }
-                    Spacer(Modifier.height(WritOnSpacing.xl))
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)
+                ) {
+                    items(displayComments) { comment ->
+                        CommentItemRow(
+                            comment = comment,
+                            onReplyClick = { replyingTo = comment },
+                            onApplaudClick = { onApplaudComment(comment.id) }
+                        )
+                        HorizontalDivider(
+                            color = Color(0xFFEFE8DE),
+                            thickness = 1.dp,
+                            modifier = Modifier.padding(top = WritOnSpacing.md)
+                        )
+                    }
                 }
             }
         }
