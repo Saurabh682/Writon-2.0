@@ -6,6 +6,7 @@ import com.ibitvalley.writon.modern.core.database.dao.UserDao
 import com.ibitvalley.writon.modern.core.network.WritOnApiService
 import com.ibitvalley.writon.modern.core.network.model.MyProfileDto
 import com.ibitvalley.writon.modern.core.network.model.PostDto
+import com.ibitvalley.writon.modern.core.network.model.UpsertMyProfileRequestDto
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,6 +51,41 @@ class ProfileViewModel(
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
+            } finally {
+                isLoading.value = false
+            }
+        }
+    }
+
+    fun updateProfile(
+        fullName: String,
+        penName: String,
+        bio: String,
+        location: String,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        viewModelScope.launch {
+            isLoading.value = true
+            try {
+                val current = _userProfile.value
+                val request = UpsertMyProfileRequestDto(
+                    penName = penName.trim(),
+                    fullName = fullName.trim(),
+                    bio = bio.trim().ifBlank { null },
+                    location = location.trim().ifBlank { null },
+                    avatarUrl = current?.avatarUrl
+                )
+                val response = apiService.upsertMyProfile(request)
+                if (response.isSuccessful && response.body() != null) {
+                    _userProfile.value = response.body()!!.profile
+                    onSuccess()
+                } else {
+                    val errMsg = response.errorBody()?.string() ?: "Failed to update profile"
+                    onError(errMsg)
+                }
+            } catch (e: Exception) {
+                onError(e.message ?: "Network error occurred")
             } finally {
                 isLoading.value = false
             }

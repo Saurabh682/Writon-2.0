@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.network.model.PostDto
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
@@ -48,8 +49,11 @@ fun ProfileScreen(
     val user by viewModel.userProfile.collectAsState()
     val stories by viewModel.userStories.collectAsState()
     val highlights by viewModel.highlights.collectAsState()
+    val isUpdating by viewModel.isLoading.collectAsState()
+
     var selectedTab by remember { mutableIntStateOf(0) }
     var overflowExpanded by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
 
     val name = user?.fullName ?: "Your Profile"
     val penName = user?.penName ?: ""
@@ -66,6 +70,9 @@ fun ProfileScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showEditDialog = true }) {
+                        Image(painterResource(R.drawable.ic_edit_pencil), contentDescription = "Edit Profile", modifier = Modifier.size(24.dp))
+                    }
                     IconButton(onClick = { }) {
                         Image(painterResource(R.drawable.ic_share), contentDescription = "Share profile", modifier = Modifier.size(24.dp))
                     }
@@ -74,6 +81,7 @@ fun ProfileScreen(
                             Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "Profile options", modifier = Modifier.size(24.dp))
                         }
                         DropdownMenu(expanded = overflowExpanded, onDismissRequest = { overflowExpanded = false }) {
+                            DropdownMenuItem(text = { Text("Edit Profile") }, onClick = { overflowExpanded = false; showEditDialog = true })
                             DropdownMenuItem(text = { Text("Settings") }, onClick = { overflowExpanded = false; onSettingsClick() })
                         }
                     }
@@ -88,12 +96,12 @@ fun ProfileScreen(
             contentPadding = PaddingValues(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
             verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
         ) {
-            item { ProfileIdentity(name, penName, bio, initials, user?.location, user?.joinedAt) }
+            item { ProfileIdentity(name, penName, bio, initials, user?.location, user?.joinedAt, onEditClick = { showEditDialog = true }) }
             item { ProfileStats(stories.size.coerceAtLeast(user?.storiesCount ?: 0), user?.applaudsReceived ?: 0, user?.followersCount ?: 0, user?.followingCount ?: 0, onApplaudsClick) }
             item { ProfileTabs(selectedTab) { selectedTab = it } }
 
             when (selectedTab) {
-                0 -> item { ProfileAboutTab(name, bio, user?.location, user?.joinedAt, user?.quoteOfDay) }
+                0 -> item { ProfileAboutTab(name, bio, user?.location, user?.joinedAt, user?.quoteOfDay, onEditClick = { showEditDialog = true }) }
                 1 -> {
                     if (stories.isEmpty()) {
                         item { ProfileEmptyTab("stories", onWriteClick) }
@@ -114,55 +122,93 @@ fun ProfileScreen(
             }
         }
     }
+
+    if (showEditDialog) {
+        EditProfileDialog(
+            initialName = user?.fullName ?: "",
+            initialPenName = user?.penName ?: "",
+            initialBio = user?.bio ?: "",
+            initialLocation = user?.location ?: "",
+            isLoading = isUpdating,
+            onDismiss = { showEditDialog = false },
+            onSave = { newName, newPenName, newBio, newLocation ->
+                viewModel.updateProfile(newName, newPenName, newBio, newLocation, onSuccess = {
+                    showEditDialog = false
+                })
+            }
+        )
+    }
 }
 
 @Composable
-private fun ProfileIdentity(name: String, penName: String, bio: String, initials: String, location: String?, joinedAt: String?) {
-    Row(verticalAlignment = Alignment.Top) {
-        Box {
-            Surface(shape = CircleShape, color = Color(0xFFF2ECE4), modifier = Modifier.size(88.dp)) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(initials, style = MaterialTheme.typography.displayMedium.copy(fontSize = 31.sp, fontFamily = ProfileEditorialFamily))
+private fun ProfileIdentity(
+    name: String,
+    penName: String,
+    bio: String,
+    initials: String,
+    location: String?,
+    joinedAt: String?,
+    onEditClick: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.Top) {
+            Box {
+                Surface(shape = CircleShape, color = Color(0xFFF2ECE4), modifier = Modifier.size(88.dp)) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(initials, style = MaterialTheme.typography.displayMedium.copy(fontSize = 31.sp, fontFamily = ProfileEditorialFamily))
+                    }
+                }
+                Surface(
+                    color = BrandRed,
+                    shape = CircleShape,
+                    modifier = Modifier.align(Alignment.BottomEnd).size(32.dp),
+                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.background)
+                ) {
+                    Box(contentAlignment = Alignment.Center) { Text("★", color = Color(0xFFFFFDF9), fontSize = 15.sp) }
                 }
             }
-            Surface(
-                color = BrandRed,
-                shape = CircleShape,
-                modifier = Modifier.align(Alignment.BottomEnd).size(32.dp),
-                border = BorderStroke(2.dp, MaterialTheme.colorScheme.background)
-            ) {
-                Box(contentAlignment = Alignment.Center) { Text("★", color = Color(0xFFFFFDF9), fontSize = 15.sp) }
+            Spacer(Modifier.width(WritOnSpacing.md))
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(name, style = MaterialTheme.typography.headlineLarge.copy(fontFamily = ProfileEditorialFamily, fontSize = 25.sp, lineHeight = 30.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Spacer(Modifier.width(WritOnSpacing.xxs))
+                    Surface(color = BrandRed, shape = CircleShape, modifier = Modifier.size(20.dp)) {
+                        Box(contentAlignment = Alignment.Center) { Text("✓", color = Color(0xFFFFFDF9), style = MaterialTheme.typography.labelMedium) }
+                    }
+                }
+                if (penName.isNotBlank()) Text("@$penName", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(WritOnSpacing.xxs))
+                Text(bio, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 19.sp), maxLines = 3, overflow = TextOverflow.Ellipsis)
+                Spacer(Modifier.height(WritOnSpacing.sm))
+                if (!location.isNullOrBlank() || !joinedAt.isNullOrBlank()) Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.xxs)) {
+                    if (!location.isNullOrBlank()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(painterResource(R.drawable.ic_location), contentDescription = null, modifier = Modifier.size(15.dp))
+                            Spacer(Modifier.width(WritOnSpacing.xxs))
+                            Text(location, style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                    if (!joinedAt.isNullOrBlank()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Image(painterResource(R.drawable.ic_calendar), contentDescription = null, modifier = Modifier.size(15.dp))
+                            Spacer(Modifier.width(WritOnSpacing.xxs))
+                            Text("Joined ${joinedAt.take(10)}", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+                }
             }
         }
-        Spacer(Modifier.width(WritOnSpacing.md))
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(name, style = MaterialTheme.typography.headlineLarge.copy(fontFamily = ProfileEditorialFamily, fontSize = 25.sp, lineHeight = 30.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Spacer(Modifier.width(WritOnSpacing.xxs))
-                Surface(color = BrandRed, shape = CircleShape, modifier = Modifier.size(20.dp)) {
-                    Box(contentAlignment = Alignment.Center) { Text("✓", color = Color(0xFFFFFDF9), style = MaterialTheme.typography.labelMedium) }
-                }
-            }
-            if (penName.isNotBlank()) Text("@$penName", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(WritOnSpacing.xxs))
-            Text(bio, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 19.sp), maxLines = 3, overflow = TextOverflow.Ellipsis)
-            Spacer(Modifier.height(WritOnSpacing.sm))
-            if (!location.isNullOrBlank() || !joinedAt.isNullOrBlank()) Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.xxs)) {
-                if (!location.isNullOrBlank()) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(painterResource(R.drawable.ic_location), contentDescription = null, modifier = Modifier.size(15.dp))
-                        Spacer(Modifier.width(WritOnSpacing.xxs))
-                        Text(location, style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-                if (!joinedAt.isNullOrBlank()) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Image(painterResource(R.drawable.ic_calendar), contentDescription = null, modifier = Modifier.size(15.dp))
-                        Spacer(Modifier.width(WritOnSpacing.xxs))
-                        Text("Joined ${joinedAt.take(10)}", style = MaterialTheme.typography.bodySmall)
-                    }
-                }
-            }
+        Spacer(Modifier.height(WritOnSpacing.sm))
+        OutlinedButton(
+            onClick = onEditClick,
+            modifier = Modifier.fillMaxWidth().height(38.dp),
+            shape = RoundedCornerShape(WritOnRadius.field),
+            border = BorderStroke(1.dp, Color(0xFFD6CFC4)),
+            colors = ButtonDefaults.outlinedButtonColors(containerColor = SurfacePaper)
+        ) {
+            Image(painterResource(R.drawable.ic_edit_pencil), contentDescription = null, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Edit Profile & Bio", style = MaterialTheme.typography.labelLarge, color = Color(0xFF191715))
         }
     }
 }
@@ -226,7 +272,7 @@ private fun ProfileTabs(selectedTab: Int, onSelected: (Int) -> Unit) {
 }
 
 @Composable
-private fun ProfileAboutTab(name: String, bio: String, location: String?, joinedAt: String?, quoteOfDay: String?) {
+private fun ProfileAboutTab(name: String, bio: String, location: String?, joinedAt: String?, quoteOfDay: String?, onEditClick: () -> Unit) {
     val firstName = name.substringBefore(' ')
     Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)) {
         Surface(
@@ -237,7 +283,15 @@ private fun ProfileAboutTab(name: String, bio: String, location: String?, joined
             shadowElevation = WritOnElevation.raised
         ) {
             Column(Modifier.padding(WritOnSpacing.md)) {
-                Text("About $firstName", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text("About $firstName", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
+                    Spacer(Modifier.weight(1f))
+                    TextButton(onClick = onEditClick, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)) {
+                        Image(painterResource(R.drawable.ic_edit_pencil), contentDescription = null, modifier = Modifier.size(14.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Edit Bio", color = BrandRed, style = MaterialTheme.typography.labelLarge)
+                    }
+                }
                 Spacer(Modifier.height(WritOnSpacing.sm))
                 Text(bio, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp, lineHeight = 22.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
 
@@ -443,8 +497,119 @@ private fun ProfileEmptyTab(type: String, onAction: () -> Unit) {
     }
 }
 
+@Composable
+private fun EditProfileDialog(
+    initialName: String,
+    initialPenName: String,
+    initialBio: String,
+    initialLocation: String,
+    isLoading: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (fullName: String, penName: String, bio: String, location: String) -> Unit
+) {
+    var fullName by remember { mutableStateOf(initialName) }
+    var penName by remember { mutableStateOf(initialPenName) }
+    var bio by remember { mutableStateOf(initialBio) }
+    var location by remember { mutableStateOf(initialLocation) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            color = SurfacePaper,
+            tonalElevation = 6.dp,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "Edit Writer Profile",
+                        style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily, fontSize = 22.sp),
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = onDismiss) {
+                        Image(painterResource(R.drawable.ic_close), contentDescription = "Close", modifier = Modifier.size(20.dp))
+                    }
+                }
+
+                OutlinedTextField(
+                    value = fullName,
+                    onValueChange = { fullName = it },
+                    label = { Text("Full Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                )
+
+                OutlinedTextField(
+                    value = penName,
+                    onValueChange = { penName = it },
+                    label = { Text("Pen Name / Username") },
+                    prefix = { Text("@") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                )
+
+                OutlinedTextField(
+                    value = bio,
+                    onValueChange = { bio = it },
+                    label = { Text("Bio (About your writing)") },
+                    minLines = 3,
+                    maxLines = 5,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                )
+
+                OutlinedTextField(
+                    value = location,
+                    onValueChange = { location = it },
+                    label = { Text("Location (e.g. San Francisco, CA)") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp)
+                )
+
+                Spacer(Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("Cancel", color = Color(0xFF6D6963))
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            if (fullName.isNotBlank() && penName.isNotBlank()) {
+                                onSave(fullName, penName, bio, location)
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandRed),
+                        shape = RoundedCornerShape(10.dp),
+                        enabled = !isLoading && fullName.isNotBlank() && penName.isNotBlank()
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                            Spacer(Modifier.width(6.dp))
+                        }
+                        Text("Save Changes", color = Color.White)
+                    }
+                }
+            }
+        }
+    }
+}
+
 private fun initialsOf(name: String): String = name.split(" ").mapNotNull { it.firstOrNull()?.uppercaseChar()?.toString() }.take(2).joinToString("")
 
 private fun formatProfileCount(value: Int): String =
     if (value >= 1_000) String.format(java.util.Locale.getDefault(), "%.1fK", value / 1_000.0) else value.toString()
+
 
