@@ -68,8 +68,10 @@ const firebaseApp = auth
   ? null
   : (getApps().length
     ? getApps()[0]
-    : initializeApp({ credential: cert(serviceAccount) }));
-const firebaseAuth = auth ?? getAuth(firebaseApp);
+    : (serviceAccount
+      ? initializeApp({ credential: cert(serviceAccount) })
+      : initializeApp({ projectId: 'writon-app-2020' })));
+const firebaseAuth = auth ?? (firebaseApp ? getAuth(firebaseApp) : null);
 
 const database = pool ?? new Pool({
   connectionString: config.databaseUrl,
@@ -92,6 +94,10 @@ async function requireUser(request, reply) {
     });
   }
 
+  if (!firebaseAuth) {
+    return reply.code(503).send({ error: 'Auth service unconfigured' });
+  }
+
   try {
     request.user = await firebaseAuth.verifyIdToken(
       authorization.substring('Bearer '.length)
@@ -106,7 +112,7 @@ async function requireUser(request, reply) {
 async function optionalUser(request) {
   const authorization = request.headers.authorization;
 
-  if (!authorization?.startsWith('Bearer ')) {
+  if (!authorization?.startsWith('Bearer ') || !firebaseAuth) {
     return null;
   }
 
@@ -119,6 +125,7 @@ async function optionalUser(request) {
     return null;
   }
 }
+
 
 function postSelectSql(whereClause, extraColumns = '') {
   return `select

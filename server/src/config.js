@@ -63,14 +63,13 @@ export async function loadFirebaseServiceAccount(config) {
     );
   }
 
-  if (config.environment !== 'production') {
+  try {
     return parseServiceAccount(
       await readFile(new URL('../serviceAccountKey.json', import.meta.url), 'utf8'),
       'server/serviceAccountKey.json'
     );
+  } catch (_error) {
+    return null;
   }
-
-  throw new Error(
-    'Firebase credentials are required in production. Set FIREBASE_SERVICE_ACCOUNT_JSON or FIREBASE_SERVICE_ACCOUNT_PATH.'
-  );
 }
+
