@@ -179,10 +179,7 @@ class PostRepository(
         // Optimistic UI update
         commentDao.insertComment(tempComment)
         try {
-            val post = postDao.getPostById(postId).firstOrNull()
-            if (post != null) {
-                postDao.updateCommentsCount(postId, post.commentsCnt + 1)
-            }
+            postDao.incrementCommentsCount(postId)
         } catch (_: Exception) {}
 
         try {
