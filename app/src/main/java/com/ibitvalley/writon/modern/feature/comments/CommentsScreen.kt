@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -111,14 +112,19 @@ fun CommentsScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Image(painterResource(R.drawable.ic_back), contentDescription = "Back", modifier = Modifier.size(24.dp))
+                        Image(
+                            painterResource(R.drawable.ic_back),
+                            contentDescription = "Back",
+                            modifier = Modifier.size(24.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                        )
                     }
                 },
                 actions = {
                     Box {
                         TextButton(onClick = { sortExpanded = true }) {
-                            Text(selectedSort, color = Color(0xFF6D6963), fontSize = 14.sp)
-                            Text(" ∨", color = Color(0xFF6D6963), fontSize = 12.sp)
+                            Text(selectedSort, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                            Text(" ∨", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                         }
                         DropdownMenu(expanded = sortExpanded, onDismissRequest = { sortExpanded = false }) {
                             DropdownMenuItem(text = { Text("Most recent") }, onClick = { selectedSort = "Most recent"; sortExpanded = false })
@@ -163,7 +169,12 @@ fun CommentsScreen(
                                 modifier = Modifier.weight(1f)
                             )
                             IconButton(onClick = { replyingTo = null }, modifier = Modifier.size(18.dp)) {
-                                Image(painterResource(R.drawable.ic_close), contentDescription = "Cancel reply", modifier = Modifier.size(12.dp))
+                                Image(
+                                    painterResource(R.drawable.ic_close),
+                                    contentDescription = "Cancel reply",
+                                    modifier = Modifier.size(12.dp),
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                                )
                             }
                         }
                     }

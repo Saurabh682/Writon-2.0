@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -191,7 +192,12 @@ private fun SearchHeader() {
         WritOnBrandMark(width = 108.dp)
         Spacer(Modifier.weight(1f))
         IconButton(onClick = { }) {
-            Image(painterResource(R.drawable.ic_notification), contentDescription = "Notifications", modifier = Modifier.size(29.dp))
+            Image(
+                painterResource(R.drawable.ic_notification),
+                contentDescription = "Notifications",
+                modifier = Modifier.size(29.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+            )
         }
     }
 }
@@ -207,7 +213,7 @@ private fun SearchHero() {
             "Find stories, writers and ideas.",
             modifier = Modifier.padding(top = 4.dp),
             style = MaterialTheme.typography.titleLarge.copy(fontFamily = SearchEditorialFamily, fontSize = 17.sp),
-            color = Color(0xFF6D6963)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -216,17 +222,22 @@ private fun SearchHero() {
 private fun SearchField(value: String, onValueChange: (String) -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color(0xFFFFFDF9),
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(WritOnRadius.card),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(painterResource(R.drawable.ic_search_muted), contentDescription = null, modifier = Modifier.padding(start = WritOnSpacing.md).size(29.dp))
+            Image(
+                painterResource(R.drawable.ic_search_muted),
+                contentDescription = null,
+                modifier = Modifier.padding(start = WritOnSpacing.md).size(29.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+            )
             TextField(
                 value = value,
                 onValueChange = onValueChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Search stories, writers, topics…", color = Color(0xFF6D6963), fontSize = 16.sp) },
+                placeholder = { Text("Search stories, writers, topics…", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp) },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
                 colors = TextFieldDefaults.colors(
@@ -242,7 +253,7 @@ private fun SearchField(value: String, onValueChange: (String) -> Unit) {
                     Icon(
                         imageVector = Icons.Default.Close,
                         contentDescription = "Clear search",
-                        tint = Color(0xFF6D6963),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(20.dp)
                     )
                 }

@@ -26,6 +26,7 @@ import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import coil.compose.AsyncImage
@@ -486,13 +487,32 @@ private fun ReaderActionTray(
                     Image(painterResource(if (post.isLiked) R.drawable.ic_applaud_orange else R.drawable.ic_applaud_muted), null, Modifier.size(26.dp))
                 }
                 ReaderTrayDivider()
-                ReaderTrayAction("Comment", commentsCount, onComment) { Image(painterResource(R.drawable.ic_comment), null, Modifier.size(26.dp)) }
-                ReaderTrayDivider()
-                ReaderTrayAction("Save", null, onSave, post.isBookmarked) {
-                    Image(painterResource(if (post.isBookmarked) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark), null, Modifier.size(26.dp))
+                ReaderTrayAction("Comment", commentsCount, onComment) {
+                    Image(
+                        painterResource(R.drawable.ic_comment),
+                        null,
+                        Modifier.size(26.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                    )
                 }
                 ReaderTrayDivider()
-                ReaderTrayAction("Share", null, onShare) { Image(painterResource(R.drawable.ic_share), null, Modifier.size(26.dp)) }
+                ReaderTrayAction("Save", null, onSave, post.isBookmarked) {
+                    Image(
+                        painterResource(if (post.isBookmarked) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark),
+                        null,
+                        Modifier.size(26.dp),
+                        colorFilter = if (post.isBookmarked) null else ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                    )
+                }
+                ReaderTrayDivider()
+                ReaderTrayAction("Share", null, onShare) {
+                    Image(
+                        painterResource(R.drawable.ic_share),
+                        null,
+                        Modifier.size(26.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                    )
+                }
             }
         }
     }

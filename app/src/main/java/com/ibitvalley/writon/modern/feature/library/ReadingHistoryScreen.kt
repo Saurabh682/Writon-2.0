@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -161,8 +162,22 @@ private fun HistoryHeader(onSearchClick: () -> Unit, onSettingsClick: () -> Unit
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             WritOnBrandMark(width = 108.dp)
             Spacer(Modifier.weight(1f))
-            IconButton(onClick = onSearchClick) { Image(painterResource(R.drawable.ic_search), contentDescription = "Search", modifier = Modifier.size(24.dp)) }
-            IconButton(onClick = onSettingsClick) { Image(painterResource(R.drawable.ic_settings), contentDescription = "Settings", modifier = Modifier.size(24.dp)) }
+            IconButton(onClick = onSearchClick) {
+                Image(
+                    painterResource(R.drawable.ic_search),
+                    contentDescription = "Search",
+                    modifier = Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                )
+            }
+            IconButton(onClick = onSettingsClick) {
+                Image(
+                    painterResource(R.drawable.ic_settings),
+                    contentDescription = "Settings",
+                    modifier = Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                )
+            }
         }
         Text(
             "Reading History",
@@ -270,10 +285,22 @@ private fun HistoryRow(
         }
         Column(modifier = Modifier.align(Alignment.Top), horizontalAlignment = Alignment.CenterHorizontally) {
             IconButton(onClick = onBookmark, modifier = Modifier.size(38.dp)) {
-                Image(painterResource(if (bookmarked) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark), contentDescription = if (bookmarked) "Remove saved story" else "Save story", modifier = Modifier.size(22.dp))
+                Image(
+                    painterResource(if (bookmarked) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark),
+                    contentDescription = if (bookmarked) "Remove saved story" else "Save story",
+                    modifier = Modifier.size(22.dp),
+                    colorFilter = if (!bookmarked) ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant) else null
+                )
             }
             Box {
-                IconButton(onClick = onMore, modifier = Modifier.size(38.dp)) { Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "Story options", modifier = Modifier.size(22.dp)) }
+                IconButton(onClick = onMore, modifier = Modifier.size(38.dp)) {
+                    Image(
+                        painterResource(R.drawable.ic_more_vertical),
+                        contentDescription = "Story options",
+                        modifier = Modifier.size(22.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                }
                 DropdownMenu(expanded = menuExpanded, onDismissRequest = onDismiss) {
                     DropdownMenuItem(text = { Text("Remove from history") }, onClick = onDismiss)
                     DropdownMenuItem(text = { Text("Share story") }, onClick = onDismiss)

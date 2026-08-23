@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -152,8 +153,22 @@ private fun NotificationHeader(onSearchClick: () -> Unit, onSettingsClick: () ->
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             WritOnBrandMark(width = 108.dp)
             Spacer(Modifier.weight(1f))
-            IconButton(onClick = onSearchClick) { Image(painterResource(R.drawable.ic_search), contentDescription = "Search", modifier = Modifier.size(24.dp)) }
-            IconButton(onClick = onSettingsClick) { Image(painterResource(R.drawable.ic_settings), contentDescription = "Notification settings", modifier = Modifier.size(24.dp)) }
+            IconButton(onClick = onSearchClick) {
+                Image(
+                    painterResource(R.drawable.ic_search),
+                    contentDescription = "Search",
+                    modifier = Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                )
+            }
+            IconButton(onClick = onSettingsClick) {
+                Image(
+                    painterResource(R.drawable.ic_settings),
+                    contentDescription = "Notification settings",
+                    modifier = Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                )
+            }
         }
         Text(
             "Notifications",
@@ -164,7 +179,7 @@ private fun NotificationHeader(onSearchClick: () -> Unit, onSettingsClick: () ->
             "Stay updated with what matters.",
             modifier = Modifier.padding(top = WritOnSpacing.xs),
             style = MaterialTheme.typography.titleLarge.copy(fontFamily = NotificationEditorialFamily, fontSize = 17.sp),
-            color = Color(0xFF6D6963)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

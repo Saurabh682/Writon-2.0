@@ -11,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -584,7 +585,8 @@ fun NavigationItem(
             Image(
                 painter = painterResource(icon),
                 contentDescription = label,
-                modifier = Modifier.size(26.dp)
+                modifier = Modifier.size(26.dp),
+                colorFilter = if (selected) null else ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
             )
             Spacer(modifier = Modifier.height(3.dp))
             Text(

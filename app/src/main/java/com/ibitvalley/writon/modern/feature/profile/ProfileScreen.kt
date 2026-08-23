@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -41,10 +42,10 @@ private val ProfileEditorialFamily = FontFamily(
 fun ProfileScreen(
     viewModel: ProfileViewModel,
     onBackClick: () -> Unit,
-    onStoryClick: (String) -> Unit = {},
-    onWriteClick: () -> Unit = {},
-    onApplaudsClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {},
+    onStoryClick: (String) -> Unit,
+    onWriteClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onApplaudsClick: () -> Unit = {}
 ) {
     val user by viewModel.userProfile.collectAsState()
     val stories by viewModel.userStories.collectAsState()
@@ -66,19 +67,39 @@ fun ProfileScreen(
                 title = { Text("Writer Profile", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Image(painterResource(R.drawable.ic_back), contentDescription = "Back", modifier = Modifier.size(24.dp))
+                        Image(
+                            painterResource(R.drawable.ic_back),
+                            contentDescription = "Back",
+                            modifier = Modifier.size(24.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                        )
                     }
                 },
                 actions = {
                     IconButton(onClick = { showEditDialog = true }) {
-                        Image(painterResource(R.drawable.ic_edit_pencil), contentDescription = "Edit Profile", modifier = Modifier.size(24.dp))
+                        Image(
+                            painterResource(R.drawable.ic_edit_pencil),
+                            contentDescription = "Edit Profile",
+                            modifier = Modifier.size(24.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                        )
                     }
                     IconButton(onClick = { }) {
-                        Image(painterResource(R.drawable.ic_share), contentDescription = "Share profile", modifier = Modifier.size(24.dp))
+                        Image(
+                            painterResource(R.drawable.ic_share),
+                            contentDescription = "Share profile",
+                            modifier = Modifier.size(24.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                        )
                     }
                     Box {
                         IconButton(onClick = { overflowExpanded = true }) {
-                            Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "Profile options", modifier = Modifier.size(24.dp))
+                            Image(
+                                painterResource(R.drawable.ic_more_vertical),
+                                contentDescription = "Profile options",
+                                modifier = Modifier.size(24.dp),
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                            )
                         }
                         DropdownMenu(expanded = overflowExpanded, onDismissRequest = { overflowExpanded = false }) {
                             DropdownMenuItem(text = { Text("Edit Profile") }, onClick = { overflowExpanded = false; showEditDialog = true })
@@ -183,16 +204,26 @@ private fun ProfileIdentity(
                 if (!location.isNullOrBlank() || !joinedAt.isNullOrBlank()) Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.xxs)) {
                     if (!location.isNullOrBlank()) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(painterResource(R.drawable.ic_location), contentDescription = null, modifier = Modifier.size(15.dp))
+                            Image(
+                                painterResource(R.drawable.ic_location),
+                                contentDescription = null,
+                                modifier = Modifier.size(15.dp),
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                            )
                             Spacer(Modifier.width(WritOnSpacing.xxs))
-                            Text(location, style = MaterialTheme.typography.bodySmall)
+                            Text(location, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                     if (!joinedAt.isNullOrBlank()) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(painterResource(R.drawable.ic_calendar), contentDescription = null, modifier = Modifier.size(15.dp))
+                            Image(
+                                painterResource(R.drawable.ic_calendar),
+                                contentDescription = null,
+                                modifier = Modifier.size(15.dp),
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                            )
                             Spacer(Modifier.width(WritOnSpacing.xxs))
-                            Text("Joined ${joinedAt.take(10)}", style = MaterialTheme.typography.bodySmall)
+                            Text("Joined ${joinedAt.take(10)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -206,7 +237,12 @@ private fun ProfileIdentity(
             border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
             colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
-            Image(painterResource(R.drawable.ic_edit_pencil), contentDescription = null, modifier = Modifier.size(16.dp))
+            Image(
+                painterResource(R.drawable.ic_edit_pencil),
+                contentDescription = null,
+                modifier = Modifier.size(16.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+            )
             Spacer(Modifier.width(8.dp))
             Text("Edit Profile & Bio", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
         }
@@ -406,8 +442,13 @@ private fun ProfileSeriesTab(stories: List<PostDto>, onStoryClick: (String) -> U
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text("•", color = BrandRed, modifier = Modifier.padding(end = 8.dp))
-                                Text(story.title, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 15.sp)
-                                Image(painterResource(R.drawable.ic_forward_muted), contentDescription = null, modifier = Modifier.size(16.dp))
+                                Text(story.title, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface)
+                                Image(
+                                    painterResource(R.drawable.ic_forward_muted),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp),
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                                )
                             }
                         }
                     }
@@ -437,7 +478,7 @@ private fun ProfileHighlightsTab(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Top Stories", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
+                    Text("Top Stories", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.weight(1f))
                     Row(
                         modifier = Modifier.clickable(onClick = onSeeAllClick),
@@ -445,7 +486,12 @@ private fun ProfileHighlightsTab(
                     ) {
                         Text("See all", style = MaterialTheme.typography.titleMedium, color = BrandRed)
                         Spacer(Modifier.width(4.dp))
-                        Image(painterResource(R.drawable.ic_forward_muted), contentDescription = "See all stories", modifier = Modifier.size(18.dp))
+                        Image(
+                            painterResource(R.drawable.ic_forward_muted),
+                            contentDescription = "See all stories",
+                            modifier = Modifier.size(18.dp),
+                            colorFilter = ColorFilter.tint(BrandRed)
+                        )
                     }
                 }
                 Spacer(Modifier.height(WritOnSpacing.md))
@@ -461,10 +507,15 @@ private fun ProfileHighlightsTab(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(story.title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(story.title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text("${story.category} • ${story.readingTimeMin} min read • ${story.likesCnt} applauds", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            Image(painterResource(R.drawable.ic_forward_muted), contentDescription = "Read story", modifier = Modifier.size(18.dp))
+                            Image(
+                                painterResource(R.drawable.ic_forward_muted),
+                                contentDescription = "Read story",
+                                modifier = Modifier.size(18.dp),
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                            )
                         }
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                     }
@@ -488,7 +539,7 @@ private fun ProfileEmptyTab(type: String, onAction: () -> Unit) {
             modifier = Modifier.padding(WritOnSpacing.xl),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("No $type yet", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
+            Text("No $type yet", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.height(WritOnSpacing.xs))
             Text("Stories you write and publish will be presented here on your writer profile.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             Spacer(Modifier.height(WritOnSpacing.md))
@@ -535,10 +586,16 @@ private fun EditProfileDialog(
                     Text(
                         "Edit Writer Profile",
                         style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily, fontSize = 22.sp),
+                        color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(onClick = onDismiss) {
-                        Image(painterResource(R.drawable.ic_close), contentDescription = "Close", modifier = Modifier.size(20.dp))
+                        Image(
+                            painterResource(R.drawable.ic_close),
+                            contentDescription = "Close",
+                            modifier = Modifier.size(20.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
+                        )
                     }
                 }
 

@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.ContentScale
@@ -181,7 +182,12 @@ private fun HomeHeader(onLibraryClick: () -> Unit, onProfileClick: () -> Unit) {
         WritOnBrandMark(width = 118.dp)
         Spacer(Modifier.weight(1f))
         IconButton(onClick = onLibraryClick) {
-            Image(painterResource(R.drawable.ic_bookmark), contentDescription = "Open Library", modifier = Modifier.size(28.dp))
+            Image(
+                painterResource(R.drawable.ic_bookmark),
+                contentDescription = "Open Library",
+                modifier = Modifier.size(28.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+            )
         }
         Spacer(Modifier.width(12.dp))
         Surface(
@@ -192,7 +198,12 @@ private fun HomeHeader(onLibraryClick: () -> Unit, onProfileClick: () -> Unit) {
             onClick = onProfileClick
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Image(painterResource(R.drawable.ic_profile), contentDescription = null, modifier = Modifier.size(25.dp))
+                Image(
+                    painterResource(R.drawable.ic_profile),
+                    contentDescription = null,
+                    modifier = Modifier.size(25.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                )
             }
         }
     }
@@ -280,7 +291,12 @@ private fun DiscoveryStoryCard(
                         )
                     }
                     Spacer(Modifier.weight(1f))
-                    Image(painterResource(R.drawable.ic_clock_muted), contentDescription = null, modifier = Modifier.size(21.dp))
+                    Image(
+                        painterResource(R.drawable.ic_clock_muted),
+                        contentDescription = null,
+                        modifier = Modifier.size(21.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
                     Spacer(Modifier.width(7.dp))
                     Text("${post.readingTimeMin} min read", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }

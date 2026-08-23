@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -333,8 +334,22 @@ private fun SettingsHeader(onSearchClick: () -> Unit) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             WritOnBrandMark(width = 108.dp)
             Spacer(Modifier.weight(1f))
-            IconButton(onClick = onSearchClick) { Image(painterResource(R.drawable.ic_search), contentDescription = "Search", modifier = Modifier.size(24.dp)) }
-            IconButton(onClick = { }) { Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "More settings options", modifier = Modifier.size(24.dp)) }
+            IconButton(onClick = onSearchClick) {
+                Image(
+                    painterResource(R.drawable.ic_search),
+                    contentDescription = "Search",
+                    modifier = Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                )
+            }
+            IconButton(onClick = { }) {
+                Image(
+                    painterResource(R.drawable.ic_more_vertical),
+                    contentDescription = "More settings options",
+                    modifier = Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                )
+            }
         }
         Spacer(Modifier.height(WritOnSpacing.lg))
         Text(

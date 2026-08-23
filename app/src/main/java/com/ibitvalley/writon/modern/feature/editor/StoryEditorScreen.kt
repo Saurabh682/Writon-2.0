@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -56,6 +57,7 @@ private val EditorEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_semibold, FontWeight.Bold)
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoryEditorScreen(
     viewModel: EditorViewModel,
@@ -95,10 +97,20 @@ fun StoryEditorScreen(
                 WritOnBrandMark(width = 118.dp)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     IconButton(onClick = { }) {
-                        Image(painterResource(R.drawable.ic_sun), contentDescription = "Appearance", modifier = Modifier.size(24.dp))
+                        Image(
+                            painterResource(R.drawable.ic_sun),
+                            contentDescription = "Appearance",
+                            modifier = Modifier.size(24.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                        )
                     }
                     IconButton(onClick = { }) {
-                        Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "More options", modifier = Modifier.size(24.dp))
+                        Image(
+                            painterResource(R.drawable.ic_more_vertical),
+                            contentDescription = "More options",
+                            modifier = Modifier.size(24.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                        )
                     }
                 }
             }
@@ -110,13 +122,18 @@ fun StoryEditorScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 TextButton(onClick = onBackClick) {
-                    Image(painterResource(R.drawable.ic_back), contentDescription = "Back", modifier = Modifier.size(24.dp))
+                    Image(
+                        painterResource(R.drawable.ic_back),
+                        contentDescription = "Back",
+                        modifier = Modifier.size(24.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                    )
                     Spacer(Modifier.width(6.dp))
-                    Text("Back")
+                    Text("Back", color = MaterialTheme.colorScheme.onBackground)
                 }
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = { draftStatus = "Just now" }) {
-                    Text("Save draft", fontWeight = FontWeight.Medium)
+                    Text("Save draft", fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onBackground)
                 }
                 Spacer(Modifier.width(8.dp))
                 Button(
@@ -271,7 +288,7 @@ private fun ToolbarLabel(text: String) {
             .clickable { },
         contentAlignment = Alignment.Center
     ) {
-        Text(text, color = Color(0xFF151718), fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+        Text(text, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
     }
 }
 
@@ -284,7 +301,12 @@ private fun ToolbarIcon(icon: Int, description: String) {
             .clickable { },
         contentAlignment = Alignment.Center
     ) {
-        Image(painterResource(icon), contentDescription = description, modifier = Modifier.width(21.dp))
+        Image(
+            painterResource(icon),
+            contentDescription = description,
+            modifier = Modifier.width(21.dp),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+        )
     }
 }
 
@@ -475,19 +497,29 @@ fun PublishStoryScreen(
             Surface(
                 onClick = { isScheduled = !isScheduled },
                 modifier = Modifier.fillMaxWidth(),
-                color = Color(0xFFFFFDF9),
+                color = MaterialTheme.colorScheme.surface,
                 shape = RoundedCornerShape(WritOnRadius.field),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             ) {
                 Row(
                     modifier = Modifier.padding(horizontal = WritOnSpacing.md, vertical = 15.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Image(painterResource(R.drawable.ic_calendar), contentDescription = null, modifier = Modifier.size(24.dp))
+                    Image(
+                        painterResource(R.drawable.ic_calendar),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
                     Spacer(Modifier.width(WritOnSpacing.md))
-                    Text(if (isScheduled) "Scheduled for later" else "Schedule for later", style = MaterialTheme.typography.titleMedium)
+                    Text(if (isScheduled) "Scheduled for later" else "Schedule for later", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.weight(1f))
-                    Image(painterResource(R.drawable.ic_chevron_right), contentDescription = "Schedule", modifier = Modifier.size(24.dp))
+                    Image(
+                        painterResource(R.drawable.ic_chevron_right),
+                        contentDescription = "Schedule",
+                        modifier = Modifier.size(24.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
                 }
             }
             Spacer(Modifier.height(WritOnSpacing.xl))
@@ -504,15 +536,21 @@ private fun PublishHeader(onBackClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onBackClick) {
-            Image(painterResource(R.drawable.ic_back), contentDescription = "Back to editor", modifier = Modifier.size(24.dp))
+            Image(
+                painterResource(R.drawable.ic_back),
+                contentDescription = "Back to editor",
+                modifier = Modifier.size(24.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+            )
         }
         Text(
             "Publish",
             modifier = Modifier.padding(start = WritOnSpacing.sm),
-            style = MaterialTheme.typography.headlineLarge.copy(fontFamily = EditorEditorialFamily, fontWeight = FontWeight.SemiBold)
+            style = MaterialTheme.typography.headlineLarge.copy(fontFamily = EditorEditorialFamily, fontWeight = FontWeight.SemiBold),
+            color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(Modifier.weight(1f))
-        TextButton(onClick = onBackClick) { Text("Save draft", color = Color(0xFF151718), fontWeight = FontWeight.Medium) }
+        TextButton(onClick = onBackClick) { Text("Save draft", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Medium) }
     }
 }
 
@@ -520,25 +558,31 @@ private fun PublishHeader(onBackClick: () -> Unit) {
 private fun PublishPreview(title: String, summary: String, wordCount: Int, readTime: Int, cover: Int) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color(0xFFFFFDF9),
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(WritOnRadius.card),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         shadowElevation = WritOnElevation.raised
     ) {
         Row(modifier = Modifier.padding(WritOnSpacing.md), verticalAlignment = Alignment.CenterVertically) {
             CoverArt(cover = cover, modifier = Modifier.width(104.dp).height(138.dp))
             Spacer(Modifier.width(WritOnSpacing.md))
             Column(modifier = Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleLarge.copy(fontFamily = EditorEditorialFamily, fontWeight = FontWeight.SemiBold), maxLines = 2)
+                Text(title, style = MaterialTheme.typography.titleLarge.copy(fontFamily = EditorEditorialFamily, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface, maxLines = 2)
                 if (summary.isNotBlank()) {
-                    Text(summary, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyLarge, color = Color(0xFF6D6963), maxLines = 3)
+                    Text(summary, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3)
                 } else {
-                    Text("Add a short description to help readers discover your story.", modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium, color = Color(0xFF6D6963), maxLines = 3)
+                    Text("Add a short description to help readers discover your story.", modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3)
                 }
                 Row(modifier = Modifier.padding(top = WritOnSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
-                    Image(painterResource(R.drawable.ic_clock_muted), contentDescription = null, modifier = Modifier.width(19.dp))
+                    Image(
+                        painterResource(R.drawable.ic_clock_muted),
+                        contentDescription = null,
+                        modifier = Modifier.width(19.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
                     Spacer(Modifier.width(5.dp))
-                    Text("$readTime min read", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF6D6963))
-                    Text("  •  $wordCount words", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF6D6963))
+                    Text("$readTime min read", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("  •  $wordCount words", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
