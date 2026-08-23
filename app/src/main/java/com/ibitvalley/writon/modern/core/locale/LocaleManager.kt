@@ -1,9 +1,13 @@
 package com.ibitvalley.writon.modern.core.locale
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
+import android.content.res.Configuration
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.LocaleListCompat
 import com.ibitvalley.writon.modern.core.preferences.UserPreferences
+import java.util.Locale
 
 data class AppLanguage(
     val code: String,
@@ -53,16 +57,27 @@ object LocaleManager {
         )
     )
 
-    fun applyLanguage(context: Context, languageCode: String) {
+    fun applyLanguage(context: Context, languageCode: String, recreateActivity: Boolean = true) {
         val prefs = UserPreferences(context)
         prefs.appLanguage = languageCode
-        
+
+        val locale = if (languageCode == "system" || languageCode.isBlank()) {
+            Locale.getDefault()
+        } else {
+            Locale(languageCode)
+        }
+        Locale.setDefault(locale)
+
         val appLocale = if (languageCode == "system" || languageCode.isBlank()) {
             LocaleListCompat.getEmptyLocaleList()
         } else {
             LocaleListCompat.forLanguageTags(languageCode)
         }
         AppCompatDelegate.setApplicationLocales(appLocale)
+
+        if (recreateActivity) {
+            findActivity(context)?.recreate()
+        }
     }
 
     fun getCurrentLanguage(context: Context): AppLanguage {
@@ -70,5 +85,28 @@ object LocaleManager {
         val savedCode = prefs.appLanguage
         return SupportedLanguages.find { it.code.equals(savedCode, ignoreCase = true) }
             ?: SupportedLanguages.first()
+    }
+
+    fun wrapContext(context: Context): Context {
+        val prefs = UserPreferences(context)
+        val savedCode = prefs.appLanguage
+        if (savedCode.isBlank() || savedCode == "system" || savedCode == "en") {
+            return context
+        }
+        val locale = Locale(savedCode)
+        Locale.setDefault(locale)
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+        config.setLayoutDirection(locale)
+        return context.createConfigurationContext(config)
+    }
+
+    private fun findActivity(context: Context): Activity? {
+        var ctx = context
+        while (ctx is ContextWrapper) {
+            if (ctx is Activity) return ctx
+            ctx = ctx.baseContext
+        }
+        return null
     }
 }

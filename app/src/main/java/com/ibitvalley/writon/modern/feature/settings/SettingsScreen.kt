@@ -1,5 +1,7 @@
 package com.ibitvalley.writon.modern.feature.settings
 
+import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -8,34 +10,30 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.auth.BiometricAuthManager
 import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
-import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
-import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
-import com.ibitvalley.writon.modern.core.auth.BiometricAuthManager
-import com.ibitvalley.writon.modern.core.preferences.UserPreferences
 import com.ibitvalley.writon.modern.core.locale.LocaleManager
-import androidx.compose.ui.res.stringResource
+import com.ibitvalley.writon.modern.core.preferences.UserPreferences
 
 private val SettingsEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
@@ -43,46 +41,43 @@ private val SettingsEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_semibold, weight = FontWeight.Bold)
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    userPreferences: UserPreferences = UserPreferences(androidx.compose.ui.platform.LocalContext.current),
-    onBackClick: () -> Unit,
+    userPreferences: UserPreferences,
+    onBackClick: () -> Unit = {},
     onAppearanceClick: () -> Unit = {},
-    onInterestsClick: () -> Unit,
-    onSearchClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onSavedStoriesClick: () -> Unit = {},
+    onInterestsClick: () -> Unit = {},
+    onSearchClick: () -> Unit = {},
     onLogOut: () -> Unit = {}
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val fragmentActivity = context as? androidx.fragment.app.FragmentActivity
-    val isBiometricSupported = remember { BiometricAuthManager.isBiometricAvailable(context) }
-    var isBiometricEnabled by remember { mutableStateOf(userPreferences.isBiometricEnabled) }
+    val context = LocalContext.current
+    val fragmentActivity = context as? FragmentActivity
 
     var showAboutDialog by remember { mutableStateOf(false) }
-    var showLanguageDialog by remember { mutableStateOf(false) }
     var showTutorialDialog by remember { mutableStateOf(false) }
-
-    var showResetPasswordDialog by remember { mutableStateOf(false) }
-    var resetEmailSent by remember { mutableStateOf(false) }
-    var isSendingReset by remember { mutableStateOf(false) }
-    var resetError by remember { mutableStateOf<String?>(null) }
-
     var showDeleteAccountDialog by remember { mutableStateOf(false) }
     var isDeletingAccount by remember { mutableStateOf(false) }
     var deleteAccountError by remember { mutableStateOf<String?>(null) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
+    var showResetPasswordDialog by remember { mutableStateOf(false) }
+    var isSendingResetEmail by remember { mutableStateOf(false) }
+    var resetEmailSent by remember { mutableStateOf(false) }
+    var resetError by remember { mutableStateOf<String?>(null) }
+
     val userEmail = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email.orEmpty()
+    val isBiometricSupported = remember { BiometricAuthManager.isBiometricAvailable(context) }
+    var isBiometricEnabled by remember { mutableStateOf(userPreferences.isBiometricEnabled) }
 
-    
     if (showLanguageDialog) {
-        val currentLang = remember { LocaleManager.getCurrentLanguage(context) }
-        var selectedCode by remember { mutableStateOf(currentLang.code) }
-
+        var selectedCode by remember { mutableStateOf(userPreferences.appLanguage) }
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
             title = {
                 Text(
-                    stringResource(R.string.settings_language),
+                    stringResource(R.string.settings_language_dialog_title),
                     fontFamily = SettingsEditorialFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
@@ -90,13 +85,11 @@ fun SettingsScreen(
             },
             text = {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        stringResource(R.string.settings_language_desc),
+                        stringResource(R.string.settings_language_dialog_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -106,7 +99,7 @@ fun SettingsScreen(
                         Surface(
                             onClick = {
                                 selectedCode = lang.code
-                                LocaleManager.applyLanguage(context, lang.code)
+                                LocaleManager.applyLanguage(context, lang.code, recreateActivity = true)
                                 showLanguageDialog = false
                             },
                             modifier = Modifier.fillMaxWidth(),
@@ -163,7 +156,7 @@ fun SettingsScreen(
             onDismissRequest = { showTutorialDialog = false },
             title = {
                 Text(
-                    "WritOn Feature Guide",
+                    stringResource(R.string.settings_guide_title),
                     fontFamily = SettingsEditorialFamily,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
@@ -178,16 +171,11 @@ fun SettingsScreen(
                     GuideItem("🎨", "Reader Themes (Aa)", "Switch between Paper, Sepia, Dark Obsidian & adjust font sizes in reader.")
                     GuideItem("✍️", "Offline Writer Studio", "Draft stories offline with auto-save and automatic outbox sync.")
                     GuideItem("🔒", "Biometric Lock", "Secure your app with Fingerprint or Face ID in Settings.")
-                    GuideItem("👏", "Reader Applause", "Applaud stories to support authors and bookmark them for offline reading.")
                 }
             },
             confirmButton = {
-                Button(
-                    onClick = { showTutorialDialog = false },
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandRed),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text("Got It", color = Color.White)
+                TextButton(onClick = { showTutorialDialog = false }) {
+                    Text(stringResource(R.string.common_close))
                 }
             }
         )
@@ -196,81 +184,101 @@ fun SettingsScreen(
     if (showAboutDialog) {
         AlertDialog(
             onDismissRequest = { showAboutDialog = false },
-            title = { Text("About WritOn", fontFamily = SettingsEditorialFamily) },
-            text = { Text("WritOn 2.0.0\nA calm place to read, write, and support thoughtful stories.") },
+            title = {
+                Text(
+                    stringResource(R.string.settings_about_title),
+                    fontFamily = SettingsEditorialFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.settings_about_desc, "2.0.0", 101), fontWeight = FontWeight.SemiBold)
+                    Text("WritOn is a distraction-free editorial publishing & reading platform built for thoughtful writers and avid readers.", style = MaterialTheme.typography.bodyMedium)
+                    Spacer(Modifier.height(4.dp))
+                    Text("• Kotlin Jetpack Compose Modern Architecture", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("• Offline-First Room DB & Cloud Firestore Sync", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("• On-Device Biometric Security & Smart Analytics", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
             confirmButton = {
-                TextButton(onClick = { showAboutDialog = false }) { Text("Close", color = BrandRed) }
+                TextButton(onClick = { showAboutDialog = false }) {
+                    Text(stringResource(R.string.common_close))
+                }
             }
         )
     }
 
     if (showResetPasswordDialog) {
         AlertDialog(
-            onDismissRequest = {
-                if (!isSendingReset) showResetPasswordDialog = false
+            onDismissRequest = { if (!isSendingResetEmail) showResetPasswordDialog = false },
+            title = {
+                Text(
+                    stringResource(R.string.settings_password_security_title),
+                    fontFamily = SettingsEditorialFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
             },
-            title = { Text("Password & Security", fontFamily = SettingsEditorialFamily, fontWeight = FontWeight.Bold) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    if (!resetEmailSent) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (resetEmailSent) {
                         Text(
-                            "We will send a password reset link to your registered email address ($userEmail).",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF6D6963)
+                            "A password reset link has been sent to $userEmail. Please check your inbox and spam folder.",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     } else {
                         Text(
-                            "Password reset link sent to $userEmail! Please check your inbox and spam folder to set a new password.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF2E7D32),
-                            fontWeight = FontWeight.Medium
+                            if (userEmail.isNotBlank())
+                                stringResource(R.string.settings_password_reset_subtitle, userEmail)
+                            else
+                                stringResource(R.string.settings_password_reset_default),
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                    resetError?.let { err ->
-                        Text(err, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    if (resetError != null) {
+                        Text(resetError.orEmpty(), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             },
             confirmButton = {
-                if (!resetEmailSent) {
-                    Button(
-                        onClick = {
-                            isSendingReset = true
-                            resetError = null
-                            com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager.sendPasswordReset(
-                                email = userEmail,
-                                onSuccess = {
-                                    isSendingReset = false
-                                    resetEmailSent = true
-                                },
-                                onError = { msg ->
-                                    isSendingReset = false
-                                    resetError = msg
-                                }
-                            )
-                        },
-                        enabled = !isSendingReset && userEmail.isNotBlank(),
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandRed)
-                    ) {
-                        if (isSendingReset) {
-                            CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
-                            Spacer(Modifier.width(8.dp))
-                        }
-                        Text(if (isSendingReset) "Sending…" else "Send Reset Email")
+                if (resetEmailSent) {
+                    TextButton(onClick = { showResetPasswordDialog = false }) {
+                        Text(stringResource(R.string.common_done))
                     }
                 } else {
                     Button(
-                        onClick = { showResetPasswordDialog = false },
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandRed)
+                        onClick = {
+                            if (userEmail.isNotBlank()) {
+                                isSendingResetEmail = true
+                                resetError = null
+                                com.google.firebase.auth.FirebaseAuth.getInstance()
+                                    .sendPasswordResetEmail(userEmail)
+                                    .addOnCompleteListener { task ->
+                                        isSendingResetEmail = false
+                                        if (task.isSuccessful) {
+                                            resetEmailSent = true
+                                        } else {
+                                            resetError = task.exception?.localizedMessage ?: "Failed to send reset email. Please retry."
+                                        }
+                                    }
+                            } else {
+                                resetError = "No email address found for your account."
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandRed),
+                        enabled = !isSendingResetEmail && userEmail.isNotBlank()
                     ) {
-                        Text("Done")
+                        Text(if (isSendingResetEmail) "Sending..." else "Send Reset Link", color = Color.White)
                     }
                 }
             },
             dismissButton = {
                 if (!resetEmailSent) {
-                    TextButton(onClick = { showResetPasswordDialog = false }, enabled = !isSendingReset) {
-                        Text("Cancel", color = Color(0xFF6D6963))
+                    TextButton(onClick = { showResetPasswordDialog = false }, enabled = !isSendingResetEmail) {
+                        Text(stringResource(R.string.common_cancel))
                     }
                 }
             }
@@ -280,21 +288,29 @@ fun SettingsScreen(
     if (showDeleteAccountDialog) {
         AlertDialog(
             onDismissRequest = { if (!isDeletingAccount) showDeleteAccountDialog = false },
-            title = { Text("Delete Account & Data", fontFamily = SettingsEditorialFamily, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error) },
+            title = {
+                Text(
+                    stringResource(R.string.settings_delete_account_title),
+                    fontFamily = SettingsEditorialFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = MaterialTheme.colorScheme.error
+                )
+            },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        "Are you sure you want to permanently delete your WritOn account? All your stories, drafts, comments, and profile data will be permanently removed.",
+                        "Are you sure you want to delete your WritOn account? All your published stories, drafts, applauds, and profile data will be permanently removed.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     Text(
-                        "This action cannot be undone.",
-                        style = MaterialTheme.typography.bodySmall,
+                        "This action is irreversible.",
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.error
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
                     )
-                    deleteAccountError?.let { err ->
-                        Text(err, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    if (deleteAccountError != null) {
+                        Text(deleteAccountError.orEmpty(), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             },
@@ -325,7 +341,7 @@ fun SettingsScreen(
                     onClick = { showDeleteAccountDialog = false },
                     enabled = !isDeletingAccount
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -338,8 +354,8 @@ fun SettingsScreen(
     ) {
         item { SettingsHeader(onSearchClick) }
         item {
-            SettingsSection("PREFERENCES") {
-                                SettingsRow(
+            SettingsSection(stringResource(R.string.settings_section_preferences)) {
+                SettingsRow(
                     title = stringResource(R.string.settings_language),
                     subtitle = "${LocaleManager.getCurrentLanguage(context).nativeName} • ${LocaleManager.getCurrentLanguage(context).name}",
                     icon = R.drawable.ic_book_orange,
@@ -351,12 +367,27 @@ fun SettingsScreen(
                     icon = R.drawable.ic_sun_orange,
                     onClick = onAppearanceClick
                 )
-                SettingsRow("Reading", "Choose your reading interests", R.drawable.ic_book_orange, onClick = onInterestsClick)
-                SettingsRow("Notifications", "View activity and reminders", R.drawable.ic_notification_orange, onClick = onNotificationsClick)
-                SettingsRow("Test Notification", "Send a sample rich interaction notification", R.drawable.ic_notification_orange, onClick = { com.ibitvalley.writon.modern.core.notification.WritOnNotificationManager.sendTestNotification(context) })
                 SettingsRow(
-                    title = "Copy Push Token",
-                    subtitle = "Copy this device's token to paste in Firebase Console",
+                    title = stringResource(R.string.settings_reading_title),
+                    subtitle = stringResource(R.string.settings_reading_desc),
+                    icon = R.drawable.ic_book_orange,
+                    onClick = onInterestsClick
+                )
+                SettingsRow(
+                    title = stringResource(R.string.settings_notifications_title),
+                    subtitle = stringResource(R.string.settings_notifications_desc),
+                    icon = R.drawable.ic_notification_orange,
+                    onClick = onNotificationsClick
+                )
+                SettingsRow(
+                    title = stringResource(R.string.settings_test_notif_title),
+                    subtitle = stringResource(R.string.settings_test_notif_desc),
+                    icon = R.drawable.ic_notification_orange,
+                    onClick = { com.ibitvalley.writon.modern.core.notification.WritOnNotificationManager.sendTestNotification(context) }
+                )
+                SettingsRow(
+                    title = stringResource(R.string.settings_copy_token_title),
+                    subtitle = stringResource(R.string.settings_copy_token_desc),
                     icon = R.drawable.ic_notification_orange,
                     onClick = {
                         com.google.firebase.messaging.FirebaseMessaging.getInstance().token
@@ -371,16 +402,27 @@ fun SettingsScreen(
                             }
                     }
                 )
-                SettingsRow("Applause", "Vibration and effects", icon = null, useApplaudIcon = true, enabled = false)
-                SettingsRow("Saving & Downloads", "View saved stories and offline cache", R.drawable.ic_bookmark_orange, onClick = onSavedStoriesClick)
+                SettingsRow(
+                    title = stringResource(R.string.settings_applause_title),
+                    subtitle = stringResource(R.string.settings_applause_desc),
+                    icon = null,
+                    useApplaudIcon = true,
+                    enabled = false
+                )
+                SettingsRow(
+                    title = stringResource(R.string.settings_saving_title),
+                    subtitle = stringResource(R.string.settings_saving_desc),
+                    icon = R.drawable.ic_bookmark_orange,
+                    onClick = onSavedStoriesClick
+                )
             }
         }
         item {
-            SettingsSection("ACCOUNT") {
+            SettingsSection(stringResource(R.string.settings_section_account)) {
                 if (isBiometricSupported) {
                     SettingsSwitchRow(
-                        title = "Biometric App Lock",
-                        subtitle = "Require fingerprint or face ID to open WritOn",
+                        title = stringResource(R.string.settings_biometric_lock_title),
+                        subtitle = stringResource(R.string.settings_biometric_lock_desc),
                         icon = R.drawable.ic_shield_orange,
                         checked = isBiometricEnabled,
                         onCheckedChange = { enable ->
@@ -411,17 +453,54 @@ fun SettingsScreen(
                         }
                     )
                 }
-                SettingsRow("Password & Security", if (userEmail.isNotBlank()) "Send password reset link to $userEmail" else "Reset your password", R.drawable.ic_shield_orange, onClick = { resetEmailSent = false; resetError = null; showResetPasswordDialog = true })
-                SettingsRow("Delete Account & Data", "Permanently remove your account and stories", R.drawable.ic_shield_orange, accent = true, onClick = { showDeleteAccountDialog = true })
-                SettingsRow("Account", "Profile editing", avatar = "AK", enabled = false)
-                SettingsRow("Privacy", "Privacy controls", R.drawable.ic_shield_orange, enabled = false)
-                SettingsRow("Help & App Guide", "Feature tutorials and tips", R.drawable.ic_help_orange, onClick = { showTutorialDialog = true })
-                SettingsRow("About WritOn", "Version 2.0.0", R.drawable.ic_info_orange, onClick = { showAboutDialog = true })
+                SettingsRow(
+                    title = stringResource(R.string.settings_password_security_title),
+                    subtitle = if (userEmail.isNotBlank()) stringResource(R.string.settings_password_reset_subtitle, userEmail) else stringResource(R.string.settings_password_reset_default),
+                    icon = R.drawable.ic_shield_orange,
+                    onClick = { resetEmailSent = false; resetError = null; showResetPasswordDialog = true }
+                )
+                SettingsRow(
+                    title = stringResource(R.string.settings_delete_account_title),
+                    subtitle = stringResource(R.string.settings_delete_account_desc),
+                    icon = R.drawable.ic_shield_orange,
+                    accent = true,
+                    onClick = { showDeleteAccountDialog = true }
+                )
+                SettingsRow(
+                    title = stringResource(R.string.settings_account_title),
+                    subtitle = stringResource(R.string.settings_account_desc),
+                    avatar = "AK",
+                    enabled = false
+                )
+                SettingsRow(
+                    title = stringResource(R.string.settings_privacy_title),
+                    subtitle = stringResource(R.string.settings_privacy_desc),
+                    icon = R.drawable.ic_shield_orange,
+                    enabled = false
+                )
+                SettingsRow(
+                    title = stringResource(R.string.settings_guide_title),
+                    subtitle = stringResource(R.string.settings_guide_desc),
+                    icon = R.drawable.ic_help_orange,
+                    onClick = { showTutorialDialog = true }
+                )
+                SettingsRow(
+                    title = stringResource(R.string.settings_about_title),
+                    subtitle = stringResource(R.string.settings_about_desc, "2.0.0", 101),
+                    icon = R.drawable.ic_info_orange,
+                    onClick = { showAboutDialog = true }
+                )
             }
         }
         item {
-            SettingsSection("MORE") {
-                SettingsRow("Log out", "", R.drawable.ic_logout_orange, accent = true, onClick = onLogOut)
+            SettingsSection(stringResource(R.string.settings_section_more)) {
+                SettingsRow(
+                    title = stringResource(R.string.settings_logout_title),
+                    subtitle = "",
+                    icon = R.drawable.ic_logout_orange,
+                    accent = true,
+                    onClick = onLogOut
+                )
             }
         }
     }
@@ -436,7 +515,7 @@ private fun SettingsHeader(onSearchClick: () -> Unit) {
             IconButton(onClick = onSearchClick) {
                 Image(
                     painterResource(R.drawable.ic_search),
-                    contentDescription = "Search",
+                    contentDescription = stringResource(R.string.common_search),
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                 )
@@ -444,7 +523,7 @@ private fun SettingsHeader(onSearchClick: () -> Unit) {
             IconButton(onClick = { }) {
                 Image(
                     painterResource(R.drawable.ic_more_vertical),
-                    contentDescription = "More settings options",
+                    contentDescription = stringResource(R.string.common_more),
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                 )
@@ -452,12 +531,12 @@ private fun SettingsHeader(onSearchClick: () -> Unit) {
         }
         Spacer(Modifier.height(WritOnSpacing.lg))
         Text(
-            "Settings",
+            stringResource(R.string.settings_title),
             style = MaterialTheme.typography.displayLarge.copy(fontFamily = SettingsEditorialFamily, fontSize = 36.sp, lineHeight = 42.sp)
         )
         Spacer(Modifier.height(WritOnSpacing.xs))
         Text(
-            "Personalize your experience.",
+            stringResource(R.string.settings_subtitle),
             style = MaterialTheme.typography.bodyLarge.copy(fontFamily = SettingsEditorialFamily, fontSize = 16.sp, lineHeight = 22.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -518,25 +597,52 @@ private fun SettingsRow(
                     Box(contentAlignment = Alignment.Center) { Text(avatar, style = MaterialTheme.typography.labelLarge) }
                 }
                 useApplaudIcon -> Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = null, modifier = Modifier.size(26.dp))
-                icon != null -> Image(painterResource(icon), contentDescription = null, modifier = Modifier.size(26.dp))
+                icon != null -> Surface(
+                    shape = RoundedCornerShape(WritOnRadius.field),
+                    color = BrandRed.copy(alpha = 0.12f),
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Image(
+                            painter = painterResource(icon),
+                            contentDescription = title,
+                            modifier = Modifier.size(20.dp),
+                            colorFilter = ColorFilter.tint(BrandRed)
+                        )
+                    }
+                }
             }
+
             Spacer(Modifier.width(WritOnSpacing.md))
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleLarge.copy(fontSize = 17.sp, lineHeight = 22.sp), color = color)
-                if (subtitle.isNotBlank() || !enabled) {
-                    Spacer(Modifier.height(WritOnSpacing.xxs))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
+                    color = color,
+                    fontWeight = FontWeight.Medium
+                )
+                if (subtitle.isNotBlank()) {
                     Text(
-                        if (enabled) subtitle else "$subtitle · Coming soon",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, lineHeight = 17.sp),
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
+
             if (enabled) {
-                Image(painterResource(R.drawable.ic_chevron_right_muted), contentDescription = null, modifier = Modifier.size(20.dp))
+                Text(
+                    text = "›",
+                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 24.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
         }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f), modifier = Modifier.padding(horizontal = WritOnSpacing.md))
+        HorizontalDivider(
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
+            modifier = Modifier.padding(start = 56.dp)
+        )
     }
 }
 
@@ -544,7 +650,7 @@ private fun SettingsRow(
 private fun SettingsSwitchRow(
     title: String,
     subtitle: String,
-    icon: Int? = null,
+    icon: Int,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
@@ -555,29 +661,50 @@ private fun SettingsSwitchRow(
                 .padding(horizontal = WritOnSpacing.md, vertical = WritOnSpacing.xs),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (icon != null) {
-                Image(painterResource(icon), contentDescription = null, modifier = Modifier.size(26.dp))
-                Spacer(Modifier.width(WritOnSpacing.md))
-            }
-            Column(Modifier.weight(1f)) {
-                Text(title, style = MaterialTheme.typography.titleLarge.copy(fontSize = 17.sp, lineHeight = 22.sp), color = MaterialTheme.colorScheme.onSurface)
-                if (subtitle.isNotBlank()) {
-                    Spacer(Modifier.height(WritOnSpacing.xxs))
-                    Text(subtitle, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, lineHeight = 17.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Surface(
+                shape = RoundedCornerShape(WritOnRadius.field),
+                color = BrandRed.copy(alpha = 0.12f),
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Image(
+                        painter = painterResource(icon),
+                        contentDescription = title,
+                        modifier = Modifier.size(20.dp),
+                        colorFilter = ColorFilter.tint(BrandRed)
+                    )
                 }
             }
+
+            Spacer(Modifier.width(WritOnSpacing.md))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
             Switch(
                 checked = checked,
                 onCheckedChange = onCheckedChange,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color.White,
-                    checkedTrackColor = BrandRed,
-                    uncheckedThumbColor = Color.White,
-                    uncheckedTrackColor = MaterialTheme.colorScheme.outlineVariant
+                    checkedTrackColor = BrandRed
                 )
             )
         }
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f), modifier = Modifier.padding(horizontal = WritOnSpacing.md))
+        HorizontalDivider(
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
+            modifier = Modifier.padding(start = 56.dp)
+        )
     }
 }
 
@@ -585,33 +712,17 @@ private fun SettingsSwitchRow(
 private fun GuideItem(emoji: String, title: String, description: String) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Top
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(
-            text = emoji,
-            style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
-            modifier = Modifier.padding(end = 12.dp, top = 2.dp)
-        )
-        Column(modifier = Modifier.weight(1f)) {
+        Text(emoji, fontSize = 24.sp)
+        Column {
+            Text(title, fontWeight = FontWeight.Bold, fontSize = 15.sp)
             Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp
-                ),
-                color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontSize = 13.sp,
-                    lineHeight = 17.sp
-                ),
+                description,
+                style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
-
-
