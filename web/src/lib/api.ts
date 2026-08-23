@@ -193,3 +193,175 @@ export async function uploadMedia(file: File): Promise<string> {
   const result = await res.json();
   return result.url;
 }
+
+// Bot Control Center API
+export async function fetchBotOverview(): Promise<{
+  settings: import('../types').BotGlobalSettings;
+  stats: import('../types').BotOverviewStats;
+  botsCount: number;
+  recentLogs: import('../types').BotActivityLog[];
+}> {
+  const res = await fetch(`${API_BASE}/admin/bots/overview`, {
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch bot network overview');
+  return res.json();
+}
+
+export async function fetchBots(): Promise<{ bots: import('../types').BotPersona[] }> {
+  const res = await fetch(`${API_BASE}/admin/bots`, {
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch bots');
+  return res.json();
+}
+
+export async function updateBotPersona(id: string, data: Partial<import('../types').BotPersona>): Promise<{ bot: import('../types').BotPersona }> {
+  const res = await fetch(`${API_BASE}/admin/bots/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader()
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Failed to update bot persona');
+  return res.json();
+}
+
+export async function toggleBotActive(id: string): Promise<{ id: string; isActive: boolean }> {
+  const res = await fetch(`${API_BASE}/admin/bots/${id}/toggle`, {
+    method: 'POST',
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to toggle bot status');
+  return res.json();
+}
+
+export async function updateBotSettings(data: Record<string, any>): Promise<{ settings: import('../types').BotGlobalSettings }> {
+  const res = await fetch(`${API_BASE}/admin/bots/settings`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader()
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Failed to update bot settings');
+  return res.json();
+}
+
+export async function seedBots(): Promise<{ success: boolean; count: number; bots: import('../types').BotPersona[] }> {
+  const res = await fetch(`${API_BASE}/admin/bots/seed`, {
+    method: 'POST',
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to seed bot network');
+  return res.json();
+}
+
+export async function triggerBotPost(data: {
+  botId: string;
+  category?: string;
+  topicHint?: string;
+  customTitle?: string;
+  customContent?: string;
+}): Promise<{ post: any }> {
+  const res = await fetch(`${API_BASE}/admin/bots/trigger-post`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader()
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Failed to trigger post generation');
+  return res.json();
+}
+
+export async function triggerBotInteract(data: {
+  botId: string;
+  postId: string;
+  actionType: 'applaud' | 'like' | 'comment' | 'follow';
+  customComment?: string;
+}): Promise<{ outcome: any }> {
+  const res = await fetch(`${API_BASE}/admin/bots/trigger-interact`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader()
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) throw new Error('Failed to trigger bot interaction');
+  return res.json();
+}
+
+export async function triggerBotPulse(): Promise<{ pulse: any }> {
+  const res = await fetch(`${API_BASE}/admin/bots/trigger-pulse`, {
+    method: 'POST',
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to trigger pulse');
+  return res.json();
+}
+
+export async function fetchBotLogs(page = 1, limit = 30): Promise<{ logs: import('../types').BotActivityLog[]; pagination: any }> {
+  const res = await fetch(`${API_BASE}/admin/bots/logs?page=${page}&limit=${limit}`, {
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch bot logs');
+  return res.json();
+}
+
+export async function fetchSparkPromptTemplate(): Promise<{ prompt: string; instructions: string }> {
+  const res = await fetch(`${API_BASE}/spark/prompt-template`, {
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch Spark prompt template');
+  return res.json();
+}
+
+export async function ingestSparkBatch(payload: any): Promise<{
+  success: boolean;
+  storiesCount: number;
+  commentsCount: number;
+  stories: any[];
+  comments: any[];
+}> {
+  let bodyToSend = payload;
+  if (typeof payload === 'string') {
+    let text = payload.trim();
+    const match = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (match) {
+      text = match[1];
+    }
+    try {
+      bodyToSend = JSON.parse(text.trim());
+    } catch {
+      bodyToSend = { rawText: payload };
+    }
+  }
+
+  const res = await fetch(`${API_BASE}/spark/ingest`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader()
+    },
+    body: JSON.stringify(bodyToSend)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Server error during ingestion' }));
+    throw new Error(err.error || 'Failed to ingest Gemini Spark payload');
+  }
+  return res.json();
+}
+
+export async function fetchSparkAutomationScript(): Promise<{ script: string; webhookUrl: string; instructions: string }> {
+  const res = await fetch(`${API_BASE}/spark/automation-script`, {
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch Spark automation script');
+  return res.json();
+}

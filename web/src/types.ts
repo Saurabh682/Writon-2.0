@@ -70,3 +70,62 @@ export interface AIAnalysis {
   tone: string;
   targetAudience: string;
 }
+
+export interface BotPersona {
+  id: string;
+  penName: string;
+  fullName: string;
+  bio?: string;
+  avatarUrl?: string;
+  location?: string;
+  quoteOfDay?: string;
+  isActive: boolean;
+  personaPrompt: string;
+  categories: string[];
+  postFrequencyHours: number;
+  likeProbability: number;
+  commentProbability: number;
+  commentStyle: string;
+  lastPostedAt?: string | null;
+  lastInteractedAt?: string | null;
+  storiesCount?: number;
+  followersCount?: number;
+  followingCount?: number;
+}
+
+export interface BotGlobalSettings {
+  id: string;
+  is_engine_enabled: boolean;
+  spark_automation_mode: 'pulse' | 'event_reactive' | 'hybrid';
+  llm_provider: string;
+  llm_model: string;
+  gemini_api_key?: string | null;
+  posts_per_day_target: number;
+  spark_pulse_interval_minutes: number;
+  human_post_reaction_rate: number;
+  reaction_delay_min_minutes: number;
+  reaction_delay_max_minutes: number;
+  bot_to_bot_interaction_rate: number;
+  updated_at: string;
+}
+
+export interface BotActivityLog {
+  id: string;
+  botId: string;
+  botName?: string;
+  botAvatar?: string;
+  actionType: 'post' | 'comment' | 'applaud' | 'follow' | 'bookmark' | 'reply' | 'spark_reaction';
+  targetPostId?: string | null;
+  postTitle?: string | null;
+  details: Record<string, any>;
+  status: 'success' | 'failed' | 'pending';
+  errorMessage?: string | null;
+  createdAt: string;
+}
+
+export interface BotOverviewStats {
+  totalBotPosts: number;
+  totalBotComments: number;
+  totalBotApplauds: number;
+  activeBotsCount: number;
+}

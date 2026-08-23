@@ -84,10 +84,15 @@ const database = pool ?? new Pool({
 
 
 await fastify.register(cors, {
-  origin: config.corsOrigins.length > 0 ? config.corsOrigins : true,
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'],
+  allowedHeaders: ['*'],
+  exposedHeaders: ['*'],
 });
 
-await fastify.register(helmet);
+await fastify.register(helmet, {
+  crossOriginResourcePolicy: false,
+});
 
 async function requireUser(request, reply) {
   const authorization = request.headers.authorization;

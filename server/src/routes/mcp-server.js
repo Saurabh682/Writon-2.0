@@ -305,8 +305,41 @@ export async function mcpRoutes(fastify, options) {
     };
   }
 
+  // CORS & Handshake headers helper
+  const addCorsHeaders = (reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Methods', 'GET, POST, HEAD, OPTIONS');
+    reply.header('Access-Control-Allow-Headers', '*');
+    reply.header('Access-Control-Expose-Headers', '*');
+  };
+
+  // OPTIONS Preflight Handlers
+  const optionsHandler = async (request, reply) => {
+    addCorsHeaders(reply);
+    return reply.code(204).send();
+  };
+  fastify.options('/mcp', optionsHandler);
+  fastify.options('/api/v1/mcp', optionsHandler);
+  fastify.options('/mcp/messages', optionsHandler);
+  fastify.options('/.well-known/oauth-protected-resource', optionsHandler);
+  fastify.options('/.well-known/oauth-protected-resource/mcp', optionsHandler);
+
+  // RFC 9728 / OAuth Protected Resource Metadata (probed by Gemini Spark)
+  const oauthProtectedResourceHandler = async (request, reply) => {
+    addCorsHeaders(reply);
+    return reply.code(200).header('Content-Type', 'application/json').send({
+      resource: `${request.protocol}://${request.hostname}/mcp`,
+      authorization_servers: [],
+      scopes_supported: [],
+      bearer_methods_supported: ['header']
+    });
+  };
+  fastify.get('/.well-known/oauth-protected-resource', oauthProtectedResourceHandler);
+  fastify.get('/.well-known/oauth-protected-resource/mcp', oauthProtectedResourceHandler);
+
   // Streamable HTTP & JSON-RPC Endpoint (POST /mcp)
   fastify.post('/mcp', async (request, reply) => {
+    addCorsHeaders(reply);
     const response = await handleJsonRpc(request.body);
     if (!response) {
       return reply.code(204).send();
@@ -316,6 +349,7 @@ export async function mcpRoutes(fastify, options) {
 
   // Also support /api/v1/mcp alias
   fastify.post('/api/v1/mcp', async (request, reply) => {
+    addCorsHeaders(reply);
     const response = await handleJsonRpc(request.body);
     if (!response) {
       return reply.code(204).send();
@@ -325,6 +359,19 @@ export async function mcpRoutes(fastify, options) {
 
   // Server-Sent Events (SSE) Transport (GET /mcp and GET /mcp/sse)
   const sseHandler = async (request, reply) => {
+    const accept = request.headers.accept || '';
+    addCorsHeaders(reply);
+
+    // If client is just querying metadata via GET
+    if (!accept.includes('text/event-stream')) {
+      return reply.code(200).header('Content-Type', 'application/json').send({
+        name: 'writon-mcp-server',
+        version: '2.0.0',
+        protocolVersion: MCP_PROTOCOL_VERSION,
+        tools: WRITON_TOOLS
+      });
+    }
+
     const sessionId = randomUUID();
     reply.raw.setHeader('Content-Type', 'text/event-stream');
     reply.raw.setHeader('Cache-Control', 'no-cache');
@@ -343,6 +390,7 @@ export async function mcpRoutes(fastify, options) {
 
   // SSE Message Dispatcher
   fastify.post('/mcp/messages', async (request, reply) => {
+    addCorsHeaders(reply);
     const response = await handleJsonRpc(request.body);
     if (!response) {
       return reply.code(204).send();

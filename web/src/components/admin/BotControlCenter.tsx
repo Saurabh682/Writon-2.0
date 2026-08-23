@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   BotPersona,
   BotGlobalSettings,
@@ -16,7 +16,9 @@ import {
   triggerBotPost,
   triggerBotInteract,
   triggerBotPulse,
-  fetchBotLogs
+  fetchSparkPromptTemplate,
+  ingestSparkBatch,
+  fetchSparkAutomationScript
 } from '../../lib/api';
 
 interface BotControlCenterProps {
@@ -38,21 +40,53 @@ const CATEGORIES_LIST: Category[] = [
   'Culture'
 ];
 
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === 'string') return err;
+  return 'An unexpected error occurred';
+}
+
 export const BotControlCenter: React.FC<BotControlCenterProps> = ({
   isOpen,
   onClose,
   onStoryPublished
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'personas' | 'settings' | 'trigger' | 'logs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'mcp_app' | 'spark_web' | 'personas' | 'settings' | 'trigger' | 'logs'>('overview');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  const statusTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const promptTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scriptTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
+      if (promptTimeoutRef.current) clearTimeout(promptTimeoutRef.current);
+      if (scriptTimeoutRef.current) clearTimeout(scriptTimeoutRef.current);
+    };
+  }, []);
+
 
   // State
   const [settings, setSettings] = useState<BotGlobalSettings | null>(null);
   const [stats, setStats] = useState<BotOverviewStats | null>(null);
   const [bots, setBots] = useState<BotPersona[]>([]);
   const [logs, setLogs] = useState<BotActivityLog[]>([]);
+
+  // Gemini Spark Web State
+  const [sparkPromptText, setSparkPromptText] = useState<string>('');
+  const [sparkPythonScript, setSparkPythonScript] = useState<string>('');
+  const [sparkInputJson, setSparkInputJson] = useState<string>('');
+  const [copiedPrompt, setCopiedPrompt] = useState<boolean>(false);
+  const [copiedScript, setCopiedScript] = useState<boolean>(false);
+
+  // MCP Tab States
+  const [mcpUrl, setMcpUrl] = useState('http://localhost:3001/mcp');
+  const [copiedMcpUrl, setCopiedMcpUrl] = useState(false);
+  const [mcpTestResult, setMcpTestResult] = useState<{ success: boolean, toolsCount?: number, message: string } | null>(null);
+  const [mcpTesting, setMcpTesting] = useState(false);
 
   // Edit persona modal
   const [editingBot, setEditingBot] = useState<BotPersona | null>(null);
@@ -77,28 +111,36 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
   const loadData = async () => {
     try {
       setLoading(true);
-      const [overviewData, botsData] = await Promise.all([
+      const [overviewData, botsData, promptData, scriptData] = await Promise.all([
         fetchBotOverview(),
-        fetchBots()
+        fetchBots(),
+        fetchSparkPromptTemplate().catch(() => ({ prompt: '' })),
+        fetchSparkAutomationScript().catch(() => ({ script: '' }))
       ]);
       setSettings(overviewData.settings);
       setStats(overviewData.stats);
       setLogs(overviewData.recentLogs);
       setBots(botsData.bots);
       setSettingsForm(overviewData.settings);
+      if (promptData?.prompt) setSparkPromptText(promptData.prompt);
+      if (scriptData?.script) setSparkPythonScript(scriptData.script);
       if (botsData.bots.length > 0 && !selectedBotId) {
         setSelectedBotId(botsData.bots[0].id);
       }
-    } catch (err: any) {
-      setStatusMessage({ type: 'error', text: err.message || 'Failed to load bot data' });
+    } catch (err: unknown) {
+      setStatusMessage({ type: 'error', text: getErrorMessage(err) });
     } finally {
       setLoading(false);
     }
   };
 
   const showStatus = (text: string, type: 'success' | 'error' = 'success') => {
+    if (statusTimeoutRef.current) clearTimeout(statusTimeoutRef.current);
     setStatusMessage({ type, text });
-    setTimeout(() => setStatusMessage(null), 4000);
+    statusTimeoutRef.current = setTimeout(() => {
+      setStatusMessage(null);
+      statusTimeoutRef.current = null;
+    }, 4000);
   };
 
   const handleToggleEngine = async () => {
@@ -110,8 +152,8 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       setSettings(res.settings);
       setSettingsForm(res.settings);
       showStatus(`Gemini Spark Engine ${newEnabled ? 'Resumed' : 'Paused'}`);
-    } catch (err: any) {
-      showStatus(err.message, 'error');
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
     } finally {
       setActionLoading(false);
     }
@@ -124,8 +166,8 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       setBots(res.bots);
       showStatus(`Successfully seeded ${res.count} curated writer bots!`);
       loadData();
-    } catch (err: any) {
-      showStatus(err.message, 'error');
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
     } finally {
       setActionLoading(false);
     }
@@ -136,8 +178,8 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       const res = await toggleBotActive(botId);
       setBots(prev => prev.map(b => b.id === botId ? { ...b, isActive: res.isActive } : b));
       showStatus(`Bot ${res.isActive ? 'Activated' : 'Deactivated'}`);
-    } catch (err: any) {
-      showStatus(err.message, 'error');
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
     }
   };
 
@@ -159,8 +201,8 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       });
       setSettings(res.settings);
       showStatus('Settings updated successfully!');
-    } catch (err: any) {
-      showStatus(err.message, 'error');
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
     } finally {
       setActionLoading(false);
     }
@@ -168,7 +210,10 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
 
   const handleTriggerPost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBotId) return;
+    if (!selectedBotId) {
+      showStatus('Please select a bot first', 'error');
+      return;
+    }
     try {
       setActionLoading(true);
       const res = await triggerBotPost({
@@ -180,8 +225,8 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       setTriggerTopic('');
       if (onStoryPublished) onStoryPublished();
       loadData();
-    } catch (err: any) {
-      showStatus(err.message, 'error');
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
     } finally {
       setActionLoading(false);
     }
@@ -189,7 +234,14 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
 
   const handleTriggerInteract = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedBotId || !targetPostId) return;
+    if (!selectedBotId) {
+      showStatus('Please select a bot first', 'error');
+      return;
+    }
+    if (!targetPostId.trim()) {
+      showStatus('Please enter a target post ID', 'error');
+      return;
+    }
     try {
       setActionLoading(true);
       await triggerBotInteract({
@@ -201,8 +253,8 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       showStatus(`Interaction (${interactAction}) successfully executed!`);
       setCustomComment('');
       loadData();
-    } catch (err: any) {
-      showStatus(err.message, 'error');
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
     } finally {
       setActionLoading(false);
     }
@@ -215,8 +267,8 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       showStatus(`Pulse executed: ${res.pulse?.action || 'Heartbeat checked'}`);
       if (onStoryPublished) onStoryPublished();
       loadData();
-    } catch (err: any) {
-      showStatus(err.message, 'error');
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
     } finally {
       setActionLoading(false);
     }
@@ -231,10 +283,117 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       setBots(prev => prev.map(b => b.id === editingBot.id ? res.bot : b));
       setEditingBot(null);
       showStatus(`Updated persona for ${res.bot.fullName}`);
-    } catch (err: any) {
-      showStatus(err.message, 'error');
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleCopySparkPrompt = async () => {
+    try {
+      if (!sparkPromptText) {
+        const res = await fetchSparkPromptTemplate();
+        setSparkPromptText(res.prompt);
+        await navigator.clipboard.writeText(res.prompt);
+      } else {
+        await navigator.clipboard.writeText(sparkPromptText);
+      }
+      setCopiedPrompt(true);
+      showStatus('Copied task prompt! Now paste it into https://gemini.google.com/spark');
+      if (promptTimeoutRef.current) clearTimeout(promptTimeoutRef.current);
+      promptTimeoutRef.current = setTimeout(() => {
+        setCopiedPrompt(false);
+        promptTimeoutRef.current = null;
+      }, 3000);
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err) || 'Failed to copy to clipboard', 'error');
+    }
+  };
+
+  const handleCopySparkScript = async () => {
+    try {
+      if (!sparkPythonScript) {
+        const res = await fetchSparkAutomationScript();
+        setSparkPythonScript(res.script);
+        await navigator.clipboard.writeText(res.script);
+      } else {
+        await navigator.clipboard.writeText(sparkPythonScript);
+      }
+      setCopiedScript(true);
+      showStatus('Copied Python automation script for Gemini Spark!');
+      if (scriptTimeoutRef.current) clearTimeout(scriptTimeoutRef.current);
+      scriptTimeoutRef.current = setTimeout(() => {
+        setCopiedScript(false);
+        scriptTimeoutRef.current = null;
+      }, 3000);
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err) || 'Failed to copy Python script to clipboard', 'error');
+    }
+  };
+
+  const handleIngestSparkBatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!sparkInputJson.trim()) {
+      showStatus('Please paste the JSON output from Gemini Spark first', 'error');
+      return;
+    }
+    try {
+      setActionLoading(true);
+      const res = await ingestSparkBatch(sparkInputJson.trim());
+      showStatus(`Successfully published ${res.storiesCount} stories and ${res.commentsCount} comments from Gemini Spark!`);
+      setSparkInputJson('');
+      if (onStoryPublished) onStoryPublished();
+      loadData();
+    } catch (err: unknown) {
+      showStatus(`Ingestion failed: ${getErrorMessage(err)}`, 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCopyMcpUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(mcpUrl);
+      setCopiedMcpUrl(true);
+      if (promptTimeoutRef.current) clearTimeout(promptTimeoutRef.current);
+      promptTimeoutRef.current = setTimeout(() => {
+        setCopiedMcpUrl(false);
+        promptTimeoutRef.current = null;
+      }, 3000);
+      showStatus('MCP endpoint URL copied!');
+    } catch (err: unknown) {
+      showStatus('Failed to copy URL', 'error');
+    }
+  };
+
+  const handleTestMcp = async () => {
+    setMcpTesting(true);
+    setMcpTestResult(null);
+    try {
+      const initRes = await fetch(mcpUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize' })
+      });
+      if (!initRes.ok) throw new Error('Failed to initialize');
+
+      const toolsRes = await fetch(mcpUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list' })
+      });
+      const toolsData = await toolsRes.json();
+
+      if (toolsData.result && toolsData.result.tools) {
+        setMcpTestResult({ success: true, toolsCount: toolsData.result.tools.length, message: 'Connected successfully!' });
+      } else {
+        throw new Error('Invalid tools list response');
+      }
+    } catch (err: any) {
+      setMcpTestResult({ success: false, message: err.message || 'Connection failed' });
+    } finally {
+      setMcpTesting(false);
     }
   };
 
@@ -292,7 +451,10 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
 
         {/* Status Alert */}
         {statusMessage && (
-          <div className={`px-6 py-2 text-xs font-medium ${
+          <div
+            role="status"
+            aria-live="polite"
+            className={`px-6 py-2 text-xs font-medium ${
             statusMessage.type === 'success'
               ? 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border-b border-emerald-200 dark:border-emerald-900'
               : 'bg-rose-50 dark:bg-rose-950/50 text-rose-700 dark:text-rose-300 border-b border-rose-200 dark:border-rose-900'
@@ -302,9 +464,15 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
         )}
 
         {/* Tab Navigation */}
-        <div className="flex items-center px-6 border-b border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50 gap-1 overflow-x-auto">
+        <div
+          role="tablist"
+          aria-label="Bot Network Navigation"
+          className="flex items-center px-6 border-b border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/50 gap-1 overflow-x-auto"
+        >
           {[
             { id: 'overview', label: '📊 Overview' },
+            { id: 'mcp_app', label: '🔌 Custom Spark App (MCP)' },
+            { id: 'spark_web', label: '✨ Gemini Spark Web (Batch Ingest)' },
             { id: 'personas', label: `👥 Personas (${bots.length})` },
             { id: 'settings', label: '⚙️ Spark Settings' },
             { id: 'trigger', label: '⚡ Instant Actions' },
@@ -312,6 +480,8 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
           ].map(tab => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
               onClick={() => setActiveTab(tab.id as any)}
               className={`px-4 py-3 text-xs font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.id
@@ -409,6 +579,314 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
                       <div>
                         <span className="text-stone-500">Gemini Key:</span>{' '}
                         <span className="font-semibold text-stone-900 dark:text-stone-100">{settings?.gemini_api_key ? '••••••••' : 'Env Key / Standby'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: MCP APP */}
+              {activeTab === 'mcp_app' && (
+                <div className="space-y-6">
+                  {/* Hero Banner */}
+                  <div className="p-5 rounded-2xl bg-gradient-to-r from-teal-900/20 via-emerald-900/20 to-green-900/20 border border-teal-500/30">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">🔌</span>
+                          <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                            Connect as a Custom App
+                          </h3>
+                        </div>
+                        <p className="text-xs text-stone-600 dark:text-stone-400 max-w-2xl">
+                          Connect WritOn directly to Gemini Spark as a Custom Connected App (MCP). This allows Spark to discover all bot actions (publish, comment, applaud, follow) natively as tools.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Setup Guide & Endpoint */}
+                    <div className="space-y-4">
+                      <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/30">
+                        <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 mb-3">
+                          1. MCP Endpoint URL
+                        </h4>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={mcpUrl}
+                            onChange={(e) => setMcpUrl(e.target.value)}
+                            className="flex-1 px-3 py-2 text-xs bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-900 dark:text-stone-100 font-mono"
+                          />
+                          <button
+                            onClick={handleCopyMcpUrl}
+                            className="px-3 py-2 bg-stone-200 hover:bg-stone-300 dark:bg-stone-700 dark:hover:bg-stone-600 rounded-lg text-xs font-bold transition-colors"
+                          >
+                            {copiedMcpUrl ? '✓ Copied' : '📋 Copy'}
+                          </button>
+                        </div>
+                        <div className="mt-3 flex items-center justify-between">
+                          <button
+                            onClick={handleTestMcp}
+                            disabled={mcpTesting}
+                            className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50"
+                          >
+                            {mcpTesting ? 'Testing...' : 'Test Connection'}
+                          </button>
+                          {mcpTestResult && (
+                            <span className={`text-[11px] font-bold px-2 py-1 rounded ${mcpTestResult.success ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'}`}>
+                              {mcpTestResult.success ? `✓ ${mcpTestResult.message} (${mcpTestResult.toolsCount} tools)` : `✗ ${mcpTestResult.message}`}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/30">
+                        <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 mb-3">
+                          2. Connection Guide
+                        </h4>
+                        <ol className="list-decimal list-inside text-xs text-stone-600 dark:text-stone-400 space-y-2">
+                          <li>Open <a href="https://gemini.google.com/spark" target="_blank" rel="noreferrer" className="text-teal-600 dark:text-teal-400 hover:underline font-semibold">gemini.google.com/spark</a></li>
+                          <li>In Settings &rarr; Connected Apps, click "Add a custom app" (as in the screenshot).</li>
+                          <li>Paste the MCP endpoint URL and click Next.</li>
+                          <li>Spark will auto-discover all 8 tools (<code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_publish_story</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_get_feed</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_comment_story</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_applaud_story</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_follow_author</code>, etc.)</li>
+                        </ol>
+                      </div>
+                    </div>
+
+                    {/* Prompt Ideas */}
+                    <div className="space-y-3">
+                      <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 px-1">
+                        Try these prompts in Spark:
+                      </h4>
+                      {[
+                        "Check the latest feed on WritOn and publish a new distributed systems essay by @aarav_tech.",
+                        "Read the most recent poetry post and leave a soulful comment as @kavya_nair.",
+                        "Run an editorial pulse: check recent activity, publish 1 short story by @devansh_roy, and applaud the top 2 articles."
+                      ].map((prompt, idx) => (
+                        <div key={idx} className="group p-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-teal-500/50 hover:shadow-md transition-all cursor-pointer relative" onClick={() => { navigator.clipboard.writeText(prompt); showStatus('Prompt copied!'); }}>
+                          <p className="text-xs text-stone-700 dark:text-stone-300 pr-8">{prompt}</p>
+                          <button className="absolute right-3 top-3 text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity" title="Copy prompt">📋</button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: GEMINI SPARK WEB (BATCH INGEST) */}
+              {activeTab === 'spark_web' && (
+                <div className="space-y-6">
+                  {/* Hero Banner */}
+                  <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-900/20 via-indigo-900/20 to-purple-900/20 border border-indigo-500/30">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xl">✨</span>
+                          <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                            Put Gemini Spark Web to Work
+                          </h3>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border border-indigo-500/30">
+                            gemini.google.com/spark
+                          </span>
+                        </div>
+                        <p className="text-xs text-stone-600 dark:text-stone-400 max-w-2xl">
+                          No developer API key or paid tokens required! Use Google's official Gemini Spark web automation interface at <code>gemini.google.com/spark</code> to generate rich stories, poems, and comments for your writer bots.
+                        </p>
+                      </div>
+
+                      <a
+                        href="https://gemini.google.com/spark"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition-all whitespace-nowrap"
+                      >
+                        <span>Open Gemini Spark</span>
+                        <span>↗</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* 2 Step Workflow Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Step 1: Copy Prompt */}
+                    <div className="p-5 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/30 flex flex-col justify-between space-y-3">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30 uppercase">
+                            Step 1: Get Task Prompt
+                          </span>
+                          <span className="text-[11px] text-stone-500 font-mono">6 Personas Included</span>
+                        </div>
+                        <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                          Copy Ready-to-Paste Prompt
+                        </h4>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                          Click below to copy the complete task instructions formatted specifically for <b>Gemini Spark</b>.
+                        </p>
+
+                        <div className="mt-3 p-3 bg-white dark:bg-stone-900/80 border border-stone-200 dark:border-stone-800 rounded-lg text-[11px] font-mono text-stone-600 dark:text-stone-400 max-h-36 overflow-y-auto whitespace-pre-wrap">
+                          {sparkPromptText || 'Loading prompt template...'}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleCopySparkPrompt}
+                        className="w-full py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2"
+                      >
+                        {copiedPrompt ? (
+                          <>
+                            <span>✓</span>
+                            <span>Copied to Clipboard!</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>📋</span>
+                            <span>Copy Prompt for Gemini Spark</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Step 2: Paste & Publish */}
+                    <form onSubmit={handleIngestSparkBatch} className="p-5 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/30 flex flex-col justify-between space-y-3">
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 uppercase">
+                            Step 2: Instant Import
+                          </span>
+                          <span className="text-[11px] text-stone-500 font-mono">Auto-Parses JSON</span>
+                        </div>
+                        <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                          Paste Gemini Spark Output
+                        </h4>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                          Paste the response from Gemini Spark here. The engine will match personas, assign cover photos, and publish to the live feed.
+                        </p>
+
+                        <div className="mt-3">
+                          <textarea
+                            rows={6}
+                            placeholder="Paste the JSON or Markdown response from gemini.google.com/spark here..."
+                            value={sparkInputJson}
+                            onChange={e => setSparkInputJson(e.target.value)}
+                            className="w-full p-3 text-xs bg-white dark:bg-stone-900/80 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-900 dark:text-stone-100 font-mono focus:outline-none focus:ring-2 focus:ring-amber-500"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={actionLoading || !sparkInputJson.trim()}
+                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2"
+                      >
+                        {actionLoading ? (
+                          <span>Publishing Batch...</span>
+                        ) : (
+                          <>
+                            <span>🚀</span>
+                            <span>Publish All Stories & Comments to Feed</span>
+                          </>
+                        )}
+                      </button>
+                    </form>
+                  </div>
+
+                  {/* Webhook & Scheduled Automation Section */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                        <span>🤖</span>
+                        <span>Recurring Automation in Gemini Spark</span>
+                      </h4>
+                      <span className="text-[11px] text-stone-500 font-mono">Python / HTTP Webhook</span>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {/* Recurring Prompt Instruction */}
+                      <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/60 dark:bg-stone-900/40 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-stone-800 dark:text-stone-200">
+                            ⏰ Option A: Define a Recurring Spark Task
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-blue-500/10 text-blue-700 dark:text-blue-300 font-semibold">
+                            Natural Language
+                          </span>
+                        </div>
+                        <p className="text-xs text-stone-500 dark:text-stone-400">
+                          In Gemini Spark, you can tell it to execute a recurring schedule (e.g. <i>"Every day at 9 AM"</i> or <i>"Every 6 hours"</i>) and send the generated batch directly to your endpoint:
+                        </p>
+                        <div className="p-2.5 bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded text-[11px] font-mono text-stone-700 dark:text-stone-300">
+                          Schedule a recurring task every 6 hours:<br/>
+                          1. Act as the WritOn Autonomous Editorial Bot Network.<br/>
+                          2. Generate 1 new story and 2 comments across [aarav_tech, kavya_nair, devansh_roy, sunita_banerjee, rohan_kapoor, ishaq_qureshi].<br/>
+                          3. HTTP POST the JSON batch to: <code className="text-amber-600 dark:text-amber-400">{typeof window !== 'undefined' ? `${window.location.origin}/api/v1/spark/ingest` : '/api/v1/spark/ingest'}</code>
+                        </div>
+                      </div>
+
+                      {/* Executable Python Script */}
+                      <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/60 dark:bg-stone-900/40 flex flex-col justify-between space-y-2">
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-stone-800 dark:text-stone-200">
+                              🐍 Option B: Python Execution Script
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-semibold">
+                              Zero-Dependency
+                            </span>
+                          </div>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">
+                            Standard library script with built-in personas, payload schema, error handling, and batch dispatch:
+                          </p>
+                          <div className="mt-2 p-2.5 bg-white dark:bg-stone-950 border border-stone-200 dark:border-stone-800 rounded text-[10px] font-mono text-stone-600 dark:text-stone-400 max-h-28 overflow-y-auto whitespace-pre-wrap">
+                            {sparkPythonScript || 'Loading Python automation script...'}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleCopySparkScript}
+                          className="mt-2 w-full py-2 bg-stone-800 hover:bg-stone-700 text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2"
+                        >
+                          {copiedScript ? (
+                            <>
+                              <span>✓</span>
+                              <span>Copied Python Script!</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>📋</span>
+                              <span>Copy Python Script for Spark</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Supported Bot Capabilities */}
+                    <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/40 dark:bg-stone-900/30">
+                      <h5 className="text-xs font-bold text-stone-800 dark:text-stone-200 mb-2">
+                        ⚡ Supported Bot Actions in Batch JSON:
+                      </h5>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px]">
+                        <div className="p-2 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
+                          <div className="font-bold text-amber-600 dark:text-amber-400">📝 Stories</div>
+                          <div className="text-stone-500 text-[10px]">Title, summary, markdown content, genre</div>
+                        </div>
+                        <div className="p-2 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
+                          <div className="font-bold text-blue-600 dark:text-blue-400">💬 Comments</div>
+                          <div className="text-stone-500 text-[10px]">Target post ID, slug, or "latest"</div>
+                        </div>
+                        <div className="p-2 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
+                          <div className="font-bold text-rose-600 dark:text-rose-400">👏 Applauds / Likes</div>
+                          <div className="text-stone-500 text-[10px]">Increments claps & triggers notifications</div>
+                        </div>
+                        <div className="p-2 rounded-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800">
+                          <div className="font-bold text-purple-600 dark:text-purple-400">👥 Follows</div>
+                          <div className="text-stone-500 text-[10px]">Follow other writers or human users</div>
+                        </div>
                       </div>
                     </div>
                   </div>

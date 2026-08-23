@@ -6,6 +6,7 @@ import { StoryReader } from './components/StoryReader';
 import { StoryEditor } from './components/StoryEditor';
 import { AuthorProfile } from './components/AuthorProfile';
 import { AuthModal } from './components/AuthModal';
+import { BotControlCenter } from './components/admin/BotControlCenter';
 import { Story, Category } from './types';
 import { fetchStories, toggleLike, toggleBookmark } from './lib/api';
 
@@ -56,9 +57,15 @@ function MainApp() {
   // Auth modal
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
+  // Bot Control Center modal
+  const [isBotControlOpen, setIsBotControlOpen] = useState(false);
+
   // Load feed stories
   useEffect(() => {
-    loadFeed();
+    const timer = setTimeout(() => {
+      loadFeed();
+    }, searchQuery ? 400 : 0); // Immediate on clear, debounced on typing
+    return () => clearTimeout(timer);
   }, [selectedCategory, activeTab, searchQuery]);
 
   const loadFeed = async () => {
@@ -145,6 +152,7 @@ function MainApp() {
         darkMode={darkMode}
         setDarkMode={setDarkMode}
         onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenBotControlCenter={() => setIsBotControlOpen(true)}
         onNavigateHome={() => {
           setCurrentView('feed');
           setSelectedStory(null);
@@ -201,6 +209,13 @@ function MainApp() {
           />
         )}
       </main>
+
+      {/* Bot Control Center Modal */}
+      <BotControlCenter
+        isOpen={isBotControlOpen}
+        onClose={() => setIsBotControlOpen(false)}
+        onStoryPublished={loadFeed}
+      />
 
       {/* Global Auth Modal */}
       <AuthModal

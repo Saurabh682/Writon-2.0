@@ -6,6 +6,7 @@ interface HeaderProps {
   darkMode: boolean;
   setDarkMode: (val: boolean) => void;
   onOpenAuth: () => void;
+  onOpenBotControlCenter: () => void;
   onNavigateHome: () => void;
   onNavigateWrite: () => void;
   onNavigateProfile: (penName: string) => void;
@@ -17,6 +18,7 @@ export const Header: React.FC<HeaderProps> = ({
   darkMode,
   setDarkMode,
   onOpenAuth,
+  onOpenBotControlCenter,
   onNavigateHome,
   onNavigateWrite,
   onNavigateProfile,
@@ -67,6 +69,16 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Right Actions */}
         <div className="flex items-center gap-3">
           
+          {/* Bot Control Center CTA */}
+          <button
+            onClick={onOpenBotControlCenter}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 transition-all"
+            title="Gemini Spark Bot Automation Center"
+          >
+            <span>⚡</span>
+            <span className="hidden sm:inline">Bot Network</span>
+          </button>
+
           {/* Write CTA */}
           <button
             onClick={() => {
