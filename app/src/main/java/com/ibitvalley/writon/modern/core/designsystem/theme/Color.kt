@@ -19,14 +19,32 @@ val AccentAIGlow = BrandRed
 val Positive = BrandRed
 val Negative = BrandRed
 
-// Dark mode intentionally keeps the same approved editorial palette.
-val DarkBackground = BrandBeige
-val DarkSurfaceCard = SurfacePaper
-val DarkSurfaceElevated = SurfaceMuted
-val DarkBorderStroke = BorderSubtle
-val DarkTextPrimary = Ink
-val DarkTextSecondary = InkMuted
-val DarkPrimary = BrandRed
+// Warm Sepia / Book Cafe
+val SepiaBackground = Color(0xFFF4ECD8)
+val SepiaSurfaceCard = Color(0xFFFAF4E8)
+val SepiaSurfaceElevated = Color(0xFFEFE5CE)
+val SepiaBorderStroke = Color(0xFFE2D6BC)
+val SepiaTextPrimary = Color(0xFF38291F)
+val SepiaTextSecondary = Color(0xFF7D6755)
+val SepiaPrimary = Color(0xFFD35400)
+
+// Midnight Obsidian / Dark Mode
+val ObsidianBackground = Color(0xFF131415)
+val ObsidianSurfaceCard = Color(0xFF1D1F21)
+val ObsidianSurfaceElevated = Color(0xFF27292C)
+val ObsidianBorderStroke = Color(0xFF33363A)
+val ObsidianTextPrimary = Color(0xFFEDE8DF)
+val ObsidianTextSecondary = Color(0xFFA09B93)
+val ObsidianPrimary = Color(0xFFFF7A50)
+
+// Legacy / Active Dark tokens
+val DarkBackground = ObsidianBackground
+val DarkSurfaceCard = ObsidianSurfaceCard
+val DarkSurfaceElevated = ObsidianSurfaceElevated
+val DarkBorderStroke = ObsidianBorderStroke
+val DarkTextPrimary = ObsidianTextPrimary
+val DarkTextSecondary = ObsidianTextSecondary
+val DarkPrimary = ObsidianPrimary
 
 // Compatibility aliases for existing feature code. New code should prefer the
 // semantic names above or MaterialTheme.colorScheme roles.

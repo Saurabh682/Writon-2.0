@@ -49,14 +49,18 @@ class WritOnModernActivity : ComponentActivity() {
         OutboxSyncScheduler.schedule(applicationContext)
 
         setContent {
-            WritOnTheme(darkTheme = false) { // Force light mode for "Editorial 2.0" look
+            var activeTheme by androidx.compose.runtime.remember {
+                androidx.compose.runtime.mutableStateOf(userPreferences.themeMode)
+            }
+            WritOnTheme(themeMode = activeTheme) {
                 val navController = rememberNavController()
 
                 WritOnNavigation(
                     navController = navController,
                     repository = repository,
                     userPreferences = userPreferences,
-                    database = database
+                    database = database,
+                    onThemeChanged = { activeTheme = it }
                 )
             }
         }

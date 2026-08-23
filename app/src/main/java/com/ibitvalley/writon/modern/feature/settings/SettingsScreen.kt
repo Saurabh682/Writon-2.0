@@ -40,6 +40,7 @@ private val SettingsEditorialFamily = FontFamily(
 @Composable
 fun SettingsScreen(
     onBackClick: () -> Unit,
+    onAppearanceClick: () -> Unit = {},
     onInterestsClick: () -> Unit,
     onSearchClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
@@ -148,7 +149,7 @@ fun SettingsScreen(
         item { SettingsHeader(onSearchClick) }
         item {
             SettingsSection("PREFERENCES") {
-                SettingsRow("Appearance", "Theme, font size, line height", R.drawable.ic_sun_orange, enabled = false)
+                SettingsRow("Appearance", "Theme, font size, line height", R.drawable.ic_sun_orange, onClick = onAppearanceClick)
                 SettingsRow("Reading", "Choose your reading interests", R.drawable.ic_book_orange, onClick = onInterestsClick)
                 SettingsRow("Notifications", "View activity and reminders", R.drawable.ic_notification_orange, onClick = onNotificationsClick)
                 SettingsRow("Test Notification", "Send a sample rich interaction notification", R.drawable.ic_notification_orange, onClick = { com.ibitvalley.writon.modern.core.notification.WritOnNotificationManager.sendTestNotification(context) })

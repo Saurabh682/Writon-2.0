@@ -51,6 +51,7 @@ private val ReaderEditorialFamily = FontFamily(
 @Composable
 fun ReaderScreen(
     viewModel: ReaderViewModel,
+    userPreferences: com.ibitvalley.writon.modern.core.preferences.UserPreferences? = null,
     onBackClick: () -> Unit,
     onLoginRequired: () -> Unit = {}
 ) {
@@ -60,6 +61,11 @@ fun ReaderScreen(
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     var showCommentsSheet by remember { mutableStateOf(false) }
+    var showAppearanceSheet by remember { mutableStateOf(false) }
+
+    var readerFontSizeSp by remember { mutableFloatStateOf(userPreferences?.readerFontSizeSp ?: 20f) }
+    var readerLineMultiplier by remember { mutableFloatStateOf(userPreferences?.readerLineHeightMultiplier ?: 1.6f) }
+    var readerFontFamilyChoice by remember { mutableStateOf(userPreferences?.readerFontFamily ?: "serif") }
 
     Scaffold(
         topBar = {
@@ -67,7 +73,9 @@ fun ReaderScreen(
                 title = {},
                 navigationIcon = { IconButton(onClick = onBackClick) { Image(painterResource(R.drawable.ic_back), "Back", Modifier.size(24.dp)) } },
                 actions = {
-                    IconButton(onClick = {}) { Text("Aa", style = MaterialTheme.typography.titleLarge.copy(fontFamily = ReaderEditorialFamily)) }
+                    IconButton(onClick = { showAppearanceSheet = true }) {
+                        Text("Aa", style = MaterialTheme.typography.titleLarge.copy(fontFamily = ReaderEditorialFamily, fontWeight = FontWeight.Bold))
+                    }
                     IconButton(onClick = {
                         if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
                         else viewModel.toggleBookmark()
@@ -76,7 +84,7 @@ fun ReaderScreen(
                     }
                     IconButton(onClick = { post?.let { shareStory(context, it) } }) { Image(painterResource(R.drawable.ic_share), "Share story", Modifier.size(24.dp)) }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = BrandBeige)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
         bottomBar = {
@@ -97,7 +105,7 @@ fun ReaderScreen(
                 )
             }
         },
-        containerColor = BrandBeige
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         post?.let { story ->
             val paragraphs = remember(story.content) {
@@ -143,7 +151,12 @@ fun ReaderScreen(
                 if (paragraphs.isEmpty()) {
                     Text("This story has no text yet.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
-                    ReaderBody(paragraphs)
+                    ReaderBody(
+                        paragraphs = paragraphs,
+                        fontSizeSp = readerFontSizeSp,
+                        lineMultiplier = readerLineMultiplier,
+                        fontFamilyChoice = readerFontFamilyChoice
+                    )
                 }
                 Spacer(Modifier.height(WritOnSpacing.xxl))
 
@@ -195,12 +208,118 @@ fun ReaderScreen(
         }
     }
 
+    if (showAppearanceSheet) {
+        val appearanceSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { showAppearanceSheet = false },
+            sheetState = appearanceSheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+            dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.outlineVariant) }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp)
+                    .padding(bottom = 36.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
+                Text(
+                    "Reader Typography",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontFamily = ReaderEditorialFamily,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+
+                // Font Size Stepper
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("A", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Slider(
+                        value = readerFontSizeSp,
+                        onValueChange = {
+                            readerFontSizeSp = it
+                            userPreferences?.readerFontSizeSp = it
+                        },
+                        valueRange = 16f..24f,
+                        steps = 3,
+                        modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                    Text("A", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                }
+
+                // Line Height Selection
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    listOf(
+                        1.3f to "Compact",
+                        1.6f to "Relaxed",
+                        1.9f to "Spacious"
+                    ).forEach { (mult, label) ->
+                        val selected = (readerLineMultiplier - mult).let { kotlin.math.abs(it) < 0.15f }
+                        Button(
+                            onClick = {
+                                readerLineMultiplier = mult
+                                userPreferences?.readerLineHeightMultiplier = mult
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(label, fontSize = 12.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+                        }
+                    }
+                }
+
+                // Font Family Selection
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    listOf(
+                        "serif" to "Serif",
+                        "sans" to "Sans",
+                        "mono" to "Mono"
+                    ).forEach { (family, label) ->
+                        val selected = readerFontFamilyChoice == family
+                        Button(
+                            onClick = {
+                                readerFontFamilyChoice = family
+                                userPreferences?.readerFontFamily = family
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(label, fontSize = 12.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     if (showCommentsSheet) {
         val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(
             onDismissRequest = { showCommentsSheet = false },
             sheetState = sheetState,
-            containerColor = BrandBeige,
+            containerColor = MaterialTheme.colorScheme.surface,
             dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.outlineVariant) }
         ) {
             val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
@@ -249,13 +368,24 @@ private fun ReaderAuthorMetadata(post: PostEntity) {
 }
 
 @Composable
-private fun ReaderBody(paragraphs: List<String>) {
+private fun ReaderBody(
+    paragraphs: List<String>,
+    fontSizeSp: Float = 20f,
+    lineMultiplier: Float = 1.6f,
+    fontFamilyChoice: String = "serif"
+) {
     if (paragraphs.isEmpty()) return
 
+    val chosenFontFamily = when (fontFamilyChoice) {
+        "sans" -> FontFamily.Default
+        "mono" -> FontFamily.Monospace
+        else -> ReaderEditorialFamily
+    }
+
     val bodyTextStyle = MaterialTheme.typography.bodyLarge.copy(
-        fontFamily = ReaderEditorialFamily,
-        fontSize = 20.sp,
-        lineHeight = 32.sp,
+        fontFamily = chosenFontFamily,
+        fontSize = fontSizeSp.sp,
+        lineHeight = (fontSizeSp * lineMultiplier).sp,
         fontWeight = FontWeight.Normal,
         platformStyle = PlatformTextStyle(includeFontPadding = false),
         lineHeightStyle = LineHeightStyle(
@@ -276,9 +406,9 @@ private fun ReaderBody(paragraphs: List<String>) {
             Text(
                 text = dropCap,
                 style = MaterialTheme.typography.displayLarge.copy(
-                    fontFamily = ReaderEditorialFamily,
-                    fontSize = 62.sp,
-                    lineHeight = 54.sp,
+                    fontFamily = chosenFontFamily,
+                    fontSize = (fontSizeSp * 2.8f).sp,
+                    lineHeight = (fontSizeSp * 2.5f).sp,
                     fontWeight = FontWeight.Bold,
                     platformStyle = PlatformTextStyle(includeFontPadding = false),
                     lineHeightStyle = LineHeightStyle(

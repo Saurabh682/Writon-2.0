@@ -43,12 +43,40 @@ private val LightColorScheme = lightColorScheme(
     onError = SurfacePaper
 )
 
+private val SepiaColorScheme = lightColorScheme(
+    primary = SepiaPrimary,
+    onPrimary = SepiaSurfaceCard,
+    primaryContainer = SepiaSurfaceElevated,
+    onPrimaryContainer = SepiaPrimary,
+    secondary = SepiaTextSecondary,
+    onSecondary = SepiaSurfaceCard,
+    background = SepiaBackground,
+    onBackground = SepiaTextPrimary,
+    surface = SepiaSurfaceCard,
+    onSurface = SepiaTextPrimary,
+    surfaceVariant = SepiaSurfaceElevated,
+    onSurfaceVariant = SepiaTextSecondary,
+    outline = SepiaBorderStroke,
+    error = SepiaPrimary,
+    onError = SepiaSurfaceCard
+)
+
+fun getThemeColorScheme(themeMode: String, isSystemDark: Boolean): androidx.compose.material3.ColorScheme {
+    return when (themeMode.lowercase()) {
+        "dark", "obsidian" -> DarkColorScheme
+        "sepia" -> SepiaColorScheme
+        "paper", "light" -> LightColorScheme
+        else -> if (isSystemDark) DarkColorScheme else LightColorScheme
+    }
+}
+
 @Composable
 fun WritOnTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: String = "paper",
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val isSystemDark = isSystemInDarkTheme()
+    val colorScheme = getThemeColorScheme(themeMode, isSystemDark)
 
     MaterialTheme(
         colorScheme = colorScheme,

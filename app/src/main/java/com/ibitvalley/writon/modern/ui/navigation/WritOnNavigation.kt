@@ -70,6 +70,7 @@ sealed class WritOnRoute(val route: String) {
     object ReadingHistory : WritOnRoute("reading-history")
     object Notifications : WritOnRoute("notifications")
     object Settings : WritOnRoute("settings")
+    object Appearance : WritOnRoute("appearance")
     object Applauds : WritOnRoute("applauds")
     object Profile : WritOnRoute("profile")
     object Reader : WritOnRoute("reader/{storyId}") {
@@ -99,7 +100,8 @@ fun WritOnNavigation(
     navController: NavHostController,
     repository: PostRepository,
     userPreferences: UserPreferences,
-    database: WritOnDatabase
+    database: WritOnDatabase,
+    onThemeChanged: (String) -> Unit = {}
 ) {
     val feedViewModel = remember { FeedViewModel(repository) }
     val editorViewModel = remember { EditorViewModel(repository) }
@@ -339,6 +341,7 @@ fun WritOnNavigation(
             composable(WritOnRoute.Settings.route) {
                 if (signedIn) SettingsScreen(
                     onBackClick = { navController.popBackStack() },
+                    onAppearanceClick = { navController.navigate(WritOnRoute.Appearance.route) },
                     onInterestsClick = { navController.navigate(WritOnRoute.Interests.createRoute(true)) },
                     onSearchClick = { navController.navigate(WritOnRoute.Search.route) },
                     onNotificationsClick = { navController.navigate(WritOnRoute.Notifications.route) },
@@ -353,6 +356,13 @@ fun WritOnNavigation(
                         }
                     }
                 ) else LaunchedEffect(Unit) { openLogin() }
+            }
+            composable(WritOnRoute.Appearance.route) {
+                com.ibitvalley.writon.modern.feature.appearance.AppearanceScreen(
+                    userPreferences = userPreferences,
+                    onBackClick = { navController.popBackStack() },
+                    onThemeChanged = onThemeChanged
+                )
             }
             composable(WritOnRoute.Applauds.route) {
                 if (signedIn) ApplaudsScreen(
@@ -395,6 +405,7 @@ fun WritOnNavigation(
                 }
                 ReaderScreen(
                     viewModel = readerViewModel,
+                    userPreferences = userPreferences,
                     onBackClick = { navController.popBackStack() },
                     onLoginRequired = openLogin
                 )
@@ -445,7 +456,8 @@ private fun WritOnBottomNavigation(
         WritOnRoute.Welcome.route,
         WritOnRoute.Login.route,
         WritOnRoute.Signup.route,
-        WritOnRoute.Interests.route
+        WritOnRoute.Interests.route,
+        WritOnRoute.Appearance.route
     )
 
     if (currentRoute in hideBottomBarRoutes || currentRoute == null) {

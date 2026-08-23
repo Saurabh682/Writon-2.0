@@ -20,6 +20,26 @@ class UserPreferences(context: Context) {
         get() = sharedPreferences.getStringSet("favourite_categories", emptySet()) ?: emptySet()
         set(value) = sharedPreferences.edit().putStringSet("favourite_categories", value).apply()
 
+    /** Theme mode: "paper", "sepia", "dark", "system" */
+    var themeMode: String
+        get() = sharedPreferences.getString("theme_mode", "paper") ?: "paper"
+        set(value) = sharedPreferences.edit().putString("theme_mode", value).apply()
+
+    /** Reading body font size in SP (16f - 24f) */
+    var readerFontSizeSp: Float
+        get() = sharedPreferences.getFloat("reader_font_size_sp", 20f)
+        set(value) = sharedPreferences.edit().putFloat("reader_font_size_sp", value).apply()
+
+    /** Reading line height multiplier (1.3f - 1.9f) */
+    var readerLineHeightMultiplier: Float
+        get() = sharedPreferences.getFloat("reader_line_height_multiplier", 1.6f)
+        set(value) = sharedPreferences.edit().putFloat("reader_line_height_multiplier", value).apply()
+
+    /** Reading font family: "serif", "sans", "mono" */
+    var readerFontFamily: String
+        get() = sharedPreferences.getString("reader_font_family", "serif") ?: "serif"
+        set(value) = sharedPreferences.edit().putString("reader_font_family", value).apply()
+
     fun clear() {
         sharedPreferences.edit().clear().apply()
     }
