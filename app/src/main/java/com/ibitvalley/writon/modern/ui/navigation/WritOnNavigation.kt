@@ -239,10 +239,34 @@ fun WritOnNavigation(
                 FeedScreen(
                     viewModel = feedViewModel,
                     onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) },
-                    onWriteClick = { if (signedIn) navController.navigate(WritOnRoute.Write.route) else openLogin() },
-                    onLibraryClick = { if (signedIn) navController.navigate(WritOnRoute.Library.route) else openLogin() },
+                    onWriteClick = {
+                        if (signedIn) {
+                            navController.navigate(WritOnRoute.Write.route) {
+                                popUpTo(WritOnRoute.Home.route) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        } else openLogin()
+                    },
+                    onLibraryClick = {
+                        if (signedIn) {
+                            navController.navigate(WritOnRoute.Library.route) {
+                                popUpTo(WritOnRoute.Home.route) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        } else openLogin()
+                    },
                     onNotificationsClick = { if (signedIn) navController.navigate(WritOnRoute.Notifications.route) else openLogin() },
-                    onProfileClick = { if (signedIn) navController.navigate(WritOnRoute.Profile.route) else openLogin() },
+                    onProfileClick = {
+                        if (signedIn) {
+                            navController.navigate(WritOnRoute.Profile.route) {
+                                popUpTo(WritOnRoute.Home.route) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        } else openLogin()
+                    },
                     isAuthenticated = signedIn,
                     onLoginRequired = openLogin
                 )
@@ -346,7 +370,14 @@ fun WritOnNavigation(
                     }
                     ProfileScreen(
                         viewModel = profileViewModel,
-                        onBackClick = { navController.popBackStack() },
+                        onBackClick = {
+                            if (!navController.popBackStack()) {
+                                navController.navigate(WritOnRoute.Home.route) {
+                                    popUpTo(WritOnRoute.Home.route) { inclusive = false }
+                                    launchSingleTop = true
+                                }
+                            }
+                        },
                         onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) },
                         onWriteClick = { navController.navigate(WritOnRoute.Write.route) },
                         onApplaudsClick = { navController.navigate(WritOnRoute.Applauds.route) },
