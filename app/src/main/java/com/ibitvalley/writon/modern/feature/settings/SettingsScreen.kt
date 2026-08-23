@@ -53,6 +53,10 @@ fun SettingsScreen(
     var resetEmailSent by remember { mutableStateOf(false) }
     var isSendingReset by remember { mutableStateOf(false) }
     var resetError by remember { mutableStateOf<String?>(null) }
+
+    var showDeleteAccountDialog by remember { mutableStateOf(false) }
+    var isDeletingAccount by remember { mutableStateOf(false) }
+    var deleteAccountError by remember { mutableStateOf<String?>(null) }
     val userEmail = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email.orEmpty()
 
     if (showAboutDialog) {
@@ -139,6 +143,60 @@ fun SettingsScreen(
         )
     }
 
+    if (showDeleteAccountDialog) {
+        AlertDialog(
+            onDismissRequest = { if (!isDeletingAccount) showDeleteAccountDialog = false },
+            title = { Text("Delete Account & Data", fontFamily = SettingsEditorialFamily, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.error) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Are you sure you want to permanently delete your WritOn account? All your stories, drafts, comments, and profile data will be permanently removed.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Text(
+                        "This action cannot be undone.",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    deleteAccountError?.let { err ->
+                        Text(err, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        isDeletingAccount = true
+                        deleteAccountError = null
+                        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                        user?.delete()?.addOnCompleteListener { task ->
+                            isDeletingAccount = false
+                            if (task.isSuccessful) {
+                                showDeleteAccountDialog = false
+                                onLogOut()
+                            } else {
+                                deleteAccountError = task.exception?.localizedMessage ?: "Could not delete account. Please log in again and retry."
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    enabled = !isDeletingAccount
+                ) {
+                    Text(if (isDeletingAccount) "Deleting..." else "Delete Permanently", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showDeleteAccountDialog = false },
+                    enabled = !isDeletingAccount
+                ) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     val context = androidx.compose.ui.platform.LocalContext.current
 
     LazyColumn(
@@ -177,6 +235,7 @@ fun SettingsScreen(
         item {
             SettingsSection("ACCOUNT") {
                 SettingsRow("Password & Security", if (userEmail.isNotBlank()) "Send password reset link to $userEmail" else "Reset your password", R.drawable.ic_shield_orange, onClick = { resetEmailSent = false; resetError = null; showResetPasswordDialog = true })
+                SettingsRow("Delete Account & Data", "Permanently remove your account and stories", R.drawable.ic_shield_orange, accent = true, onClick = { showDeleteAccountDialog = true })
                 SettingsRow("Account", "Profile editing", avatar = "AK", enabled = false)
                 SettingsRow("Privacy", "Privacy controls", R.drawable.ic_shield_orange, enabled = false)
                 SettingsRow("Help & Support", "FAQs and contact us", R.drawable.ic_help_orange, enabled = false)
