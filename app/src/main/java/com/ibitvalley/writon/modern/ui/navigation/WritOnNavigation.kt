@@ -340,6 +340,7 @@ fun WritOnNavigation(
             }
             composable(WritOnRoute.Settings.route) {
                 if (signedIn) SettingsScreen(
+                    userPreferences = userPreferences,
                     onBackClick = { navController.popBackStack() },
                     onAppearanceClick = { navController.navigate(WritOnRoute.Appearance.route) },
                     onInterestsClick = { navController.navigate(WritOnRoute.Interests.createRoute(true)) },

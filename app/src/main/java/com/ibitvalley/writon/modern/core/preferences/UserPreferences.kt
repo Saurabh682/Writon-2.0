@@ -40,6 +40,11 @@ class UserPreferences(context: Context) {
         get() = sharedPreferences.getString("reader_font_family", "serif") ?: "serif"
         set(value) = sharedPreferences.edit().putString("reader_font_family", value).apply()
 
+    /** True if biometric / fingerprint unlock is enabled by user */
+    var isBiometricEnabled: Boolean
+        get() = sharedPreferences.getBoolean("biometric_enabled", false)
+        set(value) = sharedPreferences.edit().putBoolean("biometric_enabled", value).apply()
+
     fun clear() {
         sharedPreferences.edit().clear().apply()
     }

@@ -30,6 +30,8 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.auth.BiometricAuthManager
+import com.ibitvalley.writon.modern.core.preferences.UserPreferences
 
 private val SettingsEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
@@ -39,6 +41,7 @@ private val SettingsEditorialFamily = FontFamily(
 
 @Composable
 fun SettingsScreen(
+    userPreferences: UserPreferences = UserPreferences(androidx.compose.ui.platform.LocalContext.current),
     onBackClick: () -> Unit,
     onAppearanceClick: () -> Unit = {},
     onInterestsClick: () -> Unit,
@@ -47,6 +50,11 @@ fun SettingsScreen(
     onSavedStoriesClick: () -> Unit = {},
     onLogOut: () -> Unit = {}
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val fragmentActivity = context as? androidx.fragment.app.FragmentActivity
+    val isBiometricSupported = remember { BiometricAuthManager.isBiometricAvailable(context) }
+    var isBiometricEnabled by remember { mutableStateOf(userPreferences.isBiometricEnabled) }
+
     var showAboutDialog by remember { mutableStateOf(false) }
 
     var showResetPasswordDialog by remember { mutableStateOf(false) }
@@ -234,6 +242,40 @@ fun SettingsScreen(
         }
         item {
             SettingsSection("ACCOUNT") {
+                if (isBiometricSupported) {
+                    SettingsSwitchRow(
+                        title = "Biometric App Lock",
+                        subtitle = "Require fingerprint or face ID to open WritOn",
+                        icon = R.drawable.ic_shield_orange,
+                        checked = isBiometricEnabled,
+                        onCheckedChange = { enable ->
+                            if (enable) {
+                                if (fragmentActivity != null) {
+                                    BiometricAuthManager.promptBiometric(
+                                        activity = fragmentActivity,
+                                        title = "Enable Biometric Lock",
+                                        subtitle = "Confirm your fingerprint or face to enable App Lock",
+                                        onSuccess = {
+                                            userPreferences.isBiometricEnabled = true
+                                            isBiometricEnabled = true
+                                            android.widget.Toast.makeText(context, "Biometric App Lock enabled!", android.widget.Toast.LENGTH_SHORT).show()
+                                        },
+                                        onError = { msg ->
+                                            android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+                                        }
+                                    )
+                                } else {
+                                    userPreferences.isBiometricEnabled = true
+                                    isBiometricEnabled = true
+                                }
+                            } else {
+                                userPreferences.isBiometricEnabled = false
+                                isBiometricEnabled = false
+                                android.widget.Toast.makeText(context, "Biometric lock disabled.", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    )
+                }
                 SettingsRow("Password & Security", if (userEmail.isNotBlank()) "Send password reset link to $userEmail" else "Reset your password", R.drawable.ic_shield_orange, onClick = { resetEmailSent = false; resetError = null; showResetPasswordDialog = true })
                 SettingsRow("Delete Account & Data", "Permanently remove your account and stories", R.drawable.ic_shield_orange, accent = true, onClick = { showDeleteAccountDialog = true })
                 SettingsRow("Account", "Profile editing", avatar = "AK", enabled = false)
@@ -347,3 +389,45 @@ private fun SettingsRow(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f), modifier = Modifier.padding(horizontal = WritOnSpacing.md))
     }
 }
+
+@Composable
+private fun SettingsSwitchRow(
+    title: String,
+    subtitle: String,
+    icon: Int? = null,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = WritOnSpacing.md, vertical = WritOnSpacing.xs),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (icon != null) {
+                Image(painterResource(icon), contentDescription = null, modifier = Modifier.size(26.dp))
+                Spacer(Modifier.width(WritOnSpacing.md))
+            }
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleLarge.copy(fontSize = 17.sp, lineHeight = 22.sp), color = MaterialTheme.colorScheme.onSurface)
+                if (subtitle.isNotBlank()) {
+                    Spacer(Modifier.height(WritOnSpacing.xxs))
+                    Text(subtitle, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 13.sp, lineHeight = 17.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            Switch(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color.White,
+                    checkedTrackColor = BrandRed,
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.outlineVariant
+                )
+            )
+        }
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f), modifier = Modifier.padding(horizontal = WritOnSpacing.md))
+    }
+}
+
