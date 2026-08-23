@@ -157,6 +157,7 @@ class PostRepository(
                 }
                 commentDao.deleteCommentsByPostId(postId)
                 commentDao.insertComments(commentEntities)
+                postDao.updateCommentsCount(postId, commentEntities.size)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -177,6 +178,12 @@ class PostRepository(
 
         // Optimistic UI update
         commentDao.insertComment(tempComment)
+        try {
+            val post = postDao.getPostById(postId).firstOrNull()
+            if (post != null) {
+                postDao.updateCommentsCount(postId, post.commentsCnt + 1)
+            }
+        } catch (_: Exception) {}
 
         try {
             val response = apiService.addComment(postId, mapOf("content" to content))

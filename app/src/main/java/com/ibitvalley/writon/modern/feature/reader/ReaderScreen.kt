@@ -83,6 +83,7 @@ fun ReaderScreen(
             post?.let { story ->
                 ReaderActionTray(
                     post = story,
+                    commentsCount = comments.size,
                     onApplaud = {
                         if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
                         else viewModel.toggleLike()
@@ -305,7 +306,14 @@ private fun ReaderBody(paragraphs: List<String>) {
 
 
 @Composable
-private fun ReaderActionTray(post: PostEntity, onApplaud: () -> Unit, onComment: () -> Unit, onSave: () -> Unit, onShare: () -> Unit) {
+private fun ReaderActionTray(
+    post: PostEntity,
+    commentsCount: Int,
+    onApplaud: () -> Unit,
+    onComment: () -> Unit,
+    onSave: () -> Unit,
+    onShare: () -> Unit
+) {
     Surface(color = BrandBeige) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(horizontal = WritOnSpacing.md, vertical = WritOnSpacing.sm),
@@ -317,7 +325,7 @@ private fun ReaderActionTray(post: PostEntity, onApplaud: () -> Unit, onComment:
                     Image(painterResource(if (post.isLiked) R.drawable.ic_applaud_orange else R.drawable.ic_applaud_muted), null, Modifier.size(26.dp))
                 }
                 ReaderTrayDivider()
-                ReaderTrayAction("Comment", post.commentsCnt, onComment) { Image(painterResource(R.drawable.ic_comment), null, Modifier.size(26.dp)) }
+                ReaderTrayAction("Comment", commentsCount, onComment) { Image(painterResource(R.drawable.ic_comment), null, Modifier.size(26.dp)) }
                 ReaderTrayDivider()
                 ReaderTrayAction("Save", null, onSave, post.isBookmarked) {
                     Image(painterResource(if (post.isBookmarked) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark), null, Modifier.size(26.dp))

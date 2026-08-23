@@ -147,7 +147,7 @@ function postSelectSql(whereClause, extraColumns = '') {
     p.cover_image_url as "coverImage",
     p.reading_time_min as "readingTimeMin",
     p.likes_count as "likesCnt",
-    p.comments_count as "commentsCnt",
+    (select count(*)::int from public.comments c where c.post_id = p.id) as "commentsCnt",
     p.bookmarks_count as "bookmarksCnt",
     coalesce(p.published_at, p.created_at) as "createdAt"
     ${extraColumns},
