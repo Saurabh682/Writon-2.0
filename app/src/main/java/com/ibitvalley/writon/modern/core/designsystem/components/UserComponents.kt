@@ -20,6 +20,8 @@ import coil.compose.AsyncImage
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.remember
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
+import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 
 fun extractInitials(name: String): String {
     val parts = name.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
