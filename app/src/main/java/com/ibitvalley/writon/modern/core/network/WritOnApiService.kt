@@ -18,6 +18,8 @@ interface WritOnApiService {
     suspend fun getPosts(
         @Query("category") category: String? = null,
         @Query("tab") tab: String? = "latest",
+        @Query("authorId") authorId: String? = null,
+        @Query("authorPenName") authorPenName: String? = null,
         @Query("q") searchQuery: String? = null,
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20

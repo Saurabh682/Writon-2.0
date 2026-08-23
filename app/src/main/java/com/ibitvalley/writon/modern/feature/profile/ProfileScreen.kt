@@ -97,7 +97,7 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
         ) {
             item { ProfileIdentity(name, penName, bio, initials, user?.location, user?.joinedAt, onEditClick = { showEditDialog = true }) }
-            item { ProfileStats(stories.size.coerceAtLeast(user?.storiesCount ?: 0), user?.applaudsReceived ?: 0, user?.followersCount ?: 0, user?.followingCount ?: 0, onApplaudsClick) }
+            item { ProfileStats(stories.size, user?.applaudsReceived ?: 0, user?.followersCount ?: 0, user?.followingCount ?: 0, onApplaudsClick) }
             item { ProfileTabs(selectedTab) { selectedTab = it } }
 
             when (selectedTab) {

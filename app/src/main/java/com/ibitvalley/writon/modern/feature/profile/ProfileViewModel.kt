@@ -41,12 +41,20 @@ class ProfileViewModel(
                     val profile = response.body()!!.profile
                     _userProfile.value = profile
 
-                    val authorQuery = profile.penName.ifBlank { profile.fullName }
-                    val postsResponse = apiService.getPosts(searchQuery = authorQuery.ifBlank { null }, limit = 20)
+                    // Fetch user's own stories by authorId or authorPenName
+                    val postsResponse = apiService.getPosts(
+                        authorId = profile.id.ifBlank { null },
+                        authorPenName = profile.penName.ifBlank { null },
+                        limit = 50
+                    )
                     if (postsResponse.isSuccessful && postsResponse.body() != null) {
-                        val posts = postsResponse.body()!!.posts
-                        _userStories.value = posts
-                        _highlights.value = posts.sortedByDescending { it.likesCnt }
+                        val allFetched = postsResponse.body()!!.posts
+                        val authorPosts = allFetched.filter {
+                            it.author.id == profile.id ||
+                            (profile.penName.isNotBlank() && it.author.penName.equals(profile.penName, ignoreCase = true))
+                        }
+                        _userStories.value = authorPosts
+                        _highlights.value = authorPosts.sortedByDescending { it.likesCnt }
                     }
                 }
             } catch (e: Exception) {

@@ -28,6 +28,8 @@ const profileInputSchema = z.object({
 const postsQuerySchema = z.object({
   category: z.string().trim().min(1).max(80).optional(),
   tab: z.enum(['latest', 'popular']).default('latest'),
+  authorId: z.string().trim().optional(),
+  authorPenName: z.string().trim().optional(),
   q: z.string().trim().max(100).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(20),
@@ -399,26 +401,28 @@ fastify.get('/api/v1/posts', async (request, reply) => {
     });
   }
 
-  const { category, tab, q, page, limit } = parsed.data;
+  const { category, tab, authorId, authorPenName, q, page, limit } = parsed.data;
   const viewer = await optionalUser(request);
   const result = await database.query(
     `${postSelectSql(`where p.status = 'published'
       and p.is_public = true
       and ($2::text is null or lower(p.category) = lower($2))
+      and ($3::text is null or p.author_id = $3)
+      and ($4::text is null or lower(author.pen_name) = lower($4))
       and (
-        $3::text is null
-        or p.title ilike '%' || $3 || '%'
-        or coalesce(p.summary, '') ilike '%' || $3 || '%'
-        or author.full_name ilike '%' || $3 || '%'
-        or author.pen_name ilike '%' || $3 || '%'
-        or p.content ilike '%' || $3 || '%'
+        $5::text is null
+        or p.title ilike '%' || $5 || '%'
+        or coalesce(p.summary, '') ilike '%' || $5 || '%'
+        or author.full_name ilike '%' || $5 || '%'
+        or author.pen_name ilike '%' || $5 || '%'
+        or p.content ilike '%' || $5 || '%'
       )`)}
     order by
-      case when $4 = 'popular' then p.likes_count end desc nulls last,
+      case when $6 = 'popular' then p.likes_count end desc nulls last,
       p.published_at desc nulls last,
       p.created_at desc
-    limit $5 offset $6`,
-    [viewer?.uid ?? null, category ?? null, q || null, tab, limit + 1, (page - 1) * limit]
+    limit $7 offset $8`,
+    [viewer?.uid ?? null, category ?? null, authorId ?? null, authorPenName ?? null, q || null, tab, limit + 1, (page - 1) * limit]
   );
 
   const posts = result.rows.slice(0, limit);
