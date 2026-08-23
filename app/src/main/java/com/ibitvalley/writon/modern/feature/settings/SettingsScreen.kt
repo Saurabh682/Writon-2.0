@@ -138,6 +138,8 @@ fun SettingsScreen(
         )
     }
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
@@ -149,6 +151,7 @@ fun SettingsScreen(
                 SettingsRow("Appearance", "Theme, font size, line height", R.drawable.ic_sun_orange, enabled = false)
                 SettingsRow("Reading", "Choose your reading interests", R.drawable.ic_book_orange, onClick = onInterestsClick)
                 SettingsRow("Notifications", "View activity and reminders", R.drawable.ic_notification_orange, onClick = onNotificationsClick)
+                SettingsRow("Test Notification", "Send a sample rich interaction notification", R.drawable.ic_notification_orange, onClick = { com.ibitvalley.writon.modern.core.notification.WritOnNotificationManager.sendTestNotification(context) })
                 SettingsRow("Applause", "Vibration and effects", icon = null, useApplaudIcon = true, enabled = false)
                 SettingsRow("Saving & Downloads", "View saved stories and offline cache", R.drawable.ic_bookmark_orange, onClick = onSavedStoriesClick)
             }
