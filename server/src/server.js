@@ -1115,6 +1115,144 @@ fastify.put(
 </html>`);
   });
 
+  fastify.get('/child-safety', async (request, reply) => {
+    reply.type('text/html').send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WritOn - Child Safety &amp; Protection Standards</title>
+  <style>
+    :root {
+      --bg: #F8F4EE;
+      --card: #FFFDF9;
+      --text: #151718;
+      --muted: #6D6963;
+      --primary: #E75A2A;
+      --border: #E9E1D7;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      margin: 0;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      background: var(--card);
+      padding: 36px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    }
+    .brand {
+      color: var(--primary);
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 24px;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    h2 {
+      font-size: 18px;
+      margin-top: 24px;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+    p, li {
+      color: #333;
+      font-size: 15px;
+    }
+    .alert-box {
+      background: #FCE8E6;
+      border-left: 4px solid #D93025;
+      padding: 16px 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      color: #C5221F;
+      font-weight: 500;
+    }
+    .contact-box {
+      border: 1px dashed var(--primary);
+      background: rgba(231, 90, 42, 0.05);
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .footer {
+      margin-top: 32px;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 500;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand">WritOn</div>
+    <h1>Child Safety Standards &amp; CSAE Prevention Policy</h1>
+    <p>At <strong>WritOn</strong> (developed by <strong>iBitValley</strong>), we maintain a strict, non-negotiable <strong>zero-tolerance policy</strong> regarding Child Sexual Abuse Material (CSAM) and Child Sexual Exploitation and Abuse (CSAE).</p>
+
+    <div class="alert-box">
+      Zero Tolerance: Any content, imagery, writing, or communication involving the exploitation, abuse, grooming, or endangerment of minors is strictly prohibited and subject to immediate termination and legal reporting.
+    </div>
+
+    <h2>1. Prohibited Content &amp; Behavior</h2>
+    <p>WritOn strictly forbids:</p>
+    <ul>
+      <li>Any visual, written, or implied depiction of Child Sexual Abuse Material (CSAM).</li>
+      <li>Child Sexual Exploitation and Abuse (CSAE) in any form.</li>
+      <li>Any attempt to groom, solicit, endanger, or inappropriately interact with minors.</li>
+      <li>Content promoting, facilitating, or encouraging harm towards children.</li>
+    </ul>
+
+    <h2>2. In-App Reporting &amp; Content Moderation</h2>
+    <p>We provide immediate mechanisms for users to flag and report any safety concerns:</p>
+    <ul>
+      <li><strong>In-App Reporting:</strong> Users can report any story, comment, or user profile directly by tapping the more options (3 dots) menu on any post or author profile and selecting <em>Report</em>.</li>
+      <li><strong>Rapid Takedown:</strong> Reported content is prioritized, reviewed by our moderation team, and removed immediately upon confirmation.</li>
+      <li><strong>Account Termination:</strong> Accounts that violate child safety standards are banned permanently and prohibited from creating new accounts.</li>
+    </ul>
+
+    <h2>3. Reporting to Law Enforcement &amp; Authorities</h2>
+    <p>WritOn complies fully with all applicable international, national, and regional child safety laws. When CSAM or CSAE is identified:</p>
+    <ul>
+      <li>We immediately preserve all relevant evidentiary data.</li>
+      <li>We file immediate reports with the <strong>National Center for Missing &amp; Exploited Children (NCMEC)</strong> and relevant regional and national law enforcement agencies.</li>
+      <li>We cooperate transparently and proactively with legal authorities to aid in child protection investigations.</li>
+    </ul>
+
+    <h2>4. Designated Point of Contact</h2>
+    <p>For urgent child safety inquiries, reports, or legal inquiries, please contact our dedicated safety team:</p>
+    <div class="contact-box">
+      <strong>Designated Safety Contact:</strong> Saurabh Kumar (iBitValley)<br>
+      <strong>Safety Email:</strong> <a href="mailto:deamonizerr@gmail.com">deamonizerr@gmail.com</a> / <a href="mailto:saurabh.682@gmail.com">saurabh.682@gmail.com</a><br>
+      <strong>Response SLA:</strong> Critical child safety reports are prioritized and responded to within 12 hours.
+    </div>
+
+    <div class="footer">
+      Developer: <strong>iBitValley</strong> • App: <strong>WritOn</strong> • Policy Version: 1.0 (2026)
+    </div>
+  </div>
+</body>
+</html>`);
+  });
+
   fastify.delete(
     '/api/v1/me',
     { preHandler: [requireUser] },
