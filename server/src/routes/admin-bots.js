@@ -7,7 +7,10 @@ import {
   seedInitialBotNetwork,
   executePostAction,
   executeInteractAction,
-  runSparkPulse
+  runSparkPulse,
+  ingestSparkBatch,
+  getSparkPromptTemplate,
+  getSparkPythonAutomationScript
 } from '../bot-engine/spark-runner.js';
 import { CURATED_BOT_PERSONAS } from '../bot-engine/curated-personas.js';
 
@@ -55,6 +58,43 @@ const globalSettingsSchema = z.object({
   botToBotInteractionRate: z.coerce.number().min(0).max(1).optional(),
 });
 
+const sparkIngestSchema = z.object({
+  stories: z.array(z.object({
+    authorPenName: z.string().optional(),
+    author: z.string().optional(),
+    penName: z.string().optional(),
+    title: z.string().min(1).max(300),
+    summary: z.string().max(1000).optional().nullable(),
+    content: z.string().min(1).max(100_000),
+    category: z.string().max(100).optional(),
+    coverImage: z.string().url().optional(),
+  })).optional().default([]),
+  comments: z.array(z.object({
+    authorPenName: z.string().optional(),
+    author: z.string().optional(),
+    penName: z.string().optional(),
+    postSlugOrId: z.string().optional(),
+    postId: z.string().optional(),
+    content: z.string().max(5000).optional(),
+    text: z.string().max(5000).optional(),
+    comment: z.string().max(5000).optional(),
+  })).optional().default([]),
+  applauds: z.array(z.object({
+    authorPenName: z.string().optional(),
+    author: z.string().optional(),
+    penName: z.string().optional(),
+    postSlugOrId: z.string().optional(),
+    postId: z.string().optional(),
+  })).optional().default([]),
+  follows: z.array(z.object({
+    authorPenName: z.string().optional(),
+    author: z.string().optional(),
+    penName: z.string().optional(),
+    targetPenNameOrId: z.string().optional(),
+    target: z.string().optional(),
+  })).optional().default([]),
+}).passthrough();
+
 const triggerPostSchema = z.object({
   botId: z.string().trim().min(1),
   category: z.string().trim().optional(),
@@ -72,36 +112,77 @@ const triggerInteractSchema = z.object({
 
 export async function adminBotsRoutes(fastify, options) {
   const pool = options.pool;
+  const requireUser = options.requireUser;
+
+  // Admin auth guard - bot admin routes require authentication
+  if (requireUser) {
+    fastify.addHook('preHandler', async (request, reply) => {
+      // In development mode, allow unauthenticated access from the UI
+      if (process.env.NODE_ENV === 'development' && !request.headers.authorization) {
+        request.user = { uid: 'dev-admin', email: 'admin@writon.internal' };
+        return;
+      }
+
+      // Allow admin secret key in header or Bearer token
+      const adminSecret = process.env.ADMIN_SECRET_KEY;
+      if (adminSecret) {
+        const headerKey = request.headers['x-admin-key'];
+        const bearer = request.headers.authorization?.startsWith('Bearer ')
+          ? request.headers.authorization.substring(7)
+          : null;
+        if (headerKey === adminSecret || bearer === adminSecret) {
+          request.user = { uid: 'secret-admin', email: 'admin@writon.internal' };
+          return;
+        }
+      }
+
+      // Allow /api/v1/spark/ingest if matching X-Bot-Secret header is provided
+      if (request.url.startsWith('/api/v1/spark/ingest')) {
+        const botSecret = process.env.BOT_INGEST_SECRET;
+        const headerSecret = request.headers['x-bot-secret'];
+        if (botSecret && headerSecret === botSecret) {
+          return;
+        }
+      }
+
+      return requireUser(request, reply);
+    });
+  }
 
   // Overview stats & status
-  fastify.get('/api/v1/admin/bots/overview', async () => {
-    const settings = await getGlobalSettings(pool);
-    const bots = await getBotsList(pool);
-    const logsResult = await pool.query(`
-      select log.id, log.bot_id as "botId", log.action_type as "actionType",
-             log.target_post_id as "targetPostId", log.details, log.status,
-             log.error_message as "errorMessage", log.created_at as "createdAt",
-             p.full_name as "botName", p.avatar_url as "botAvatar"
-      from public.bot_activity_logs log
-      left join public.profiles p on p.id = log.bot_id
-      order by log.created_at desc
-      limit 20
-    `);
+  fastify.get('/api/v1/admin/bots/overview', async (request, reply) => {
+    try {
+      const settings = await getGlobalSettings(pool);
+      const bots = await getBotsList(pool);
+      const logsResult = await pool.query(`
+        select log.id, log.bot_id as "botId", log.action_type as "actionType",
+               log.target_post_id as "targetPostId", log.details, log.status,
+               log.error_message as "errorMessage", log.created_at as "createdAt",
+               p.full_name as "botName", p.avatar_url as "botAvatar"
+        from public.bot_activity_logs log
+        left join public.profiles p on p.id = log.bot_id
+        order by log.created_at desc
+        limit 20
+      `);
 
-    const statsResult = await pool.query(`
-      select
-        (select count(*)::int from public.posts where author_id like 'bot_%' and status = 'published') as "totalBotPosts",
-        (select count(*)::int from public.comments where author_id like 'bot_%') as "totalBotComments",
-        (select count(*)::int from public.post_applauds where user_id like 'bot_%') as "totalBotApplauds",
-        (select count(*)::int from public.bot_configs where is_active = true) as "activeBotsCount"
-    `);
+      const statsResult = await pool.query(`
+        select
+          (select count(*)::int from public.posts where author_id like 'bot_%' and status = 'published') as "totalBotPosts",
+          (select count(*)::int from public.comments where author_id like 'bot_%') as "totalBotComments",
+          (select count(*)::int from public.post_applauds where user_id like 'bot_%') as "totalBotApplauds",
+          (select count(*)::int from public.bot_configs where is_active = true) as "activeBotsCount"
+      `);
 
-    return {
-      settings,
-      stats: statsResult.rows[0],
-      botsCount: bots.length,
-      recentLogs: logsResult.rows,
-    };
+      return {
+        settings,
+        stats: statsResult.rows[0],
+        botsCount: bots.length,
+        recentLogs: logsResult.rows,
+      };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+    }
   });
 
   // Get all bot personas
@@ -144,10 +225,10 @@ export async function adminBotsRoutes(fastify, options) {
 
       if (data.quoteOfDay) {
         await client.query(`
-          insert into public.legacy_import_profile_attributes (profile_id, quote_of_day)
-          values ($1, $2)
+          insert into public.legacy_import_profile_attributes (profile_id, legacy_user_id, quote_of_day)
+          values ($1, $2, $3)
           on conflict (profile_id) do update set quote_of_day = excluded.quote_of_day
-        `, [botId, data.quoteOfDay]);
+        `, [botId, botId, data.quoteOfDay]);
       }
 
       await client.query(`
@@ -305,38 +386,58 @@ export async function adminBotsRoutes(fastify, options) {
   });
 
   // 1-Click seed starter bots
-  fastify.post('/api/v1/admin/bots/seed', async () => {
-    const result = await seedInitialBotNetwork(pool);
-    const bots = await getBotsList(pool);
-    return { success: true, count: result.count, bots };
+  fastify.post('/api/v1/admin/bots/seed', async (request, reply) => {
+    try {
+      const result = await seedInitialBotNetwork(pool);
+      const bots = await getBotsList(pool);
+      return { success: true, count: result.count, bots };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+    }
   });
 
   // Trigger on-demand post generation
   fastify.post('/api/v1/admin/bots/trigger-post', async (request, reply) => {
-    const parsed = triggerPostSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid post trigger data', details: parsed.error.flatten().fieldErrors });
-    }
+    try {
+      const parsed = triggerPostSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Invalid post trigger data', details: parsed.error.flatten().fieldErrors });
+      }
 
-    const createdPost = await executePostAction(pool, parsed.data);
-    return reply.code(201).send({ post: createdPost });
+      const createdPost = await executePostAction(pool, parsed.data);
+      return reply.code(201).send({ post: createdPost });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+    }
   });
 
   // Trigger on-demand interaction (like / comment / follow)
   fastify.post('/api/v1/admin/bots/trigger-interact', async (request, reply) => {
-    const parsed = triggerInteractSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid interact trigger data', details: parsed.error.flatten().fieldErrors });
-    }
+    try {
+      const parsed = triggerInteractSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Invalid interact trigger data', details: parsed.error.flatten().fieldErrors });
+      }
 
-    const outcome = await executeInteractAction(pool, parsed.data);
-    return { outcome };
+      const outcome = await executeInteractAction(pool, parsed.data);
+      return { outcome };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+    }
   });
 
   // Trigger pulse execution immediately
-  fastify.post('/api/v1/admin/bots/trigger-pulse', async () => {
-    const pulseResult = await runSparkPulse(pool);
-    return { pulse: pulseResult };
+  fastify.post('/api/v1/admin/bots/trigger-pulse', async (request, reply) => {
+    try {
+      const pulseResult = await runSparkPulse(pool);
+      return { pulse: pulseResult };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+    }
   });
 
   // Fetch paginated activity logs
@@ -366,5 +467,47 @@ export async function adminBotsRoutes(fastify, options) {
         hasMore: result.rows.length > limit
       }
     };
+  });
+
+  // Get pre-formatted prompt for https://gemini.google.com/spark
+  fastify.get('/api/v1/spark/prompt-template', async () => {
+    return {
+      prompt: getSparkPromptTemplate(),
+      instructions: 'Copy this prompt and paste it into https://gemini.google.com/spark to generate stories & comments without an API key.'
+    };
+  });
+
+  // Get complete runnable Python automation script for Gemini Spark & cron tasks
+  fastify.get('/api/v1/spark/automation-script', async (request) => {
+    const host = request.headers.host || 'localhost:3001';
+    const protocol = request.protocol || 'http';
+    const baseUrl = `${protocol}://${host}`;
+    return {
+      script: getSparkPythonAutomationScript(baseUrl),
+      webhookUrl: `${baseUrl}/api/v1/spark/ingest`,
+      instructions: 'Run this Python script inside Gemini Spark task automation or any recurring cron runner.'
+    };
+  });
+
+  // Spark ingest uses a separate secret-based auth (bypasses the requireUser hook above)
+  fastify.post('/api/v1/spark/ingest', { preHandler: async (request, reply) => {
+    // Allow if user is authenticated OR if bot secret header matches
+    const botSecret = process.env.BOT_INGEST_SECRET;
+    const headerSecret = request.headers['x-bot-secret'];
+    if (botSecret && headerSecret === botSecret) return; // Secret matches
+    if (request.user) return; // Already authenticated via requireUser hook
+    return reply.code(401).send({ error: 'Authentication required. Provide X-Bot-Secret header or Bearer token.' });
+  }}, async (request, reply) => {
+    const rawPayload = request.body;
+    const parsed = sparkIngestSchema.safeParse(rawPayload);
+    if (typeof rawPayload === 'object' && !parsed.success) {
+      return reply.code(400).send({ error: 'Invalid spark payload', details: parsed.error.flatten().fieldErrors });
+    }
+    try {
+      const outcome = await ingestSparkBatch(pool, rawPayload);
+      return reply.code(201).send(outcome);
+    } catch (error) {
+      return reply.code(400).send({ error: error.message });
+    }
   });
 }

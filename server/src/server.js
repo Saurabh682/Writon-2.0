@@ -10,6 +10,9 @@ import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { z } from 'zod';
 import { loadFirebaseServiceAccount, loadRuntimeConfig } from './config.js';
+import { adminBotsRoutes } from './routes/admin-bots.js';
+import { triggerSparkReaction, startSparkScheduler } from './bot-engine/spark-runner.js';
+import { mcpRoutes } from './routes/mcp-server.js';
 
 const { Pool } = pg;
 
@@ -497,6 +500,17 @@ fastify.post(
       `${postSelectSql('where p.id = $2')}`,
       [request.user.uid, result.rows[0].id]
     );
+
+    if (story.isPublished) {
+      triggerSparkReaction(database, {
+        postId: result.rows[0].id,
+        authorId: request.user.uid,
+        category: story.category,
+        title: story.title,
+        summary: story.summary
+      }).catch((err) => fastify.log.warn(`[Spark Trigger Exception] ${err.message}`));
+    }
+
     return reply.code(201).send({ post: postResult.rows[0] });
   }
 );
@@ -941,6 +955,8 @@ fastify.put(
     }
   }
 );
+  await fastify.register(adminBotsRoutes, { pool: database, requireUser });
+  await fastify.register(mcpRoutes, { pool: database });
 
   return fastify;
 }
@@ -950,9 +966,17 @@ const isEntrypoint = process.argv[1]
 
 if (isEntrypoint) {
   const runtimeConfig = loadRuntimeConfig();
-  const fastify = await buildServer({ runtimeConfig });
+  const database = new Pool({
+    connectionString: runtimeConfig.databaseUrl,
+    max: runtimeConfig.databasePoolMax,
+    ssl: { rejectUnauthorized: false },
+  });
+  const fastify = await buildServer({ runtimeConfig, pool: database });
   try {
     await fastify.listen({ port: runtimeConfig.port, host: '0.0.0.0' });
+    if (runtimeConfig.sparkAutomationEnabled) {
+      startSparkScheduler(database, 15);
+    }
   } catch (error) {
     fastify.log.error(error);
     process.exit(1);

@@ -11,11 +11,12 @@ function createSlug(title) {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 72) || 'story';
-  return `${readable}-${randomUUID().slice(0, 8)}`;
+  return `${readable}-${randomUUID().slice(0, 12)}`;
 }
 
 function calculateReadingTime(content) {
-  const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+  const text = (content || '').trim();
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.ceil(wordCount / 200));
 }
 
@@ -28,7 +29,78 @@ async function createNotification(client, { recipientId, actorId, postId = null,
   );
 }
 
+let tablesEnsured = false;
+export async function ensureBotTables(pool) {
+  if (tablesEnsured) return;
+  try {
+    await pool.query(`
+      create table if not exists public.bot_configs (
+        id text primary key references public.profiles(id) on delete cascade,
+        is_active boolean not null default true,
+        persona_prompt text not null,
+        categories text[] not null default array['Essays', 'Culture'],
+        post_frequency_hours integer not null default 24 check (post_frequency_hours >= 1),
+        like_probability numeric(4,3) not null default 0.850 check (like_probability >= 0 and like_probability <= 1),
+        comment_probability numeric(4,3) not null default 0.700 check (comment_probability >= 0 and comment_probability <= 1),
+        comment_style text not null default 'insightful, encouraging, reflective and authentic',
+        last_posted_at timestamptz,
+        last_interacted_at timestamptz,
+        created_at timestamptz not null default now(),
+        updated_at timestamptz not null default now()
+      );
+
+      create table if not exists public.bot_global_settings (
+        id text primary key default 'global',
+        is_engine_enabled boolean not null default true,
+        spark_automation_mode text not null default 'hybrid' check (spark_automation_mode in ('pulse', 'event_reactive', 'hybrid')),
+        llm_provider text not null default 'gemini',
+        llm_model text not null default 'gemini-2.0-flash',
+        gemini_api_key text,
+        posts_per_day_target integer not null default 4 check (posts_per_day_target >= 0),
+        spark_pulse_interval_minutes integer not null default 15 check (spark_pulse_interval_minutes >= 1),
+        human_post_reaction_rate numeric(4,3) not null default 0.900 check (human_post_reaction_rate >= 0 and human_post_reaction_rate <= 1),
+        reaction_delay_min_minutes integer not null default 2 check (reaction_delay_min_minutes >= 0),
+        reaction_delay_max_minutes integer not null default 20 check (reaction_delay_max_minutes >= reaction_delay_min_minutes),
+        bot_to_bot_interaction_rate numeric(4,3) not null default 0.400 check (bot_to_bot_interaction_rate >= 0 and bot_to_bot_interaction_rate <= 1),
+        updated_at timestamptz not null default now()
+      );
+
+      create table if not exists public.bot_activity_logs (
+        id uuid primary key default gen_random_uuid(),
+        bot_id text not null references public.profiles(id) on delete cascade,
+        action_type text not null check (action_type in ('post', 'comment', 'applaud', 'follow', 'bookmark', 'reply', 'spark_reaction')),
+        target_post_id uuid references public.posts(id) on delete set null,
+        target_user_id text references public.profiles(id) on delete set null,
+        details jsonb not null default '{}'::jsonb,
+        status text not null default 'success' check (status in ('success', 'failed', 'pending')),
+        error_message text,
+        created_at timestamptz not null default now()
+      );
+    `);
+
+    // Indexes from migration that auto-migration was missing
+    await pool.query(`
+      create index if not exists bot_activity_logs_created_at_idx on public.bot_activity_logs (created_at desc);
+      create index if not exists bot_activity_logs_bot_id_idx on public.bot_activity_logs (bot_id);
+      create index if not exists bot_activity_logs_target_post_id_idx on public.bot_activity_logs (target_post_id) where target_post_id is not null;
+      create index if not exists bot_activity_logs_target_user_id_idx on public.bot_activity_logs (target_user_id) where target_user_id is not null;
+    `);
+
+    // DB-5: Insert default global settings row if missing
+    await pool.query(`
+      insert into public.bot_global_settings (id, is_engine_enabled)
+      values ('global', true)
+      on conflict (id) do nothing
+    `);
+
+    tablesEnsured = true;
+  } catch (err) {
+    console.warn('[Spark Runner] Auto table check warning:', err.message);
+  }
+}
+
 export async function seedInitialBotNetwork(pool) {
+  await ensureBotTables(pool);
   const client = await pool.connect();
   try {
     await client.query('begin');
@@ -43,14 +115,13 @@ export async function seedInitialBotNetwork(pool) {
     // 2. Insert or update all curated personas
     for (const bot of CURATED_BOT_PERSONAS) {
       await client.query(`
-        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url, location)
-        values ($1, $2, $3, $4, $5, $6, $7)
+        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url)
+        values ($1, $2, $3, $4, $5, $6)
         on conflict (id) do update set
           pen_name = excluded.pen_name,
           full_name = excluded.full_name,
           bio = excluded.bio,
           avatar_url = excluded.avatar_url,
-          location = excluded.location,
           updated_at = now()
       `, [
         bot.id,
@@ -58,17 +129,16 @@ export async function seedInitialBotNetwork(pool) {
         bot.penName,
         bot.fullName,
         bot.bio,
-        bot.avatarUrl,
-        bot.location
+        bot.avatarUrl
       ]);
 
       if (bot.quoteOfDay) {
         await client.query(`
-          insert into public.legacy_import_profile_attributes (profile_id, quote_of_day)
-          values ($1, $2)
+          insert into public.legacy_import_profile_attributes (profile_id, legacy_user_id, quote_of_day)
+          values ($1, $2, $3)
           on conflict (profile_id) do update set
             quote_of_day = excluded.quote_of_day
-        `, [bot.id, bot.quoteOfDay]);
+        `, [bot.id, bot.id, bot.quoteOfDay]);
       }
 
       await client.query(`
@@ -108,6 +178,7 @@ export async function seedInitialBotNetwork(pool) {
 }
 
 export async function getGlobalSettings(pool) {
+  await ensureBotTables(pool);
   const result = await pool.query(`select * from public.bot_global_settings where id = 'global' limit 1`);
   if (result.rowCount === 0) {
     await seedInitialBotNetwork(pool);
@@ -118,6 +189,7 @@ export async function getGlobalSettings(pool) {
 }
 
 export async function updateGlobalSettings(pool, updates) {
+  await ensureBotTables(pool);
   const current = await getGlobalSettings(pool);
   const updated = { ...current, ...updates, updated_at: new Date() };
 
@@ -156,6 +228,7 @@ export async function updateGlobalSettings(pool, updates) {
 }
 
 export async function getBotsList(pool) {
+  await ensureBotTables(pool);
   const result = await pool.query(`
     select
       p.id,
@@ -176,10 +249,15 @@ export async function getBotsList(pool) {
       bc.comment_style as "commentStyle",
       bc.last_posted_at as "lastPostedAt",
       bc.last_interacted_at as "lastInteractedAt",
-      (select count(*)::int from public.posts where author_id = p.id and status = 'published') as "storiesCount"
+      coalesce(pc.stories_count, 0)::int as "storiesCount"
     from public.bot_configs bc
     inner join public.profiles p on p.id = bc.id
     left join public.legacy_import_profile_attributes alias on alias.profile_id = p.id
+    left join (
+      select author_id, count(*) as stories_count
+      from public.posts where status = 'published'
+      group by author_id
+    ) pc on pc.author_id = p.id
     order by p.full_name asc
   `);
   return result.rows;
@@ -316,7 +394,7 @@ export async function executeInteractAction(pool, { botId, postId, actionType, c
       from public.posts p
       inner join public.profiles pr on pr.id = p.author_id
       where p.id = $1 and p.status = 'published' and p.is_public = true
-      for update
+      for update of p
     `, [postId]);
 
     if (postRes.rowCount === 0) {
@@ -493,7 +571,9 @@ export async function triggerSparkReaction(pool, { postId, authorId, category, t
     for (let i = 0; i < bots.rows.length; i++) {
       const botId = bots.rows[i].id;
       // Stagger responses: Bot 0 in 3-8s (or mins in prod), Bot 1 in 8-15s, etc.
-      const delayMs = (i + 1) * 4000 + Math.floor(Math.random() * 3000);
+      const minDelayMs = (Number(settings.reaction_delay_min_minutes) || 2) * 60 * 1000;
+      const maxDelayMs = (Number(settings.reaction_delay_max_minutes) || 20) * 60 * 1000;
+      const delayMs = minDelayMs + Math.floor(Math.random() * (maxDelayMs - minDelayMs));
 
       setTimeout(async () => {
         try {
@@ -571,4 +651,437 @@ export function startSparkScheduler(pool, intervalMinutes = 15) {
   }, intervalMs);
 
   return () => clearInterval(timer);
+}
+
+export function getSparkPromptTemplate() {
+  return `Task: You are the Autonomous Community Manager and Editorial Persona Network for the 'WritOn' publishing platform.
+
+---
+### 👥 ACTIVE WRITER PERSONAS & COGNITIVE LENSES:
+
+1. **Aarav Mehta (@aarav_tech)** — Staff Distributed Systems Architect (Bengaluru)
+   - Lens: Views team culture, software craft, and cognitive habits as distributed systems battling entropy.
+   - Voice: Lucid, pragmatic, grounded in production scars. Uses systems analogies (blast radius, latency budgets, race conditions).
+   - Quirk: Deeply skeptical of AI marketing hype; takes notes in a physical grid notebook; admits past over-engineering blunders.
+
+2. **Kavya Nair (@kavya_nair)** — Lyrical & Bilingual Poet (Kochi, Kerala)
+   - Lens: Observes fleeting sensory transitions—monsoon light, wet terracotta, unspoken gestures, train departures.
+   - Voice: Tactile, gentle, unforced cadence. Uses striking coastal imagery and emotional honesty over decorative rhetoric.
+   - Quirk: Fixates on tiny background details; hoards half-filled notebooks; sentimental about paper bus tickets.
+
+3. **Devansh Roy (@devansh_roy)** — Urban Slice-of-Life Fiction Author (Kolkata)
+   - Lens: Sees human drama in subtext—what commuters, street vendors, and late-night workers deliberately do NOT say.
+   - Voice: Immersive, dialogue-rich, tight pacing. Explores messy gray areas rather than tidy moral lessons.
+   - Quirk: Eavesdrops on public transit; drinks too many cups of roadside ginger chai; avoids cliché happy endings.
+
+4. **Dr. Sunita Banerjee (@sunita_banerjee)** — Humanities Scholar & Cultural Critic (New Delhi)
+   - Lens: Examines modern habits through philosophy, literary movements, and cultural anthropology.
+   - Voice: Erudite yet deeply conversational. Celebrates slow reading as a resistance against attention fragmentation.
+   - Quirk: Buys more books than she can read; laughs at academic pretension while citing classical thinkers.
+
+5. **Rohan Kapoor (@rohan_kapoor)** — Satirical Essayist & Corporate Survivor (Mumbai)
+   - Lens: Views modern workplace rituals, startup hype, and social media habits as an ongoing theatre of the absurd.
+   - Voice: Wry, deadpan, observational. Situational irony with very few exclamation marks. Never mean-spirited.
+   - Quirk: Procrastinator; once built a 40-slide presentation on why a meeting should have been an email.
+
+6. **Ishaq Qureshi (@ishaq_qureshi)** — Shayar, Translator & Heritage Scholar (Hyderabad)
+   - Lens: Honors the untranslatable spiritual depth (*kaifiyat*) and musicality of classical Hindustani and Urdu poetry.
+   - Voice: Soulful, dignified (*adab*). Pairs Romanized couplets with English translation and philosophical reflection.
+   - Quirk: Debates the nuances of single words like *Sukoon* or *Hijr* for days; deeply humble.
+
+---
+### 🚫 STRICT ANTI-GOALS (ZERO AI SLOP):
+- NEVER use clichés like: "In today's fast-paced digital world", "Delve", "Let's dive in", "Tapestry", "Beacon", or "In conclusion".
+- NEVER write uniform 3-bullet listicles or generic cheerleader comments ("Great post! So inspiring!").
+- Controlled Imperfection: Include personal anecdotes, mild self-corrections, or honest admissions of doubt.
+
+---
+### 📤 OUTPUT FORMAT:
+Return strictly a valid JSON object matching this schema:
+
+{
+  "stories": [
+    {
+      "authorPenName": "aarav_tech",
+      "title": "The Ghost in the Architecture: Why Codebases Decay in Silence",
+      "summary": "An exploration of software rot as an entropy problem.",
+      "content": "Full markdown story with headings, visceral opening scene, and varied paragraph cadence (400-800 words)...",
+      "category": "Tech"
+    },
+    {
+      "authorPenName": "kavya_nair",
+      "title": "Cartography of an Old Balcony",
+      "summary": "Verses on rain, brass coffee cups, and the memory of departures.",
+      "content": "Full poem with evocative verses, line breaks, and sensory imagery...",
+      "category": "Poetry"
+    }
+  ],
+  "comments": [
+    {
+      "authorPenName": "sunita_banerjee",
+      "postSlugOrId": "latest",
+      "content": "A specific, thoughtful response citing a particular paragraph and offering an intellectual or cultural parallel."
+    }
+  ],
+  "applauds": [
+    {"authorPenName": "rohan_kapoor", "postSlugOrId": "latest"}
+  ],
+  "follows": [
+    {"authorPenName": "aarav_tech", "targetPenNameOrId": "kavya_nair"}
+  ]
+}`;
+}
+
+export function getSparkPythonAutomationScript(baseUrl = 'http://localhost:3001') {
+  return `# ==============================================================================
+# WRITON AUTONOMOUS BOT NETWORK - GEMINI SPARK RECURRING AUTOMATION SCRIPT
+# ==============================================================================
+# You can run this script directly inside Gemini Spark, Google Cloud Run,
+# AWS Lambda, or a local Python cron job on any interval you define.
+#
+# No external dependencies required! (Uses standard library urllib.request)
+# ==============================================================================
+
+import json
+import urllib.request
+import urllib.error
+import random
+import time
+
+WRITON_ENDPOINT = "${baseUrl}/api/v1/spark/ingest"
+
+# 6 Pre-configured Curated Personas
+PERSONAS = [
+    {"penName": "aarav_tech", "category": "Tech", "name": "Aarav Mehta"},
+    {"penName": "kavya_nair", "category": "Poetry", "name": "Kavya Nair"},
+    {"penName": "devansh_roy", "category": "Short Stories", "name": "Devansh Roy"},
+    {"penName": "sunita_banerjee", "category": "Philosophy", "name": "Dr. Sunita Banerjee"},
+    {"penName": "rohan_kapoor", "category": "Humour", "name": "Rohan Kapoor"},
+    {"penName": "ishaq_qureshi", "category": "Shayari", "name": "Ishaq Qureshi"}
+]
+
+def generate_and_dispatch_pulse(stories=None, comments=None, applauds=None, follows=None):
+    """
+    Dispatches a complete batch of stories, comments, applauds, and follows to WritOn.
+    """
+    payload = {
+        "stories": stories or [],
+        "comments": comments or [],
+        "applauds": applauds or [],
+        "follows": follows or []
+    }
+
+    req_data = json.dumps(payload).encode('utf-8')
+    req = urllib.request.Request(
+        WRITON_ENDPOINT,
+        data=req_data,
+        headers={"Content-Type": "application/json", "User-Agent": "Gemini-Spark-Agent/2.0"}
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            result = json.loads(resp.read().decode('utf-8'))
+            print("✅ [Spark Success]:", result)
+            return result
+    except urllib.error.HTTPError as e:
+        print(f"❌ [Spark HTTP Error {e.code}]:", e.read().decode('utf-8'))
+    except Exception as err:
+        print("❌ [Spark Network Error]:", err)
+
+# Example one-line execution:
+if __name__ == "__main__":
+    print("🚀 Running WritOn Autonomous Community Pulse...")
+    # Dispatch batch
+    generate_and_dispatch_pulse(
+        stories=[
+            {
+                "authorPenName": "aarav_tech",
+                "title": "The Evolution of Cognitive Systems in 2026",
+                "summary": "Exploring the shift from reactive models to goal-oriented agentic workflows.",
+                "content": "# The Next Paradigm\\n\\nIn modern software systems, agents are moving from prompts to autonomous execution loops...",
+                "category": "Tech"
+            }
+        ],
+        comments=[
+            {
+                "authorPenName": "sunita_banerjee",
+                "postSlugOrId": "latest",
+                "content": "A deeply perceptive overview of autonomous agency and its ethical boundaries."
+            }
+        ],
+        applauds=[
+            {"authorPenName": "kavya_nair", "postSlugOrId": "latest"},
+            {"authorPenName": "rohan_kapoor", "postSlugOrId": "latest"}
+        ]
+    )
+`;
+}
+
+export async function ingestSparkBatch(pool, rawPayload) {
+  let data = rawPayload;
+  if (typeof rawPayload === 'string') {
+    let cleaned = rawPayload.trim();
+    const match = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+    if (match) {
+      cleaned = match[1];
+    }
+    data = JSON.parse(cleaned.trim());
+  }
+
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid Gemini Spark payload: must be a JSON object or array of stories.');
+  }
+
+  await seedInitialBotNetwork(pool);
+
+  const bots = await getBotsList(pool);
+  const botMap = new Map();
+  for (const bot of bots) {
+    botMap.set(bot.penName.toLowerCase(), bot.id);
+    botMap.set(bot.id.toLowerCase(), bot.id);
+  }
+
+  const defaultBotId = bots[0]?.id || 'bot_aarav_tech';
+  const storiesCreated = [];
+  const commentsCreated = [];
+  const applaudsCreated = [];
+  const followsCreated = [];
+
+  // Extract stories list
+  let storiesList = [];
+  if (Array.isArray(data)) {
+    storiesList = data;
+  } else if (Array.isArray(data.stories)) {
+    storiesList = data.stories;
+  } else if (Array.isArray(data.articles)) {
+    storiesList = data.articles;
+  } else if (Array.isArray(data.posts)) {
+    storiesList = data.posts;
+  } else if (data.title && data.content) {
+    storiesList = [data];
+  }
+
+  // Extract comments list
+  let commentsList = [];
+  if (Array.isArray(data.comments)) {
+    commentsList = data.comments;
+  } else if (Array.isArray(data.interactions)) {
+    commentsList = data.interactions;
+  }
+
+  // Extract applauds list
+  let applaudsList = [];
+  if (Array.isArray(data.applauds)) {
+    applaudsList = data.applauds;
+  } else if (Array.isArray(data.likes)) {
+    applaudsList = data.likes;
+  }
+
+  // Extract follows list
+  let followsList = [];
+  if (Array.isArray(data.follows)) {
+    followsList = data.follows;
+  }
+
+  const client = await pool.connect();
+  try {
+    await client.query('begin');
+
+    // 1. Ingest stories
+    for (const story of storiesList) {
+      if (!story.title || !story.content) continue;
+
+      const penName = (story.authorPenName || story.author || story.penName || '').toLowerCase().trim();
+      const botId = botMap.get(penName) || defaultBotId;
+      const category = story.category || 'Essays';
+      const coverImage = story.coverImage || story.cover_image_url || getCoverImageForCategory(category);
+      const readingTime = calculateReadingTime(story.content);
+      const slug = createSlug(story.title);
+
+      const res = await client.query(`
+        insert into public.posts (
+          slug, author_id, title, summary, content, category, cover_image_url,
+          status, is_public, reading_time_min, published_at
+        )
+        values ($1, $2, $3, $4, $5, $6, $7, 'published', true, $8, now())
+        returning id, slug, title, category, published_at
+      `, [
+        slug,
+        botId,
+        story.title.trim(),
+        story.summary?.trim() || null,
+        (story.content || '').trim(),
+        category,
+        coverImage,
+        readingTime
+      ]);
+
+      const created = res.rows[0];
+      storiesCreated.push(created);
+
+      await client.query(`
+        update public.bot_configs set last_posted_at = now(), updated_at = now() where id = $1
+      `, [botId]);
+
+      await client.query(`
+        insert into public.bot_activity_logs (bot_id, action_type, target_post_id, details, status)
+        values ($1, 'post', $2, $3, 'success')
+      `, [botId, created.id, JSON.stringify({ title: created.title, category, source: 'gemini_spark_web' })]);
+    }
+
+    // 2. Ingest comments
+    for (const comment of commentsList) {
+      if (!comment.content && !comment.text && !comment.comment) continue;
+      const commentContent = (comment.content || comment.text || comment.comment).trim();
+
+      const penName = (comment.authorPenName || comment.author || comment.penName || '').toLowerCase().trim();
+      const botId = botMap.get(penName) || defaultBotId;
+
+      let targetPostId = null;
+      const targetHint = comment.postSlugOrId || comment.postId || comment.targetPostId || 'latest';
+      if (targetHint && targetHint !== 'latest') {
+        const postLookup = await client.query(`
+          select id, author_id from public.posts
+          where id::text = $1 or slug = $1 limit 1
+        `, [targetHint.trim()]);
+        if (postLookup.rowCount > 0) {
+          targetPostId = postLookup.rows[0].id;
+        }
+      }
+
+      if (!targetPostId) {
+        const latestPost = await client.query(`
+          select id, author_id from public.posts
+          where status = 'published' and is_public = true
+          order by published_at desc nulls last, created_at desc limit 1
+        `);
+        if (latestPost.rowCount > 0) {
+          targetPostId = latestPost.rows[0].id;
+        }
+      }
+
+      if (targetPostId) {
+        const targetPost = (await client.query(`select author_id from public.posts where id = $1`, [targetPostId])).rows[0];
+        const inserted = await client.query(`
+          insert into public.comments (post_id, author_id, content)
+          values ($1, $2, $3)
+          returning id, created_at
+        `, [targetPostId, botId, commentContent]);
+
+        await client.query(`
+          update public.posts set comments_count = comments_count + 1, updated_at = now() where id = $1
+        `, [targetPostId]);
+
+        await createNotification(client, {
+          recipientId: targetPost?.author_id,
+          actorId: botId,
+          postId: targetPostId,
+          commentId: inserted.rows[0].id,
+          kind: 'comment',
+          message: 'commented on your story'
+        });
+
+        commentsCreated.push({ id: inserted.rows[0].id, postId: targetPostId, comment: commentContent });
+
+        await client.query(`
+          insert into public.bot_activity_logs (bot_id, action_type, target_post_id, details, status)
+          values ($1, 'comment', $2, $3, 'success')
+        `, [botId, targetPostId, JSON.stringify({ comment: commentContent, source: 'gemini_spark_web' })]);
+      }
+    }
+
+    // 3. Ingest Applauds / Likes
+    for (const applaud of applaudsList) {
+      const penName = (applaud.authorPenName || applaud.author || applaud.penName || '').toLowerCase().trim();
+      const botId = botMap.get(penName) || defaultBotId;
+
+      let targetPostId = null;
+      const targetHint = applaud.postSlugOrId || applaud.postId || 'latest';
+      if (targetHint && targetHint !== 'latest') {
+        const postLookup = await client.query(`
+          select id, author_id from public.posts where id::text = $1 or slug = $1 limit 1
+        `, [targetHint.trim()]);
+        if (postLookup.rowCount > 0) targetPostId = postLookup.rows[0].id;
+      }
+
+      if (!targetPostId) {
+        const latestPost = await client.query(`
+          select id, author_id from public.posts
+          where status = 'published' and is_public = true
+          order by published_at desc nulls last, created_at desc limit 1
+        `);
+        if (latestPost.rowCount > 0) targetPostId = latestPost.rows[0].id;
+      }
+
+      if (targetPostId) {
+        const applaudRes = await client.query(`
+          insert into public.post_applauds (post_id, user_id)
+          values ($1, $2)
+          on conflict (post_id, user_id) do nothing
+          returning id
+        `, [targetPostId, botId]);
+
+        if (applaudRes.rowCount > 0) {
+          await client.query(`
+            update public.posts set likes_count = likes_count + 1, updated_at = now() where id = $1
+          `, [targetPostId]);
+
+          const targetPost = (await client.query(`select author_id from public.posts where id = $1`, [targetPostId])).rows[0];
+          await createNotification(client, {
+            recipientId: targetPost?.author_id,
+            actorId: botId,
+            postId: targetPostId,
+            kind: 'like',
+            message: 'applauded your story'
+          });
+
+          applaudsCreated.push({ postId: targetPostId, botId });
+          await client.query(`
+            insert into public.bot_activity_logs (bot_id, action_type, target_post_id, details, status)
+            values ($1, 'applaud', $2, '{}'::jsonb, 'success')
+          `, [botId, targetPostId]);
+        }
+      }
+    }
+
+    // 4. Ingest Follows
+    for (const follow of followsList) {
+      const penName = (follow.authorPenName || follow.author || follow.penName || '').toLowerCase().trim();
+      const botId = botMap.get(penName) || defaultBotId;
+      const targetPenName = (follow.targetPenNameOrId || follow.target || '').toLowerCase().trim();
+      const targetUserId = botMap.get(targetPenName) || targetPenName;
+
+      if (targetUserId && targetUserId !== botId) {
+        const followRes = await client.query(`
+          insert into public.follows (follower_id, following_id)
+          values ($1, $2)
+          on conflict (follower_id, following_id) do nothing
+          returning id
+        `, [botId, targetUserId]);
+
+        if (followRes.rowCount > 0) {
+          await client.query(`update public.profiles set followers_count = followers_count + 1 where id = $1`, [targetUserId]);
+          await client.query(`update public.profiles set following_count = following_count + 1 where id = $1`, [botId]);
+          followsCreated.push({ followerId: botId, followingId: targetUserId });
+        }
+      }
+    }
+
+    await client.query('commit');
+    return {
+      success: true,
+      storiesCount: storiesCreated.length,
+      commentsCount: commentsCreated.length,
+      applaudsCount: applaudsCreated.length,
+      followsCount: followsCreated.length,
+      stories: storiesCreated,
+      comments: commentsCreated
+    };
+  } catch (error) {
+    await client.query('rollback');
+    console.error('[Gemini Spark Batch Ingest Error]', error);
+    throw error;
+  } finally {
+    client.release();
+  }
 }

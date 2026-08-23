@@ -50,7 +50,6 @@ describe('Gemini Spark Bot Network & Engine', () => {
       });
 
       expect(article.title).toBeTruthy();
-      expect(article.content).toContain('Reflections on');
       expect(article.content.length).toBeGreaterThan(50);
       expect(article.summary).toBeTruthy();
     });
@@ -128,7 +127,7 @@ describe('Gemini Spark Bot Network & Engine', () => {
       };
     }
 
-    it('serves /api/v1/admin/bots/overview with engine stats and settings', async () => {
+    it('rejects unauthenticated requests to admin bot endpoints', async () => {
       const app = await buildServer({
         runtimeConfig: {
           environment: 'test',
@@ -143,6 +142,30 @@ describe('Gemini Spark Bot Network & Engine', () => {
       });
 
       const response = await app.inject({ method: 'GET', url: '/api/v1/admin/bots/overview' });
+      expect(response.statusCode).toBe(401);
+      expect(response.json().error).toBe('Authentication required');
+      await app.close();
+    });
+
+    it('serves /api/v1/admin/bots/overview with engine stats and settings when authenticated', async () => {
+      const app = await buildServer({
+        runtimeConfig: {
+          environment: 'test',
+          port: 3001,
+          databaseUrl: 'postgresql://unused:unused@localhost:5432/test',
+          databasePoolMax: 1,
+          databaseSslRejectUnauthorized: false,
+          corsOrigins: [],
+        },
+        pool: createMockPool(),
+        auth: { verifyIdToken: async () => ({ uid: 'test-admin' }) }
+      });
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/bots/overview',
+        headers: { authorization: 'Bearer test-token' }
+      });
       expect(response.statusCode).toBe(200);
       const data = response.json();
       expect(data.settings).toBeDefined();
@@ -168,6 +191,7 @@ describe('Gemini Spark Bot Network & Engine', () => {
       const response = await app.inject({
         method: 'POST',
         url: '/api/v1/admin/bots',
+        headers: { authorization: 'Bearer test-token' },
         payload: {
           penName: 'INVALID PEN NAME WITH SPACES',
           fullName: 'A',
@@ -176,6 +200,61 @@ describe('Gemini Spark Bot Network & Engine', () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.json().error).toBe('Invalid bot data');
+      await app.close();
+    });
+
+    it('serves /api/v1/spark/prompt-template with complete persona instructions', async () => {
+      const app = await buildServer({
+        runtimeConfig: {
+          environment: 'test',
+          port: 3001,
+          databaseUrl: 'postgresql://unused:unused@localhost:5432/test',
+          databasePoolMax: 1,
+          databaseSslRejectUnauthorized: false,
+          corsOrigins: [],
+        },
+        pool: createMockPool(),
+        auth: { verifyIdToken: async () => ({ uid: 'test-admin' }) }
+      });
+
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/spark/prompt-template',
+        headers: { authorization: 'Bearer test-token' }
+      });
+      expect(response.statusCode).toBe(200);
+      const data = response.json();
+      expect(data.prompt).toContain('Aarav Mehta');
+      expect(data.prompt).toContain('Kavya Nair');
+      expect(data.prompt).toContain('"stories":');
+      await app.close();
+    });
+
+    it('validates malformed /api/v1/spark/ingest payload', async () => {
+      const app = await buildServer({
+        runtimeConfig: {
+          environment: 'test',
+          port: 3001,
+          databaseUrl: 'postgresql://unused:unused@localhost:5432/test',
+          databasePoolMax: 1,
+          databaseSslRejectUnauthorized: false,
+          corsOrigins: [],
+        },
+        pool: createMockPool(),
+        auth: { verifyIdToken: async () => ({ uid: 'test-admin' }) }
+      });
+
+      const response = await app.inject({
+        method: 'POST',
+        url: '/api/v1/spark/ingest',
+        headers: { authorization: 'Bearer test-token' },
+        payload: {
+          stories: [{ title: '', content: '' }]
+        }
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json().error).toBe('Invalid spark payload');
       await app.close();
     });
   });

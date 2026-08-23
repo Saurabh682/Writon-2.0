@@ -4,14 +4,11 @@
  */
 
 function cleanJsonText(rawText) {
+  if (!rawText || typeof rawText !== 'string') return '{}';
   let cleaned = rawText.trim();
-  if (cleaned.startsWith('```json')) {
-    cleaned = cleaned.slice(7);
-  } else if (cleaned.startsWith('```')) {
-    cleaned = cleaned.slice(3);
-  }
-  if (cleaned.endsWith('```')) {
-    cleaned = cleaned.slice(0, -3);
+  const match = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (match) {
+    cleaned = match[1];
   }
   return cleaned.trim();
 }
@@ -72,11 +69,16 @@ export async function generateSparkArticle({ apiKey, model, persona, category, t
 Your Persona Details:
 Name: ${persona.fullName} (@${persona.penName})
 Bio: ${persona.bio}
-Writing Style Prompt:
+Writing Style & Cognitive Lens:
 ${persona.personaPrompt}
 
 Target Category: ${category}
 ${topicHint ? `Topic/Theme guidance: ${topicHint}` : 'Choose a timely, evocative, and compelling topic suited to your persona and category.'}
+
+Editorial Quality Rules:
+- ZERO AI Slop: NEVER use clichés like "In today's fast-paced digital world", "Delve", "Let's dive in", "Tapestry", "Beacon", or "In conclusion".
+- Structure: Start in media res with a vivid sensory scene or concrete engineering/life moment. Avoid symmetrical 3-bullet listicles.
+- Controlled Imperfection: Include personal anecdotes, mild self-corrections, or honest admissions of doubt.
 
 Please return a strictly valid JSON object with the following structure:
 {
@@ -93,7 +95,7 @@ Ensure the response is raw JSON without extraneous commentary.`;
       apiKey,
       model: model || 'gemini-2.0-flash',
       prompt,
-      systemInstruction: 'You are an acclaimed writer generating authentic editorial literature. Output strictly valid JSON.',
+      systemInstruction: 'You are an acclaimed writer generating authentic literature with a distinctive voice. Output strictly valid JSON without boilerplate.',
       temperature: 0.85
     });
 
@@ -123,7 +125,7 @@ export async function generateSparkComment({ apiKey, model, persona, postTitle, 
 Your Persona:
 Name: ${persona.fullName}
 Style & Commenting Guideline: ${persona.commentStyle}
-Persona Background: ${persona.personaPrompt}
+Persona Background & Lens: ${persona.personaPrompt}
 
 Article Details:
 Title: "${postTitle}"
@@ -133,7 +135,11 @@ Excerpt/Summary: "${postExcerpt?.slice(0, 400) || postTitle}"
 ${existingCommentsContext}
 
 Task: Write an authentic, engaging comment (1-3 sentences).
-It should feel natural, conversational, appreciative, and specific to the theme. It can pose a gentle question or express genuine resonance. Do not sound like an AI assistant.
+Rules:
+- Cite or react to a specific thought in the piece.
+- Offer a genuine counter-perspective, personal parallel, or thoughtful insight.
+- DO NOT give generic cheerleader praise ("Great article!").
+- Speak in your persona's distinctive vocabulary and tone.
 
 Return strictly a JSON object:
 {

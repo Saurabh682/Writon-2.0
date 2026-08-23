@@ -227,9 +227,10 @@ fun ReaderScreen(
 @Composable
 private fun ReaderAuthorMetadata(post: PostEntity) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        AsyncImage(
-            model = post.authorAvatarUrl ?: "https://ui-avatars.com/api/?name=${post.authorName}", contentDescription = post.authorName,
-            modifier = Modifier.size(56.dp).clip(CircleShape), contentScale = ContentScale.Crop
+        com.ibitvalley.writon.modern.core.designsystem.components.UserAvatar(
+            url = post.authorAvatarUrl,
+            name = post.authorName,
+            size = 52.dp
         )
         Spacer(Modifier.width(WritOnSpacing.md))
         Column {
@@ -350,7 +351,11 @@ private fun ReaderTrayDivider() = VerticalDivider(Modifier.height(52.dp), color 
 @Composable
 private fun ReaderComment(name: String, avatarUrl: String?, content: String, timestamp: String) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-        AsyncImage(avatarUrl ?: "https://ui-avatars.com/api/?name=$name", name, Modifier.size(36.dp).clip(CircleShape), contentScale = ContentScale.Crop)
+        com.ibitvalley.writon.modern.core.designsystem.components.UserAvatar(
+            url = avatarUrl,
+            name = name,
+            size = 36.dp
+        )
         Spacer(Modifier.width(WritOnSpacing.sm))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

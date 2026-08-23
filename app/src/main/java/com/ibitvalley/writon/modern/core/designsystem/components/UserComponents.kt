@@ -17,8 +17,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
-import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.runtime.remember
+import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
+
+fun extractInitials(name: String): String {
+    val parts = name.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
+    return when {
+        parts.size >= 2 -> "${parts[0].first().uppercaseChar()}${parts[1].first().uppercaseChar()}"
+        parts.isNotEmpty() && parts[0].isNotEmpty() -> parts[0].take(2).uppercase()
+        else -> "W"
+    }
+}
 
 @Composable
 fun UserAvatar(
@@ -26,30 +36,47 @@ fun UserAvatar(
     name: String,
     modifier: Modifier = Modifier,
     size: Dp = 40.dp,
+    onClick: (() -> Unit)? = null
 ) {
-    if (url != null) {
+    val initials = remember(name) { extractInitials(name) }
+    val isCustomPhoto = !url.isNullOrBlank() &&
+        !url.contains("ui-avatars.com", ignoreCase = true) &&
+        !url.contains("dicebear.com", ignoreCase = true)
+
+    val clickModifier = if (onClick != null) {
+        Modifier.clickable(onClick = onClick)
+    } else {
+        Modifier
+    }
+
+    if (isCustomPhoto) {
         AsyncImage(
             model = url,
             contentDescription = name,
             modifier = modifier
                 .size(size)
-                .clip(CircleShape),
+                .clip(CircleShape)
+                .then(clickModifier),
             contentScale = ContentScale.Crop
         )
     } else {
-        Box(
+        Surface(
             modifier = modifier
                 .size(size)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant),
-            contentAlignment = Alignment.Center
+                .then(clickModifier),
+            shape = CircleShape,
+            color = Color(0xFFEBE3D7),
+            border = BorderStroke(1.dp, Color(0xFFDFD6C9)),
+            shadowElevation = 0.dp
         ) {
-            Text(
-                text = name.take(1).uppercase(),
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = (size.value * 0.4).sp
-            )
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = initials,
+                    fontWeight = FontWeight.Bold,
+                    color = BrandRed,
+                    fontSize = (size.value * 0.38).sp
+                )
+            }
         }
     }
 }

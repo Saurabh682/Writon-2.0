@@ -386,31 +386,11 @@ private fun SearchWriterCard(writer: AuthorDto, onClick: () -> Unit) {
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (!writer.avatarUrl.isNullOrBlank()) {
-                AsyncImage(
-                    model = writer.avatarUrl,
-                    contentDescription = writer.fullName,
-                    modifier = Modifier.size(52.dp).clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-            } else {
-                Surface(
-                    shape = CircleShape,
-                    color = Color(0xFFF2ECE4),
-                    modifier = Modifier.size(52.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(
-                            text = writer.fullName.take(1).uppercase(),
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontFamily = SearchEditorialFamily,
-                                fontWeight = FontWeight.Bold,
-                                color = BrandRed
-                            )
-                        )
-                    }
-                }
-            }
+            com.ibitvalley.writon.modern.core.designsystem.components.UserAvatar(
+                url = writer.avatarUrl,
+                name = writer.fullName,
+                size = 52.dp
+            )
 
             Spacer(Modifier.width(16.dp))
 

@@ -8,7 +8,7 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "db:import-legacy-postgres": "node src/db/import-legacy-postgres.mjs --dry-run",
-    "test": "vitest run test/fastify.contract.test.js"
+    "test": "vitest run test/fastify.contract.test.js test/spark-bot-engine.test.js"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",

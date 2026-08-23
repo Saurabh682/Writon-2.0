@@ -358,13 +358,12 @@ private fun DiscoveryStoryCard(
 
 @Composable
 private fun AuthorAvatar(avatarUrl: String?, authorName: String, onClick: () -> Unit) {
-    Surface(modifier = Modifier.size(44.dp), shape = CircleShape, color = HomeChip, border = BorderStroke(1.dp, HomeBorder), onClick = onClick) {
-        if (avatarUrl.isNullOrBlank()) {
-            Box(contentAlignment = Alignment.Center) { Text(authorName.firstOrNull()?.uppercaseChar()?.toString() ?: "W", fontWeight = FontWeight.SemiBold, color = HomeInk) }
-        } else {
-            AsyncImage(model = avatarUrl, contentDescription = "Open ${authorName}'s profile", modifier = Modifier.fillMaxSize().clip(CircleShape), contentScale = ContentScale.Crop)
-        }
-    }
+    com.ibitvalley.writon.modern.core.designsystem.components.UserAvatar(
+        url = avatarUrl,
+        name = authorName,
+        size = 44.dp,
+        onClick = onClick
+    )
 }
 
 @Composable

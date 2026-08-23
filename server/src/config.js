@@ -10,6 +10,9 @@ const runtimeEnvironmentSchema = z.object({
   FIREBASE_SERVICE_ACCOUNT_JSON: z.string().trim().min(2).optional(),
   FIREBASE_SERVICE_ACCOUNT_PATH: z.string().trim().min(1).optional(),
   CORS_ORIGINS: z.string().trim().optional(),
+  GEMINI_API_KEY: z.string().trim().optional(),
+  ADMIN_SECRET_KEY: z.string().trim().optional(),
+  SPARK_AUTOMATION_ENABLED: z.enum(['true', 'false']).default('true'),
 });
 
 function parseServiceAccount(serializedAccount, source) {
@@ -43,6 +46,9 @@ export function loadRuntimeConfig(environment = process.env) {
     firebaseServiceAccountJson: values.FIREBASE_SERVICE_ACCOUNT_JSON,
     firebaseServiceAccountPath: values.FIREBASE_SERVICE_ACCOUNT_PATH,
     corsOrigins,
+    geminiApiKey: values.GEMINI_API_KEY || null,
+    adminSecretKey: values.ADMIN_SECRET_KEY || null,
+    sparkAutomationEnabled: values.SPARK_AUTOMATION_ENABLED !== 'false',
   };
 }
 
