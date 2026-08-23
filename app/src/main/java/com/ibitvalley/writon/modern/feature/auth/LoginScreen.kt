@@ -41,8 +41,132 @@ fun LoginScreen(
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    var isSubmitting by remember { mutableStateOf(false) }
-    var authError by remember { mutableStateOf<String?>(null) }
+    var showResetDialog by remember { mutableStateOf(false) }
+    var resetEmail by remember { mutableStateOf("") }
+    var isSendingReset by remember { mutableStateOf(false) }
+    var resetSuccessMessage by remember { mutableStateOf<String?>(null) }
+    var resetErrorMessage by remember { mutableStateOf<String?>(null) }
+
+    if (showResetDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                if (!isSendingReset) showResetDialog = false
+            },
+            title = {
+                Text(
+                    "Reset Password",
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                    color = Color(0xFF151718)
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        "Enter your registered email address and we'll send you a link to reset your password.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFF6D6963)
+                    )
+
+                    OutlinedTextField(
+                        value = resetEmail,
+                        onValueChange = {
+                            resetEmail = it
+                            resetErrorMessage = null
+                            resetSuccessMessage = null
+                        },
+                        placeholder = { Text("Enter your email") },
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color(0xFF151718),
+                            unfocusedTextColor = Color(0xFF151718),
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedBorderColor = BrandRedColor,
+                            unfocusedBorderColor = Color(0xFF6D6963)
+                        )
+                    )
+
+                    resetSuccessMessage?.let { success ->
+                        Text(
+                            success,
+                            color = Color(0xFF2E7D32),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    resetErrorMessage?.let { error ->
+                        Text(
+                            error,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                if (resetSuccessMessage == null) {
+                    Button(
+                        onClick = {
+                            if (resetEmail.isBlank() || !resetEmail.contains("@")) {
+                                resetErrorMessage = "Please enter a valid email address."
+                                return@Button
+                            }
+                            isSendingReset = true
+                            resetErrorMessage = null
+                            FirebaseAuthManager.sendPasswordReset(
+                                email = resetEmail,
+                                onSuccess = {
+                                    isSendingReset = false
+                                    resetSuccessMessage = "Password reset email sent! Check your inbox (and spam folder)."
+                                },
+                                onError = { msg ->
+                                    isSendingReset = false
+                                    resetErrorMessage = msg
+                                }
+                            )
+                        },
+                        enabled = !isSendingReset && resetEmail.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandRedColor),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        if (isSendingReset) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(Modifier.width(8.dp))
+                        }
+                        Text(if (isSendingReset) "Sending…" else "Send Reset Link")
+                    }
+                } else {
+                    Button(
+                        onClick = { showResetDialog = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandRedColor),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Done")
+                    }
+                }
+            },
+            dismissButton = {
+                if (resetSuccessMessage == null) {
+                    TextButton(
+                        onClick = { showResetDialog = false },
+                        enabled = !isSendingReset
+                    ) {
+                        Text("Cancel", color = Color(0xFF6D6963))
+                    }
+                }
+            },
+            containerColor = Color(0xFFFFFDF9),
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -161,11 +285,17 @@ fun LoginScreen(
             Text(
                 text = "Forgot password?",
                 color = BrandRedColor,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                 textAlign = TextAlign.End,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 12.dp)
+                    .clickable {
+                        resetEmail = email
+                        resetSuccessMessage = null
+                        resetErrorMessage = null
+                        showResetDialog = true
+                    }
+                    .padding(top = 12.dp, bottom = 4.dp)
             )
 
             Spacer(modifier = Modifier.height(40.dp))

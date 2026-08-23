@@ -40,6 +40,24 @@ object FirebaseAuthManager {
             }
     }
 
+    fun sendPasswordReset(
+        email: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        if (email.isBlank()) {
+            onError("Please enter your email address.")
+            return
+        }
+        auth.sendPasswordResetEmail(email.trim())
+            .addOnSuccessListener {
+                onSuccess()
+            }
+            .addOnFailureListener { error ->
+                onError(error.localizedMessage ?: "Failed to send password reset email.")
+            }
+    }
+
     fun getFreshTokenBlocking(): String? {
         val currentUser = auth.currentUser ?: return null
         return try {

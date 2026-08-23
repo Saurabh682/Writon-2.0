@@ -48,13 +48,92 @@ fun SettingsScreen(
 ) {
     var showAboutDialog by remember { mutableStateOf(false) }
 
+    var showResetPasswordDialog by remember { mutableStateOf(false) }
+    var resetEmailSent by remember { mutableStateOf(false) }
+    var isSendingReset by remember { mutableStateOf(false) }
+    var resetError by remember { mutableStateOf<String?>(null) }
+    val userEmail = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email.orEmpty()
+
     if (showAboutDialog) {
         AlertDialog(
             onDismissRequest = { showAboutDialog = false },
             title = { Text("About WritOn", fontFamily = SettingsEditorialFamily) },
-            text = { Text("WritOn 1.0.0\nA calm place to read, write, and support thoughtful stories.") },
+            text = { Text("WritOn 2.0.0\nA calm place to read, write, and support thoughtful stories.") },
             confirmButton = {
                 TextButton(onClick = { showAboutDialog = false }) { Text("Close", color = BrandRed) }
+            }
+        )
+    }
+
+    if (showResetPasswordDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                if (!isSendingReset) showResetPasswordDialog = false
+            },
+            title = { Text("Password & Security", fontFamily = SettingsEditorialFamily, fontWeight = FontWeight.Bold) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (!resetEmailSent) {
+                        Text(
+                            "We will send a password reset link to your registered email address ($userEmail).",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF6D6963)
+                        )
+                    } else {
+                        Text(
+                            "Password reset link sent to $userEmail! Please check your inbox and spam folder to set a new password.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF2E7D32),
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    resetError?.let { err ->
+                        Text(err, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            },
+            confirmButton = {
+                if (!resetEmailSent) {
+                    Button(
+                        onClick = {
+                            isSendingReset = true
+                            resetError = null
+                            com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager.sendPasswordReset(
+                                email = userEmail,
+                                onSuccess = {
+                                    isSendingReset = false
+                                    resetEmailSent = true
+                                },
+                                onError = { msg ->
+                                    isSendingReset = false
+                                    resetError = msg
+                                }
+                            )
+                        },
+                        enabled = !isSendingReset && userEmail.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandRed)
+                    ) {
+                        if (isSendingReset) {
+                            CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
+                            Spacer(Modifier.width(8.dp))
+                        }
+                        Text(if (isSendingReset) "Sending…" else "Send Reset Email")
+                    }
+                } else {
+                    Button(
+                        onClick = { showResetPasswordDialog = false },
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandRed)
+                    ) {
+                        Text("Done")
+                    }
+                }
+            },
+            dismissButton = {
+                if (!resetEmailSent) {
+                    TextButton(onClick = { showResetPasswordDialog = false }, enabled = !isSendingReset) {
+                        Text("Cancel", color = Color(0xFF6D6963))
+                    }
+                }
             }
         )
     }
@@ -76,10 +155,11 @@ fun SettingsScreen(
         }
         item {
             SettingsSection("ACCOUNT") {
+                SettingsRow("Password & Security", if (userEmail.isNotBlank()) "Send password reset link to $userEmail" else "Reset your password", R.drawable.ic_shield_orange, onClick = { resetEmailSent = false; resetError = null; showResetPasswordDialog = true })
                 SettingsRow("Account", "Profile editing", avatar = "AK", enabled = false)
                 SettingsRow("Privacy", "Privacy controls", R.drawable.ic_shield_orange, enabled = false)
                 SettingsRow("Help & Support", "FAQs and contact us", R.drawable.ic_help_orange, enabled = false)
-                SettingsRow("About WritOn", "Version 1.0.0", R.drawable.ic_info_orange, onClick = { showAboutDialog = true })
+                SettingsRow("About WritOn", "Version 2.0.0", R.drawable.ic_info_orange, onClick = { showAboutDialog = true })
             }
         }
         item {
