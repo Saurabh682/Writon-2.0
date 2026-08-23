@@ -48,6 +48,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.designsystem.components.PostCoverImage
 import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
@@ -75,6 +76,7 @@ private data class HistoryStory(
     val minutes: Int,
     val progress: Float,
     val bookmarked: Boolean,
+    val coverImage: String?,
     val coverTone: Color,
     val coverLabel: String
 )
@@ -94,6 +96,7 @@ private fun ReadingHistoryItemDto.asHistoryStory(): HistoryStory {
         minutes = readingTimeMin,
         progress = progress.coerceIn(0f, 1f),
         bookmarked = isBookmarked,
+        coverImage = coverImage,
         coverTone = Color(0xFFF2ECE4),
         coverLabel = category
     )
@@ -312,27 +315,16 @@ private fun HistoryRow(
 
 @Composable
 private fun HistoryCover(story: HistoryStory) {
-    Surface(
-        modifier = Modifier.size(112.dp, 142.dp),
-        shape = RoundedCornerShape(14.dp),
-        color = MaterialTheme.colorScheme.surfaceVariant
-    ) {
-        Column(
-            modifier = Modifier.padding(13.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = .12f), modifier = Modifier.size(24.dp)) {}
-            Text(
-                text = story.coverLabel,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                fontSize = 14.sp,
-                lineHeight = 16.sp,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
+    PostCoverImage(
+        imageUrl = story.coverImage,
+        category = story.coverLabel,
+        contentDescription = "Cover for ${story.title}",
+        modifier = Modifier
+            .size(112.dp, 142.dp)
+            .clip(RoundedCornerShape(14.dp)),
+        categoryFontSize = 14.sp,
+        forceDefault = story.coverImage.isNullOrBlank()
+    )
 }
 
 @Composable

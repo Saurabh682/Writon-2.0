@@ -36,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.designsystem.components.PostCoverImage
 import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
@@ -63,6 +64,7 @@ private data class SearchStory(
     val minutes: Int,
     val applauds: Int,
     val author: String,
+    val coverImage: String?,
     val coverTone: Color,
     val coverLabel: String
 )
@@ -74,6 +76,7 @@ private fun PostDto.asSearchStory() = SearchStory(
     minutes = readingTimeMin,
     applauds = likesCnt,
     author = author.fullName,
+    coverImage = coverImage,
     coverTone = Color(0xFFF2ECE4),
     coverLabel = category
 )
@@ -366,23 +369,17 @@ private fun SearchResultCard(story: SearchStory, onClick: () -> Unit) {
 
 @Composable
 private fun SearchCover(story: SearchStory) {
-    Surface(
-        modifier = Modifier.width(88.dp).height(112.dp),
-        shape = RoundedCornerShape(WritOnRadius.field),
-        color = story.coverTone
-    ) {
-        Column(
-            modifier = Modifier.padding(10.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Surface(shape = CircleShape, color = Color(0xFFFFFDF9).copy(alpha = 0.2f), modifier = Modifier.size(24.dp)) {}
-            Text(
-                story.coverLabel,
-                style = MaterialTheme.typography.titleMedium.copy(fontFamily = SearchEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, lineHeight = 17.sp),
-                color = Color(0xFFFFFDF9)
-            )
-        }
-    }
+    PostCoverImage(
+        imageUrl = story.coverImage,
+        category = story.coverLabel,
+        contentDescription = "Cover for ${story.title}",
+        modifier = Modifier
+            .width(88.dp)
+            .height(112.dp)
+            .clip(RoundedCornerShape(WritOnRadius.field)),
+        categoryFontSize = 13.sp,
+        forceDefault = story.coverImage.isNullOrBlank()
+    )
 }
 
 @Composable

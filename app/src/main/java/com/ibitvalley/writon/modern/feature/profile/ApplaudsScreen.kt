@@ -20,6 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.core.designsystem.components.PostCoverImage
 import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
@@ -50,6 +52,7 @@ private data class ApplaudedStory(
     val title: String,
     val author: String,
     val time: String,
+    val coverImage: String?,
     val coverTone: Color,
     val coverLabel: String,
     val hasCover: Boolean = true
@@ -67,9 +70,10 @@ private fun PostDto.asApplaudedStory(): ApplaudedStory {
         title = title,
         author = author.fullName,
         time = "Recently applauded",
+        coverImage = coverImage,
         coverTone = Color(0xFFF2ECE4),
         coverLabel = category,
-        hasCover = coverImage != null
+        hasCover = true
     )
 }
 
@@ -270,16 +274,16 @@ private fun ApplaudedStoryRow(
 
 @Composable
 private fun StoryCover(story: ApplaudedStory) {
-    Surface(
-        modifier = Modifier.size(72.dp),
-        color = story.coverTone,
-        shape = RoundedCornerShape(WritOnRadius.field)
-    ) {
-        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.SpaceBetween) {
-            Surface(shape = CircleShape, color = Color(0xFFFFFDF9).copy(alpha = 0.25f), modifier = Modifier.size(18.dp)) {}
-            Text(story.coverLabel, color = Color(0xFFFFFDF9), fontSize = 13.sp, fontWeight = FontWeight.SemiBold, lineHeight = 15.sp)
-        }
-    }
+    PostCoverImage(
+        imageUrl = story.coverImage,
+        category = story.coverLabel,
+        contentDescription = "Cover for ${story.title}",
+        modifier = Modifier
+            .size(72.dp)
+            .clip(RoundedCornerShape(WritOnRadius.field)),
+        categoryFontSize = 11.sp,
+        forceDefault = story.coverImage.isNullOrBlank()
+    )
 }
 
 @Composable
