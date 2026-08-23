@@ -205,8 +205,6 @@ fun SettingsScreen(
         )
     }
 
-    val context = androidx.compose.ui.platform.LocalContext.current
-
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),

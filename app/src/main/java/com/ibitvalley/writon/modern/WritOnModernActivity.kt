@@ -125,7 +125,7 @@ private fun BiometricLockScreen(onUnlockClick: () -> Unit) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(32.dp),
-            horizontalAlignment = Alignment.CenterVertically,
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             WritOnBrandMark(width = 120.dp)
