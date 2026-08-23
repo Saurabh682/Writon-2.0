@@ -43,15 +43,25 @@ fun PostCoverImage(
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Crop
             )
+            val adjustedFontSize = when {
+                category.length > 12 && categoryFontSize >= 30.sp -> 24.sp
+                category.length > 8 && categoryFontSize >= 30.sp -> 28.sp
+                category.length > 12 && categoryFontSize >= 20.sp -> 18.sp
+                category.length > 8 && categoryFontSize <= 15.sp -> 11.sp
+                else -> categoryFontSize
+            }
+            val horizontalPad = if (categoryFontSize <= 15.sp) 4.dp else WritOnSpacing.md
             Text(
                 text = category.uppercase(),
                 color = BrandRed,
-                fontSize = categoryFontSize,
+                fontSize = adjustedFontSize,
+                lineHeight = (adjustedFontSize.value * 1.18f).sp,
                 fontWeight = FontWeight.SemiBold,
-                letterSpacing = 1.5.sp,
-                maxLines = 1,
+                letterSpacing = if (categoryFontSize <= 15.sp) 0.5.sp else 1.2.sp,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(horizontal = WritOnSpacing.md)
+                modifier = Modifier.padding(horizontal = horizontalPad)
             )
         } else {
             AsyncImage(

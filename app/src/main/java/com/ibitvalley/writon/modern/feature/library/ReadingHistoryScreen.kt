@@ -125,13 +125,13 @@ fun ReadingHistoryScreen(
             item { EmptyHistory(filter) }
         } else {
             groups.forEach { (group, stories) ->
-                item { Text(group, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold)) }
+                item { Text(group, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onBackground) }
                 item {
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(22.dp),
-                        color = Color(0xFFFFFDF9),
-                        border = BorderStroke(1.dp, Color(0xFFE9E1D7))
+                        color = MaterialTheme.colorScheme.surface,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                     ) {
                         Column {
                             stories.forEachIndexed { index, story ->
@@ -144,7 +144,7 @@ fun ReadingHistoryScreen(
                                     onMore = { menuFor = story.id },
                                     onDismiss = { menuFor = null }
                                 )
-                                if (index < stories.lastIndex) HorizontalDivider(color = Color(0xFFE9E1D7), modifier = Modifier.padding(start = 164.dp))
+                                if (index < stories.lastIndex) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), modifier = Modifier.padding(start = 164.dp))
                             }
                         }
                     }
@@ -167,13 +167,14 @@ private fun HistoryHeader(onSearchClick: () -> Unit, onSettingsClick: () -> Unit
         Text(
             "Reading History",
             modifier = Modifier.padding(top = 40.dp),
-            style = MaterialTheme.typography.displayLarge.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 48.sp, lineHeight = 54.sp)
+            style = MaterialTheme.typography.displayLarge.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 48.sp, lineHeight = 54.sp),
+            color = MaterialTheme.colorScheme.onBackground
         )
         Text(
             "Your reading journey, in the order you read.",
             modifier = Modifier.padding(top = 6.dp),
             style = MaterialTheme.typography.titleLarge.copy(fontFamily = HistoryEditorialFamily, fontSize = 18.sp),
-            color = Color(0xFF6D6963)
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -197,10 +198,10 @@ private fun HistoryFilters(selected: HistoryFilter, onSelect: (HistoryFilter) ->
                         }), contentDescription = null, modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text(filter.label, fontSize = 14.sp, fontWeight = if (selectedFilter) FontWeight.Medium else FontWeight.Normal, color = if (selectedFilter) BrandRed else Color(0xFF151718))
+                    Text(filter.label, fontSize = 14.sp, fontWeight = if (selectedFilter) FontWeight.Medium else FontWeight.Normal, color = if (selectedFilter) BrandRed else MaterialTheme.colorScheme.onSurface)
                 }
                 Spacer(Modifier.height(14.dp))
-                Surface(modifier = Modifier.fillMaxWidth().height(if (selectedFilter) 3.dp else 1.dp), color = if (selectedFilter) BrandRed else Color(0xFFE9E1D7)) {}
+                Surface(modifier = Modifier.fillMaxWidth().height(if (selectedFilter) 3.dp else 1.dp), color = if (selectedFilter) BrandRed else MaterialTheme.colorScheme.outlineVariant) {}
             }
         }
     }
@@ -211,8 +212,8 @@ private fun HistorySummary(summary: ReadingHistorySummaryDto) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(22.dp),
-        color = Color(0xFFFFFDF9),
-        border = BorderStroke(1.dp, Color(0xFFE9E1D7))
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp), verticalAlignment = Alignment.CenterVertically) {
             Surface(shape = CircleShape, color = BrandRed.copy(alpha = .12f), modifier = Modifier.size(72.dp)) {
@@ -220,15 +221,15 @@ private fun HistorySummary(summary: ReadingHistorySummaryDto) {
             }
             Spacer(Modifier.width(20.dp))
             Column {
-                Text(summary.storiesRead.toString(), style = MaterialTheme.typography.displaySmall.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 39.sp))
-                Text("Stories read", fontSize = 14.sp, color = Color(0xFF6D6963))
+                Text(summary.storiesRead.toString(), style = MaterialTheme.typography.displaySmall.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 39.sp), color = MaterialTheme.colorScheme.onSurface)
+                Text("Stories read", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.weight(1f))
-            VerticalDivider(modifier = Modifier.height(64.dp), color = Color(0xFFE9E1D7))
+            VerticalDivider(modifier = Modifier.height(64.dp), color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(Modifier.width(20.dp))
             Column {
-                Text("%.1f".format(summary.hoursRead), style = MaterialTheme.typography.displaySmall.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 39.sp))
-                Text("Hours spent reading", fontSize = 14.sp, color = Color(0xFF6D6963), maxLines = 1)
+                Text("%.1f".format(summary.hoursRead), style = MaterialTheme.typography.displaySmall.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 39.sp), color = MaterialTheme.colorScheme.onSurface)
+                Text("Hours spent reading", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             }
         }
     }
@@ -251,20 +252,20 @@ private fun HistoryRow(
         HistoryCover(story)
         Spacer(Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(story.title, style = MaterialTheme.typography.titleLarge.copy(fontFamily = HistoryEditorialFamily, fontSize = 22.sp, lineHeight = 25.sp, fontWeight = FontWeight.SemiBold), maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(story.title, style = MaterialTheme.typography.titleLarge.copy(fontFamily = HistoryEditorialFamily, fontSize = 22.sp, lineHeight = 25.sp, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Row(modifier = Modifier.padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
-                Surface(shape = CircleShape, color = story.coverTone.copy(alpha = .20f), modifier = Modifier.size(24.dp)) {
-                    Box(contentAlignment = Alignment.Center) { Text(story.author.take(1), fontSize = 11.sp, fontWeight = FontWeight.Bold) }
+                Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(24.dp)) {
+                    Box(contentAlignment = Alignment.Center) { Text(story.author.take(1), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 }
                 Spacer(Modifier.width(8.dp))
-                Text(story.author, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("  •  ", fontSize = 13.sp, color = Color(0xFF6D6963))
-                Text("${story.minutes} min read", fontSize = 14.sp, color = Color(0xFF6D6963), maxLines = 1)
+                Text(story.author, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("  •  ", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("${story.minutes} min read", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             }
             Row(modifier = Modifier.padding(top = 15.dp), verticalAlignment = Alignment.CenterVertically) {
-                LinearProgressIndicator(progress = { story.progress }, modifier = Modifier.weight(1f).height(4.dp).clip(CircleShape), color = BrandRed, trackColor = Color(0xFFE9E1D7))
+                LinearProgressIndicator(progress = { story.progress }, modifier = Modifier.weight(1f).height(4.dp).clip(CircleShape), color = BrandRed, trackColor = MaterialTheme.colorScheme.outlineVariant)
                 Spacer(Modifier.width(14.dp))
-                Text("${(story.progress * 100).toInt()}%", fontSize = 14.sp, color = Color(0xFF151718))
+                Text("${(story.progress * 100).toInt()}%", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
             }
         }
         Column(modifier = Modifier.align(Alignment.Top), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -284,33 +285,48 @@ private fun HistoryRow(
 
 @Composable
 private fun HistoryCover(story: HistoryStory) {
-    Surface(modifier = Modifier.size(112.dp, 142.dp), shape = RoundedCornerShape(14.dp), color = story.coverTone) {
-        Column(modifier = Modifier.padding(13.dp), verticalArrangement = Arrangement.SpaceBetween) {
-            Surface(shape = CircleShape, color = Color(0xFFFFFDF9).copy(alpha = .22f), modifier = Modifier.size(24.dp)) {}
-            Text(story.coverLabel, color = Color(0xFFFFFDF9), fontSize = 14.sp, lineHeight = 16.sp, fontWeight = FontWeight.SemiBold)
+    Surface(
+        modifier = Modifier.size(112.dp, 142.dp),
+        shape = RoundedCornerShape(14.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant
+    ) {
+        Column(
+            modifier = Modifier.padding(13.dp),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = .12f), modifier = Modifier.size(24.dp)) {}
+            Text(
+                text = story.coverLabel,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 14.sp,
+                lineHeight = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
         }
     }
 }
 
 @Composable
 private fun EmptyHistory(filter: HistoryFilter) {
-    Surface(modifier = Modifier.fillMaxWidth(), color = Color(0xFFFFFDF9), shape = RoundedCornerShape(22.dp), border = BorderStroke(1.dp, Color(0xFFE9E1D7))) {
+    Surface(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(22.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))) {
         Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Image(painterResource(R.drawable.ic_history_muted), contentDescription = null, modifier = Modifier.size(38.dp))
-            Text("No ${filter.label.lowercase()} reading yet", modifier = Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleLarge.copy(fontFamily = HistoryEditorialFamily))
-            Text("Stories you read will appear here.", modifier = Modifier.padding(top = 4.dp), color = Color(0xFF6D6963))
+            Text("No ${filter.label.lowercase()} reading yet", modifier = Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleLarge.copy(fontFamily = HistoryEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
+            Text("Stories you read will appear here.", modifier = Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
 
 @Composable
 private fun ContinueReadingTip(onDismiss: () -> Unit) {
-    Surface(modifier = Modifier.fillMaxWidth(), color = Color(0xFFF8F4EE), shape = RoundedCornerShape(WritOnRadius.field), border = BorderStroke(1.dp, Color(0xFFE9E1D7))) {
+    Surface(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surfaceVariant, shape = RoundedCornerShape(WritOnRadius.field), border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))) {
         Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("✦", fontSize = 23.sp, color = BrandRed)
             Spacer(Modifier.width(12.dp))
-            Text("Tip: Tap any story to continue reading\nfrom where you left off.", modifier = Modifier.weight(1f), fontSize = 14.sp, lineHeight = 19.sp)
-            IconButton(onClick = onDismiss, modifier = Modifier.size(36.dp)) { Text("×", fontSize = 27.sp, color = Color(0xFF151718)) }
+            Text("Tip: Tap any story to continue reading\nfrom where you left off.", modifier = Modifier.weight(1f), fontSize = 14.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurface)
+            IconButton(onClick = onDismiss, modifier = Modifier.size(36.dp)) { Text("×", fontSize = 27.sp, color = MaterialTheme.colorScheme.onSurface) }
         }
     }
 }
