@@ -1,5 +1,8 @@
 package com.ibitvalley.writon.modern.feature.auth
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -14,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -26,6 +30,9 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager
 import com.ibitvalley.writon.modern.core.network.NetworkClient
@@ -43,6 +50,7 @@ fun SignupScreen(
     onSignInClick: () -> Unit,
     onCreateAccountClick: () -> Unit
 ) {
+    val context = LocalContext.current
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
@@ -54,6 +62,67 @@ fun SignupScreen(
     var isSubmitting by remember { mutableStateOf(false) }
     var authError by remember { mutableStateOf<String?>(null) }
     val coroutineScope = rememberCoroutineScope()
+
+    val webClientId = "802112841589-nuiftft451onasf3ou6ueput9in1vei2.apps.googleusercontent.com"
+    val googleSignInClient = remember {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(webClientId)
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, gso)
+    }
+
+    val googleLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
+                if (idToken != null) {
+                    isSubmitting = true
+                    authError = null
+                    FirebaseAuthManager.signInWithGoogle(
+                        idToken = idToken,
+                        onSuccess = { user ->
+                            FirebaseAuthManager.syncNetworkAuthToken { hasToken ->
+                                if (!hasToken) {
+                                    isSubmitting = false
+                                    authError = "Session verification failed."
+                                    return@syncNetworkAuthToken
+                                }
+                                val rawName = user.displayName?.trim().orEmpty()
+                                val penName = rawName.lowercase().replace(Regex("[^a-z0-9_]"), "_").take(24).ifBlank { "writer_${user.uid.take(6)}" }
+                                val fullNameVal = rawName.ifBlank { "WritOn Member" }
+                                coroutineScope.launch {
+                                    runCatching {
+                                        NetworkClient.apiService.upsertMyProfile(
+                                            UpsertMyProfileRequestDto(
+                                                penName = penName,
+                                                fullName = fullNameVal,
+                                                avatarUrl = user.photoUrl?.toString()
+                                            )
+                                        )
+                                    }
+                                    isSubmitting = false
+                                    onCreateAccountClick()
+                                }
+                            }
+                        },
+                        onError = { msg ->
+                            isSubmitting = false
+                            authError = msg
+                        }
+                    )
+                } else {
+                    authError = "Google Sign-In token could not be retrieved."
+                }
+            } catch (e: Exception) {
+                authError = e.localizedMessage ?: "Google Sign-In failed."
+            }
+        }
+    }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -283,24 +352,17 @@ fun SignupScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Social Buttons Row
-            Row(
+            // Social Button
+            SocialSignupButton(
+                text = "Continue with Google",
+                icon = R.drawable.googleicon,
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                SocialSignupButton(
-                    text = "Google",
-                    icon = R.drawable.googleicon,
-                    modifier = Modifier.weight(1f),
-                    onClick = {}
-                )
-                SocialSignupButton(
-                    text = "Apple",
-                    icon = R.drawable.apple,
-                    modifier = Modifier.weight(1f),
-                    onClick = {}
-                )
-            }
+                onClick = {
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        googleLauncher.launch(googleSignInClient.signInIntent)
+                    }
+                }
+            )
 
             Spacer(modifier = Modifier.height(48.dp))
         }

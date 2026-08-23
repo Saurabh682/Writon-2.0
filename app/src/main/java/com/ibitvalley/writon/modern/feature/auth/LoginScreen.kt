@@ -1,5 +1,8 @@
 package com.ibitvalley.writon.modern.feature.auth
 
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -24,9 +28,15 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnTheme
+import com.ibitvalley.writon.modern.core.network.NetworkClient
+import com.ibitvalley.writon.modern.core.network.model.UpsertMyProfileRequestDto
+import kotlinx.coroutines.launch
 
 private val BrandBeigeColor = Color(0xFFF8F4EE)
 private val BrandRedColor = Color(0xFFE75A2A)
@@ -38,6 +48,8 @@ fun LoginScreen(
     onSignInClick: () -> Unit,
     onSignUpClick: () -> Unit
 ) {
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -48,6 +60,67 @@ fun LoginScreen(
     var isSendingReset by remember { mutableStateOf(false) }
     var resetSuccessMessage by remember { mutableStateOf<String?>(null) }
     var resetErrorMessage by remember { mutableStateOf<String?>(null) }
+
+    val webClientId = "802112841589-nuiftft451onasf3ou6ueput9in1vei2.apps.googleusercontent.com"
+    val googleSignInClient = remember {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(webClientId)
+            .requestEmail()
+            .build()
+        GoogleSignIn.getClient(context, gso)
+    }
+
+    val googleLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                val idToken = account?.idToken
+                if (idToken != null) {
+                    isSubmitting = true
+                    authError = null
+                    FirebaseAuthManager.signInWithGoogle(
+                        idToken = idToken,
+                        onSuccess = { user ->
+                            FirebaseAuthManager.syncNetworkAuthToken { hasToken ->
+                                if (!hasToken) {
+                                    isSubmitting = false
+                                    authError = "Session verification failed."
+                                    return@syncNetworkAuthToken
+                                }
+                                val rawName = user.displayName?.trim().orEmpty()
+                                val penName = rawName.lowercase().replace(Regex("[^a-z0-9_]"), "_").take(24).ifBlank { "writer_${user.uid.take(6)}" }
+                                val fullName = rawName.ifBlank { "WritOn Member" }
+                                coroutineScope.launch {
+                                    runCatching {
+                                        NetworkClient.apiService.upsertMyProfile(
+                                            UpsertMyProfileRequestDto(
+                                                penName = penName,
+                                                fullName = fullName,
+                                                avatarUrl = user.photoUrl?.toString()
+                                            )
+                                        )
+                                    }
+                                    isSubmitting = false
+                                    onSignInClick()
+                                }
+                            }
+                        },
+                        onError = { msg ->
+                            isSubmitting = false
+                            authError = msg
+                        }
+                    )
+                } else {
+                    authError = "Google Sign-In token could not be retrieved."
+                }
+            } catch (e: Exception) {
+                authError = e.localizedMessage ?: "Google Sign-In failed."
+            }
+        }
+    }
 
     if (showResetDialog) {
         AlertDialog(
@@ -362,19 +435,15 @@ fun LoginScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Social Buttons
+            // Social Button
             SocialButton(
                 text = "Continue with Google",
                 icon = R.drawable.googleicon,
-                onClick = {}
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            SocialButton(
-                text = "Continue with Apple",
-                icon = R.drawable.apple,
-                onClick = {}
+                onClick = {
+                    googleSignInClient.signOut().addOnCompleteListener {
+                        googleLauncher.launch(googleSignInClient.signInIntent)
+                    }
+                }
             )
 
             Spacer(modifier = Modifier.weight(1f))

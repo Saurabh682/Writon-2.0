@@ -40,6 +40,22 @@ object FirebaseAuthManager {
             }
     }
 
+    fun signInWithGoogle(
+        idToken: String,
+        onSuccess: (FirebaseUser) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
+        auth.signInWithCredential(credential)
+            .addOnSuccessListener { result ->
+                result.user?.let(onSuccess)
+                    ?: onError("Could not retrieve the signed-in user.")
+            }
+            .addOnFailureListener { error ->
+                onError(error.localizedMessage ?: "Google sign-in failed.")
+            }
+    }
+
     fun sendPasswordReset(
         email: String,
         onSuccess: () -> Unit,
