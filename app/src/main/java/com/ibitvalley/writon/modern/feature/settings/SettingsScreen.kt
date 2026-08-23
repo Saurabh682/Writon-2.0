@@ -56,6 +56,7 @@ fun SettingsScreen(
     var isBiometricEnabled by remember { mutableStateOf(userPreferences.isBiometricEnabled) }
 
     var showAboutDialog by remember { mutableStateOf(false) }
+    var showTutorialDialog by remember { mutableStateOf(false) }
 
     var showResetPasswordDialog by remember { mutableStateOf(false) }
     var resetEmailSent by remember { mutableStateOf(false) }
@@ -66,6 +67,41 @@ fun SettingsScreen(
     var isDeletingAccount by remember { mutableStateOf(false) }
     var deleteAccountError by remember { mutableStateOf<String?>(null) }
     val userEmail = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email.orEmpty()
+
+    if (showTutorialDialog) {
+        AlertDialog(
+            onDismissRequest = { showTutorialDialog = false },
+            title = {
+                Text(
+                    "WritOn Feature Guide",
+                    fontFamily = SettingsEditorialFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    GuideItem("📖", "Curated Feed", "Browse thoughtful essays filtered by your favorite topics.")
+                    GuideItem("🎨", "Reader Themes (Aa)", "Switch between Paper, Sepia, Dark Obsidian & adjust font sizes in reader.")
+                    GuideItem("✍️", "Offline Writer Studio", "Draft stories offline with auto-save and automatic outbox sync.")
+                    GuideItem("🔒", "Biometric Lock", "Secure your app with Fingerprint or Face ID in Settings.")
+                    GuideItem("👏", "Reader Applause", "Applaud stories to support authors and bookmark them for offline reading.")
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { showTutorialDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandRed),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Got It", color = Color.White)
+                }
+            }
+        )
+    }
 
     if (showAboutDialog) {
         AlertDialog(
@@ -278,7 +314,7 @@ fun SettingsScreen(
                 SettingsRow("Delete Account & Data", "Permanently remove your account and stories", R.drawable.ic_shield_orange, accent = true, onClick = { showDeleteAccountDialog = true })
                 SettingsRow("Account", "Profile editing", avatar = "AK", enabled = false)
                 SettingsRow("Privacy", "Privacy controls", R.drawable.ic_shield_orange, enabled = false)
-                SettingsRow("Help & Support", "FAQs and contact us", R.drawable.ic_help_orange, enabled = false)
+                SettingsRow("Help & App Guide", "Feature tutorials and tips", R.drawable.ic_help_orange, onClick = { showTutorialDialog = true })
                 SettingsRow("About WritOn", "Version 2.0.0", R.drawable.ic_info_orange, onClick = { showAboutDialog = true })
             }
         }
@@ -428,4 +464,38 @@ private fun SettingsSwitchRow(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f), modifier = Modifier.padding(horizontal = WritOnSpacing.md))
     }
 }
+
+@Composable
+private fun GuideItem(emoji: String, title: String, description: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = emoji,
+            style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp),
+            modifier = Modifier.padding(end = 12.dp, top = 2.dp)
+        )
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp
+                ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    fontSize = 13.sp,
+                    lineHeight = 17.sp
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
 
