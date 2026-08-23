@@ -423,20 +423,23 @@ private fun WritOnBottomNavigation(
 
     WritOnBottomBar(
         currentRoute = currentRoute,
-        onNavigate = { route ->
-            val requiresLogin = route == WritOnRoute.Library.route ||
-                route == WritOnRoute.Profile.route ||
-                route == WritOnRoute.Write.route
+        onNavigate = { targetRoute ->
+            val requiresLogin = targetRoute == WritOnRoute.Library.route ||
+                targetRoute == WritOnRoute.Profile.route ||
+                targetRoute == WritOnRoute.Write.route
             if (requiresLogin && !isSignedIn) {
                 onLoginRequired()
                 return@WritOnBottomBar
             }
-            navController.navigate(route) {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
+
+            if (currentRoute != targetRoute) {
+                navController.navigate(targetRoute) {
+                    popUpTo(WritOnRoute.Home.route) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
                 }
-                launchSingleTop = true
-                restoreState = true
             }
         }
     )
@@ -450,30 +453,37 @@ fun WritOnBottomBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(94.dp),
+            .height(86.dp),
         contentAlignment = Alignment.BottomCenter
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(76.dp),
+                .height(70.dp),
             color = BrandBeige,
-            shadowElevation = 3.dp
+            shadowElevation = 4.dp
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 HorizontalDivider(color = Color(0xFFE9E1D7), thickness = 1.dp)
                 Row(
-                    modifier = Modifier.fillMaxSize().padding(bottom = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     bottomNavItems.forEachIndexed { index, item ->
-                        if (index == 2) Spacer(modifier = Modifier.width(62.dp))
+                        if (index == 2) {
+                            Spacer(modifier = Modifier.width(68.dp))
+                        }
                         val selected = currentRoute == item.route ||
                             (currentRoute == WritOnRoute.Search.route && item.label == "Explore") ||
                             (currentRoute == WritOnRoute.ReadingHistory.route && item.label == "Library") ||
-                            (currentRoute == WritOnRoute.Settings.route && item.label == "Profile")
+                            (currentRoute == WritOnRoute.Settings.route && item.label == "Profile") ||
+                            (currentRoute == WritOnRoute.Applauds.route && item.label == "Profile")
                         NavigationItem(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight(),
                             selected = selected,
                             onClick = { onNavigate(item.route) },
                             icon = if (selected) item.selectedIcon else item.unselectedIcon,
@@ -484,10 +494,11 @@ fun WritOnBottomBar(
             }
         }
 
+        // Center Floating Action Button for Write
         Surface(
             modifier = Modifier
-                .padding(bottom = 30.dp)
-                .size(60.dp)
+                .padding(bottom = 20.dp)
+                .size(56.dp)
                 .align(Alignment.BottomCenter),
             shape = CircleShape,
             color = BrandRed,
@@ -495,7 +506,11 @@ fun WritOnBottomBar(
             onClick = { onNavigate(WritOnRoute.Write.route) }
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Image(painterResource(R.drawable.ic_write_quill_white), contentDescription = "Write", modifier = Modifier.size(30.dp))
+                Image(
+                    painter = painterResource(R.drawable.ic_write_quill_white),
+                    contentDescription = "Write story",
+                    modifier = Modifier.size(28.dp)
+                )
             }
         }
     }
@@ -503,29 +518,37 @@ fun WritOnBottomBar(
 
 @Composable
 fun NavigationItem(
+    modifier: Modifier = Modifier,
     selected: Boolean,
     onClick: () -> Unit,
     icon: Int,
     label: String
 ) {
-    Column(
-        modifier = Modifier
+    Box(
+        modifier = modifier
             .clickable(
                 onClick = onClick,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
-            )
-            .padding(horizontal = 8.dp, vertical = 5.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        Image(painterResource(icon), contentDescription = label, modifier = Modifier.size(27.dp))
-        Spacer(modifier = Modifier.height(3.dp))
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (selected) BrandRed else Color(0xFF6D6963)
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(icon),
+                contentDescription = label,
+                modifier = Modifier.size(26.dp)
+            )
+            Spacer(modifier = Modifier.height(3.dp))
+            Text(
+                text = label,
+                fontSize = 11.sp,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (selected) BrandRed else Color(0xFF6D6963)
+            )
+        }
     }
 }
