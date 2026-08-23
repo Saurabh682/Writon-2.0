@@ -84,16 +84,16 @@ sealed class WritOnRoute(val route: String) {
 
 private data class BottomNavItem(
     val route: String,
-    val label: String,
-    val unselectedIcon: Int,
-    val selectedIcon: Int
+    @androidx.annotation.StringRes val labelRes: Int,
+    @androidx.annotation.DrawableRes val unselectedIcon: Int,
+    @androidx.annotation.DrawableRes val selectedIcon: Int
 )
 
 private val bottomNavItems = listOf(
-    BottomNavItem(WritOnRoute.Home.route, "Home", R.drawable.ic_home_muted, R.drawable.ic_home_orange),
-    BottomNavItem(WritOnRoute.Explore.route, "Explore", R.drawable.ic_explore_muted, R.drawable.ic_explore_orange),
-    BottomNavItem(WritOnRoute.Library.route, "Library", R.drawable.ic_library_muted, R.drawable.ic_library_orange),
-    BottomNavItem(WritOnRoute.Profile.route, "Profile", R.drawable.ic_profile_muted, R.drawable.ic_profile_orange)
+    BottomNavItem(WritOnRoute.Home.route, R.string.nav_home, R.drawable.ic_home_muted, R.drawable.ic_home_orange),
+    BottomNavItem(WritOnRoute.Explore.route, R.string.nav_explore, R.drawable.ic_explore_muted, R.drawable.ic_explore_orange),
+    BottomNavItem(WritOnRoute.Library.route, R.string.nav_library, R.drawable.ic_library_muted, R.drawable.ic_library_orange),
+    BottomNavItem(WritOnRoute.Profile.route, R.string.nav_profile, R.drawable.ic_profile_muted, R.drawable.ic_profile_orange)
 )
 
 @Composable
@@ -521,10 +521,10 @@ fun WritOnBottomBar(
                             Spacer(modifier = Modifier.width(68.dp))
                         }
                         val selected = currentRoute == item.route ||
-                            (currentRoute == WritOnRoute.Search.route && item.label == "Explore") ||
-                            (currentRoute == WritOnRoute.ReadingHistory.route && item.label == "Library") ||
-                            (currentRoute == WritOnRoute.Settings.route && item.label == "Profile") ||
-                            (currentRoute == WritOnRoute.Applauds.route && item.label == "Profile")
+                            (currentRoute == WritOnRoute.Search.route && item.route == WritOnRoute.Explore.route) ||
+                            (currentRoute == WritOnRoute.ReadingHistory.route && item.route == WritOnRoute.Library.route) ||
+                            (currentRoute == WritOnRoute.Settings.route && item.route == WritOnRoute.Profile.route) ||
+                            (currentRoute == WritOnRoute.Applauds.route && item.route == WritOnRoute.Profile.route)
                         NavigationItem(
                             modifier = Modifier
                                 .weight(1f)
@@ -532,7 +532,7 @@ fun WritOnBottomBar(
                             selected = selected,
                             onClick = { onNavigate(item.route) },
                             icon = if (selected) item.selectedIcon else item.unselectedIcon,
-                            label = item.label
+                            label = androidx.compose.ui.res.stringResource(item.labelRes)
                         )
                     }
                 }

@@ -1,4 +1,5 @@
 package com.ibitvalley.writon.modern.feature.comments
+import androidx.compose.ui.res.stringResource
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -31,6 +32,13 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 
+
+enum class CommentSortOrder(val labelRes: Int) {
+    Recent(R.string.comments_sort_recent),
+    Applauds(R.string.comments_sort_applauds),
+    Oldest(R.string.comments_sort_oldest)
+}
+
 private val CommentsEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
     Font(R.font.source_serif_4_semibold, weight = FontWeight.SemiBold),
@@ -62,7 +70,7 @@ fun CommentsScreen(
     var commentInput by remember { mutableStateOf("") }
     var replyingTo by remember { mutableStateOf<DisplayComment?>(null) }
     var sortExpanded by remember { mutableStateOf(false) }
-    var selectedSort by remember { mutableStateOf("Most recent") }
+    var selectedSort by remember { mutableStateOf(CommentSortOrder.Recent) }
 
     // Map Room CommentEntity list accurately to display model
     val displayComments = remember(comments, selectedSort) {
@@ -79,8 +87,8 @@ fun CommentsScreen(
         }
 
         when (selectedSort) {
-            "Top applauds" -> baseList.sortedByDescending { it.applaudsCount }
-            "Oldest" -> baseList.reversed()
+            CommentSortOrder.Applauds -> baseList.sortedByDescending { it.applaudsCount }
+            CommentSortOrder.Oldest -> baseList.reversed()
             else -> baseList
         }
     }
@@ -91,7 +99,7 @@ fun CommentsScreen(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            "Comments",
+                            stringResource(R.string.comments_title),
                             style = MaterialTheme.typography.headlineSmall.copy(
                                 fontFamily = CommentsEditorialFamily,
                                 fontWeight = FontWeight.Bold,
@@ -123,13 +131,13 @@ fun CommentsScreen(
                 actions = {
                     Box {
                         TextButton(onClick = { sortExpanded = true }) {
-                            Text(selectedSort, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+                            Text(stringResource(selectedSort.labelRes), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                             Text(" ∨", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
                         }
                         DropdownMenu(expanded = sortExpanded, onDismissRequest = { sortExpanded = false }) {
-                            DropdownMenuItem(text = { Text("Most recent") }, onClick = { selectedSort = "Most recent"; sortExpanded = false })
-                            DropdownMenuItem(text = { Text("Top applauds") }, onClick = { selectedSort = "Top applauds"; sortExpanded = false })
-                            DropdownMenuItem(text = { Text("Oldest") }, onClick = { selectedSort = "Oldest"; sortExpanded = false })
+                            DropdownMenuItem(text = { Text(stringResource(R.string.comments_sort_recent)) }, onClick = { selectedSort = CommentSortOrder.Recent; sortExpanded = false })
+                            DropdownMenuItem(text = { Text(stringResource(R.string.comments_sort_applauds)) }, onClick = { selectedSort = CommentSortOrder.Applauds; sortExpanded = false })
+                            DropdownMenuItem(text = { Text(stringResource(R.string.comments_sort_oldest)) }, onClick = { selectedSort = CommentSortOrder.Oldest; sortExpanded = false })
                         }
                     }
                 },
@@ -265,7 +273,7 @@ fun CommentsScreen(
                         )
                         Spacer(Modifier.height(14.dp))
                         Text(
-                            "No comments yet",
+                            stringResource(R.string.comments_empty_title),
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontFamily = CommentsEditorialFamily,
                                 fontWeight = FontWeight.SemiBold,
@@ -275,7 +283,7 @@ fun CommentsScreen(
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            "Be the first to share your thoughts on this story.",
+                            stringResource(R.string.comments_empty_desc),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center

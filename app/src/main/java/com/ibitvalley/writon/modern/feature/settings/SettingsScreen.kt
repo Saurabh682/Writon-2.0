@@ -34,6 +34,8 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 import com.ibitvalley.writon.modern.core.auth.BiometricAuthManager
 import com.ibitvalley.writon.modern.core.preferences.UserPreferences
+import com.ibitvalley.writon.modern.core.locale.LocaleManager
+import androidx.compose.ui.res.stringResource
 
 private val SettingsEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
@@ -58,6 +60,7 @@ fun SettingsScreen(
     var isBiometricEnabled by remember { mutableStateOf(userPreferences.isBiometricEnabled) }
 
     var showAboutDialog by remember { mutableStateOf(false) }
+    var showLanguageDialog by remember { mutableStateOf(false) }
     var showTutorialDialog by remember { mutableStateOf(false) }
 
     var showResetPasswordDialog by remember { mutableStateOf(false) }
@@ -69,6 +72,91 @@ fun SettingsScreen(
     var isDeletingAccount by remember { mutableStateOf(false) }
     var deleteAccountError by remember { mutableStateOf<String?>(null) }
     val userEmail = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.email.orEmpty()
+
+    
+    if (showLanguageDialog) {
+        val currentLang = remember { LocaleManager.getCurrentLanguage(context) }
+        var selectedCode by remember { mutableStateOf(currentLang.code) }
+
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = {
+                Text(
+                    stringResource(R.string.settings_language),
+                    fontFamily = SettingsEditorialFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        stringResource(R.string.settings_language_desc),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    LocaleManager.SupportedLanguages.forEach { lang ->
+                        val isSelected = selectedCode == lang.code
+                        Surface(
+                            onClick = {
+                                selectedCode = lang.code
+                                LocaleManager.applyLanguage(context, lang.code)
+                                showLanguageDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isSelected) BrandRed.copy(alpha = 0.12f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                            border = if (isSelected) BorderStroke(1.5.dp, BrandRed) else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text(
+                                        text = lang.nativeName,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = if (isSelected) BrandRed else MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "${lang.name} • ${lang.subtitle}",
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                if (isSelected) {
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = BrandRed,
+                                        modifier = Modifier.size(22.dp)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text("✓", color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLanguageDialog = false }) {
+                    Text(stringResource(R.string.common_close))
+                }
+            }
+        )
+    }
 
     if (showTutorialDialog) {
         AlertDialog(
@@ -251,7 +339,18 @@ fun SettingsScreen(
         item { SettingsHeader(onSearchClick) }
         item {
             SettingsSection("PREFERENCES") {
-                SettingsRow("Appearance", "Theme, font size, line height", R.drawable.ic_sun_orange, onClick = onAppearanceClick)
+                                SettingsRow(
+                    title = stringResource(R.string.settings_language),
+                    subtitle = "${LocaleManager.getCurrentLanguage(context).nativeName} • ${LocaleManager.getCurrentLanguage(context).name}",
+                    icon = R.drawable.ic_book_orange,
+                    onClick = { showLanguageDialog = true }
+                )
+                SettingsRow(
+                    title = stringResource(R.string.settings_theme),
+                    subtitle = stringResource(R.string.settings_theme_desc),
+                    icon = R.drawable.ic_sun_orange,
+                    onClick = onAppearanceClick
+                )
                 SettingsRow("Reading", "Choose your reading interests", R.drawable.ic_book_orange, onClick = onInterestsClick)
                 SettingsRow("Notifications", "View activity and reminders", R.drawable.ic_notification_orange, onClick = onNotificationsClick)
                 SettingsRow("Test Notification", "Send a sample rich interaction notification", R.drawable.ic_notification_orange, onClick = { com.ibitvalley.writon.modern.core.notification.WritOnNotificationManager.sendTestNotification(context) })

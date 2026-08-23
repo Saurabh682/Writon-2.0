@@ -1,24 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WritOn</string>
+    <string name="brand_tagline">Socialize Bloggers &amp; Writers, Read &amp; Write</string>
+    <string name="common_back">Back</string>
+    <string name="common_close">Close</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_save">Save</string>
+    <string name="common_done">Done</string>
+    <string name="common_search">Search</string>
+    <string name="common_share">Share</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_remove">Remove</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_loading">Loading…</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_more">More options</string>
+    <string name="common_min_read">%1$d min read</string>
+    <string name="common_min">%1$d min</string>
+    <string name="common_applauds">Applauds</string>
+    <string name="common_stories">Stories</string>
+    <string name="common_poems">Poems</string>
+    <string name="common_articles">Articles</string>
+    <string name="common_all">All</string>
+    <string name="common_followers">Followers</string>
+    <string name="common_following">Following</string>
+    <string name="common_follow">Follow</string>
+    <string name="common_tip">Tip</string>
+    <string name="common_got_it">Got it</string>
+    <string name="common_next">Next</string>
+    <string name="common_previous">Previous</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_explore">Explore</string>
+    <string name="nav_write">Write</string>
+    <string name="nav_library">Library</string>
+    <string name="nav_profile">Profile</string>
+    <string name="auth_welcome_back">Welcome back</string>
+    <string name="auth_sign_in_subtitle">Sign in to continue your writing and reading journey.</string>
+    <string name="auth_create_account">Create Account</string>
+    <string name="auth_sign_up_subtitle">Join a global community of writers and thoughtful readers.</string>
+    <string name="auth_full_name_label">Full Name</string>
+    <string name="auth_full_name_hint">e.g. Maya Lin</string>
+    <string name="auth_pen_name_label">Pen Name</string>
+    <string name="auth_pen_name_hint">e.g. mayalin</string>
+    <string name="auth_email_label">Email Address</string>
+    <string name="auth_email_hint">your.email@example.com</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_password_hint">Enter your password</string>
+    <string name="auth_forgot_password">Forgot password?</string>
+    <string name="auth_sign_in_button">Sign In</string>
+    <string name="auth_create_account_button">Create Account</string>
+    <string name="auth_or_continue_with">or continue with</string>
+    <string name="auth_google_sign_in">Sign in with Google</string>
+    <string name="auth_biometric_login">Log in with Biometrics</string>
+    <string name="auth_dont_have_account">Don\'t have an account? Sign up</string>
+    <string name="auth_already_have_account">Already have an account? Sign in</string>
+    <string name="auth_browse_as_guest">Browse as Guest</string>
+    <string name="auth_error_session">Session verification failed.</string>
+    <string name="auth_error_google_token">Google Sign-In token could not be retrieved.</string>
+    <string name="feed_title">WritOn</string>
+    <string name="feed_open_library">Open Library</string>
+    <string name="feed_open_profile">Open Profile</string>
+    <string name="feed_editorial_selection">Editorial Selection</string>
+    <string name="feed_curated_for_you">Curated for you</string>
+    <string name="feed_daily_spark">Daily Spark</string>
+    <string name="feed_empty_title">No stories available yet</string>
+    <string name="feed_empty_desc">Tap to discover essays and stories from our writers.</string>
+    <string name="explore_hero_line1">Explore\nsomething</string>
+    <string name="explore_hero_line2">different.</string>
+    <string name="explore_hero_desc">Step out of your comfort zone.\nFind a new kind of writing to love.</string>
+    <string name="explore_discover_voice">Discover another voice</string>
+    <string name="explore_discover_hint">Tap to load a fresh curated essay from our writers.</string>
+    <string name="explore_next_discovery">Next discovery</string>
+    <string name="editor_title_hint">Title…</string>
+    <string name="editor_subtitle_hint">Subtitle or hook (optional)…</string>
+    <string name="editor_body_hint">Tell your story… Pour your thoughts onto the page.</string>
+    <string name="editor_publish">Publish</string>
+    <string name="editor_publishing">Publishing…</string>
+    <string name="editor_save_draft">Save Draft</string>
+    <string name="editor_preview">Preview</string>
+    <string name="editor_category">Category</string>
+    <string name="editor_select_category">Select Category</string>
+    <string name="editor_tags">Tags</string>
+    <string name="editor_tags_hint">Add topics (e.g. fiction, craft, stillness)</string>
+    <string name="editor_schedule">Schedule Publication</string>
+    <string name="editor_word_count">%1$d words</string>
+    <string name="editor_char_count">%1$d characters</string>
+    <string name="editor_publish_ready">Ready to publish?</string>
+    <string name="editor_publish_desc">Your story will be shared with the WritOn community.</string>
+    <string name="editor_published_success">Story published successfully!</string>
+    <string name="reader_back">Back</string>
+    <string name="reader_typography">Typography &amp; Theme</string>
+    <string name="reader_font_size">Font Size</string>
+    <string name="reader_line_height">Line Height</string>
+    <string name="reader_font_family">Font Family</string>
+    <string name="reader_theme_paper">Paper</string>
+    <string name="reader_theme_sepia">Sepia</string>
+    <string name="reader_theme_dark">Dark Obsidian</string>
+    <string name="reader_applaud_action">Applaud</string>
+    <string name="reader_comment_action">Comments</string>
+    <string name="reader_bookmark_save">Save story</string>
+    <string name="reader_bookmark_saved">Remove bookmark</string>
+    <string name="reader_share_action">Share story</string>
+    <string name="reader_report_story">Report Story</string>
+    <string name="comments_title">Comments</string>
+    <string name="comments_count">%1$d comments</string>
+    <string name="comments_input_hint">Write a thoughtful response…</string>
+    <string name="comments_post_button">Post</string>
+    <string name="comments_reply_to">Replying to %1$s</string>
+    <string name="comments_sort_recent">Most recent</string>
+    <string name="comments_sort_applauds">Top applauds</string>
+    <string name="comments_sort_oldest">Oldest</string>
+    <string name="comments_empty_title">No comments yet</string>
+    <string name="comments_empty_desc">Be the first to share your thoughts on this story.</string>
+    <string name="library_title">Library</string>
+    <string name="library_subtitle">Your saved stories, reading history and more.</string>
+    <string name="library_tab_saved">Saved</string>
+    <string name="library_tab_history">History</string>
+    <string name="library_tab_applauds">Applauds</string>
+    <string name="library_tab_collections">Collections</string>
+    <string name="library_saved_header">Saved Stories</string>
+    <string name="library_history_header">Reading History</string>
+    <string name="library_applauds_header">Applauded Stories</string>
+    <string name="library_collections_header">Collections</string>
+    <string name="library_sort_newest">Newest</string>
+    <string name="library_sort_oldest">Oldest</string>
+    <string name="library_empty_saved">No saved stories yet</string>
+    <string name="library_empty_collections">No collections yet</string>
+    <string name="library_remove_saved">Remove from library</string>
+    <string name="history_title">Reading History</string>
+    <string name="history_subtitle">Your reading journey, in the order you read.</string>
+    <string name="history_stories_read">Stories read</string>
+    <string name="history_hours_read">Hours spent reading</string>
+    <string name="history_empty">No reading history yet</string>
+    <string name="history_tip">Tip: Tap any story to continue reading from where you left off.</string>
+    <string name="history_remove">Remove from history</string>
+    <string name="search_title">Search</string>
+    <string name="search_subtitle">Find stories, writers and ideas.</string>
+    <string name="search_placeholder">Search stories, writers, topics…</string>
+    <string name="search_tab_stories">Stories</string>
+    <string name="search_tab_writers">Writers</string>
+    <string name="search_tab_tags">Topics</string>
+    <string name="search_popular">Popular searches</string>
+    <string name="search_trending_topics">Trending topics</string>
+    <string name="search_no_results">No results found for \"%1$s\"</string>
+    <string name="profile_title">Your Profile</string>
+    <string name="profile_writer_title">Writer Profile</string>
+    <string name="profile_edit_button">Edit Profile</string>
+    <string name="profile_tab_published">Published</string>
+    <string name="profile_tab_drafts">Drafts</string>
+    <string name="profile_tab_about">About</string>
+    <string name="profile_tab_highlights">Highlights</string>
+    <string name="profile_followers_count">%1$d Followers</string>
+    <string name="profile_following_count">%1$d Following</string>
+    <string name="profile_applauds_received">Applauds Received</string>
+    <string name="profile_stories_published">Stories Published</string>
+    <string name="profile_bio_label">Bio</string>
+    <string name="profile_quote_label">Quote of the Day</string>
+    <string name="profile_save_changes">Save Changes</string>
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_account">Account &amp; Security</string>
+    <string name="settings_section_preferences">Preferences &amp; Experience</string>
+    <string name="settings_section_about">About &amp; Community</string>
+    <string name="settings_profile">Profile Settings</string>
+    <string name="settings_profile_desc">Update your pen name, bio, and avatar</string>
+    <string name="settings_biometric">Biometric Unlock</string>
+    <string name="settings_biometric_desc">Use fingerprint or face unlock for instant login</string>
+    <string name="settings_theme">Appearance &amp; Theme</string>
+    <string name="settings_theme_desc">Customize colors, dark mode, and reading typography</string>
+    <string name="settings_language">Language / भाषा</string>
+    <string name="settings_language_desc">Select your preferred app language</string>
+    <string name="settings_feature_guide">Feature Walkthrough Guide</string>
+    <string name="settings_feature_guide_desc">Explore all reading, writing, and discovery features</string>
+    <string name="settings_terms">Terms of Service</string>
+    <string name="settings_privacy">Privacy Policy</string>
+    <string name="settings_child_safety">Child Safety Standards</string>
+    <string name="settings_version">Version %1$s (%2$d)</string>
+    <string name="settings_logout">Log Out</string>
+    <string name="settings_logout_confirm_title">Log Out?</string>
+    <string name="settings_logout_confirm_desc">Are you sure you want to log out of your WritOn account?</string>
+    <string name="appearance_title">Appearance</string>
+    <string name="appearance_theme_mode">Theme Mode</string>
+    <string name="appearance_color_preset">Signature Brand Preset</string>
+    <string name="appearance_preview">LIVE PREVIEW</string>
+    <string name="appearance_preview_title">The Architecture of Thought</string>
+    <string name="appearance_preview_body">Writing is the physical manifestation of quiet contemplation. When we craft words with intent, every paragraph becomes a home.</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">OOps! There is nothing to see here.</string>
-
-
-    -
-    <string-array name="array_str_values">
-
-        <item>Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old.</item>
-
-        <item>Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance.</item>
-
-        <item>The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested. Sections 1.10.32 and 1.10.33 from "de Finibus Bonorum et Malorum" by Cicero are also reproduced in their exact original form, accompanied by English versions from the 1914 translation by H. Rackham.</item>
-
-        <item>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using \'Content here, content here\', making it look like readable English. Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for \'lorem ipsum\' will uncover many web sites still in their infancy.</item>
-
-    </string-array>
-
-
+    <!-- Legacy array resources -->
     <string-array name="array_mainCategory">
         <item>Select Main Category</item>
         <item>Short Stories</item>
@@ -30,7 +197,6 @@
         <item>Blog</item>
         <item>Journalism</item>
     </string-array>
-
 
     <string-array name="array_searchmainCategory">
         <item>All Category</item>
@@ -55,337 +221,14 @@
         <item>Political Candidate Or Issue</item>
     </string-array>
 
-    <string-array name="array_subCategory">
-        <item>Select SubCategory</item>
-    </string-array>
-
-    <string-array name="array_searchsubCategory">
-        <item>All SubCategory</item>
-    </string-array>
-
-    <string-array name="array_category">
-        <item>Select Sub-Category</item>
-        <item>Poem</item>
-        <item>Dark Fantasy</item>
-        <item>Fan Fiction</item>
-        <item>Fantasy</item>
-        <item>General Literary</item>
-        <item>Biography/ Autobiography</item>
-        <item>Essay</item>
-        <item>Narrative nonfiction/ Personal narrative</item>
-        <item>Memoir</item>
-        <item>Speech</item>
-        <item>Drama</item>
-        <item>Classic</item>
-        <item>Comic/ Graphic novel</item>
-        <item>Crime/Detective</item>
-        <item>Epic poetry</item>
-        <item>Dramatic poetry</item>
-        <item>Satirical poetry</item>
-        <item>Light poetry</item>
-        <item>Sufi</item>
-        <item>Travel</item>
-        <item>TV Story</item>
-    </string-array>
-
-    <string-array name="array_category1">
-        <item>All Category</item>
-        <item>Crime(Short Stories)</item>
-        <item>Dark Fantasy(Short Stories)</item>
-        <item>Fan Fiction(Short Stories)</item>
-        <item>Fantasy(Short Stories)</item>
-        <item>General Literary(Short Stories)</item>
-        <item>Ghost Stories(Short Stories)</item>
-        <item>Historical Fiction(Short Stories)</item>
-        <item>Horror(Short Stories)</item>
-        <item>Humour and Comedy(Short Stories)</item>
-        <item>Macabre(Short Stories)</item>
-        <item>Mystery(Short Stories)</item>
-        <item>Romance(Short Stories)</item>
-        <item>Scifi(Short Stories)</item>
-        <item>Spy stories(Short Stories)</item>
-        <item>Supernatural(Short Stories)</item>
-        <item>Thriller(Short Stories)</item>
-        <item>Travel(Short Stories)</item>
-        <item>True Stories(Short Stories)</item>
-        <item>War Stories(Short Stories)</item>
-        <item>Young Adults(Short Stories)</item>
-        <item>Biography/ Autobiography(Novels)</item>
-        <item>Essay(Novels)</item>
-        <item>Narrative nonfiction/ Personal narrative(Novels)</item>
-        <item>Memoir(Novels)</item>
-        <item>Speech(Novels)</item>
-        <item>Drama(Novels)</item>
-        <item>Classic(Novels)</item>
-        <item>Comic/ Graphic novel(Novels)</item>
-        <item>Crime/Detective(Novels)</item>
-        <item>Fable(Novels)</item>
-        <item>Fairy tale(Novels)</item>
-        <item>Fanfiction(Novels)</item>
-        <item>Fantasy(Novels)</item>
-        <item>Fiction narrative(Novels)</item>
-        <item>Fiction in verse(Novels)</item>
-        <item>Folklore(Novels)</item>
-        <item>Historical fiction(Novels)</item>
-        <item>Horror</item>
-        <item>Humour(Novels)</item>
-        <item>Legend(Novels)</item>
-        <item>Magical realism(Novels)</item>
-        <item>Metafiction(Novels)</item>
-        <item>Mystery(Novels)</item>
-        <item>Mythology(Novels)</item>
-        <item>Mythopoeia(Novels)</item>
-        <item>Realistic fiction(Novels)</item>
-        <item>Science fiction(Novels)</item>
-        <item>Suspense/Thriller(Novels)</item>
-        <item>Tall tale(Novels)</item>
-        <item>Western(Novels)</item>
-
-
-    </string-array>
-
-    <string-array name="array_language">
-        <item>Select Language</item>
-        <item>Hindi</item>
-        <item>English</item>
-        <item>Arabic</item>
-        <item>Bengali</item>
-        <item>Chinese</item>
-        <item>French</item>
-        <item>German</item>
-        <item>Italian</item>
-        <item>Japanese</item>
-        <item>Javanese</item>
-        <item>Korean</item>
-        <item>Lahnda</item>
-        <item>Malay</item>
-        <item>Marathi</item>
-        <item>Portuguese</item>
-        <item>Persian</item>
-        <item>Punjabi</item>
-        <item>Russian</item>
-        <item>Spanish</item>
-        <item>Swahili</item>
-        <item>Teluge</item>
-        <item>Turkish</item>
-        <item>Tamil</item>
-        <item>Urdu</item>
-        <item>Vietnamese</item>
-    </string-array>
-
-    <string-array name="array_Searchlanguage">
-        <item>All Language</item>
-        <item>Hindi</item>
-        <item>English</item>
-        <item>Arabic</item>
-        <item>Bengali</item>
-        <item>Chinese</item>
-        <item>French</item>
-        <item>German</item>
-        <item>Italian</item>
-        <item>Japanese</item>
-        <item>Javanese</item>
-        <item>Korean</item>
-        <item>Lahnda</item>
-        <item>Malay</item>
-        <item>Marathi</item>
-        <item>Portuguese</item>
-        <item>Persian</item>
-        <item>Punjabi</item>
-        <item>Russian</item>
-        <item>Spanish</item>
-        <item>Swahili</item>
-        <item>Teluge</item>
-        <item>Turkish</item>
-        <item>Tamil</item>
-        <item>Urdu</item>
-        <item>Vietnamese</item>
-    </string-array>
-
-
-    <string-array name="array_subCategory1">
-        <item>Select Sub-Category</item>
-        <item>Crime</item>
-        <item>Children</item>
-        <item>Dark Fantasy</item>
-        <item>Fan Fiction</item>
-        <item>Fantasy</item>
-        <item>General Literary</item>
-        <item>Ghost Stories</item>
-        <item>Historical Fiction</item>
-        <item>Horror</item>
-        <item>Humour and Comedy</item>
-        <item>Macabre</item>
-        <item>Mystery</item>
-        <item>Romance</item>
-        <item>Scifi</item>
-        <item>Spy stories</item>
-        <item>Supernatural</item>
-        <item>Thriller</item>
-        <item>Travel</item>
-        <item>True Stories</item>
-        <item>War Stories</item>
-        <item>Young Adults</item>
-        <item>Other</item>
-    </string-array>
-
-    <string-array name="array_subCategory2">
-        <item>Select Sub-Category</item>
-        <item>Dramatic</item>
-        <item>Children Rhymes</item>
-        <item>Elegy</item>
-        <item>Epic</item>
-        <item>Light</item>
-        <item>Lyric</item>
-        <item>Narrative</item>
-        <item>Prose</item>
-        <item>Satirical</item>
-        <item>Speculative</item>
-        <item>Verse fable</item>
-        <item>Other</item>
-    </string-array>
-
-    <string-array name="array_subCategory3">
-        <item>Select Sub-Category</item>
-        <item>2 Line Shayari</item>
-        <item>Attitude</item>
-        <item>Birthday</item>
-        <item>Festival</item>
-        <item>Friendship</item>
-        <item>Funny</item>
-        <item>Greetings</item>
-        <item>Heart Ache</item>
-        <item>Life</item>
-        <item>Miss You</item>
-        <item>Rain</item>
-        <item>Romantic</item>
-        <item>Sad</item>
-        <item>Valentines Day</item>
-        <item>Other</item>
-    </string-array>
-
-    <string-array name="array_subCategory4">
-        <item>Select Sub-Category</item>
-        <item>Avant-Garde</item>
-        <item>Blues</item>
-        <item>Celebration</item>
-        <item>Children</item>
-        <item>Classical</item>
-        <item>Comedy/ Spoken</item>
-        <item>Country</item>
-        <item>Folk</item>
-        <item>Festival</item>
-        <item>Holiday</item>
-        <item>New Age</item>
-        <item>Pop/ Rock</item>
-        <item>R and B</item>
-        <item>Rap</item>
-        <item>Reggae</item>
-        <item>Religious</item>
-        <item>Other</item>
-    </string-array>
-
-    <string-array name="array_subCategory5">
-        <item>Select Sub-Category</item>
-        <item>Blond</item>
-        <item>Family</item>
-        <item>Marriage</item>
-        <item>One line</item>
-        <item>Profession</item>
-        <item>Religion</item>
-        <item>School/ College</item>
-        <item>Sarcastic</item>
-        <item>Other</item>
-    </string-array>
-
-    <string-array name="array_subCategory6">
-        <item>Select Sub-Category</item>
-        <item>Movies</item>
-        <item>Travel</item>
-        <item>Cars</item>
-        <item>Food</item>
-        <item>Games</item>
-        <item>Other</item>
-    </string-array>
-
-    <string-array name="array_subCategory7">
-        <item>Select Sub-Category</item>
-        <item>Personal</item>
-        <item>Other</item>
-    </string-array>
-
-    <string-array name="array_subCategory8">
-        <item>Select Sub-Category</item>
-        <item>Business</item>
-        <item>Environmental</item>
-        <item>Fashion</item>
-        <item>News</item>
-        <item>Science</item>
-        <item>Sports</item>
-        <item>Supernatural</item>
-        <item>Technology</item>
-        <item>Other</item>
-    </string-array>
-
-
-    <!--  The property id associated with this analytics tracker -->
+    <!-- Services & Auth credentials -->
     <string name="ga_trackingId">UA-90643573-1</string>
     <string name="facebook_app_id">697436403776745</string>
     <string name="facebook_client_token">00000000000000000000000000000000</string>
     <string name="fb_login_protocol_scheme">fb697436403776745</string>
-
-
-    <!-- Google -->
-
     <string name="server_client_id">AIzaSyD1P6SOyWRC3pAbG48EQyR8EdFGuKOVAdM</string>
-
-
-    <string name="title_activity_welcome">Home Screen</string>
-    <string name="next">NEXT</string>
-    <string name="skip">SKIP</string>
-    <string name="start">GOT IT</string>
-
-    <string name="slide_1_title">Write!</string>
-    <string name="slide_1_desc">Write Short Story/ Poetry/ Reviews/ Shayari/ Jokes</string>
-
-    <string name="slide_2_title">Bookmark!</string>
-    <string name="slide_2_desc">Bookmark your favorite post to save it or read it later!</string>
-
-    <string name="slide_3_title">Rate/Comment</string>
-    <string name="slide_3_desc">Rate/Comment the post you liked to encourage the writer!</string>
-
-    <string name="slide_4_title">Share!</string>
-    <string name="slide_4_desc">Share your own writeup or the post you liked with your friends and family or on social media!</string>
-
-    <string name="play_again_desc">To see the welcome slider again, goto Settings -> apps -> welcome slider -> clear data</string>
-    <string name="play_again">Play Again</string>
-    <string name="default_notification_channel_id" />
+    <string name="default_notification_channel_id">writon_general</string>
     <string name="fcm_message">WritOn</string>
     <string name="fcm_token">FCM Token: %s</string>
-    <string name="user_name"> </string>
-    <string name="Searchdescritption">*Enter the title you want to search \n
-
-
-    </string>
-    <string name="place">WhichPlace</string>
-    <string name="person">Who</string>
-    <string name="image">Whichimage</string>
-    <string name="message_dialog">What do you want to do?</string>
-    <string name="message_yes">yes</string>
-    <string name="message_no">No</string>
-    <string name="message_error">error</string>
-    <string name="message_delete">Delete</string>
-    <string name="message_cancel">Cancle</string>
-
-    <string name="sorry_maintenance"> Sorry for the inconvenience\nWe will be back up and running as fast as possible</string>
-    <string name="maintenance_heading_one"> We are undergoing a bit of</string>
-    <string name="maintenance_heading_two"> Scheduled Maintenance</string>
-    <string name="tutorial_write"> Write your thoughts here</string>
-    <string name="tutorial_bookmark"> Access your recently viewed and bookmarked articles</string>
-    <string name="tutorial_myworld"> Follow your favourite writers to receive the updates</string>
-    <string name="tutorial_explore"> Browse the latest posts,trends and popular things</string>
-    <string name="tutorial_list"> Access the contents Categorically</string>
-    <string name="previous_winners">Previous Winners</string>
-
 
 </resources>

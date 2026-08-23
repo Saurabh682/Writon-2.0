@@ -1,4 +1,5 @@
 package com.ibitvalley.writon.modern.feature.search
+import androidx.compose.ui.res.stringResource
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
@@ -51,6 +52,13 @@ import com.ibitvalley.writon.modern.core.network.model.PostDto
 import com.ibitvalley.writon.modern.core.network.model.TagDto
 
 
+
+enum class SearchTab(val key: String, val labelRes: Int) {
+    Stories("Stories", R.string.search_tab_stories),
+    Writers("Writers", R.string.search_tab_writers),
+    Tags("Tags", R.string.search_tab_tags)
+}
+
 private val SearchEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
     Font(R.font.source_serif_4_semibold, FontWeight.SemiBold),
@@ -88,13 +96,13 @@ fun SearchScreen(
     onExploreClick: () -> Unit = {}
 ) {
     var query by rememberSaveable { mutableStateOf("") }
-    var selectedTab by rememberSaveable { mutableStateOf("Stories") }
+    var selectedTab by rememberSaveable { mutableStateOf(SearchTab.Stories) }
     val stories = viewModel.results.map { it.asSearchStory() }
     val writers = viewModel.writerResults
     val tags = viewModel.tagResults
 
     LaunchedEffect(query, selectedTab) {
-        viewModel.search(query, selectedTab)
+        viewModel.search(query, selectedTab.key)
     }
 
     LazyColumn(
@@ -106,14 +114,14 @@ fun SearchScreen(
         item {
             SearchField(value = query, onValueChange = { query = it })
             Text(
-                "Popular searches",
+                stringResource(R.string.search_popular),
                 modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm),
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold
             )
             PopularSearches(onSelect = {
                 query = it
-                selectedTab = "Stories"
+                selectedTab = SearchTab.Stories
             })
         }
         item {
@@ -139,7 +147,7 @@ fun SearchScreen(
             }
         } else {
             when (selectedTab) {
-                "Stories" -> {
+                SearchTab.Stories -> {
                     if (stories.isEmpty()) {
                         item { EmptyResults("stories", query) }
                     } else {
@@ -148,7 +156,7 @@ fun SearchScreen(
                         }
                     }
                 }
-                "Writers" -> {
+                SearchTab.Writers -> {
                     if (writers.isEmpty()) {
                         item { EmptyResults("writers", query) }
                     } else {
@@ -157,13 +165,13 @@ fun SearchScreen(
                                 writer = writers[index],
                                 onClick = {
                                     query = writers[index].fullName
-                                    selectedTab = "Stories"
+                                    selectedTab = SearchTab.Stories
                                 }
                             )
                         }
                     }
                 }
-                "Tags" -> {
+                SearchTab.Tags -> {
                     if (tags.isEmpty()) {
                         item { EmptyResults("tags", query) }
                     } else {
@@ -172,7 +180,7 @@ fun SearchScreen(
                                 tag = tags[index],
                                 onClick = {
                                     query = tags[index].name
-                                    selectedTab = "Stories"
+                                    selectedTab = SearchTab.Stories
                                 }
                             )
                         }
@@ -209,11 +217,11 @@ private fun SearchHeader() {
 private fun SearchHero() {
     Column(modifier = Modifier.padding(top = 54.dp, bottom = WritOnSpacing.lg)) {
         Text(
-            "Search",
+            stringResource(R.string.search_title),
             style = MaterialTheme.typography.displayLarge.copy(fontFamily = SearchEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 42.sp)
         )
         Text(
-            "Find stories, writers and ideas.",
+            stringResource(R.string.search_subtitle),
             modifier = Modifier.padding(top = 4.dp),
             style = MaterialTheme.typography.titleLarge.copy(fontFamily = SearchEditorialFamily, fontSize = 17.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -240,7 +248,7 @@ private fun SearchField(value: String, onValueChange: (String) -> Unit) {
                 value = value,
                 onValueChange = onValueChange,
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Search stories, writers, topics…", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp) },
+                placeholder = { Text(stringResource(R.string.search_placeholder), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 16.sp) },
                 singleLine = true,
                 textStyle = MaterialTheme.typography.titleMedium.copy(fontSize = 16.sp),
                 colors = TextFieldDefaults.colors(
@@ -289,14 +297,15 @@ private fun PopularSearches(onSelect: (String) -> Unit) {
 }
 
 @Composable
-private fun SearchTabs(selectedTab: String, onSelect: (String) -> Unit) {
-    val tabs = listOf("Stories", "Writers", "Tags")
+private fun SearchTabs(selectedTab: SearchTab, onSelect: (SearchTab) -> Unit) {
+    val tabs = SearchTab.values()
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 34.dp)
     ) {
         tabs.forEach { tab ->
+            val isSelected = tab == selectedTab
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -304,15 +313,15 @@ private fun SearchTabs(selectedTab: String, onSelect: (String) -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    tab,
-                    color = if (tab == selectedTab) BrandRed else MaterialTheme.colorScheme.onSurface,
+                    stringResource(tab.labelRes),
+                    color = if (isSelected) BrandRed else MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
-                    fontWeight = if (tab == selectedTab) FontWeight.SemiBold else FontWeight.Normal
+                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
                 )
                 Spacer(Modifier.height(18.dp))
                 Surface(
-                    modifier = Modifier.fillMaxWidth().height(if (tab == selectedTab) 3.dp else 1.dp),
-                    color = if (tab == selectedTab) BrandRed else MaterialTheme.colorScheme.outlineVariant
+                    modifier = Modifier.fillMaxWidth().height(if (isSelected) 3.dp else 1.dp),
+                    color = if (isSelected) BrandRed else MaterialTheme.colorScheme.outlineVariant
                 ) {}
             }
         }

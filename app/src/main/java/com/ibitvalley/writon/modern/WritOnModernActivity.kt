@@ -57,6 +57,10 @@ class WritOnModernActivity : FragmentActivity() {
 
         database = WritOnDatabase.getDatabase(this)
         userPreferences = UserPreferences(this)
+        val savedLang = userPreferences.appLanguage
+        if (savedLang.isNotBlank() && savedLang != "system") {
+            com.ibitvalley.writon.modern.core.locale.LocaleManager.applyLanguage(this, savedLang)
+        }
         FirebaseAuthManager.syncNetworkAuthToken()
 
         repository = PostRepository(

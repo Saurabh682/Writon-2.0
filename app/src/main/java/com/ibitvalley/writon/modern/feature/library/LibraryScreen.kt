@@ -1,4 +1,5 @@
 package com.ibitvalley.writon.modern.feature.library
+import androidx.compose.ui.res.stringResource
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -40,8 +41,8 @@ private val LibraryEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_semibold, weight = FontWeight.Bold)
 )
 
-private enum class LibraryTab(val label: String) {
-    Saved("Saved"), History("History"), Applauds("Applauds"), Collections("Collections")
+private enum class LibraryTab(val labelRes: Int) {
+    Saved(R.string.library_tab_saved), History(R.string.library_tab_history), Applauds(R.string.library_tab_applauds), Collections(R.string.library_tab_collections)
 }
 
 private data class LibraryStory(
@@ -144,12 +145,12 @@ private fun LibraryHeader(onSearchClick: () -> Unit) {
         }
         Spacer(Modifier.height(WritOnSpacing.lg))
         Text(
-            text = "Library",
+            text = stringResource(R.string.library_title),
             style = MaterialTheme.typography.displayLarge.copy(fontFamily = LibraryEditorialFamily, fontSize = 42.sp, lineHeight = 48.sp)
         )
         Spacer(Modifier.height(WritOnSpacing.xs))
         Text(
-            text = "Your saved stories, reading history and more.",
+            text = stringResource(R.string.library_subtitle),
             style = MaterialTheme.typography.bodyLarge.copy(fontFamily = LibraryEditorialFamily, fontSize = 18.sp, lineHeight = 25.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -188,7 +189,7 @@ private fun LibraryFilters(selectedIndex: Int, onSelected: (Int) -> Unit) {
                         Image(painterResource(icon!!), contentDescription = null, modifier = Modifier.size(20.dp))
                     }
                     Spacer(Modifier.width(WritOnSpacing.xxs))
-                    Text(tab.label, style = MaterialTheme.typography.labelLarge)
+                    Text(stringResource(tab.labelRes), style = MaterialTheme.typography.labelLarge)
                 }
             }
         }
@@ -200,10 +201,10 @@ private fun LibrarySectionHeader(tab: LibraryTab, count: Int, newestFirst: Boole
     Row(modifier = Modifier.fillMaxWidth().padding(top = WritOnSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = when (tab) {
-                LibraryTab.Saved -> "Saved Stories"
-                LibraryTab.History -> "Reading History"
-                LibraryTab.Applauds -> "Applauded Stories"
-                LibraryTab.Collections -> "Collections"
+                LibraryTab.Saved -> stringResource(R.string.library_saved_header)
+                LibraryTab.History -> stringResource(R.string.library_history_header)
+                LibraryTab.Applauds -> stringResource(R.string.library_applauds_header)
+                LibraryTab.Collections -> stringResource(R.string.library_collections_header)
             },
             style = MaterialTheme.typography.headlineMedium.copy(fontFamily = LibraryEditorialFamily)
         )
@@ -214,7 +215,7 @@ private fun LibrarySectionHeader(tab: LibraryTab, count: Int, newestFirst: Boole
             modifier = Modifier.clip(RoundedCornerShape(WritOnRadius.field)).clickable(onClick = onToggleOrder).padding(vertical = WritOnSpacing.xs),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(if (newestFirst) "Newest" else "Oldest", style = MaterialTheme.typography.labelLarge, color = BrandRed)
+            Text(if (newestFirst) stringResource(R.string.library_sort_newest) else stringResource(R.string.library_sort_oldest), style = MaterialTheme.typography.labelLarge, color = BrandRed)
             Spacer(Modifier.width(WritOnSpacing.xs))
             Text("⌄", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
@@ -262,7 +263,7 @@ private fun LibraryStoryCard(story: LibraryStory, isBookmarked: Boolean, onClick
                     Text("  •  ", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("${story.readingTime} min", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(Modifier.width(WritOnSpacing.sm))
-                    Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = "Applauds", modifier = Modifier.size(20.dp))
+                    Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = stringResource(R.string.library_tab_applauds), modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(WritOnSpacing.xxs))
                     Text(story.applauds.toString(), style = MaterialTheme.typography.bodySmall, color = BrandRed)
                 }
@@ -286,7 +287,7 @@ private fun LibraryStoryCard(story: LibraryStory, isBookmarked: Boolean, onClick
                         )
                     }
                     DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                        DropdownMenuItem(text = { Text("Remove from library") }, onClick = { menuExpanded = false; onToggleBookmark() })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.library_remove_saved)) }, onClick = { menuExpanded = false; onToggleBookmark() })
                     }
                 }
             }
@@ -305,7 +306,7 @@ private fun EmptyLibraryCollections() {
         Column(modifier = Modifier.padding(WritOnSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally) {
             Image(painterResource(R.drawable.ic_collection_muted), contentDescription = null, modifier = Modifier.size(40.dp))
             Spacer(Modifier.height(WritOnSpacing.sm))
-            Text("No collections yet", style = MaterialTheme.typography.titleMedium)
+            Text(stringResource(R.string.library_empty_collections), style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(WritOnSpacing.xxs))
             Text("Save stories to build a collection around your next idea.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

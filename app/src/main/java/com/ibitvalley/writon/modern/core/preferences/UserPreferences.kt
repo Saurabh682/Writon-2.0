@@ -45,6 +45,11 @@ class UserPreferences(context: Context) {
         get() = sharedPreferences.getBoolean("biometric_enabled", false)
         set(value) = sharedPreferences.edit().putBoolean("biometric_enabled", value).apply()
 
+    /** App language code: "en", "hi", "es", "fr", "bn", "mr", or "system" */
+    var appLanguage: String
+        get() = sharedPreferences.getString("app_language", "en") ?: "en"
+        set(value) = sharedPreferences.edit().putString("app_language", value).apply()
+
     fun clear() {
         sharedPreferences.edit().clear().apply()
     }

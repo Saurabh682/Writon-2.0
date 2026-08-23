@@ -1,4 +1,5 @@
 package com.ibitvalley.writon.modern.feature.appearance
+import androidx.compose.ui.res.stringResource
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -91,7 +92,7 @@ fun AppearanceScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Appearance",
+                        stringResource(R.string.appearance_title),
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontFamily = EditorialSerif,
                             fontWeight = FontWeight.SemiBold
@@ -123,7 +124,7 @@ fun AppearanceScreen(
             // Live Interactive Preview Box
             item {
                 Text(
-                    "LIVE PREVIEW",
+                    stringResource(R.string.appearance_preview),
                     style = MaterialTheme.typography.labelMedium.copy(letterSpacing = 1.2.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontWeight = FontWeight.Bold
@@ -147,7 +148,7 @@ fun AppearanceScreen(
                         )
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "The Architecture of Thought",
+                            stringResource(R.string.appearance_preview_title),
                             fontFamily = previewFontFamily,
                             fontSize = (fontSizeSp + 4).sp,
                             lineHeight = ((fontSizeSp + 4) * 1.3).sp,

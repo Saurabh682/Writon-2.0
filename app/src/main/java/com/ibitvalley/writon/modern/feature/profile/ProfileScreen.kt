@@ -1,4 +1,5 @@
 package com.ibitvalley.writon.modern.feature.profile
+import androidx.compose.ui.res.stringResource
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -56,7 +57,7 @@ fun ProfileScreen(
     var overflowExpanded by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
 
-    val name = user?.fullName ?: "Your Profile"
+    val name = user?.fullName ?: stringResource(R.string.profile_title)
     val penName = user?.penName ?: ""
     val bio = user?.bio?.takeIf { it.isNotBlank() } ?: "Essayist, architectural critic, and student of quiet spaces. Writing about design systems, stillness, and human craft."
     val initials = initialsOf(name)
@@ -64,7 +65,7 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Writer Profile", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily)) },
+                title = { Text(stringResource(R.string.profile_writer_title), style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily)) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Image(
@@ -79,7 +80,7 @@ fun ProfileScreen(
                     IconButton(onClick = { showEditDialog = true }) {
                         Image(
                             painterResource(R.drawable.ic_edit_pencil),
-                            contentDescription = "Edit Profile",
+                            contentDescription = stringResource(R.string.profile_edit_button),
                             modifier = Modifier.size(24.dp),
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                         )
@@ -102,7 +103,7 @@ fun ProfileScreen(
                             )
                         }
                         DropdownMenu(expanded = overflowExpanded, onDismissRequest = { overflowExpanded = false }) {
-                            DropdownMenuItem(text = { Text("Edit Profile") }, onClick = { overflowExpanded = false; showEditDialog = true })
+                            DropdownMenuItem(text = { Text(stringResource(R.string.profile_edit_button)) }, onClick = { overflowExpanded = false; showEditDialog = true })
                             DropdownMenuItem(text = { Text("Settings") }, onClick = { overflowExpanded = false; onSettingsClick() })
                         }
                     }
@@ -282,7 +283,7 @@ private fun ProfileStat(value: String, label: String, accent: Boolean = true, mo
 
 @Composable
 private fun ProfileTabs(selectedTab: Int, onSelected: (Int) -> Unit) {
-    val tabs = listOf("About", "Stories", "Series", "Highlights")
+    val tabs = listOf(stringResource(R.string.profile_tab_about), "Stories", "Series", stringResource(R.string.profile_tab_highlights))
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         tabs.forEachIndexed { index, title ->
             Column(
@@ -662,7 +663,7 @@ private fun EditProfileDialog(
                             CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
                             Spacer(Modifier.width(6.dp))
                         }
-                        Text("Save Changes", color = Color.White)
+                        Text(stringResource(R.string.profile_save_changes), color = Color.White)
                     }
                 }
             }

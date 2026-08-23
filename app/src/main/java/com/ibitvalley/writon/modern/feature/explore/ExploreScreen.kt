@@ -1,4 +1,5 @@
 package com.ibitvalley.writon.modern.feature.explore
+import androidx.compose.ui.res.stringResource
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -89,7 +90,7 @@ private fun ExploreHeader(onSearchClick: () -> Unit) {
         IconButton(onClick = onSearchClick) {
             Image(
                 painterResource(R.drawable.ic_search),
-                contentDescription = "Search",
+                contentDescription = stringResource(R.string.common_search),
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
             )
         }
@@ -100,17 +101,17 @@ private fun ExploreHeader(onSearchClick: () -> Unit) {
 private fun ExploreHero() {
     Column(modifier = Modifier.padding(top = WritOnSpacing.lg)) {
         Text(
-            "Explore\nsomething",
+            stringResource(R.string.explore_hero_line1),
             style = MaterialTheme.typography.displayLarge.copy(fontFamily = ExploreEditorialFamily, fontSize = 42.sp, lineHeight = 48.sp, fontWeight = FontWeight.Normal)
         )
         Text(
-            "different.",
+            stringResource(R.string.explore_hero_line2),
             style = MaterialTheme.typography.displayLarge.copy(fontFamily = ExploreEditorialFamily, fontSize = 42.sp, lineHeight = 48.sp, fontWeight = FontWeight.Normal),
             color = BrandRed
         )
         Spacer(Modifier.height(WritOnSpacing.lg))
         Text(
-            "Step out of your comfort zone.\nFind a new kind of writing to love.",
+            stringResource(R.string.explore_hero_desc),
             style = MaterialTheme.typography.bodyLarge.copy(fontSize = 17.sp, lineHeight = 25.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -136,7 +137,7 @@ private fun DiscoveryCard(story: PostDto?, onRead: () -> Unit, onNextDiscovery: 
                     Box(contentAlignment = Alignment.Center) {
                         Image(
                             painterResource(R.drawable.ic_forward),
-                            contentDescription = "Next discovery",
+                            contentDescription = stringResource(R.string.explore_next_discovery),
                             modifier = Modifier.size(24.dp),
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                         )
@@ -209,12 +210,12 @@ private fun DiscoveryHintCard(onRead: () -> Unit) {
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    "Discover another voice",
+                    stringResource(R.string.explore_discover_voice),
                     style = MaterialTheme.typography.titleMedium.copy(fontFamily = ExploreEditorialFamily, fontWeight = FontWeight.SemiBold)
                 )
                 Spacer(Modifier.height(2.dp))
                 Text(
-                    "Tap to load a fresh curated essay from our writers.",
+                    stringResource(R.string.explore_discover_hint),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -244,7 +245,7 @@ private fun NextDiscoveryButton(onClick: () -> Unit) {
             Box(contentAlignment = Alignment.Center) {
                 Image(
                     painterResource(R.drawable.ic_chevron_up),
-                    contentDescription = "Next discovery",
+                    contentDescription = stringResource(R.string.explore_next_discovery),
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
                 )

@@ -1,4 +1,5 @@
 package com.ibitvalley.writon.modern.feature.reader
+import androidx.compose.ui.res.stringResource
 
 import android.content.Context
 import android.content.Intent
@@ -76,7 +77,7 @@ fun ReaderScreen(
                     IconButton(onClick = onBackClick) {
                         Image(
                             painterResource(R.drawable.ic_back),
-                            "Back",
+                            stringResource(R.string.common_back),
                             Modifier.size(24.dp),
                             colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                         )
@@ -99,7 +100,7 @@ fun ReaderScreen(
                     }) {
                         Image(
                             painterResource(if (post?.isBookmarked == true) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark),
-                            if (post?.isBookmarked == true) "Remove bookmark" else "Save story",
+                            if (post?.isBookmarked == true) stringResource(R.string.reader_bookmark_saved) else stringResource(R.string.reader_bookmark_save),
                             Modifier.size(24.dp),
                             colorFilter = if (post?.isBookmarked == true) null else androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                         )
@@ -107,7 +108,7 @@ fun ReaderScreen(
                     IconButton(onClick = { post?.let { shareStory(context, it) } }) {
                         Image(
                             painterResource(R.drawable.ic_share),
-                            "Share story",
+                            stringResource(R.string.reader_share_action),
                             Modifier.size(24.dp),
                             colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                         )

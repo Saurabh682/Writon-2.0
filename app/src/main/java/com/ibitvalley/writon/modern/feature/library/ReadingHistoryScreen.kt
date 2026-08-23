@@ -1,4 +1,5 @@
 package com.ibitvalley.writon.modern.feature.library
+import androidx.compose.ui.res.stringResource
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -183,13 +184,13 @@ private fun HistoryHeader(onSearchClick: () -> Unit, onSettingsClick: () -> Unit
             }
         }
         Text(
-            "Reading History",
+            stringResource(R.string.history_title),
             modifier = Modifier.padding(top = 40.dp),
             style = MaterialTheme.typography.displayLarge.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 48.sp, lineHeight = 54.sp),
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
-            "Your reading journey, in the order you read.",
+            stringResource(R.string.history_subtitle),
             modifier = Modifier.padding(top = 6.dp),
             style = MaterialTheme.typography.titleLarge.copy(fontFamily = HistoryEditorialFamily, fontSize = 18.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -240,14 +241,14 @@ private fun HistorySummary(summary: ReadingHistorySummaryDto) {
             Spacer(Modifier.width(20.dp))
             Column {
                 Text(summary.storiesRead.toString(), style = MaterialTheme.typography.displaySmall.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 39.sp), color = MaterialTheme.colorScheme.onSurface)
-                Text("Stories read", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.history_stories_read), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.weight(1f))
             VerticalDivider(modifier = Modifier.height(64.dp), color = MaterialTheme.colorScheme.outlineVariant)
             Spacer(Modifier.width(20.dp))
             Column {
                 Text("%.1f".format(summary.hoursRead), style = MaterialTheme.typography.displaySmall.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 39.sp), color = MaterialTheme.colorScheme.onSurface)
-                Text("Hours spent reading", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                Text(stringResource(R.string.history_hours_read), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             }
         }
     }
@@ -305,8 +306,8 @@ private fun HistoryRow(
                     )
                 }
                 DropdownMenu(expanded = menuExpanded, onDismissRequest = onDismiss) {
-                    DropdownMenuItem(text = { Text("Remove from history") }, onClick = onDismiss)
-                    DropdownMenuItem(text = { Text("Share story") }, onClick = onDismiss)
+                    DropdownMenuItem(text = { Text(stringResource(R.string.history_remove)) }, onClick = onDismiss)
+                    DropdownMenuItem(text = { Text(stringResource(R.string.common_share)) }, onClick = onDismiss)
                 }
             }
         }
