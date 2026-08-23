@@ -18,7 +18,10 @@ import {
   triggerBotPulse,
   fetchSparkPromptTemplate,
   ingestSparkBatch,
-  fetchSparkAutomationScript
+  fetchSparkAutomationScript,
+  fetchDelayedActions,
+  cancelDelayedActionApi,
+  processDelayedActionsNow
 } from '../../lib/api';
 
 interface BotControlCenterProps {
@@ -51,7 +54,7 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
   onClose,
   onStoryPublished
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'mcp_app' | 'spark_web' | 'personas' | 'settings' | 'trigger' | 'logs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'delayed_queue' | 'mcp_app' | 'spark_web' | 'personas' | 'settings' | 'trigger' | 'logs'>('overview');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -74,6 +77,7 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
   const [stats, setStats] = useState<BotOverviewStats | null>(null);
   const [bots, setBots] = useState<BotPersona[]>([]);
   const [logs, setLogs] = useState<BotActivityLog[]>([]);
+  const [delayedActions, setDelayedActions] = useState<any[]>([]);
 
   // Gemini Spark Web State
   const [sparkPromptText, setSparkPromptText] = useState<string>('');
@@ -88,10 +92,10 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
   const [mcpTestResult, setMcpTestResult] = useState<{ success: boolean, toolsCount?: number, message: string } | null>(null);
   const [mcpTesting, setMcpTesting] = useState(false);
 
-  // Edit persona modal
+  // Persona editor state
   const [editingBot, setEditingBot] = useState<BotPersona | null>(null);
 
-  // Manual Trigger state
+  // Trigger Action state
   const [selectedBotId, setSelectedBotId] = useState<string>('');
   const [triggerCategory, setTriggerCategory] = useState<string>('Tech');
   const [triggerTopic, setTriggerTopic] = useState<string>('');
@@ -111,17 +115,19 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
   const loadData = async () => {
     try {
       setLoading(true);
-      const [overviewData, botsData, promptData, scriptData] = await Promise.all([
+      const [overviewData, botsData, promptData, scriptData, delayedData] = await Promise.all([
         fetchBotOverview(),
         fetchBots(),
         fetchSparkPromptTemplate().catch(() => ({ prompt: '' })),
-        fetchSparkAutomationScript().catch(() => ({ script: '' }))
+        fetchSparkAutomationScript().catch(() => ({ script: '' })),
+        fetchDelayedActions().catch(() => ({ actions: [] }))
       ]);
       setSettings(overviewData.settings);
       setStats(overviewData.stats);
       setLogs(overviewData.recentLogs);
       setBots(botsData.bots);
       setSettingsForm(overviewData.settings);
+      setDelayedActions(delayedData.actions || []);
       if (promptData?.prompt) setSparkPromptText(promptData.prompt);
       if (scriptData?.script) setSparkPythonScript(scriptData.script);
       if (botsData.bots.length > 0 && !selectedBotId) {
@@ -201,6 +207,32 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       });
       setSettings(res.settings);
       showStatus('Settings updated successfully!');
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancelDelayedAction = async (actionId: string) => {
+    try {
+      setActionLoading(true);
+      await cancelDelayedActionApi(actionId);
+      setDelayedActions(prev => prev.filter(a => a.id !== actionId));
+      showStatus('Delayed action cancelled');
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleProcessDelayedNow = async () => {
+    try {
+      setActionLoading(true);
+      const res = await processDelayedActionsNow();
+      showStatus(`Executed ${res.count} scheduled action(s) immediately!`);
+      loadData();
     } catch (err: unknown) {
       showStatus(getErrorMessage(err), 'error');
     } finally {
@@ -471,6 +503,7 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
         >
           {[
             { id: 'overview', label: '📊 Overview' },
+            { id: 'delayed_queue', label: `🕒 Human Queue ${delayedActions.length > 0 ? `(${delayedActions.length})` : ''}` },
             { id: 'mcp_app', label: '🔌 Custom Spark App (MCP)' },
             { id: 'spark_web', label: '✨ Gemini Spark Web (Batch Ingest)' },
             { id: 'personas', label: `👥 Personas (${bots.length})` },
@@ -525,6 +558,29 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
                     </div>
                   </div>
 
+                  {/* Scheduled Queue Glance */}
+                  {delayedActions.length > 0 && (
+                    <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-rose-500/10 border border-amber-500/30 flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-xl">🕒</span>
+                        <div>
+                          <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                            {delayedActions.length} Action(s) Scheduled in Human-Cadence Queue
+                          </h4>
+                          <p className="text-xs text-stone-500 dark:text-stone-400">
+                            Actions execute organically with natural human delays.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setActiveTab('delayed_queue')}
+                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-all shadow-sm"
+                      >
+                        View Queue &rarr;
+                      </button>
+                    </div>
+                  )}
+
                   <div className="p-5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
                       <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
@@ -552,78 +608,207 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
                     </div>
                   </div>
 
-                  {/* Summary of active configuration */}
-                  <div className="rounded-xl border border-stone-200 dark:border-stone-800 p-4 space-y-3">
-                    <h4 className="text-xs uppercase tracking-wider font-semibold text-stone-500 dark:text-stone-400">Current Spark Parameters</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                      <div>
-                        <span className="text-stone-500">LLM Model:</span>{' '}
-                        <span className="font-semibold text-stone-900 dark:text-stone-100">{settings?.llm_model}</span>
-                      </div>
-                      <div>
-                        <span className="text-stone-500">Mode:</span>{' '}
-                        <span className="font-semibold text-stone-900 dark:text-stone-100 capitalize">{settings?.spark_automation_mode}</span>
-                      </div>
-                      <div>
-                        <span className="text-stone-500">Real Post Reaction:</span>{' '}
-                        <span className="font-semibold text-stone-900 dark:text-stone-100">{Math.round((settings?.human_post_reaction_rate || 0) * 100)}%</span>
-                      </div>
-                      <div>
-                        <span className="text-stone-500">Daily Stories Target:</span>{' '}
-                        <span className="font-semibold text-stone-900 dark:text-stone-100">{settings?.posts_per_day_target} articles/day</span>
-                      </div>
-                      <div>
-                        <span className="text-stone-500">Pulse Interval:</span>{' '}
-                        <span className="font-semibold text-stone-900 dark:text-stone-100">Every {settings?.spark_pulse_interval_minutes}m</span>
-                      </div>
-                      <div>
-                        <span className="text-stone-500">Gemini Key:</span>{' '}
-                        <span className="font-semibold text-stone-900 dark:text-stone-100">{settings?.gemini_api_key ? '••••••••' : 'Env Key / Standby'}</span>
-                      </div>
+                  {/* Recent Activity */}
+                  <div className="space-y-3">
+                    <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">Recent Live Activity</h3>
+                    <div className="space-y-2 max-h-60 overflow-y-auto">
+                      {logs.slice(0, 8).map(log => (
+                        <div key={log.id} className="flex items-center justify-between p-3 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-100 dark:border-stone-800 text-xs">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-stone-900 dark:text-stone-100">{log.botName || 'Bot'}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                              log.actionType === 'post' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                              log.actionType === 'comment' ? 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' :
+                              log.actionType === 'reply' ? 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300' :
+                              log.actionType === 'applaud' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' :
+                              'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                            }`}>
+                              {log.actionType}
+                            </span>
+                            {log.postTitle && <span className="text-stone-500 truncate max-w-xs">"{log.postTitle}"</span>}
+                          </div>
+                          <span className="text-[11px] text-stone-400">{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* TAB: MCP APP */}
+              {/* TAB: HUMAN-CADENCE QUEUE */}
+              {activeTab === 'delayed_queue' && (
+                <div className="space-y-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-stone-50 dark:bg-stone-800/40 border border-stone-200 dark:border-stone-800">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🕒</span>
+                        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                          Human-Cadence Delayed Actions Queue
+                        </h3>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                          {delayedActions.length} Pending
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
+                        Actions are staggered across realistic human intervals (e.g. 15-45m reading, 30-90m comment replies) to simulate real users.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={loadData}
+                        disabled={actionLoading}
+                        className="px-3 py-1.5 bg-stone-200 hover:bg-stone-300 dark:bg-stone-700 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200 rounded-lg text-xs font-semibold transition-colors"
+                      >
+                        ↻ Refresh
+                      </button>
+                      <button
+                        onClick={handleProcessDelayedNow}
+                        disabled={actionLoading || delayedActions.length === 0}
+                        className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition-colors disabled:opacity-50 shadow-sm"
+                      >
+                        ⚡ Process Due Now
+                      </button>
+                    </div>
+                  </div>
+
+                  {delayedActions.length === 0 ? (
+                    <div className="text-center py-16 px-4 rounded-2xl border-2 border-dashed border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-900/20">
+                      <div className="text-4xl mb-2">☕</div>
+                      <h4 className="text-sm font-bold text-stone-800 dark:text-stone-200">
+                        Queue is Peaceful
+                      </h4>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto mt-1">
+                        When you or other writers publish stories or leave comments, bots will automatically schedule realistic delayed applauds, thoughtful reflections, and conversational replies here!
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {delayedActions.map(action => {
+                        const executeDate = new Date(action.executeAt);
+                        const diffMins = Math.max(0, Math.round((executeDate.getTime() - Date.now()) / (1000 * 60)));
+                        return (
+                          <div
+                            key={action.id}
+                            className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-800/60 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                          >
+                            <div className="flex items-start gap-3">
+                              <img
+                                src={action.bot?.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                                alt={action.bot?.fullName || 'Bot'}
+                                className="w-10 h-10 rounded-full object-cover border border-stone-200 dark:border-stone-700 shrink-0"
+                              />
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-xs font-bold text-stone-900 dark:text-stone-100">
+                                    {action.bot?.fullName}
+                                  </span>
+                                  <span className="text-[10px] text-stone-500 font-mono">
+                                    @{action.bot?.penName}
+                                  </span>
+                                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    action.actionType === 'story' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' :
+                                    action.actionType === 'comment' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' :
+                                    action.actionType === 'reply' ? 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300' :
+                                    action.actionType === 'applaud' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300' :
+                                    'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                                  }`}>
+                                    {action.actionType === 'reply' ? '💬 Thread Reply' : action.actionType === 'applaud' ? '👏 Applaud' : action.actionType === 'comment' ? '📝 Comment' : action.actionType}
+                                  </span>
+                                </div>
+
+                                {action.post && (
+                                  <p className="text-xs text-stone-600 dark:text-stone-300 font-medium truncate max-w-md">
+                                    On: <span className="font-semibold">"{action.post.title}"</span> ({action.post.category})
+                                  </p>
+                                )}
+
+                                {action.payload?.customComment && (
+                                  <p className="text-xs text-stone-500 italic truncate max-w-md">
+                                    "{action.payload.customComment}"
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
+                              <span className={`text-[11px] font-bold px-2.5 py-1 rounded-lg ${
+                                diffMins === 0
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 animate-pulse'
+                                  : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                              }`}>
+                                {diffMins === 0 ? '✓ Ready to execute' : `⏳ In ${diffMins} min`}
+                              </span>
+
+                              <button
+                                onClick={() => handleCancelDelayedAction(action.id)}
+                                disabled={actionLoading}
+                                className="text-xs text-stone-400 hover:text-rose-600 dark:hover:text-rose-400 font-medium transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* TAB 2: CUSTOM SPARK APP (MCP) */}
               {activeTab === 'mcp_app' && (
                 <div className="space-y-6">
                   {/* Hero Banner */}
-                  <div className="p-5 rounded-2xl bg-gradient-to-r from-teal-900/20 via-emerald-900/20 to-green-900/20 border border-teal-500/30">
+                  <div className="p-5 rounded-2xl bg-gradient-to-r from-teal-900/20 via-emerald-900/20 to-cyan-900/20 border border-teal-500/30">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="text-xl">🔌</span>
                           <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
-                            Connect as a Custom App
+                            Gemini Spark Custom Connected App (MCP Protocol)
                           </h3>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/30">
+                            MCP 2024-11-05
+                          </span>
                         </div>
                         <p className="text-xs text-stone-600 dark:text-stone-400 max-w-2xl">
-                          Connect WritOn directly to Gemini Spark as a Custom Connected App (MCP). This allows Spark to discover all bot actions (publish, comment, applaud, follow) natively as tools.
+                          WritOn exposes a native Model Context Protocol (MCP) server. Connect it directly in Google Gemini Spark's <b>"Set up a custom connected app"</b> to give Spark full control over publishing, browsing, applauds, and replies!
                         </p>
                       </div>
+
+                      <a
+                        href="https://gemini.google.com/spark"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-xl shadow-md transition-all whitespace-nowrap"
+                      >
+                        <span>Open Gemini Spark</span>
+                        <span>↗</span>
+                      </a>
                     </div>
                   </div>
 
+                  {/* 2 Step Connection Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Setup Guide & Endpoint */}
+                    {/* Endpoint Box */}
                     <div className="space-y-4">
                       <div className="p-4 rounded-xl border border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-stone-800/30">
-                        <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 mb-3">
-                          1. MCP Endpoint URL
+                        <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 mb-2">
+                          1. Your MCP Endpoint URL
                         </h4>
-                        <div className="flex gap-2">
+                        <div className="flex items-center gap-2">
                           <input
                             type="text"
                             value={mcpUrl}
                             onChange={(e) => setMcpUrl(e.target.value)}
-                            className="flex-1 px-3 py-2 text-xs bg-white dark:bg-stone-900 border border-stone-300 dark:border-stone-700 rounded-lg text-stone-900 dark:text-stone-100 font-mono"
+                            className="flex-1 px-3 py-2 text-xs font-mono bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-lg text-stone-800 dark:text-stone-200"
                           />
                           <button
                             onClick={handleCopyMcpUrl}
-                            className="px-3 py-2 bg-stone-200 hover:bg-stone-300 dark:bg-stone-700 dark:hover:bg-stone-600 rounded-lg text-xs font-bold transition-colors"
+                            className="px-3 py-2 bg-stone-800 hover:bg-stone-700 dark:bg-stone-700 dark:hover:bg-stone-600 text-white rounded-lg text-xs font-bold transition-colors whitespace-nowrap"
                           >
-                            {copiedMcpUrl ? '✓ Copied' : '📋 Copy'}
+                            {copiedMcpUrl ? '✓ Copied' : '📋 Copy URL'}
                           </button>
                         </div>
                         <div className="mt-3 flex items-center justify-between">
@@ -650,23 +835,25 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
                           <li>Open <a href="https://gemini.google.com/spark" target="_blank" rel="noreferrer" className="text-teal-600 dark:text-teal-400 hover:underline font-semibold">gemini.google.com/spark</a></li>
                           <li>In Settings &rarr; Connected Apps, click "Add a custom app" (as in the screenshot).</li>
                           <li>Paste the MCP endpoint URL and click Next.</li>
-                          <li>Spark will auto-discover all 8 tools (<code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_publish_story</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_get_feed</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_comment_story</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_applaud_story</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_follow_author</code>, etc.)</li>
+                          <li>Spark will auto-discover all 12 tools (<code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_publish_story</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_reply_to_comment</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_browse_and_react</code>, <code className="bg-stone-200 dark:bg-stone-700 px-1 rounded">writon_schedule_action</code>, etc.)</li>
                         </ol>
                       </div>
                     </div>
 
-                    {/* Prompt Ideas */}
+                    {/* Decoupled Micro-Prompt Ideas */}
                     <div className="space-y-3">
                       <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 px-1">
-                        Try these prompts in Spark:
+                        Try these decoupled human-cadence prompts in Spark:
                       </h4>
                       {[
-                        "Check the latest feed on WritOn and publish a new distributed systems essay by @aarav_tech.",
-                        "Read the most recent poetry post and leave a soulful comment as @kavya_nair.",
-                        "Run an editorial pulse: check recent activity, publish 1 short story by @devansh_roy, and applaud the top 2 articles."
-                      ].map((prompt, idx) => (
-                        <div key={idx} className="group p-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-teal-500/50 hover:shadow-md transition-all cursor-pointer relative" onClick={() => { navigator.clipboard.writeText(prompt); showStatus('Prompt copied!'); }}>
-                          <p className="text-xs text-stone-700 dark:text-stone-300 pr-8">{prompt}</p>
+                        { title: "📝 Editorial Story Writer Loop", prompt: "Using the WritOn custom app, check if any writer bot is due to publish a story today and write 1 in-depth article." },
+                        { title: "☕ Casual Reader & Applauder Loop", prompt: "Use writon_browse_and_react as @rohan_kapoor to browse recent stories and applaud 2 interesting pieces." },
+                        { title: "💬 Conversation & Thread Replier", prompt: "Check the latest story on WritOn for reader comments, and have the author post a thoughtful in-character reply using writon_reply_to_comment." },
+                        { title: "⏳ Human Delayed Comment", prompt: "Use writon_schedule_action to queue a thoughtful comment on the latest story by @sunita_banerjee in 25 minutes." }
+                      ].map((item, idx) => (
+                        <div key={idx} className="group p-3 rounded-xl border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 hover:border-teal-500/50 hover:shadow-md transition-all cursor-pointer relative" onClick={() => { navigator.clipboard.writeText(item.prompt); showStatus('Prompt copied!'); }}>
+                          <div className="font-bold text-[11px] text-teal-700 dark:text-teal-300 mb-1">{item.title}</div>
+                          <p className="text-xs text-stone-700 dark:text-stone-300 pr-8">{item.prompt}</p>
                           <button className="absolute right-3 top-3 text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity" title="Copy prompt">📋</button>
                         </div>
                       ))}

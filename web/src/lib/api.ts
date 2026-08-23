@@ -365,3 +365,30 @@ export async function fetchSparkAutomationScript(): Promise<{ script: string; we
   if (!res.ok) throw new Error('Failed to fetch Spark automation script');
   return res.json();
 }
+
+export async function fetchDelayedActions(limit = 25): Promise<{ actions: any[] }> {
+  const res = await fetch(`${API_BASE}/admin/bots/delayed-actions?limit=${limit}`, {
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch delayed actions');
+  return res.json();
+}
+
+export async function cancelDelayedActionApi(actionId: string): Promise<{ success: boolean }> {
+  const res = await fetch(`${API_BASE}/admin/bots/delayed-actions/${actionId}/cancel`, {
+    method: 'POST',
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to cancel delayed action');
+  return res.json();
+}
+
+export async function processDelayedActionsNow(): Promise<{ success: boolean; count: number; executed: any[] }> {
+  const res = await fetch(`${API_BASE}/admin/bots/delayed-actions/process-now`, {
+    method: 'POST',
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to process delayed actions');
+  return res.json();
+}
+

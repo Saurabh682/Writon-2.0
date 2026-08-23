@@ -6,7 +6,9 @@ import {
   getGlobalSettings,
   executePostAction,
   executeInteractAction,
-  ingestSparkBatch
+  ingestSparkBatch,
+  scheduleDelayedAction,
+  getPendingDelayedActions
 } from '../bot-engine/spark-runner.js';
 
 const MCP_PROTOCOL_VERSION = '2024-11-05';
@@ -146,6 +148,101 @@ const WRITON_TOOLS = [
   {
     name: 'writon_get_personas',
     description: 'List all active writer bot personas on WritOn with their cognitive lenses, 3-layer personality stacks, and anti-goals.',
+    inputSchema: {
+      type: 'object',
+      properties: {}
+    }
+  },
+  {
+    name: 'writon_reply_to_comment',
+    description: 'Post an in-character reply to a specific comment on a WritOn story, maintaining authentic conversation in the thread.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        authorPenName: {
+          type: 'string',
+          enum: ['aarav_tech', 'kavya_nair', 'devansh_roy', 'sunita_banerjee', 'rohan_kapoor', 'ishaq_qureshi'],
+          description: 'The pen name of the bot replying.'
+        },
+        postId: {
+          type: 'string',
+          description: 'The UUID or slug of the post.'
+        },
+        commentId: {
+          type: 'string',
+          description: 'The UUID of the specific comment being replied to.'
+        },
+        content: {
+          type: 'string',
+          description: 'The reply text (1-3 sentences), crafted in character.'
+        }
+      },
+      required: ['authorPenName', 'postId', 'commentId', 'content']
+    }
+  },
+  {
+    name: 'writon_browse_and_react',
+    description: 'Simulate an organic human reading session: browses recent stories, applauds 1-2 compelling articles, and leaves optional reactions with natural human spacing.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        authorPenName: {
+          type: 'string',
+          enum: ['aarav_tech', 'kavya_nair', 'devansh_roy', 'sunita_banerjee', 'rohan_kapoor', 'ishaq_qureshi'],
+          description: 'The pen name of the bot browsing.'
+        },
+        category: {
+          type: 'string',
+          description: 'Optional category filter to browse.'
+        },
+        maxApplauds: {
+          type: 'number',
+          default: 2,
+          description: 'Maximum stories to applaud during this session (1-3).'
+        }
+      },
+      required: ['authorPenName']
+    }
+  },
+  {
+    name: 'writon_schedule_action',
+    description: 'Queue an asynchronous bot action to execute after a realistic human delay (e.g. 15, 30, 60 minutes) rather than executing immediately.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        authorPenName: {
+          type: 'string',
+          enum: ['aarav_tech', 'kavya_nair', 'devansh_roy', 'sunita_banerjee', 'rohan_kapoor', 'ishaq_qureshi']
+        },
+        actionType: {
+          type: 'string',
+          enum: ['applaud', 'comment', 'reply', 'story', 'follow'],
+          description: 'The type of action to execute later.'
+        },
+        delayMinutes: {
+          type: 'number',
+          default: 15,
+          description: 'Delay in minutes before executing (e.g. 15, 30, 60).'
+        },
+        postId: {
+          type: 'string',
+          description: 'Target story ID or slug (for applaud, comment, reply).'
+        },
+        commentId: {
+          type: 'string',
+          description: 'Target comment ID (for reply).'
+        },
+        content: {
+          type: 'string',
+          description: 'Text content (for comment or reply).'
+        }
+      },
+      required: ['authorPenName', 'actionType', 'delayMinutes']
+    }
+  },
+  {
+    name: 'writon_get_pending_actions',
+    description: 'View all scheduled upcoming actions in the human-cadence queue.',
     inputSchema: {
       type: 'object',
       properties: {}
@@ -555,6 +652,102 @@ async function executeMcpTool(pool, toolName, args) {
         prompt: b.personaPrompt,
         commentStyle: b.commentStyle
       }))
+    };
+  }
+
+  if (toolName === 'writon_reply_to_comment') {
+    const { authorPenName, postId, commentId, content } = args;
+    const bots = await getBotsList(pool);
+    const bot = bots.find(b => b.penName.toLowerCase() === authorPenName?.toLowerCase());
+    if (!bot) throw new Error(`Bot persona not found for pen name: "${authorPenName}"`);
+
+    const outcome = await executeInteractAction(pool, {
+      botId: bot.id,
+      postId,
+      commentId,
+      actionType: 'reply',
+      customComment: content
+    });
+
+    return {
+      success: true,
+      message: `Replied to comment as @${authorPenName}!`,
+      reply: outcome
+    };
+  }
+
+  if (toolName === 'writon_browse_and_react') {
+    const { authorPenName, category, maxApplauds } = args;
+    const bots = await getBotsList(pool);
+    const bot = bots.find(b => b.penName.toLowerCase() === authorPenName?.toLowerCase());
+    if (!bot) throw new Error(`Bot persona not found for pen name: "${authorPenName}"`);
+
+    const limit = Math.min(3, Math.max(1, Number(maxApplauds) || 2));
+    const recentPosts = await pool.query(`
+      select id, title, slug from public.posts
+      where status = 'published' and is_public = true and author_id != $1
+        and ($2::text is null or lower(category) = lower($2))
+      order by coalesce(published_at, created_at) desc
+      limit $3
+    `, [bot.id, category || null, limit]);
+
+    const clapped = [];
+    for (const post of recentPosts.rows) {
+      try {
+        await executeInteractAction(pool, { botId: bot.id, postId: post.id, actionType: 'applaud' });
+        clapped.push({ id: post.id, title: post.title });
+      } catch (err) {
+        console.warn(`[Browse and React] Applaud failed for ${post.id}:`, err.message);
+      }
+    }
+
+    return {
+      success: true,
+      bot: `@${bot.penName}`,
+      message: `Browsing session complete: @${bot.penName} applauded ${clapped.length} stories!`,
+      applaudedStories: clapped
+    };
+  }
+
+  if (toolName === 'writon_schedule_action') {
+    const { authorPenName, actionType, delayMinutes, postId, commentId, targetPenName, content } = args;
+    const bots = await getBotsList(pool);
+    const bot = bots.find(b => b.penName.toLowerCase() === authorPenName?.toLowerCase());
+    if (!bot) throw new Error(`Bot persona not found for pen name: "${authorPenName}"`);
+
+    let targetUserId = null;
+    if (targetPenName) {
+      const targetUser = await pool.query(`select id from public.profiles where pen_name = $1 limit 1`, [targetPenName]);
+      if (targetUser.rowCount > 0) targetUserId = targetUser.rows[0].id;
+    }
+
+    const scheduled = await scheduleDelayedAction(pool, {
+      botId: bot.id,
+      actionType,
+      targetPostId: postId || null,
+      targetCommentId: commentId || null,
+      targetUserId,
+      payload: content ? { customComment: content } : {},
+      delayMinutes: Number(delayMinutes) || 15
+    });
+
+    return {
+      success: true,
+      message: `Action '${actionType}' scheduled for @${bot.penName} in ${delayMinutes || 15} minutes!`,
+      scheduledAction: {
+        id: scheduled.id,
+        actionType: scheduled.action_type,
+        executeAt: scheduled.execute_at,
+        delayMinutes: delayMinutes || 15
+      }
+    };
+  }
+
+  if (toolName === 'writon_get_pending_actions') {
+    const actions = await getPendingDelayedActions(pool, { limit: 25 });
+    return {
+      count: actions.length,
+      actions
     };
   }
 

@@ -219,3 +219,70 @@ function generateFallbackComment(persona, postTitle, category) {
   ];
   return templates[Math.floor(Math.random() * templates.length)];
 }
+
+export async function generateSparkReply({
+  apiKey,
+  model,
+  persona,
+  postTitle,
+  postCategory,
+  targetCommentAuthor,
+  targetCommentContent,
+  isAuthorOfPost
+}) {
+  const prompt = `You are ${persona.fullName} (@${persona.penName}) replying to a comment on the WritOn literary platform.
+Your Persona:
+Style & Voice: ${persona.commentStyle}
+Background & Cognitive Lens: ${persona.personaPrompt}
+
+Context:
+Story: "${postTitle}" (${postCategory})
+${isAuthorOfPost ? 'You are the author of this story.' : 'You are a fellow writer participating in the discussion.'}
+Comment by @${targetCommentAuthor || 'Reader'}:
+"${targetCommentContent}"
+
+Task: Write a natural, authentic conversational reply (1-3 sentences).
+Rules:
+- Directly address @${targetCommentAuthor || 'Reader'}'s specific point or question.
+- If you are the author, thank them thoughtfully or elaborate on the nuance they highlighted.
+- Keep the voice 100% in-character. Do NOT use cliché corporate or AI praise.
+- Be engaging, thoughtful, and human.
+
+Return strictly JSON:
+{
+  "reply": "Your reply text here."
+}`;
+
+  try {
+    const rawOutput = await callGeminiApi({
+      apiKey,
+      model: model || 'gemini-2.0-flash-lite',
+      prompt,
+      systemInstruction: 'You are an authentic writer replying thoughtfully in a literary comment thread. Output raw JSON only.',
+      temperature: 0.8
+    });
+
+    const parsed = JSON.parse(cleanJsonText(rawOutput));
+    return parsed.reply?.trim() || generateFallbackReply(persona, targetCommentAuthor, isAuthorOfPost);
+  } catch (error) {
+    console.warn(`[Gemini Spark Client] Reply generation failed, using fallback: ${error.message}`);
+    return generateFallbackReply(persona, targetCommentAuthor, isAuthorOfPost);
+  }
+}
+
+function generateFallbackReply(persona, targetCommentAuthor, isAuthorOfPost) {
+  const authorHandle = targetCommentAuthor ? `@${targetCommentAuthor}` : 'Thank you';
+  if (isAuthorOfPost) {
+    const replies = [
+      `${authorHandle} Thank you so much for reading and sharing your thoughts! Really appreciate you picking up on that specific nuance.`,
+      `${authorHandle} Means a lot coming from you. I wrestled with that exact phrasing while drafting this, glad it resonated!`,
+      `${authorHandle} Spot on! That tension between intention and outcome was precisely what I hoped to explore here.`
+    ];
+    return replies[Math.floor(Math.random() * replies.length)];
+  }
+  const generalReplies = [
+    `${authorHandle} Couldn't agree more with your point here. Adds such a great layer to the discussion!`,
+    `${authorHandle} That's a really sharp observation—gives a completely fresh angle to what the author wrote.`
+  ];
+  return generalReplies[Math.floor(Math.random() * generalReplies.length)];
+}

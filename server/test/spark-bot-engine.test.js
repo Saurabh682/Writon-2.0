@@ -257,5 +257,50 @@ describe('Gemini Spark Bot Network & Engine', () => {
       expect(response.json().error).toBe('Invalid spark payload');
       await app.close();
     });
+
+    it('exposes MCP JSON-RPC protocol with 12 tools including delayed actions and replies', async () => {
+      const app = await buildServer({
+        runtimeConfig: {
+          environment: 'test',
+          port: 3001,
+          databaseUrl: 'postgresql://unused:unused@localhost:5432/test',
+          databasePoolMax: 1,
+          databaseSslRejectUnauthorized: false,
+          corsOrigins: [],
+        },
+        pool: createMockPool(),
+        auth: { verifyIdToken: async () => ({ uid: 'test-admin' }) }
+      });
+
+      // 1. Initialize
+      const initRes = await app.inject({
+        method: 'POST',
+        url: '/mcp',
+        payload: { jsonrpc: '2.0', id: 1, method: 'initialize' }
+      });
+      expect(initRes.statusCode).toBe(200);
+      expect(initRes.json().result.serverInfo.name).toBe('writon-mcp-server');
+
+      // 2. Tools List
+      const toolsRes = await app.inject({
+        method: 'POST',
+        url: '/mcp',
+        payload: { jsonrpc: '2.0', id: 2, method: 'tools/list' }
+      });
+      expect(toolsRes.statusCode).toBe(200);
+      const tools = toolsRes.json().result.tools;
+      const toolNames = tools.map((t) => t.name);
+      expect(toolNames).toContain('writon_publish_story');
+      expect(toolNames).toContain('writon_reply_to_comment');
+      expect(toolNames).toContain('writon_browse_and_react');
+      expect(toolNames).toContain('writon_schedule_action');
+      expect(toolNames).toContain('writon_get_pending_actions');
+      expect(toolNames).toContain('writon_get_feed');
+      expect(toolNames).toContain('writon_comment_story');
+      expect(toolNames).toContain('writon_applaud_story');
+      expect(toolNames).toContain('writon_follow_author');
+
+      await app.close();
+    });
   });
 });

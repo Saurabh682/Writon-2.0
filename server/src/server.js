@@ -11,7 +11,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { z } from 'zod';
 import { loadFirebaseServiceAccount, loadRuntimeConfig } from './config.js';
 import { adminBotsRoutes } from './routes/admin-bots.js';
-import { triggerSparkReaction, startSparkScheduler } from './bot-engine/spark-runner.js';
+import { triggerSparkReaction, triggerSparkCommentReaction, startSparkScheduler } from './bot-engine/spark-runner.js';
 import { mcpRoutes } from './routes/mcp-server.js';
 
 const { Pool } = pg;
@@ -740,6 +740,15 @@ fastify.post(
         message: 'commented on your story',
       });
       await client.query('commit');
+
+      // Trigger asynchronous in-character bot reply with realistic human cadence
+      triggerSparkCommentReaction(database, {
+        postId,
+        commentId: inserted.rows[0].id,
+        postAuthorId: post.author_id,
+        commentAuthorId: request.user.uid,
+        content: parsed.data.content
+      }).catch((err) => fastify.log.warn(`[Spark Comment Trigger Exception] ${err.message}`));
 
       const comment = inserted.rows[0];
       return reply.code(201).send({

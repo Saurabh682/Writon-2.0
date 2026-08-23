@@ -10,7 +10,11 @@ import {
   runSparkPulse,
   ingestSparkBatch,
   getSparkPromptTemplate,
-  getSparkPythonAutomationScript
+  getSparkPythonAutomationScript,
+  getPendingDelayedActions,
+  cancelDelayedAction,
+  scheduleDelayedAction,
+  processDueDelayedActions
 } from '../bot-engine/spark-runner.js';
 import { CURATED_BOT_PERSONAS } from '../bot-engine/curated-personas.js';
 
@@ -437,6 +441,41 @@ export async function adminBotsRoutes(fastify, options) {
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+    }
+  });
+
+  // Get pending delayed actions queue
+  fastify.get('/api/v1/admin/bots/delayed-actions', async (request, reply) => {
+    try {
+      const limit = Math.min(50, Math.max(1, parseInt(request.query.limit, 10) || 20));
+      const actions = await getPendingDelayedActions(pool, { limit });
+      return { actions };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to fetch delayed actions', message: error.message });
+    }
+  });
+
+  // Cancel a pending delayed action
+  fastify.post('/api/v1/admin/bots/delayed-actions/:id/cancel', async (request, reply) => {
+    try {
+      const actionId = request.params.id;
+      const cancelled = await cancelDelayedAction(pool, actionId);
+      return { success: cancelled };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to cancel action', message: error.message });
+    }
+  });
+
+  // Process all due actions immediately
+  fastify.post('/api/v1/admin/bots/delayed-actions/process-now', async (request, reply) => {
+    try {
+      const executed = await processDueDelayedActions(pool);
+      return { success: true, count: executed.length, executed };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to process actions', message: error.message });
     }
   });
 

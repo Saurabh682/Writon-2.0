@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { CURATED_BOT_PERSONAS } from './curated-personas.js';
-import { generateSparkArticle, generateSparkComment } from './gemini-spark-client.js';
+import { generateSparkArticle, generateSparkComment, generateSparkReply } from './gemini-spark-client.js';
 import { getCoverImageForCategory } from './image-service.js';
 
 function createSlug(title) {
@@ -76,6 +76,24 @@ export async function ensureBotTables(pool) {
         error_message text,
         created_at timestamptz not null default now()
       );
+
+      create table if not exists public.bot_delayed_actions (
+        id uuid primary key default gen_random_uuid(),
+        bot_id text not null references public.bot_configs(id) on delete cascade,
+        action_type text not null check (action_type in ('story', 'applaud', 'comment', 'reply', 'follow')),
+        target_post_id uuid references public.posts(id) on delete cascade,
+        target_comment_id uuid references public.comments(id) on delete cascade,
+        target_user_id text references public.profiles(id) on delete cascade,
+        payload jsonb not null default '{}'::jsonb,
+        scheduled_at timestamptz not null default now(),
+        execute_at timestamptz not null,
+        status text not null default 'pending' check (status in ('pending', 'processing', 'completed', 'failed', 'cancelled')),
+        attempts int not null default 0,
+        last_error text,
+        executed_at timestamptz,
+        created_at timestamptz not null default now(),
+        updated_at timestamptz not null default now()
+      );
     `);
 
     // Indexes from migration that auto-migration was missing
@@ -84,6 +102,9 @@ export async function ensureBotTables(pool) {
       create index if not exists bot_activity_logs_bot_id_idx on public.bot_activity_logs (bot_id);
       create index if not exists bot_activity_logs_target_post_id_idx on public.bot_activity_logs (target_post_id) where target_post_id is not null;
       create index if not exists bot_activity_logs_target_user_id_idx on public.bot_activity_logs (target_user_id) where target_user_id is not null;
+      create index if not exists bot_delayed_actions_polling_idx on public.bot_delayed_actions (status, execute_at) where status = 'pending';
+      create index if not exists bot_delayed_actions_bot_id_idx on public.bot_delayed_actions (bot_id);
+      create index if not exists bot_delayed_actions_target_post_id_idx on public.bot_delayed_actions (target_post_id) where target_post_id is not null;
     `);
 
     // DB-5: Insert default global settings row if missing
@@ -474,6 +495,70 @@ export async function executeInteractAction(pool, { botId, postId, actionType, c
       });
 
       resultOutcome = { commentId: commentInsert.rows[0].id, comment: commentText };
+    } else if (actionType === 'reply') {
+      let replyText = customComment;
+      let targetAuthorName = 'Reader';
+      let targetAuthorId = null;
+
+      if (commentId) {
+        const targetCommentRes = await client.query(`
+          select c.content, pr.id as author_id, pr.pen_name, pr.full_name
+          from public.comments c
+          inner join public.profiles pr on pr.id = c.author_id
+          where c.id = $1
+        `, [commentId]);
+
+        if (targetCommentRes.rowCount > 0) {
+          const targetComment = targetCommentRes.rows[0];
+          targetAuthorName = targetComment.pen_name || targetComment.full_name;
+          targetAuthorId = targetComment.author_id;
+
+          if (!replyText) {
+            replyText = await generateSparkReply({
+              apiKey: settings.gemini_api_key || process.env.GEMINI_API_KEY,
+              model: settings.llm_model,
+              persona: {
+                fullName: bot.fullName,
+                penName: bot.penName,
+                commentStyle: bot.commentStyle,
+                personaPrompt: bot.personaPrompt
+              },
+              postTitle: post.title,
+              postCategory: post.category,
+              targetCommentAuthor: targetAuthorName,
+              targetCommentContent: targetComment.content,
+              isAuthorOfPost: post.author_id === bot.id
+            });
+          }
+        }
+      }
+
+      if (!replyText) {
+        replyText = `@${targetAuthorName} Thank you for reading and sharing your perspective! Really appreciate your thoughts.`;
+      }
+
+      const commentInsert = await client.query(`
+        insert into public.comments (post_id, author_id, content)
+        values ($1, $2, $3)
+        returning id, created_at
+      `, [postId, bot.id, replyText]);
+
+      await client.query(`
+        update public.posts set comments_count = comments_count + 1, updated_at = now() where id = $1
+      `, [postId]);
+
+      if (targetAuthorId && targetAuthorId !== bot.id) {
+        await createNotification(client, {
+          recipientId: targetAuthorId,
+          actorId: bot.id,
+          postId,
+          commentId: commentInsert.rows[0].id,
+          kind: 'comment',
+          message: 'replied to your comment'
+        });
+      }
+
+      resultOutcome = { commentId: commentInsert.rows[0].id, reply: replyText, targetAuthor: targetAuthorName };
     } else if (actionType === 'follow') {
       if (post.author_id !== bot.id) {
         const existingFollow = await client.query(`
@@ -535,29 +620,183 @@ export async function executeInteractAction(pool, { botId, postId, actionType, c
 }
 
 /**
- * Event-Driven Spark Reaction Hook
- * Fired whenever any user creates a new post on the platform.
+ * Schedule a delayed bot action with natural human cadence
+ */
+export async function scheduleDelayedAction(pool, {
+  botId,
+  actionType,
+  targetPostId = null,
+  targetCommentId = null,
+  targetUserId = null,
+  payload = {},
+  delayMinutes = 10
+}) {
+  await ensureBotTables(pool);
+  const minutes = Math.max(0.2, Number(delayMinutes) || 10);
+  const result = await pool.query(`
+    insert into public.bot_delayed_actions (
+      bot_id, action_type, target_post_id, target_comment_id, target_user_id,
+      payload, execute_at
+    )
+    values ($1, $2, $3, $4, $5, $6, now() + ($7 || ' minutes')::interval)
+    returning *
+  `, [
+    botId,
+    actionType,
+    targetPostId,
+    targetCommentId,
+    targetUserId,
+    JSON.stringify(payload),
+    minutes
+  ]);
+  return result.rows[0];
+}
+
+/**
+ * Get upcoming pending delayed actions for admin inspection
+ */
+export async function getPendingDelayedActions(pool, { limit = 20 } = {}) {
+  await ensureBotTables(pool);
+  const result = await pool.query(`
+    select
+      a.id,
+      a.bot_id as "botId",
+      a.action_type as "actionType",
+      a.target_post_id as "targetPostId",
+      a.target_comment_id as "targetCommentId",
+      a.target_user_id as "targetUserId",
+      a.payload,
+      a.scheduled_at as "scheduledAt",
+      a.execute_at as "executeAt",
+      a.status,
+      a.attempts,
+      a.last_error as "lastError",
+      json_build_object('fullName', p.full_name, 'penName', p.pen_name, 'avatarUrl', p.avatar_url) as bot,
+      json_build_object('title', post.title, 'slug', post.slug, 'category', post.category) as post
+    from public.bot_delayed_actions a
+    inner join public.profiles p on p.id = a.bot_id
+    left join public.posts post on post.id = a.target_post_id
+    where a.status = 'pending'
+    order by a.execute_at asc
+    limit $1
+  `, [limit]);
+  return result.rows;
+}
+
+/**
+ * Cancel a pending delayed action
+ */
+export async function cancelDelayedAction(pool, actionId) {
+  await ensureBotTables(pool);
+  const result = await pool.query(`
+    update public.bot_delayed_actions
+    set status = 'cancelled', updated_at = now()
+    where id = $1 and status = 'pending'
+    returning id
+  `, [actionId]);
+  return result.rowCount > 0;
+}
+
+/**
+ * Process all due delayed actions (called automatically every 60s)
+ */
+export async function processDueDelayedActions(pool) {
+  await ensureBotTables(pool);
+  const executed = [];
+
+  try {
+    const dueActions = await pool.query(`
+      select a.*
+      from public.bot_delayed_actions a
+      where a.status = 'pending' and a.execute_at <= now()
+      order by a.execute_at asc
+      limit 5
+    `);
+
+    for (const action of dueActions.rows) {
+      await pool.query(`
+        update public.bot_delayed_actions
+        set status = 'processing', attempts = attempts + 1, updated_at = now()
+        where id = $1
+      `, [action.id]);
+
+      try {
+        let outcome = null;
+        if (action.action_type === 'story') {
+          outcome = await executePostAction(pool, {
+            botId: action.bot_id,
+            category: action.payload?.category,
+            topicHint: action.payload?.topicHint
+          });
+        } else if (action.action_type === 'applaud' || action.action_type === 'like') {
+          outcome = await executeInteractAction(pool, {
+            botId: action.bot_id,
+            postId: action.target_post_id,
+            actionType: 'applaud'
+          });
+        } else if (action.action_type === 'comment') {
+          outcome = await executeInteractAction(pool, {
+            botId: action.bot_id,
+            postId: action.target_post_id,
+            actionType: 'comment',
+            customComment: action.payload?.customComment
+          });
+        } else if (action.action_type === 'reply') {
+          outcome = await executeInteractAction(pool, {
+            botId: action.bot_id,
+            postId: action.target_post_id,
+            commentId: action.target_comment_id,
+            actionType: 'reply',
+            customComment: action.payload?.customComment
+          });
+        } else if (action.action_type === 'follow') {
+          outcome = await executeInteractAction(pool, {
+            botId: action.bot_id,
+            postId: action.target_post_id,
+            actionType: 'follow'
+          });
+        }
+
+        await pool.query(`
+          update public.bot_delayed_actions
+          set status = 'completed', executed_at = now(), updated_at = now()
+          where id = $1
+        `, [action.id]);
+
+        executed.push({ id: action.id, actionType: action.action_type, botId: action.bot_id, outcome });
+      } catch (actionErr) {
+        console.error(`[Spark Delayed Action Error] action ${action.id} (${action.action_type}):`, actionErr.message);
+        await pool.query(`
+          update public.bot_delayed_actions
+          set status = 'failed', last_error = $2, updated_at = now()
+          where id = $1
+        `, [action.id, actionErr.message]);
+      }
+    }
+  } catch (error) {
+    console.error('[Spark Due Actions Error]', error.message);
+  }
+
+  return executed;
+}
+
+/**
+ * Event-Driven Spark Reaction Hook:
+ * Dispatches actions with realistic staggered delays across bots
  */
 export async function triggerSparkReaction(pool, { postId, authorId, category, title, summary }) {
   try {
     const settings = await getGlobalSettings(pool);
     if (!settings.is_engine_enabled) return;
-    if (settings.spark_automation_mode === 'pulse') return; // Event-reactive disabled in pulse-only mode
+    if (settings.spark_automation_mode === 'pulse') return;
 
     const isHumanPost = !authorId.startsWith('bot_');
     if (!isHumanPost) {
-      const roll = Math.random();
-      if (roll > Number(settings.bot_to_bot_interaction_rate)) {
-        return; // Bot-to-bot interaction roll passed
-      }
+      if (Math.random() > Number(settings.bot_to_bot_interaction_rate)) return;
     } else {
-      const roll = Math.random();
-      if (roll > Number(settings.human_post_reaction_rate)) {
-        return;
-      }
+      if (Math.random() > Number(settings.human_post_reaction_rate)) return;
     }
 
-    // Find 1-3 active bots that like this category or general bots
     const bots = await pool.query(`
       select id from public.bot_configs
       where is_active = true and id != $1
@@ -567,47 +806,98 @@ export async function triggerSparkReaction(pool, { postId, authorId, category, t
 
     if (bots.rowCount === 0) return;
 
-    // Dispatch asynchronous spark reactions with jittered delays
     for (let i = 0; i < bots.rows.length; i++) {
       const botId = bots.rows[i].id;
-      // Stagger responses: Bot 0 in 3-8s (or mins in prod), Bot 1 in 8-15s, etc.
-      const minDelayMs = (Number(settings.reaction_delay_min_minutes) || 2) * 60 * 1000;
-      const maxDelayMs = (Number(settings.reaction_delay_max_minutes) || 20) * 60 * 1000;
-      const delayMs = minDelayMs + Math.floor(Math.random() * (maxDelayMs - minDelayMs));
+      // Stagger realistic delays:
+      // Bot 1: Applaud 2-8 min, Comment 12-30 min
+      // Bot 2: Applaud 15-40 min, Comment 35-70 min
+      // Bot 3: Applaud 30-65 min
+      const baseDelay = i * 14;
+      const applaudDelay = Math.max(1.5, baseDelay + Math.floor(Math.random() * 8) + 2);
+      const commentDelay = Math.max(applaudDelay + 8, baseDelay + Math.floor(Math.random() * 20) + 12);
 
-      setTimeout(async () => {
-        try {
-          // Applaud story
-          await executeInteractAction(pool, { botId, postId, actionType: 'applaud' });
+      // 1. Schedule Applaud
+      await scheduleDelayedAction(pool, {
+        botId,
+        actionType: 'applaud',
+        targetPostId: postId,
+        delayMinutes: applaudDelay
+      });
 
-          // 70% chance to also leave a thoughtful comment
-          if (Math.random() < 0.75) {
-            setTimeout(async () => {
-              try {
-                await executeInteractAction(pool, { botId, postId, actionType: 'comment' });
-              } catch (err) {
-                console.error(`[Spark Trigger Comment Error] bot: ${botId}`, err.message);
-              }
-            }, 3500);
-          }
+      // 2. 75% chance to schedule a thoughtful Comment
+      if (Math.random() < 0.75) {
+        await scheduleDelayedAction(pool, {
+          botId,
+          actionType: 'comment',
+          targetPostId: postId,
+          delayMinutes: commentDelay
+        });
+      }
 
-          // If human writer, 50% chance for bot to follow
-          if (isHumanPost && Math.random() < 0.50) {
-            setTimeout(async () => {
-              try {
-                await executeInteractAction(pool, { botId, postId, actionType: 'follow' });
-              } catch (err) {
-                console.error(`[Spark Trigger Follow Error] bot: ${botId}`, err.message);
-              }
-            }, 7000);
-          }
-        } catch (err) {
-          console.error(`[Spark Trigger Applaud Error] bot: ${botId}`, err.message);
-        }
-      }, delayMs);
+      // 3. If human author, 45% chance to follow after 30-90 minutes
+      if (isHumanPost && Math.random() < 0.45) {
+        const followDelay = Math.max(commentDelay + 10, baseDelay + Math.floor(Math.random() * 40) + 25);
+        await scheduleDelayedAction(pool, {
+          botId,
+          actionType: 'follow',
+          targetPostId: postId,
+          targetUserId: authorId,
+          delayMinutes: followDelay
+        });
+      }
     }
   } catch (error) {
-    console.error('[Spark Trigger Error]', error.message);
+    console.error('[Spark Trigger Reaction Error]', error.message);
+  }
+}
+
+/**
+ * Event-Driven Comment Hook:
+ * When someone comments, the story author bot or fellow writers schedule an in-character reply!
+ */
+export async function triggerSparkCommentReaction(pool, { postId, commentId, postAuthorId, commentAuthorId, content }) {
+  try {
+    const settings = await getGlobalSettings(pool);
+    if (!settings.is_engine_enabled) return;
+
+    // If the post author is a bot and not the commenter itself
+    if (postAuthorId?.startsWith('bot_') && postAuthorId !== commentAuthorId) {
+      // Schedule author reply with an organic reading & writing delay of 15-60 minutes
+      const replyDelay = Math.floor(Math.random() * 40) + 15;
+      await scheduleDelayedAction(pool, {
+        botId: postAuthorId,
+        actionType: 'reply',
+        targetPostId: postId,
+        targetCommentId: commentId,
+        targetUserId: commentAuthorId,
+        delayMinutes: replyDelay
+      });
+    }
+
+    // 25% chance for a 2nd bot to join the conversation thread in 40-100 minutes
+    if (Math.random() < 0.25) {
+      const otherBots = await pool.query(`
+        select id from public.bot_configs
+        where is_active = true and id not in ($1, $2)
+        order by random()
+        limit 1
+      `, [postAuthorId || 'none', commentAuthorId || 'none']);
+
+      if (otherBots.rowCount > 0) {
+        const thirdPartyBotId = otherBots.rows[0].id;
+        const threadDelay = Math.floor(Math.random() * 55) + 40;
+        await scheduleDelayedAction(pool, {
+          botId: thirdPartyBotId,
+          actionType: 'reply',
+          targetPostId: postId,
+          targetCommentId: commentId,
+          targetUserId: commentAuthorId,
+          delayMinutes: threadDelay
+        });
+      }
+    }
+  } catch (error) {
+    console.error('[Spark Comment Trigger Error]', error.message);
   }
 }
 
@@ -620,7 +910,10 @@ export async function runSparkPulse(pool) {
     if (!settings.is_engine_enabled) return { skipped: 'Engine disabled' };
     if (settings.spark_automation_mode === 'event_reactive') return { skipped: 'Pulse disabled in event-only mode' };
 
-    // 1. Check if any active bot is due to publish a story
+    // 1. First process any due delayed actions (applauds, comments, replies)
+    const executedDelayed = await processDueDelayedActions(pool);
+
+    // 2. Check if any active bot is due to publish a story
     const candidateBots = await pool.query(`
       select id, categories from public.bot_configs
       where is_active = true
@@ -633,10 +926,10 @@ export async function runSparkPulse(pool) {
       const bot = candidateBots.rows[0];
       const category = bot.categories[Math.floor(Math.random() * bot.categories.length)] || 'Essays';
       const createdPost = await executePostAction(pool, { botId: bot.id, category });
-      return { action: 'published_story', botId: bot.id, postId: createdPost.id, title: createdPost.title };
+      return { action: 'published_story', botId: bot.id, postId: createdPost.id, title: createdPost.title, executedDelayedCount: executedDelayed.length };
     }
 
-    return { action: 'pulse_idle', message: 'No bots due for publishing' };
+    return { action: 'pulse_idle', message: 'No bots due for publishing', executedDelayedCount: executedDelayed.length };
   } catch (error) {
     console.error('[Spark Pulse Error]', error);
     return { error: error.message };
@@ -644,13 +937,23 @@ export async function runSparkPulse(pool) {
 }
 
 export function startSparkScheduler(pool, intervalMinutes = 15) {
-  const intervalMs = Math.max(1, intervalMinutes) * 60 * 1000;
-  console.log(`[Gemini Spark] Pulse scheduler initialized (every ${intervalMinutes} min)`);
-  const timer = setInterval(() => {
-    runSparkPulse(pool).catch((err) => console.error('[Spark Scheduler Pulse Error]', err.message));
-  }, intervalMs);
+  const pulseIntervalMs = Math.max(1, intervalMinutes) * 60 * 1000;
+  console.log(`[Gemini Spark] Pulse scheduler initialized (every ${intervalMinutes} min, queue runner every 60s)`);
 
-  return () => clearInterval(timer);
+  // Pulse timer (editorial publishing)
+  const pulseTimer = setInterval(() => {
+    runSparkPulse(pool).catch((err) => console.error('[Spark Scheduler Pulse Error]', err.message));
+  }, pulseIntervalMs);
+
+  // Fast queue runner (processes due delayed applauds, comments, replies every 60s)
+  const queueTimer = setInterval(() => {
+    processDueDelayedActions(pool).catch((err) => console.error('[Spark Queue Runner Error]', err.message));
+  }, 60 * 1000);
+
+  return () => {
+    clearInterval(pulseTimer);
+    clearInterval(queueTimer);
+  };
 }
 
 export function getSparkPromptTemplate() {
