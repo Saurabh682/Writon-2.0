@@ -152,6 +152,23 @@ fun SettingsScreen(
                 SettingsRow("Reading", "Choose your reading interests", R.drawable.ic_book_orange, onClick = onInterestsClick)
                 SettingsRow("Notifications", "View activity and reminders", R.drawable.ic_notification_orange, onClick = onNotificationsClick)
                 SettingsRow("Test Notification", "Send a sample rich interaction notification", R.drawable.ic_notification_orange, onClick = { com.ibitvalley.writon.modern.core.notification.WritOnNotificationManager.sendTestNotification(context) })
+                SettingsRow(
+                    title = "Copy Push Token",
+                    subtitle = "Copy this device's token to paste in Firebase Console",
+                    icon = R.drawable.ic_notification_orange,
+                    onClick = {
+                        com.google.firebase.messaging.FirebaseMessaging.getInstance().token
+                            .addOnSuccessListener { token ->
+                                val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                val clip = android.content.ClipData.newPlainText("FCM Token", token)
+                                clipboard.setPrimaryClip(clip)
+                                android.widget.Toast.makeText(context, "FCM Token copied to clipboard!", android.widget.Toast.LENGTH_LONG).show()
+                            }
+                            .addOnFailureListener {
+                                android.widget.Toast.makeText(context, "Failed to get token: ${it.message}", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                    }
+                )
                 SettingsRow("Applause", "Vibration and effects", icon = null, useApplaudIcon = true, enabled = false)
                 SettingsRow("Saving & Downloads", "View saved stories and offline cache", R.drawable.ic_bookmark_orange, onClick = onSavedStoriesClick)
             }
