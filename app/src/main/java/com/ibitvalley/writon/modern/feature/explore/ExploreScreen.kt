@@ -101,15 +101,15 @@ private fun DiscoveryCard(story: PostDto?, onRead: () -> Unit, onNextDiscovery: 
         Surface(
             modifier = Modifier.align(Alignment.CenterEnd).fillMaxWidth().padding(start = 54.dp, top = 22.dp, bottom = 12.dp),
             shape = RoundedCornerShape(WritOnRadius.feature),
-            color = Color(0xFFF2ECE4),
+            color = MaterialTheme.colorScheme.surfaceVariant,
             tonalElevation = WritOnElevation.flat
         ) {
             Box(Modifier.fillMaxSize()) {
-                Text("✦", color = Color(0xFFE9E1D7), fontSize = 62.sp, modifier = Modifier.align(Alignment.CenterEnd).padding(end = 20.dp))
+                Text("✦", color = MaterialTheme.colorScheme.outlineVariant, fontSize = 62.sp, modifier = Modifier.align(Alignment.CenterEnd).padding(end = 20.dp))
                 Surface(
                     modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp).size(48.dp).clip(CircleShape).clickable(onClick = onNextDiscovery),
                     shape = CircleShape,
-                    color = BrandBeige
+                    color = MaterialTheme.colorScheme.background
                 ) {
                     Box(contentAlignment = Alignment.Center) { Image(painterResource(R.drawable.ic_forward), contentDescription = "Next discovery", modifier = Modifier.size(24.dp)) }
                 }
@@ -121,7 +121,8 @@ private fun DiscoveryCard(story: PostDto?, onRead: () -> Unit, onNextDiscovery: 
                 .width(288.dp)
                 .fillMaxHeight(),
             shape = RoundedCornerShape(WritOnRadius.feature),
-            color = SurfacePaper,
+            color = MaterialTheme.colorScheme.surface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             tonalElevation = WritOnElevation.flat,
             shadowElevation = WritOnElevation.raised,
             onClick = onRead
@@ -153,7 +154,7 @@ private fun DiscoveryCard(story: PostDto?, onRead: () -> Unit, onNextDiscovery: 
                 Surface(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.width(36.dp).height(1.dp)) { }
                 Spacer(Modifier.height(WritOnSpacing.sm))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(shape = CircleShape, color = BrandBeige, modifier = Modifier.size(42.dp)) {
+                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(42.dp)) {
                         Box(contentAlignment = Alignment.Center) { Text(story?.author?.fullName?.take(2)?.uppercase() ?: "W", style = MaterialTheme.typography.labelLarge) }
                     }
                     Spacer(Modifier.width(WritOnSpacing.sm))
@@ -182,7 +183,7 @@ private fun DiscoveryCard(story: PostDto?, onRead: () -> Unit, onNextDiscovery: 
 @Composable
 private fun ExploreHint(onNextDiscovery: () -> Unit) {
     Column(modifier = Modifier.fillMaxWidth().clickable(onClick = onNextDiscovery).padding(vertical = WritOnSpacing.sm), horizontalAlignment = Alignment.CenterHorizontally) {
-        Surface(shape = CircleShape, color = BrandBeige, modifier = Modifier.size(46.dp)) {
+        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(46.dp)) {
             Box(contentAlignment = Alignment.Center) { Image(painterResource(R.drawable.ic_chevron_up), contentDescription = "Next discovery", modifier = Modifier.size(24.dp)) }
         }
         Spacer(Modifier.height(WritOnSpacing.sm))

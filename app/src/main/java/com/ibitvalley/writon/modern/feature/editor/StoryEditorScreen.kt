@@ -1,5 +1,6 @@
 package com.ibitvalley.writon.modern.feature.editor
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.clickable
@@ -69,7 +70,7 @@ fun StoryEditorScreen(
     val readTime = if (wordCount == 0) 0 else maxOf(1, (wordCount + 199) / 200)
 
     Scaffold(
-        containerColor = BrandBeige,
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             EditorStatusCard(
                 wordCount = wordCount,
@@ -293,7 +294,8 @@ private fun EditorStatusCard(wordCount: Int, readTime: Int, savedStatus: String)
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.sm),
-        color = Color(0xFFFFFDF9),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         shape = RoundedCornerShape(WritOnRadius.feature),
         shadowElevation = WritOnElevation.raised
     ) {
@@ -305,9 +307,9 @@ private fun EditorStatusCard(wordCount: Int, readTime: Int, savedStatus: String)
             verticalAlignment = Alignment.CenterVertically
         ) {
             StatusMetric(R.drawable.ic_bullet_list, "Words", wordCount.toString(), Modifier.weight(1f))
-            VerticalDivider(modifier = Modifier.height(42.dp))
+            VerticalDivider(modifier = Modifier.height(42.dp), color = MaterialTheme.colorScheme.outlineVariant)
             StatusMetric(R.drawable.ic_clock, "Read time", "$readTime min", Modifier.weight(1f))
-            VerticalDivider(modifier = Modifier.height(42.dp))
+            VerticalDivider(modifier = Modifier.height(42.dp), color = MaterialTheme.colorScheme.outlineVariant)
             StatusMetric(R.drawable.ic_bullet_list, "Saved", savedStatus, Modifier.weight(1f), BrandRed)
         }
     }
@@ -319,7 +321,7 @@ private fun StatusMetric(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
-    valueColor: Color = Color(0xFF151718)
+    valueColor: Color = MaterialTheme.colorScheme.onSurface
 ) {
     Row(
         modifier = modifier.padding(horizontal = 4.dp),
@@ -328,7 +330,7 @@ private fun StatusMetric(
         Image(painterResource(icon), contentDescription = null, modifier = Modifier.width(20.dp))
         Spacer(Modifier.width(5.dp))
         Column {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = Color(0xFF6D6963), maxLines = 1)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
             Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = valueColor, maxLines = 1)
         }
     }
@@ -354,16 +356,16 @@ fun PublishStoryScreen(
     val readTime = if (wordCount == 0) 0 else maxOf(1, (wordCount + 199) / 200)
 
     Scaffold(
-        containerColor = BrandBeige,
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            Surface(color = BrandBeige) {
+            Surface(color = MaterialTheme.colorScheme.background) {
                 Button(
                     onClick = { viewModel.publishStory(onPublished) },
                     enabled = !isPublishing,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandRed, contentColor = Color(0xFFFFFDF9)),
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandRed, contentColor = Color.White),
                     shape = RoundedCornerShape(WritOnRadius.field)
                 ) {
                     Text(if (isPublishing) "Publishing…" else "Publish Story", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)

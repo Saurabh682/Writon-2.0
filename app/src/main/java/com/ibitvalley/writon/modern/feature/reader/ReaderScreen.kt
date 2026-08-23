@@ -71,18 +71,46 @@ fun ReaderScreen(
         topBar = {
             TopAppBar(
                 title = {},
-                navigationIcon = { IconButton(onClick = onBackClick) { Image(painterResource(R.drawable.ic_back), "Back", Modifier.size(24.dp)) } },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) {
+                        Image(
+                            painterResource(R.drawable.ic_back),
+                            "Back",
+                            Modifier.size(24.dp),
+                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                        )
+                    }
+                },
                 actions = {
                     IconButton(onClick = { showAppearanceSheet = true }) {
-                        Text("Aa", style = MaterialTheme.typography.titleLarge.copy(fontFamily = ReaderEditorialFamily, fontWeight = FontWeight.Bold))
+                        Text(
+                            "Aa",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontFamily = ReaderEditorialFamily,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                     IconButton(onClick = {
                         if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
                         else viewModel.toggleBookmark()
                     }) {
-                        Image(painterResource(if (post?.isBookmarked == true) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark), if (post?.isBookmarked == true) "Remove bookmark" else "Save story", Modifier.size(24.dp))
+                        Image(
+                            painterResource(if (post?.isBookmarked == true) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark),
+                            if (post?.isBookmarked == true) "Remove bookmark" else "Save story",
+                            Modifier.size(24.dp),
+                            colorFilter = if (post?.isBookmarked == true) null else androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                        )
                     }
-                    IconButton(onClick = { post?.let { shareStory(context, it) } }) { Image(painterResource(R.drawable.ic_share), "Share story", Modifier.size(24.dp)) }
+                    IconButton(onClick = { post?.let { shareStory(context, it) } }) {
+                        Image(
+                            painterResource(R.drawable.ic_share),
+                            "Share story",
+                            Modifier.size(24.dp),
+                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
@@ -444,11 +472,14 @@ private fun ReaderActionTray(
     onSave: () -> Unit,
     onShare: () -> Unit
 ) {
-    Surface(color = BrandBeige) {
+    Surface(color = MaterialTheme.colorScheme.background) {
         Surface(
             modifier = Modifier.fillMaxWidth().padding(horizontal = WritOnSpacing.md, vertical = WritOnSpacing.sm),
-            shape = RoundedCornerShape(WritOnRadius.feature), color = SurfacePaper,
-            tonalElevation = WritOnElevation.flat, shadowElevation = WritOnElevation.raised
+            shape = RoundedCornerShape(WritOnRadius.feature),
+            color = MaterialTheme.colorScheme.surface,
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+            tonalElevation = WritOnElevation.flat,
+            shadowElevation = WritOnElevation.raised
         ) {
             Row(Modifier.fillMaxWidth().padding(vertical = WritOnSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
                 ReaderTrayAction("Applaud", post.likesCnt, onApplaud, post.isLiked) {
@@ -618,7 +649,7 @@ private fun CommentsPaneContent(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = WritOnSpacing.md),
-            color = SurfacePaper
+            color = MaterialTheme.colorScheme.surface
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -638,8 +669,8 @@ private fun CommentsPaneContent(
                         )
                     },
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = BrandBeige,
-                        unfocusedContainerColor = BrandBeige,
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                         focusedIndicatorColor = Color.Transparent,
                         unfocusedIndicatorColor = Color.Transparent,
                         cursorColor = BrandRed

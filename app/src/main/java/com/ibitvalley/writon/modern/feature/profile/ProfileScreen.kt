@@ -86,10 +86,10 @@ fun ProfileScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = BrandBeige)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
-        containerColor = BrandBeige
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(innerPadding),
@@ -203,12 +203,12 @@ private fun ProfileIdentity(
             onClick = onEditClick,
             modifier = Modifier.fillMaxWidth().height(38.dp),
             shape = RoundedCornerShape(WritOnRadius.field),
-            border = BorderStroke(1.dp, Color(0xFFD6CFC4)),
-            colors = ButtonDefaults.outlinedButtonColors(containerColor = SurfacePaper)
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            colors = ButtonDefaults.outlinedButtonColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Image(painterResource(R.drawable.ic_edit_pencil), contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(8.dp))
-            Text("Edit Profile & Bio", style = MaterialTheme.typography.labelLarge, color = Color(0xFF191715))
+            Text("Edit Profile & Bio", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
@@ -217,7 +217,8 @@ private fun ProfileIdentity(
 private fun ProfileStats(stories: Int, applauds: Int, followers: Int, following: Int, onApplaudsClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(WritOnRadius.card),
-        color = SurfacePaper,
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         tonalElevation = WritOnElevation.flat,
         shadowElevation = WritOnElevation.raised,
         modifier = Modifier.fillMaxWidth()
@@ -278,7 +279,8 @@ private fun ProfileAboutTab(name: String, bio: String, location: String?, joined
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(WritOnRadius.card),
-            color = SurfacePaper,
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             tonalElevation = WritOnElevation.flat,
             shadowElevation = WritOnElevation.raised
         ) {
@@ -298,9 +300,9 @@ private fun ProfileAboutTab(name: String, bio: String, location: String?, joined
                 quoteOfDay?.takeIf { it.isNotBlank() }?.let { quote ->
                     Spacer(Modifier.height(WritOnSpacing.md))
                     Surface(
-                        color = Color(0xFFFBF8F3),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(8.dp),
-                        border = BorderStroke(1.dp, Color(0xFFE9E1D7)),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(Modifier.padding(12.dp)) {
@@ -327,13 +329,14 @@ private fun ProfileStoryCard(story: PostDto, onClick: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(WritOnRadius.card),
-        color = SurfacePaper,
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         tonalElevation = WritOnElevation.flat,
         shadowElevation = WritOnElevation.raised
     ) {
         Column(Modifier.padding(WritOnSpacing.md)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(shape = RoundedCornerShape(12.dp), color = Color(0xFFF2ECE4)) {
+                Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
                     Text(
                         story.category.uppercase(),
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
@@ -343,25 +346,25 @@ private fun ProfileStoryCard(story: PostDto, onClick: () -> Unit) {
                     )
                 }
                 Spacer(Modifier.weight(1f))
-                Text("${story.readingTimeMin} min read", fontSize = 13.sp, color = Color(0xFF6D6963))
+                Text("${story.readingTimeMin} min read", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(WritOnSpacing.sm))
             Text(
                 story.title,
                 style = MaterialTheme.typography.titleLarge.copy(fontFamily = ProfileEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 21.sp),
-                color = Color(0xFF191715),
+                color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
             story.summary?.takeIf { it.isNotBlank() }?.let { summary ->
                 Spacer(Modifier.height(WritOnSpacing.xs))
-                Text(summary, fontSize = 14.sp, lineHeight = 20.sp, color = Color(0xFF6D6963), maxLines = 2, overflow = TextOverflow.Ellipsis)
+                Text(summary, fontSize = 14.sp, lineHeight = 20.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             Spacer(Modifier.height(WritOnSpacing.md))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = "Applauds", modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("${story.likesCnt} applauds", fontSize = 13.sp, color = Color(0xFF191715), fontWeight = FontWeight.Medium)
+                Text("${story.likesCnt} applauds", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -379,7 +382,8 @@ private fun ProfileSeriesTab(stories: List<PostDto>, onStoryClick: (String) -> U
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(WritOnRadius.card),
-                    color = SurfacePaper,
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                     tonalElevation = WritOnElevation.flat,
                     shadowElevation = WritOnElevation.raised
                 ) {
@@ -423,7 +427,8 @@ private fun ProfileHighlightsTab(
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(WritOnRadius.card),
-            color = SurfacePaper,
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             tonalElevation = WritOnElevation.flat,
             shadowElevation = WritOnElevation.raised
         ) {
@@ -457,11 +462,11 @@ private fun ProfileHighlightsTab(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(story.title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                Text("${story.category} • ${story.readingTimeMin} min read • ${story.likesCnt} applauds", style = MaterialTheme.typography.bodySmall, color = Color(0xFF6D6963))
+                                Text("${story.category} • ${story.readingTimeMin} min read • ${story.likesCnt} applauds", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Image(painterResource(R.drawable.ic_forward_muted), contentDescription = "Read story", modifier = Modifier.size(18.dp))
                         }
-                        HorizontalDivider(color = Color(0xFFE9E1D7), thickness = 0.5.dp)
+                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, thickness = 0.5.dp)
                     }
                 }
             }
@@ -474,7 +479,8 @@ private fun ProfileEmptyTab(type: String, onAction: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(WritOnRadius.card),
-        color = SurfacePaper,
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         tonalElevation = WritOnElevation.flat,
         shadowElevation = WritOnElevation.raised
     ) {
@@ -515,7 +521,7 @@ private fun EditProfileDialog(
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = SurfacePaper,
+            color = MaterialTheme.colorScheme.surface,
             tonalElevation = 6.dp,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)
         ) {

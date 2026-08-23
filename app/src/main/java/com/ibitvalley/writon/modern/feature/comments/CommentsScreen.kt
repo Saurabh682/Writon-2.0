@@ -127,10 +127,10 @@ fun CommentsScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = BrandBeige)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
-        containerColor = BrandBeige
+        containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -143,8 +143,8 @@ fun CommentsScreen(
             // Comment Composer Card
             Surface(
                 shape = RoundedCornerShape(24.dp),
-                color = SurfacePaper,
-                border = BorderStroke(1.dp, Color(0xFFE9E1D7)),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
                 tonalElevation = WritOnElevation.flat,
                 shadowElevation = 1.dp,
                 modifier = Modifier.fillMaxWidth()
@@ -175,7 +175,7 @@ fun CommentsScreen(
                         // User Avatar
                         Surface(
                             shape = CircleShape,
-                            color = Color(0xFFEBE3D7),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
                             modifier = Modifier.size(38.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
@@ -183,7 +183,7 @@ fun CommentsScreen(
                                     currentUserInitials.take(2).uppercase(),
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 13.sp,
-                                    color = Color(0xFF5A524A)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -198,7 +198,7 @@ fun CommentsScreen(
                                 Text(
                                     if (replyingTo != null) "Write your reply..." else "Write a thoughtful comment...",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = Color(0xFF8C867D)
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             },
                             modifier = Modifier.weight(1f),
@@ -260,13 +260,13 @@ fun CommentsScreen(
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 18.sp
                             ),
-                            color = Color(0xFF191715)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
                             "Be the first to share your thoughts on this story.",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = Color(0xFF8C867D),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
@@ -283,7 +283,7 @@ fun CommentsScreen(
                             onApplaudClick = { onApplaudComment(comment.id) }
                         )
                         HorizontalDivider(
-                            color = Color(0xFFEFE8DE),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                             thickness = 1.dp,
                             modifier = Modifier.padding(top = WritOnSpacing.md)
                         )
@@ -307,16 +307,9 @@ private fun CommentItemRow(
 
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
         // Author Avatar Circle
-        val avatarColor = remember(comment.authorName) {
-            when (comment.authorName.firstOrNull()?.uppercaseChar()) {
-                'M', 'A' -> Color(0xFFE8E0D5)
-                'R', 'V' -> Color(0xFFE4DCD0)
-                else -> Color(0xFFF0EAE1)
-            }
-        }
         Surface(
             shape = CircleShape,
-            color = avatarColor,
+            color = MaterialTheme.colorScheme.surfaceVariant,
             modifier = Modifier.size(42.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {
@@ -324,7 +317,7 @@ private fun CommentItemRow(
                     initialsOf(comment.authorName),
                     fontWeight = FontWeight.Bold,
                     fontSize = 15.sp,
-                    color = Color(0xFF4A423B),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontFamily = CommentsEditorialFamily
                 )
             }
@@ -344,12 +337,12 @@ private fun CommentItemRow(
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp
                     ),
-                    color = Color(0xFF191715)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     " • ${comment.timeAgo}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF8C867D)
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(Modifier.weight(1f))
 
@@ -375,14 +368,14 @@ private fun CommentItemRow(
                         "$currentApplauds",
                         fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF4A423B)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 // 3-dots Menu
                 Box {
                     IconButton(onClick = { showMenu = true }, modifier = Modifier.size(24.dp)) {
-                        Text("⋮", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF8C867D))
+                        Text("⋮", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
                         DropdownMenuItem(text = { Text("Report comment") }, onClick = { showMenu = false })
@@ -400,7 +393,7 @@ private fun CommentItemRow(
                     fontSize = 14.sp,
                     lineHeight = 20.sp
                 ),
-                color = Color(0xFF2B2623)
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(Modifier.height(8.dp))
@@ -410,7 +403,7 @@ private fun CommentItemRow(
                 Text(
                     "Reply",
                     style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
-                    color = Color(0xFF6D6963),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.clickable(onClick = onReplyClick)
                 )
 
@@ -429,14 +422,14 @@ private fun CommentItemRow(
                 Spacer(Modifier.height(8.dp))
                 Surface(
                     shape = RoundedCornerShape(8.dp),
-                    color = Color(0xFFF6F1EA),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(Modifier.padding(10.dp)) {
                         Text(
                             "Author Response: Thank you so much! Really appreciate your thoughtful words.",
                             fontSize = 13.sp,
-                            color = Color(0xFF4A423B)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }

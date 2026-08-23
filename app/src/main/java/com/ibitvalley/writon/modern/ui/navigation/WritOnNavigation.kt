@@ -164,7 +164,7 @@ fun WritOnNavigation(
     }
 
     Scaffold(
-        containerColor = BrandBeige,
+        containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
             WritOnBottomNavigation(navController = navController, isSignedIn = signedIn, onLoginRequired = openLogin)
         }
@@ -504,11 +504,11 @@ fun WritOnBottomBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(70.dp),
-            color = BrandBeige,
+            color = MaterialTheme.colorScheme.surface,
             shadowElevation = 4.dp
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                HorizontalDivider(color = Color(0xFFE9E1D7), thickness = 1.dp)
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 1.dp)
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
@@ -591,7 +591,7 @@ fun NavigationItem(
                 text = label,
                 fontSize = 11.sp,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (selected) BrandRed else Color(0xFF6D6963)
+                color = if (selected) BrandRed else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

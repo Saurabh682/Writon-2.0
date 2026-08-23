@@ -78,12 +78,6 @@ private val HomeEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_semibold, FontWeight.Bold)
 )
 
-private val HomeSurface = Color(0xFFFFFDF9)
-private val HomeInk = Color(0xFF151718)
-private val HomeMuted = Color(0xFF6D6963)
-private val HomeBorder = Color(0xFFE9E1D7)
-private val HomeChip = Color(0xFFF2ECE4)
-
 @Composable
 fun FeedScreen(
     viewModel: FeedViewModel,
@@ -105,7 +99,7 @@ fun FeedScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(BrandBeige).padding(horizontal = 18.dp, vertical = 16.dp)
+        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 18.dp, vertical = 16.dp)
     ) {
         HomeHeader(onLibraryClick = onLibraryClick, onProfileClick = onProfileClick)
         Spacer(Modifier.height(14.dp))
@@ -126,7 +120,7 @@ fun FeedScreen(
                     "Updating stories from server...",
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = HomeMuted
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -193,7 +187,7 @@ private fun HomeHeader(onLibraryClick: () -> Unit, onProfileClick: () -> Unit) {
         Surface(
             modifier = Modifier.size(44.dp).semantics { contentDescription = "Open profile"; role = Role.Button },
             shape = CircleShape,
-            color = HomeChip,
+            color = MaterialTheme.colorScheme.surfaceVariant,
             border = BorderStroke(1.dp, BrandRed.copy(alpha = .45f)),
             onClick = onProfileClick
         ) {
@@ -259,8 +253,8 @@ private fun DiscoveryStoryCard(
                 )
             },
         shape = RoundedCornerShape(24.dp),
-        color = HomeSurface,
-        border = BorderStroke(1.dp, HomeBorder),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         shadowElevation = 2.dp
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
@@ -275,7 +269,7 @@ private fun DiscoveryStoryCard(
                     ) { onRead() }
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(shape = RoundedCornerShape(16.dp), color = HomeChip) {
+                    Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
                         Text(
                             post.category.uppercase(),
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
@@ -288,7 +282,7 @@ private fun DiscoveryStoryCard(
                     Spacer(Modifier.weight(1f))
                     Image(painterResource(R.drawable.ic_clock_muted), contentDescription = null, modifier = Modifier.size(21.dp))
                     Spacer(Modifier.width(7.dp))
-                    Text("${post.readingTimeMin} min read", fontSize = 14.sp, color = HomeMuted)
+                    Text("${post.readingTimeMin} min read", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(Modifier.height(24.dp))
                 Text(
@@ -299,13 +293,13 @@ private fun DiscoveryStoryCard(
                         fontSize = 44.sp,
                         lineHeight = 48.sp
                     ),
-                    color = HomeInk,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
                 post.summary?.takeIf { it.isNotBlank() }?.let { summary ->
                     Spacer(Modifier.height(18.dp))
-                    Text(summary, fontSize = 17.sp, lineHeight = 24.sp, color = HomeMuted, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                    Text(summary, fontSize = 17.sp, lineHeight = 24.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3, overflow = TextOverflow.Ellipsis)
                 }
                 Spacer(Modifier.height(22.dp))
                 PostCoverImage(
@@ -320,7 +314,7 @@ private fun DiscoveryStoryCard(
 
             // Bottom Footer Area - NOT clickable to open the story! Allows easy scrolling / gestures
             Spacer(Modifier.height(16.dp))
-            HorizontalDivider(color = HomeBorder, thickness = 1.dp)
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f), thickness = 1.dp)
             Spacer(Modifier.height(14.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -338,8 +332,8 @@ private fun DiscoveryStoryCard(
                     AuthorAvatar(post.authorAvatarUrl, post.authorName, onAuthorClick)
                     Spacer(Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(post.authorName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = HomeInk, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text("@${post.authorPenName}", fontSize = 13.sp, color = HomeMuted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(post.authorName, fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text("@${post.authorPenName}", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
                 IconButton(onClick = onApplaud, modifier = Modifier.size(46.dp)) {
@@ -349,7 +343,7 @@ private fun DiscoveryStoryCard(
                         modifier = Modifier.size(29.dp)
                     )
                 }
-                Text(formatApplauds(post.likesCnt), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = if (post.isLiked) BrandRed else HomeInk)
+                Text(formatApplauds(post.likesCnt), fontSize = 16.sp, fontWeight = FontWeight.Medium, color = if (post.isLiked) BrandRed else MaterialTheme.colorScheme.onSurface)
             }
         }
     }
@@ -368,11 +362,16 @@ private fun AuthorAvatar(avatarUrl: String?, authorName: String, onClick: () -> 
 
 @Composable
 private fun EmptyDiscovery(modifier: Modifier = Modifier, onRefresh: () -> Unit = {}) {
-    Surface(modifier = modifier.fillMaxWidth(), shape = RoundedCornerShape(28.dp), color = HomeSurface, border = BorderStroke(1.dp, HomeBorder)) {
+    Surface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
+        color = MaterialTheme.colorScheme.surface,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    ) {
         Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Text("Discover Stories", style = MaterialTheme.typography.titleLarge.copy(fontFamily = HomeEditorialFamily), color = HomeInk)
+            Text("Discover Stories", style = MaterialTheme.typography.titleLarge.copy(fontFamily = HomeEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.height(8.dp))
-            Text("Stories are loading from writers...", color = HomeMuted)
+            Text("Stories are loading from writers...", color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
             androidx.compose.material3.Button(
                 onClick = onRefresh,

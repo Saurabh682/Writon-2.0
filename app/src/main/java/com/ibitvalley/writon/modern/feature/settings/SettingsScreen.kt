@@ -1,5 +1,6 @@
 package com.ibitvalley.writon.modern.feature.settings
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -363,7 +364,8 @@ private fun SettingsSection(title: String, content: @Composable ColumnScope.() -
         Surface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(WritOnRadius.card),
-            color = SurfacePaper,
+            color = MaterialTheme.colorScheme.surface,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
             tonalElevation = WritOnElevation.flat,
             shadowElevation = WritOnElevation.raised
         ) {
@@ -398,7 +400,7 @@ private fun SettingsRow(
             verticalAlignment = Alignment.CenterVertically
         ) {
             when {
-                avatar != null -> Surface(shape = CircleShape, color = BrandBeige, modifier = Modifier.size(40.dp)) {
+                avatar != null -> Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(40.dp)) {
                     Box(contentAlignment = Alignment.Center) { Text(avatar, style = MaterialTheme.typography.labelLarge) }
                 }
                 useApplaudIcon -> Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = null, modifier = Modifier.size(26.dp))

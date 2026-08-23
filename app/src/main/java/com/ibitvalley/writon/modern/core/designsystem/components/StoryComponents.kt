@@ -76,7 +76,7 @@ fun StoryCard(
         modifier = modifier
             .fillMaxWidth()
             .clickable { onClick(post.id) },
-        colors = CardDefaults.cardColors(containerColor = SurfacePaper)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.padding(WritOnSpacing.sm)) {
             Row(

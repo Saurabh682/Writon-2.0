@@ -73,8 +73,14 @@ fun AppearanceScreen(
         else -> EditorialSerif
     }
 
+    val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
+    val resolvedTheme = when (themeMode.lowercase()) {
+        "system" -> if (isSystemDark) "dark" else "paper"
+        else -> themeMode.lowercase()
+    }
+
     // Preview colors based on active theme
-    val (previewBg, previewCard, previewText, previewTextSub, previewAccent) = when (themeMode) {
+    val (previewBg, previewCard, previewText, previewTextSub, previewAccent) = when (resolvedTheme) {
         "sepia" -> Tuple5(SepiaBackground, SepiaSurfaceCard, SepiaTextPrimary, SepiaTextSecondary, SepiaPrimary)
         "dark", "obsidian" -> Tuple5(ObsidianBackground, ObsidianSurfaceCard, ObsidianTextPrimary, ObsidianTextSecondary, ObsidianPrimary)
         else -> Tuple5(BrandBeige, SurfacePaper, Ink, InkMuted, BrandRed)
@@ -97,7 +103,8 @@ fun AppearanceScreen(
                         Image(
                             painterResource(R.drawable.ic_back),
                             contentDescription = "Back",
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(24.dp),
+                            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                         )
                     }
                 },

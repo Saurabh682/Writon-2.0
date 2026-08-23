@@ -264,9 +264,9 @@ private fun PopularSearches(onSelect: (String) -> Unit) {
         topics.forEach { topic ->
             Surface(
                 onClick = { onSelect(topic) },
-                color = Color(0xFFF2ECE4),
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(WritOnRadius.pill),
-                border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             ) {
                 Text(topic, modifier = Modifier.padding(horizontal = 13.dp, vertical = 8.dp), fontSize = 14.sp)
             }
@@ -291,14 +291,14 @@ private fun SearchTabs(selectedTab: String, onSelect: (String) -> Unit) {
             ) {
                 Text(
                     tab,
-                    color = if (tab == selectedTab) BrandRed else Color(0xFF151718),
+                    color = if (tab == selectedTab) BrandRed else MaterialTheme.colorScheme.onSurface,
                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
                     fontWeight = if (tab == selectedTab) FontWeight.SemiBold else FontWeight.Normal
                 )
                 Spacer(Modifier.height(18.dp))
                 Surface(
                     modifier = Modifier.fillMaxWidth().height(if (tab == selectedTab) 3.dp else 1.dp),
-                    color = if (tab == selectedTab) BrandRed else Color(0xFFE9E1D7)
+                    color = if (tab == selectedTab) BrandRed else MaterialTheme.colorScheme.outlineVariant
                 ) {}
             }
         }
@@ -310,8 +310,9 @@ private fun SearchResultCard(story: SearchStory, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
-        color = Color(0xFFFFFDF9),
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(WritOnRadius.card),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         shadowElevation = WritOnElevation.raised
     ) {
         Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.Top) {
@@ -321,6 +322,7 @@ private fun SearchResultCard(story: SearchStory, onClick: () -> Unit) {
                 Text(
                     story.title,
                     style = MaterialTheme.typography.titleLarge.copy(fontFamily = SearchEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 19.sp, lineHeight = 23.sp),
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -328,18 +330,18 @@ private fun SearchResultCard(story: SearchStory, onClick: () -> Unit) {
                     story.summary,
                     modifier = Modifier.padding(top = 6.dp),
                     style = MaterialTheme.typography.bodyLarge.copy(fontSize = 15.sp, lineHeight = 20.sp),
-                    color = Color(0xFF6D6963),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 Row(modifier = Modifier.padding(top = 11.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text("${story.minutes} min read", fontSize = 13.sp, color = Color(0xFF6D6963))
-                    Text("  •  ", color = Color(0xFF6D6963))
+                    Text("${story.minutes} min read", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("  •  ", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = "Applauds", modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text(story.applauds.toString(), fontSize = 13.sp, color = BrandRed)
-                    Text("  •  ", color = Color(0xFF6D6963))
-                    Text(story.author, fontSize = 13.sp, color = Color(0xFF6D6963), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text("  •  ", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(story.author, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -377,9 +379,9 @@ private fun SearchWriterCard(writer: AuthorDto, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        color = Color(0xFFFFFDF9),
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(WritOnRadius.card),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7)),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         shadowElevation = WritOnElevation.raised
     ) {
         Row(
@@ -401,7 +403,8 @@ private fun SearchWriterCard(writer: AuthorDto, onClick: () -> Unit) {
                         fontFamily = SearchEditorialFamily,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 18.sp
-                    )
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "@${writer.penName}",
@@ -410,7 +413,7 @@ private fun SearchWriterCard(writer: AuthorDto, onClick: () -> Unit) {
                 if (!writer.bio.isNullOrBlank()) {
                     Text(
                         text = writer.bio,
-                        style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFF6D6963)),
+                        style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.padding(top = 2.dp)
@@ -421,7 +424,7 @@ private fun SearchWriterCard(writer: AuthorDto, onClick: () -> Unit) {
             Column(horizontalAlignment = Alignment.End) {
                 Text(
                     text = "${writer.followersCnt ?: 0} followers",
-                    style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFF6D6963))
+                    style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                 )
             }
         }
@@ -433,9 +436,9 @@ private fun SearchTagCard(tag: TagDto, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-        color = Color(0xFFFFFDF9),
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(WritOnRadius.field),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
@@ -443,7 +446,7 @@ private fun SearchTagCard(tag: TagDto, onClick: () -> Unit) {
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = Color(0xFFF2ECE4),
+                color = MaterialTheme.colorScheme.surfaceVariant,
                 modifier = Modifier.size(36.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
@@ -465,17 +468,18 @@ private fun SearchTagCard(tag: TagDto, onClick: () -> Unit) {
                     fontFamily = SearchEditorialFamily,
                     fontWeight = FontWeight.SemiBold
                 ),
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
 
             Surface(
                 shape = RoundedCornerShape(WritOnRadius.pill),
-                color = Color(0xFFF2ECE4)
+                color = MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Text(
                     text = "${tag.count} ${if (tag.count == 1) "story" else "stories"}",
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                    style = MaterialTheme.typography.labelMedium.copy(color = Color(0xFF6D6963))
+                    style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
                 )
             }
         }
@@ -489,11 +493,11 @@ private fun EmptyResults(category: String, query: String) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(painterResource(R.drawable.ic_search_muted), contentDescription = null, modifier = Modifier.size(38.dp))
-        Text("No $category found", modifier = Modifier.padding(top = WritOnSpacing.md), style = MaterialTheme.typography.titleLarge.copy(fontFamily = SearchEditorialFamily))
+        Text("No $category found", modifier = Modifier.padding(top = WritOnSpacing.md), style = MaterialTheme.typography.titleLarge.copy(fontFamily = SearchEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
         if (query.isNotBlank()) {
-            Text("Try another search for “$query”.", style = MaterialTheme.typography.bodyLarge, color = Color(0xFF6D6963))
+            Text("Try another search for “$query”.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         } else {
-            Text("Type something to search for $category.", style = MaterialTheme.typography.bodyLarge, color = Color(0xFF6D6963))
+            Text("Type something to search for $category.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -504,21 +508,21 @@ private fun ExploreTopicsCard(onClick: () -> Unit) {
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxWidth().padding(top = WritOnSpacing.sm),
-        color = Color(0xFFFFFDF9),
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(WritOnRadius.field),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier.padding(WritOnSpacing.md),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface(shape = CircleShape, color = Color(0xFFE9E1D7), modifier = Modifier.size(48.dp)) {
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(48.dp)) {
                 Box(contentAlignment = Alignment.Center) { Image(painterResource(R.drawable.ic_explore_orange), contentDescription = null, modifier = Modifier.size(24.dp)) }
             }
             Spacer(Modifier.width(WritOnSpacing.md))
             Column(modifier = Modifier.weight(1f)) {
-                Text("Explore topics", style = MaterialTheme.typography.titleMedium.copy(fontFamily = SearchEditorialFamily, fontWeight = FontWeight.SemiBold))
-                Text("Discover stories across categories\nthat inspire you.", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF6D6963))
+                Text("Explore topics", style = MaterialTheme.typography.titleMedium.copy(fontFamily = SearchEditorialFamily, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
+                Text("Discover stories across categories\nthat inspire you.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Image(painterResource(R.drawable.ic_forward_orange), contentDescription = "Explore topics", modifier = Modifier.size(24.dp))
         }

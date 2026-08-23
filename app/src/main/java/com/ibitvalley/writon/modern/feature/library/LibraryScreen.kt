@@ -212,7 +212,8 @@ private fun LibraryStoryCard(story: LibraryStory, isBookmarked: Boolean, onClick
     Surface(
         modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(WritOnRadius.card)).clickable(onClick = onClick),
         shape = RoundedCornerShape(WritOnRadius.card),
-        color = SurfacePaper,
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
         tonalElevation = WritOnElevation.flat,
         shadowElevation = WritOnElevation.raised
     ) {
@@ -236,7 +237,7 @@ private fun LibraryStoryCard(story: LibraryStory, isBookmarked: Boolean, onClick
                 )
                 Spacer(Modifier.height(WritOnSpacing.sm))
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(shape = CircleShape, color = BrandBeige, modifier = Modifier.size(38.dp)) {
+                    Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(38.dp)) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(initialsOf(story.authorName), style = MaterialTheme.typography.labelMedium)
                         }
@@ -268,7 +269,12 @@ private fun LibraryStoryCard(story: LibraryStory, isBookmarked: Boolean, onClick
 
 @Composable
 private fun EmptyLibraryCollections() {
-    Surface(shape = RoundedCornerShape(WritOnRadius.card), color = SurfacePaper, modifier = Modifier.fillMaxWidth()) {
+    Surface(
+        shape = RoundedCornerShape(WritOnRadius.card),
+        color = MaterialTheme.colorScheme.surface,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth()
+    ) {
         Column(modifier = Modifier.padding(WritOnSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally) {
             Image(painterResource(R.drawable.ic_collection_muted), contentDescription = null, modifier = Modifier.size(40.dp))
             Spacer(Modifier.height(WritOnSpacing.sm))

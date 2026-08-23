@@ -29,79 +29,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a9c6ae2d-bc2c-4dad-a201-11f11e4ca373" name="Default Changelist" comment="Till 12 June">
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/collections/CollectionsViewModel.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/explore/ExploreViewModel.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/search/SearchViewModel.kt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_ink.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_ink.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_ink.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_ink.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_ink.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/default_story_cover_wall.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud_ink.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud_muted.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud_orange.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud_white.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/migrations/20260822_reading_history.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/planningMode.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/planningMode.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/appInsightsSettings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/appInsightsSettings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/designsystem/components/StoryComponents.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/designsystem/components/StoryComponents.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/network/WritOnApiService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/network/WritOnApiService.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/network/model/NetworkModels.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/network/model/NetworkModels.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/preferences/UserPreferences.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/core/preferences/UserPreferences.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/data/repository/PostRepository.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/data/repository/PostRepository.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/explore/ExploreScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/explore/ExploreScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/feed/FeedScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/feed/FeedScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/library/LibraryScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/library/LibraryScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/library/ReadingHistoryScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/library/ReadingHistoryScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/notifications/NotificationsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/notifications/NotificationsScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/onboarding/InterestsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/onboarding/InterestsScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ApplaudsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ApplaudsScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ProfileScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ProfileScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ProfileViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/profile/ProfileViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/reader/ReaderScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/reader/ReaderScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/reader/ReaderViewModel.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/reader/ReaderViewModel.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/search/SearchScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/search/SearchScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/settings/SettingsScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/settings/SettingsScreen.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/welcome/WelcomeScreen.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/feature/welcome/WelcomeScreen.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/ui/navigation/WritOnNavigation.kt" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/ibitvalley/writon/modern/ui/navigation/WritOnNavigation.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_muted.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_muted.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_orange.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_orange.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-hdpi/ic_applaud_white.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_muted.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_muted.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_orange.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_orange.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-mdpi/ic_applaud_white.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_muted.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_muted.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_orange.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_orange.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xhdpi/ic_applaud_white.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_muted.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_muted.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_orange.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_orange.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxhdpi/ic_applaud_white.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_muted.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_muted.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_orange.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_orange.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_white.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable-xxxhdpi/ic_applaud_white.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/ic_applaud.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/auth/jwt.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/auth/jwt.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/auth/password.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/auth/password.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/db/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/db/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/db/schema.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/db/schema.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/db/seed.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/db/seed.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/routes/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/routes/auth.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/routes/comments.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/routes/comments.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/routes/media.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/routes/media.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/routes/posts.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/routes/posts.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/dist/routes/users.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/dist/routes/users.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/server.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/server.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/test/fastify.contract.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/test/fastify.contract.test.js" afterDir="false" />
     </list>
     <list id="ce0c4f36-a9ea-4726-9ed7-f5148670e229" name="Update workspace.xml" comment="" />
     <option name="SHOW_DIALOG" value="false" />
@@ -133,6 +68,27 @@
               <path>
                 <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
                 <item name="WritOn-PowerUp" type="f1a62948:ProjectNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="WritOn-PowerUp" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="WritOn-PowerUp" type="f1a62948:ProjectNode" />
+                <item name="Tasks" type="e4a08cd1:TasksNode" />
+                <item name="other" type="c8890929:TasksNode$1" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="WritOn-PowerUp" type="f1a62948:ProjectNode" />
+                <item name="Run Configurations" type="7b0102dc:RunConfigurationsNode" />
+              </path>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="WritOn-PowerUp" type="f1a62948:ProjectNode" />
+                <item name="app" type="2d1252cf:ModuleNode" />
               </path>
             </expand>
             <select />
@@ -180,32 +136,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Android App.New Run Config.executor&quot;: &quot;Run&quot;,
-    &quot;Android App.app.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Configure Daemon JVM Criteria.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.Upgrade Gradle wrapper.executor&quot;: &quot;Run&quot;,
-    &quot;Gradle.WritOn-PowerUp [signingReport].executor&quot;: &quot;Run&quot;,
-    &quot;GradleDaemonJvmCriteriaMigrationNotification.isNotificationDisabled&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;com.google.services.firebase.aqiPopupShown&quot;: &quot;true&quot;,
-    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Till__29Aug&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;D:/VibeCode/WritOn-PowerUp&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.gradle&quot;,
-    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Android App.New Run Config.executor": "Run",
+    "Android App.app.executor": "Run",
+    "Gradle.Configure Daemon JVM Criteria.executor": "Run",
+    "Gradle.Upgrade Gradle wrapper.executor": "Run",
+    "Gradle.WritOn-PowerUp [signingReport].executor": "Run",
+    "GradleDaemonJvmCriteriaMigrationNotification.isNotificationDisabled": "true",
+    "PROJECT_TRUSTED_KEY": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "com.google.services.firebase.aqiPopupShown": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "Till__29Aug",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/VibeCode/WritOn-PowerUp",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.gradle",
+    "show.migrate.to.gradle.popup": "false"
   }
-}</component>
+}]]></component>
   <component name="PsdUISettings">
     <option name="MODULE_TAB" value="Signing Configs" />
     <option name="BUILD_VARIANTS_TAB" value="Build Types" />
