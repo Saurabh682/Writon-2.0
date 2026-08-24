@@ -98,3 +98,15 @@ Invoke-RestMethod http://localhost:3001/health
 ```
 
 Add broader authenticated Fastify integration coverage before a public release.
+
+## Key Features & Capabilities (v2.0.0)
+
+- **Internationalization (i18n)**: In-app language switching with support for English, Hindi (हिन्दी), Spanish (Español), French (Français), Bengali (বাংলা), and Marathi (मराठी).
+- **Biometric Security**: Native Fingerprint & Face ID App Lock protection.
+- **Modern Jetpack Compose UI**: Dynamic `MaterialTheme` color palette across Paper, Sepia, Dark Obsidian, and System themes.
+- **Offline-First Reading & Writing**: Room database caching with WorkManager outbox background sync.
+- **Illustrated Editorial Covers**: Automatic rendering of vintage illustrated book covers for stories.
+- **Google Play Compliance**: Full compliance with Child Safety Standards ([`CHILD_SAFETY_STANDARDS.md`](CHILD_SAFETY_STANDARDS.md)) and Data Safety Account Deletion policies ([`ACCOUNT_DELETION.md`](ACCOUNT_DELETION.md)).
+
+For a detailed history of all changes, see [`CHANGELOG.md`](CHANGELOG.md).
+
