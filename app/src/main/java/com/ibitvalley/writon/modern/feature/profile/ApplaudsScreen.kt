@@ -1,5 +1,6 @@
 package com.ibitvalley.writon.modern.feature.profile
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -212,14 +213,24 @@ private fun ApplaudsSummary(total: Int) {
             Column {
                 Text(
                     total.toString(),
-                    style = MaterialTheme.typography.displaySmall.copy(fontFamily = ApplaudsEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 40.sp)
+                    style = MaterialTheme.typography.displaySmall.copy(fontFamily = ApplaudsEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 40.sp),
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Text("Stories applauded", fontSize = 15.sp, color = Color(0xFF6D6963))
+                Text(
+                    stringResource(R.string.common_stories_applauded),
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
             Spacer(Modifier.weight(1f))
-            androidx.compose.material3.VerticalDivider(modifier = Modifier.height(52.dp), color = Color(0xFFE9E1D7))
+            androidx.compose.material3.VerticalDivider(modifier = Modifier.height(52.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             Spacer(Modifier.width(WritOnSpacing.lg))
-            Text("Keep supporting\ngreat writers!", fontSize = 15.sp, lineHeight = 21.sp, color = Color(0xFF6D6963))
+            Text(
+                stringResource(R.string.applauds_keep_supporting),
+                fontSize = 15.sp,
+                lineHeight = 21.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -262,9 +273,9 @@ private fun ApplaudedStoryRow(
                         Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "Story options", modifier = Modifier.size(24.dp))
                     }
                     DropdownMenu(expanded = expanded, onDismissRequest = onDismissMore) {
-                        DropdownMenuItem(text = { Text("Remove from applauds") }, onClick = onRemove)
-                        DropdownMenuItem(text = { Text("Share") }, onClick = onDismissMore)
-                        DropdownMenuItem(text = { Text("Open author") }, onClick = onDismissMore)
+                        DropdownMenuItem(text = { Text(stringResource(R.string.applauds_remove)) }, onClick = onRemove)
+                        DropdownMenuItem(text = { Text(stringResource(R.string.common_share)) }, onClick = onDismissMore)
+                        DropdownMenuItem(text = { Text(stringResource(R.string.applauds_open_author)) }, onClick = onDismissMore)
                     }
                 }
             }
@@ -292,8 +303,18 @@ private fun EmptyApplauds(tab: String) {
         modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = null, modifier = Modifier.size(38.dp))
-        Text("No $tab applauds yet", modifier = Modifier.padding(top = WritOnSpacing.sm), style = MaterialTheme.typography.titleLarge.copy(fontFamily = ApplaudsEditorialFamily))
+        Image(
+            painterResource(R.drawable.ic_applaud_muted),
+            contentDescription = null,
+            modifier = Modifier.size(38.dp),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+        )
+        Text(
+            stringResource(R.string.applauds_empty_title),
+            modifier = Modifier.padding(top = WritOnSpacing.sm),
+            style = MaterialTheme.typography.titleLarge.copy(fontFamily = ApplaudsEditorialFamily),
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }
 
@@ -301,7 +322,7 @@ private fun EmptyApplauds(tab: String) {
 private fun ApplaudsFooter() {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color(0xFFF2ECE4),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         shape = RoundedCornerShape(WritOnRadius.field)
     ) {
         Row(
@@ -310,8 +331,19 @@ private fun ApplaudsFooter() {
         ) {
             Text("♡", color = BrandRed, fontSize = 39.sp)
             Spacer(Modifier.width(WritOnSpacing.md))
-            Text("Your applause encourages writers\nand helps stories reach more readers.", modifier = Modifier.weight(1f), fontSize = 14.sp, lineHeight = 20.sp, color = Color(0xFF6D6963))
-            Text("Thank you!", color = BrandRed, fontSize = 15.sp, fontWeight = FontWeight.Medium)
+            Text(
+                stringResource(R.string.applauds_empty_desc),
+                modifier = Modifier.weight(1f),
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                stringResource(R.string.applauds_thank_you),
+                color = BrandRed,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }

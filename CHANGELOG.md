@@ -15,7 +15,7 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 ## [2.0.0] - 2026-08-24
 
 ### 🌍 Internationalization (i18n) & Multi-Language System
-- **Comprehensive String Extraction**: Extracted all hardcoded UI strings across all screens, headers, dialogs, bottom navigation, and action trays into structured XML resource files (`155+ strings`).
+- **Comprehensive String Extraction (225+ semantic keys)**: Extracted all hardcoded UI strings across all screens, headers, dialogs, bottom navigation, and action trays into structured XML resource files.
 - **6 Supported Languages Out-of-the-Box**:
   - **English (en)**: Default / Global (`values/strings.xml`)
   - **Hindi (hi / हिन्दी)**: Full native localization (`values-hi/strings.xml`)
@@ -23,6 +23,16 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
   - **French (fr / Français)**: France et Francophonie (`values-fr/strings.xml`)
   - **Bengali (bn / বাংলা)**: সাহিত্য ও সংস্কৃতি (`values-bn/strings.xml`)
   - **Marathi (mr / मराठी)**: महाराष्ट्र • कथा आणि साहित्य (`values-mr/strings.xml`)
+- **Complete Screen-by-Screen Localization**:
+  - `SettingsScreen.kt`: General, Account, Preferences, Security, About, Data Deletion, Language dialog, and App Guide.
+  - `AppearanceScreen.kt`: Themes (Paper, Sepia, Dark, System), Line Spacing (Compact, Relaxed, Spacious), Typeface Styles (Serif, Sans, Mono), and sample previews.
+  - `NotificationsScreen.kt`: Empty state headers, descriptions, and dynamic theme colors.
+  - `InterestsScreen.kt`: Topic selections, Continue, and Skip buttons.
+  - `ApplaudsScreen.kt`: Story stats, context menu actions, empty states, and appreciation cards.
+  - `ReadingHistoryScreen.kt`: History tabs, empty history states, and reading tip banners.
+  - `SearchScreen.kt`: Search empty states, query guidance, and explore topics cards.
+  - `ProfileScreen.kt`: Bio editing, Motto/Quote tags, Top Stories, See All, and Edit Profile inputs.
+  - `StoryEditorScreen.kt`: Top actions (Save Draft, Publish), story metadata (Title, Summary, Category, Tags, Visibility options).
 - **Interactive Language Picker**: Added a dedicated **"Language / भाषा"** setting under *Preferences* in `SettingsScreen.kt` with a live modal selection dialog displaying native language names, subtitles, and selection checkmarks.
 - **Dynamic Instant Locale Switching**:
   - Upgraded `WritOnModernActivity` to `AppCompatActivity`.

@@ -332,9 +332,23 @@ private fun HistoryCover(story: HistoryStory) {
 private fun EmptyHistory(filter: HistoryFilter) {
     Surface(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.surface, shape = RoundedCornerShape(22.dp), border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))) {
         Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(painterResource(R.drawable.ic_history_muted), contentDescription = null, modifier = Modifier.size(38.dp))
-            Text("No ${filter.label.lowercase()} reading yet", modifier = Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleLarge.copy(fontFamily = HistoryEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
-            Text("Stories you read will appear here.", modifier = Modifier.padding(top = 4.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Image(
+                painterResource(R.drawable.ic_history_muted),
+                contentDescription = null,
+                modifier = Modifier.size(38.dp),
+                colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+            Text(
+                stringResource(R.string.history_empty_title),
+                modifier = Modifier.padding(top = 12.dp),
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = HistoryEditorialFamily),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                stringResource(R.string.history_empty_desc),
+                modifier = Modifier.padding(top = 4.dp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -345,7 +359,13 @@ private fun ContinueReadingTip(onDismiss: () -> Unit) {
         Row(modifier = Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("✦", fontSize = 23.sp, color = BrandRed)
             Spacer(Modifier.width(12.dp))
-            Text("Tip: Tap any story to continue reading\nfrom where you left off.", modifier = Modifier.weight(1f), fontSize = 14.sp, lineHeight = 19.sp, color = MaterialTheme.colorScheme.onSurface)
+            Text(
+                stringResource(R.string.history_tip),
+                modifier = Modifier.weight(1f),
+                fontSize = 14.sp,
+                lineHeight = 19.sp,
+                color = MaterialTheme.colorScheme.onSurface
+            )
             IconButton(onClick = onDismiss, modifier = Modifier.size(36.dp)) { Text("×", fontSize = 27.sp, color = MaterialTheme.colorScheme.onSurface) }
         }
     }

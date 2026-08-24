@@ -328,7 +328,7 @@ private fun ProfileAboutTab(name: String, bio: String, location: String?, joined
                     TextButton(onClick = onEditClick, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)) {
                         Image(painterResource(R.drawable.ic_edit_pencil), contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Edit Bio", color = BrandRed, style = MaterialTheme.typography.labelLarge)
+                        Text(stringResource(R.string.profile_edit_bio), color = BrandRed, style = MaterialTheme.typography.labelLarge)
                     }
                 }
                 Spacer(Modifier.height(WritOnSpacing.sm))
@@ -343,7 +343,7 @@ private fun ProfileAboutTab(name: String, bio: String, location: String?, joined
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(Modifier.padding(12.dp)) {
-                            Text("MOTTO / QUOTE", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BrandRed, letterSpacing = 1.sp)
+                            Text(stringResource(R.string.profile_motto_quote), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BrandRed, letterSpacing = 1.sp)
                             Spacer(Modifier.height(4.dp))
                             Text("\"$quote\"", fontStyle = androidx.compose.ui.text.font.FontStyle.Italic, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
                         }
@@ -479,13 +479,13 @@ private fun ProfileHighlightsTab(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Top Stories", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
+                    Text(stringResource(R.string.profile_top_stories), style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
                     Spacer(Modifier.weight(1f))
                     Row(
                         modifier = Modifier.clickable(onClick = onSeeAllClick),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("See all", style = MaterialTheme.typography.titleMedium, color = BrandRed)
+                        Text(stringResource(R.string.profile_see_all), style = MaterialTheme.typography.titleMedium, color = BrandRed)
                         Spacer(Modifier.width(4.dp))
                         Image(
                             painterResource(R.drawable.ic_forward_muted),
@@ -497,7 +497,7 @@ private fun ProfileHighlightsTab(
                 }
                 Spacer(Modifier.height(WritOnSpacing.md))
                 if (highlights.isEmpty()) {
-                    Text("Published stories and writer highlights will appear here.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.feed_empty_desc), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
                     highlights.take(3).forEach { story ->
                         Row(
@@ -540,16 +540,16 @@ private fun ProfileEmptyTab(type: String, onAction: () -> Unit) {
             modifier = Modifier.padding(WritOnSpacing.xl),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("No $type yet", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
+            Text(stringResource(R.string.feed_empty_title), style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
             Spacer(Modifier.height(WritOnSpacing.xs))
-            Text("Stories you write and publish will be presented here on your writer profile.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+            Text(stringResource(R.string.feed_empty_desc), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
             Spacer(Modifier.height(WritOnSpacing.md))
             Button(
                 onClick = onAction,
                 colors = ButtonDefaults.buttonColors(containerColor = BrandRed),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Write a Story ✍️", color = Color.White)
+                Text(stringResource(R.string.profile_write_story), color = Color.White)
             }
         }
     }
@@ -603,7 +603,7 @@ private fun EditProfileDialog(
                 OutlinedTextField(
                     value = fullName,
                     onValueChange = { fullName = it },
-                    label = { Text("Full Name") },
+                    label = { Text(stringResource(R.string.auth_full_name_hint)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
@@ -612,7 +612,7 @@ private fun EditProfileDialog(
                 OutlinedTextField(
                     value = penName,
                     onValueChange = { penName = it },
-                    label = { Text("Pen Name / Username") },
+                    label = { Text(stringResource(R.string.profile_pen_name_hint)) },
                     prefix = { Text("@") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -622,7 +622,7 @@ private fun EditProfileDialog(
                 OutlinedTextField(
                     value = bio,
                     onValueChange = { bio = it },
-                    label = { Text("Bio (About your writing)") },
+                    label = { Text(stringResource(R.string.profile_bio_hint)) },
                     minLines = 3,
                     maxLines = 5,
                     modifier = Modifier.fillMaxWidth(),
@@ -632,7 +632,7 @@ private fun EditProfileDialog(
                 OutlinedTextField(
                     value = location,
                     onValueChange = { location = it },
-                    label = { Text("Location (e.g. San Francisco, CA)") },
+                    label = { Text(stringResource(R.string.profile_location_hint)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
@@ -646,7 +646,7 @@ private fun EditProfileDialog(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("Cancel", color = Color(0xFF6D6963))
+                        Text(stringResource(R.string.common_cancel), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Spacer(Modifier.width(8.dp))
                     Button(

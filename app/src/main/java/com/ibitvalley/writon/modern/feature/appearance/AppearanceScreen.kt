@@ -181,8 +181,8 @@ fun AppearanceScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     ThemeOptionCard(
-                        title = "Paper",
-                        subtitle = "Warm Light",
+                        title = stringResource(R.string.appearance_theme_paper_name),
+                        subtitle = stringResource(R.string.appearance_theme_paper_desc),
                         cardColor = SurfacePaper,
                         textColor = Ink,
                         accentColor = BrandRed,
@@ -191,8 +191,8 @@ fun AppearanceScreen(
                         onClick = { updateTheme("paper") }
                     )
                     ThemeOptionCard(
-                        title = "Sepia",
-                        subtitle = "Book Cafe",
+                        title = stringResource(R.string.appearance_theme_sepia_name),
+                        subtitle = stringResource(R.string.appearance_theme_sepia_desc),
                         cardColor = SepiaSurfaceCard,
                         textColor = SepiaTextPrimary,
                         accentColor = SepiaPrimary,
@@ -201,8 +201,8 @@ fun AppearanceScreen(
                         onClick = { updateTheme("sepia") }
                     )
                     ThemeOptionCard(
-                        title = "Dark",
-                        subtitle = "Obsidian",
+                        title = stringResource(R.string.appearance_theme_dark_name),
+                        subtitle = stringResource(R.string.appearance_theme_dark_desc),
                         cardColor = ObsidianSurfaceCard,
                         textColor = ObsidianTextPrimary,
                         accentColor = ObsidianPrimary,
@@ -211,8 +211,8 @@ fun AppearanceScreen(
                         onClick = { updateTheme("dark") }
                     )
                     ThemeOptionCard(
-                        title = "System",
-                        subtitle = "Auto",
+                        title = stringResource(R.string.appearance_theme_system_name),
+                        subtitle = stringResource(R.string.appearance_theme_system_desc),
                         cardColor = MaterialTheme.colorScheme.surfaceVariant,
                         textColor = MaterialTheme.colorScheme.onSurface,
                         accentColor = MaterialTheme.colorScheme.primary,
@@ -293,21 +293,21 @@ fun AppearanceScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     SegmentOption(
-                        title = "Compact",
+                        title = stringResource(R.string.appearance_spacing_compact),
                         subtitle = "1.3x",
                         isSelected = lineMultiplier <= 1.35f,
                         modifier = Modifier.weight(1f),
                         onClick = { updateLineMultiplier(1.3f) }
                     )
                     SegmentOption(
-                        title = "Relaxed",
+                        title = stringResource(R.string.appearance_spacing_relaxed),
                         subtitle = "1.6x",
                         isSelected = lineMultiplier in 1.36f..1.65f,
                         modifier = Modifier.weight(1f),
                         onClick = { updateLineMultiplier(1.6f) }
                     )
                     SegmentOption(
-                        title = "Spacious",
+                        title = stringResource(R.string.appearance_spacing_spacious),
                         subtitle = "1.9x",
                         isSelected = lineMultiplier > 1.65f,
                         modifier = Modifier.weight(1f),
@@ -330,24 +330,24 @@ fun AppearanceScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     SegmentOption(
-                        title = "Serif",
-                        subtitle = "Editorial",
+                        title = stringResource(R.string.appearance_font_serif_name),
+                        subtitle = stringResource(R.string.appearance_font_serif_desc),
                         isSelected = fontFamilyChoice == "serif",
                         fontFamily = EditorialSerif,
                         modifier = Modifier.weight(1f),
                         onClick = { updateFontFamily("serif") }
                     )
                     SegmentOption(
-                        title = "Sans",
-                        subtitle = "Clean",
+                        title = stringResource(R.string.appearance_font_sans_name),
+                        subtitle = stringResource(R.string.appearance_font_sans_desc),
                         isSelected = fontFamilyChoice == "sans",
                         fontFamily = ModernSans,
                         modifier = Modifier.weight(1f),
                         onClick = { updateFontFamily("sans") }
                     )
                     SegmentOption(
-                        title = "Mono",
-                        subtitle = "Typewriter",
+                        title = stringResource(R.string.appearance_font_mono_name),
+                        subtitle = stringResource(R.string.appearance_font_mono_desc),
                         isSelected = fontFamilyChoice == "mono",
                         fontFamily = TypewriterMono,
                         modifier = Modifier.weight(1f),

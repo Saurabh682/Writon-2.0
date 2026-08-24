@@ -1,5 +1,6 @@
 package com.ibitvalley.writon.modern.feature.notifications
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -124,17 +125,30 @@ fun NotificationsScreen(
 private fun EmptyNotifications() {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color(0xFFFFFDF9),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
         shape = RoundedCornerShape(WritOnRadius.card),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(
             modifier = Modifier.padding(28.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(painterResource(R.drawable.ic_notification), contentDescription = null, modifier = Modifier.size(34.dp))
-            Text("No notifications yet", modifier = Modifier.padding(top = 12.dp), style = MaterialTheme.typography.titleLarge.copy(fontFamily = NotificationEditorialFamily))
-            Text("Story activity will appear here.", color = Color(0xFF6D6963))
+            Image(
+                painterResource(R.drawable.ic_notification),
+                contentDescription = null,
+                modifier = Modifier.size(34.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+            Text(
+                stringResource(R.string.notif_empty_title),
+                modifier = Modifier.padding(top = 12.dp),
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = NotificationEditorialFamily),
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                stringResource(R.string.notif_empty_desc),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

@@ -509,13 +509,23 @@ private fun EmptyResults(category: String, query: String) {
         modifier = Modifier.fillMaxWidth().padding(vertical = 54.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(painterResource(R.drawable.ic_search_muted), contentDescription = null, modifier = Modifier.size(38.dp))
-        Text("No $category found", modifier = Modifier.padding(top = WritOnSpacing.md), style = MaterialTheme.typography.titleLarge.copy(fontFamily = SearchEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
-        if (query.isNotBlank()) {
-            Text("Try another search for “$query”.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        } else {
-            Text("Type something to search for $category.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
+        Image(
+            painterResource(R.drawable.ic_search_muted),
+            contentDescription = null,
+            modifier = Modifier.size(38.dp),
+            colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+        )
+        Text(
+            stringResource(R.string.search_empty_title),
+            modifier = Modifier.padding(top = WritOnSpacing.md),
+            style = MaterialTheme.typography.titleLarge.copy(fontFamily = SearchEditorialFamily),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            stringResource(R.string.search_empty_desc),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
 
@@ -538,8 +548,8 @@ private fun ExploreTopicsCard(onClick: () -> Unit) {
             }
             Spacer(Modifier.width(WritOnSpacing.md))
             Column(modifier = Modifier.weight(1f)) {
-                Text("Explore topics", style = MaterialTheme.typography.titleMedium.copy(fontFamily = SearchEditorialFamily, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
-                Text("Discover stories across categories\nthat inspire you.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.search_explore_topics), style = MaterialTheme.typography.titleMedium.copy(fontFamily = SearchEditorialFamily, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface)
+                Text(stringResource(R.string.search_explore_topics_desc), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Image(painterResource(R.drawable.ic_forward_orange), contentDescription = "Explore topics", modifier = Modifier.size(24.dp))
         }

@@ -1,5 +1,6 @@
 package com.ibitvalley.writon.modern.feature.onboarding
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -133,7 +134,7 @@ fun InterestsScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = SurfacePaper)
             ) {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text("Continue", style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp))
+                    Text(stringResource(R.string.common_continue), style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp))
                     Image(
                         painter = painterResource(R.drawable.ic_forward_white),
                         contentDescription = null,
@@ -147,7 +148,7 @@ fun InterestsScreen(
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 8.dp)
             ) {
                 Text(
-                    "Skip for now",
+                    stringResource(R.string.common_skip),
                     style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
                     color = SecondaryText,
                     textDecoration = TextDecoration.Underline

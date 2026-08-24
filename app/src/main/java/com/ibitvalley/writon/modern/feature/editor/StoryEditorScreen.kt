@@ -1,5 +1,6 @@
 package com.ibitvalley.writon.modern.feature.editor
 
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
@@ -124,16 +125,16 @@ fun StoryEditorScreen(
                 TextButton(onClick = onBackClick) {
                     Image(
                         painterResource(R.drawable.ic_back),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.common_back),
                         modifier = Modifier.size(24.dp),
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                     )
                     Spacer(Modifier.width(6.dp))
-                    Text("Back", color = MaterialTheme.colorScheme.onBackground)
+                    Text(stringResource(R.string.common_back), color = MaterialTheme.colorScheme.onBackground)
                 }
                 Spacer(Modifier.weight(1f))
                 TextButton(onClick = { draftStatus = "Just now" }) {
-                    Text("Save draft", fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onBackground)
+                    Text(stringResource(R.string.editor_save_draft), fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onBackground)
                 }
                 Spacer(Modifier.width(8.dp))
                 Button(
@@ -147,7 +148,7 @@ fun StoryEditorScreen(
                     ),
                     shape = RoundedCornerShape(WritOnRadius.field)
                 ) {
-                    Text("Publish", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.editor_publish), fontWeight = FontWeight.SemiBold)
                 }
             }
 
@@ -405,29 +406,27 @@ fun PublishStoryScreen(
             PublishHeader(onBackClick)
             PublishPreview(title, summary, wordCount, readTime, selectedCover)
             PublishTextEntry(
-                label = "Title",
+                label = stringResource(R.string.editor_title_hint),
                 value = title,
                 maxLength = 100,
                 singleLine = true,
                 onValueChange = viewModel::updateTitle
             )
             PublishTextEntry(
-                label = "Summary",
+                label = stringResource(R.string.editor_summary_hint),
                 value = summary,
                 maxLength = 300,
                 singleLine = false,
                 onValueChange = viewModel::updateSummary
             )
-            Text("Cover", modifier = Modifier.padding(top = WritOnSpacing.lg), style = MaterialTheme.typography.titleMedium, color = Color(0xFF6D6963))
-            CoverPicker(selectedCover = selectedCover, onCoverSelected = { selectedCover = it })
-            Text("Category", modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = Color(0xFF6D6963))
+            Text(stringResource(R.string.editor_category), modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Box {
                 Surface(
                     onClick = { categoryExpanded = true },
                     modifier = Modifier.fillMaxWidth(),
-                    color = Color(0xFFFFFDF9),
+                    color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(WritOnRadius.field),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = WritOnSpacing.md, vertical = 15.dp),
@@ -447,7 +446,7 @@ fun PublishStoryScreen(
                     }
                 }
             }
-            Text("Tags", modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = Color(0xFF6D6963))
+            Text(stringResource(R.string.editor_tags), modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -456,7 +455,7 @@ fun PublishStoryScreen(
                 tags.forEach { tag ->
                     Surface(
                         onClick = { tags = tags - tag },
-                        color = Color(0xFFF2ECE4),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(WritOnRadius.pill)
                     ) {
                         Row(
@@ -471,16 +470,16 @@ fun PublishStoryScreen(
                 }
                 TextButton(onClick = { tags = tags + "new tag" }, contentPadding = PaddingValues(horizontal = 4.dp)) {
                     Image(painterResource(R.drawable.ic_add_orange), contentDescription = null, modifier = Modifier.size(20.dp))
-                    Text("Add tag", color = BrandRed, fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.editor_add_tag), color = BrandRed, fontSize = 16.sp, fontWeight = FontWeight.Medium)
                 }
             }
-            Text("Who can see this?", modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = Color(0xFF6D6963))
+            Text(stringResource(R.string.editor_visibility), modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Row(horizontalArrangement = Arrangement.spacedBy(WritOnSpacing.sm)) {
                 VisibilityChoice(
                     modifier = Modifier.weight(1f),
                     selected = isPublic,
                     icon = R.drawable.ic_public,
-                    title = "Public",
+                    title = stringResource(R.string.editor_public),
                     description = "Everyone on WritOn",
                     onClick = { isPublic = true }
                 )
@@ -488,12 +487,12 @@ fun PublishStoryScreen(
                     modifier = Modifier.weight(1f),
                     selected = !isPublic,
                     icon = R.drawable.ic_lock,
-                    title = "Private",
+                    title = stringResource(R.string.editor_private),
                     description = "Only you can see",
                     onClick = { isPublic = false }
                 )
             }
-            Text("More options", modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = Color(0xFF6D6963))
+            Text(stringResource(R.string.editor_more_options), modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Surface(
                 onClick = { isScheduled = !isScheduled },
                 modifier = Modifier.fillMaxWidth(),
