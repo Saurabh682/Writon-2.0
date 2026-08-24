@@ -2,7 +2,15 @@
 
 All notable changes, architectural improvements, UI/UX refinements, security features, and localization additions in the **WritOn-PowerUp** project are documented in this file.
 
+### 📌 Active Repository & Fork Details
+- **Primary Fork / Repository**: [`Saurabh682/WritOn-PowerUp`](https://github.com/Saurabh682/WritOn-PowerUp.git)
+- **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
+- **Active Working Branch**: `Till_29Aug` *(synchronized with `production` and `main`)*
+- **Package Name**: `com.ibitvalley.writon`
+- **Current Version**: `2.0.0 (Version Code: 101)`
+
 ---
+
 
 ## [2.0.0] - 2026-08-24
 

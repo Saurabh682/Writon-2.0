@@ -2,7 +2,12 @@
 
 WritOn is an Android-first editorial publishing app. The active production path is a Kotlin/Jetpack Compose client backed by a Fastify API and Supabase Postgres.
 
+- **Primary Working Repository (Origin)**: [`Saurabh682/WritOn-PowerUp`](https://github.com/Saurabh682/WritOn-PowerUp.git)
+- **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
+- **Active Working Branch**: `Till_29Aug` *(synchronized with `production` and `main`)*
+
 ## Active architecture
+
 
 ```mermaid
 flowchart LR
