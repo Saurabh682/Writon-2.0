@@ -118,6 +118,17 @@ async function requireUser(request, reply) {
       error: 'Invalid or expired Firebase token',
     });
   }
+
+  try {
+    request.profileId = await resolveProfileId(request.user);
+  } catch (error) {
+    request.log.error({ err: error }, 'Could not resolve the canonical WritOn profile');
+    return reply.code(error.statusCode ?? 500).send({
+      error: error.statusCode === 409
+        ? error.message
+        : 'Your WritOn profile could not be loaded. Please try again shortly.',
+    });
+  }
 }
 
 async function optionalUser(request) {
@@ -128,9 +139,10 @@ async function optionalUser(request) {
   }
 
   try {
-    return await firebaseAuth.verifyIdToken(
+    const user = await firebaseAuth.verifyIdToken(
       authorization.substring('Bearer '.length)
     );
+    return { ...user, profileId: await resolveProfileId(user) };
   } catch {
     // A feed is public; an expired session must not prevent people browsing it.
     return null;
@@ -348,7 +360,130 @@ const profileReturningColumns = `
     where post.author_id = public.profiles.id and post.status = 'published'
   ), 0) as applauds_received`;
 
-async function ensureProfile(decodedToken) {
+function normalizedVerifiedEmail(decodedToken) {
+  if (decodedToken.email_verified !== true || typeof decodedToken.email !== 'string') {
+    return null;
+  }
+
+  const email = decodedToken.email.trim().toLowerCase();
+  return email && !email.endsWith('@legacy.writon.io') ? email : null;
+}
+
+/**
+ * Legacy imports suffix duplicate Gmail addresses with `+legacy-…`. Gmail delivers
+ * those aliases to the original mailbox, so a Firebase-verified Gmail address is
+ * safe evidence for the original account. Other providers retain exact matching.
+ */
+function legacyGmailAliasPattern(verifiedEmail) {
+  const [local, domain] = verifiedEmail.split('@');
+  if (!local || !['gmail.com', 'googlemail.com'].includes(domain)) return null;
+  return `${local}+legacy-%@${domain}`;
+}
+
+async function findReclaimableLegacyProfile(firebaseUid, verifiedEmail) {
+  const aliasPattern = legacyGmailAliasPattern(verifiedEmail);
+  if (!aliasPattern) return null;
+
+  const [legacyMatches, currentProfile] = await Promise.all([
+    database.query(
+      `select id from public.profiles
+       where id like 'legacy:%' and lower(btrim(email)) like $1
+       limit 2`,
+      [aliasPattern]
+    ),
+    database.query(
+      `select not exists (select 1 from public.posts where author_id = $1)
+                and not exists (select 1 from public.comments where author_id = $1)
+                and not exists (select 1 from public.bookmarks where user_id = $1)
+                and not exists (select 1 from public.post_applauds where user_id = $1)
+                and not exists (select 1 from public.follows where follower_id = $1 or following_id = $1)
+                and not exists (select 1 from public.reading_history where user_id = $1)
+                as "isEmpty"`,
+      [firebaseUid]
+    ),
+  ]);
+
+  return legacyMatches.rowCount === 1 && currentProfile.rows[0]?.isEmpty
+    ? legacyMatches.rows[0].id
+    : null;
+}
+
+function createIdentityConflictError() {
+  const error = new Error('This WritOn profile is already linked to another sign-in account.');
+  error.statusCode = 409;
+  return error;
+}
+
+async function resolveProfileId(decodedToken) {
+  const firebaseUid = decodedToken.uid;
+  const linkedIdentity = await database.query(
+    `select profile_id from public.profile_auth_identities where firebase_uid = $1`,
+    [firebaseUid]
+  );
+  const verifiedEmail = normalizedVerifiedEmail(decodedToken);
+  if (linkedIdentity.rowCount > 0) {
+    const linkedProfileId = linkedIdentity.rows[0].profile_id;
+    const legacyProfileId = linkedProfileId === firebaseUid && verifiedEmail
+      ? await findReclaimableLegacyProfile(firebaseUid, verifiedEmail)
+      : null;
+
+    if (!legacyProfileId) return linkedProfileId;
+
+    await database.query(
+      `update public.profile_auth_identities
+       set profile_id = $2, updated_at = now()
+       where firebase_uid = $1`,
+      [firebaseUid, legacyProfileId]
+    );
+    return legacyProfileId;
+  }
+
+  let profileId = firebaseUid;
+  if (verifiedEmail) {
+    const emailMatches = await database.query(
+      `select id
+       from public.profiles
+       where lower(btrim(email)) = $1
+         and lower(btrim(email)) not like '%@legacy.writon.io'
+       limit 2`,
+      [verifiedEmail]
+    );
+
+    // Only a single exact, Firebase-verified email match can claim legacy data.
+    // Ambiguous records remain untouched instead of risking an account takeover.
+    if (emailMatches.rowCount === 1) {
+      profileId = emailMatches.rows[0].id;
+    }
+
+    // A failed first sync may already have created a blank Firebase-ID profile.
+    // Reclaim the single matching Gmail legacy alias before persisting its identity map.
+    if (profileId === firebaseUid) {
+      profileId = (await findReclaimableLegacyProfile(firebaseUid, verifiedEmail)) || profileId;
+    }
+  }
+
+  if (profileId === firebaseUid) {
+    await ensureProfileForId(decodedToken, profileId);
+  }
+
+  try {
+    const createdIdentity = await database.query(
+      `insert into public.profile_auth_identities (firebase_uid, profile_id)
+       values ($1, $2)
+       on conflict (firebase_uid) do update
+         set profile_id = public.profile_auth_identities.profile_id,
+             updated_at = public.profile_auth_identities.updated_at
+       returning profile_id`,
+      [firebaseUid, profileId]
+    );
+    return createdIdentity.rows[0].profile_id;
+  } catch (error) {
+    if (error.code === '23505') throw createIdentityConflictError();
+    throw error;
+  }
+}
+
+async function ensureProfileForId(decodedToken, profileId) {
   const fallbackPenName = `writer_${decodedToken.uid.slice(0, 12).toLowerCase()}`;
   const fallbackFullName = decodedToken.name?.trim()
     || decodedToken.email?.split('@')[0]
@@ -360,7 +495,7 @@ async function ensureProfile(decodedToken) {
      on conflict (id) do update
        set email = coalesce(excluded.email, public.profiles.email)
      returning ${profileReturningColumns}`,
-    [decodedToken.uid, decodedToken.email ?? null, fallbackPenName, fallbackFullName]
+    [profileId, decodedToken.email ?? null, fallbackPenName, fallbackFullName]
   );
 
   return toProfile(result.rows[0]);
@@ -389,7 +524,7 @@ fastify.get(
 fastify.get(
   '/api/v1/me',
   { preHandler: requireUser },
-  async (request) => ({ profile: await ensureProfile(request.user) })
+  async (request) => ({ profile: await ensureProfileForId(request.user, request.profileId) })
 );
 
 fastify.get('/api/v1/posts', async (request, reply) => {
@@ -422,7 +557,7 @@ fastify.get('/api/v1/posts', async (request, reply) => {
       p.published_at desc nulls last,
       p.created_at desc
     limit $7 offset $8`,
-    [viewer?.uid ?? null, category ?? null, authorId ?? null, authorPenName ?? null, q || null, tab, limit + 1, (page - 1) * limit]
+    [viewer?.profileId ?? null, category ?? null, authorId ?? null, authorPenName ?? null, q || null, tab, limit + 1, (page - 1) * limit]
   );
 
   const posts = result.rows.slice(0, limit);
@@ -462,7 +597,7 @@ fastify.get('/api/v1/posts/:idOrSlug', async (request, reply) => {
     `${postSelectSql(`where (p.status = 'published' and p.is_public = true)
       and (p.id::text = $2 or p.slug = $2)`)}
     limit 1`,
-    [viewer?.uid ?? null, idOrSlug]
+    [viewer?.profileId ?? null, idOrSlug]
   );
 
   if (result.rowCount === 0) {
@@ -484,7 +619,7 @@ fastify.post(
       });
     }
 
-    await ensureProfile(request.user);
+    await ensureProfileForId(request.user, request.profileId);
     const story = parsed.data;
     const result = await database.query(
       `insert into public.posts (
@@ -494,7 +629,7 @@ fastify.post(
       returning id`,
       [
         createSlug(story.title),
-        request.user.uid,
+        request.profileId,
         story.title,
         story.summary ?? null,
         story.content,
@@ -507,13 +642,13 @@ fastify.post(
 
     const postResult = await database.query(
       `${postSelectSql('where p.id = $2')}`,
-      [request.user.uid, result.rows[0].id]
+      [request.profileId, result.rows[0].id]
     );
 
     if (story.isPublished) {
       triggerSparkReaction(database, {
         postId: result.rows[0].id,
-        authorId: request.user.uid,
+        authorId: request.profileId,
         category: story.category,
         title: story.title,
         summary: story.summary
@@ -531,10 +666,10 @@ fastify.post(
     const postId = parsePostId(request, reply);
     if (!postId) return;
 
-    await ensureProfile(request.user);
+    await ensureProfileForId(request.user, request.profileId);
     const interaction = await togglePostRelation({
       postId,
-      userId: request.user.uid,
+      userId: request.profileId,
       table: 'post_applauds',
       counterColumn: 'likes_count',
     });
@@ -551,10 +686,10 @@ fastify.post(
     const postId = parsePostId(request, reply);
     if (!postId) return;
 
-    await ensureProfile(request.user);
+    await ensureProfileForId(request.user, request.profileId);
     const interaction = await togglePostRelation({
       postId,
-      userId: request.user.uid,
+      userId: request.profileId,
       table: 'bookmarks',
       counterColumn: 'bookmarks_count',
     });
@@ -576,7 +711,7 @@ fastify.get(
         where saved.user_id = $2 and p.status = 'published' and p.is_public = true`)}
        order by saved.created_at desc
        limit $3 offset $4`,
-      [request.user.uid, request.user.uid, limit + 1, (page - 1) * limit]
+      [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
     );
     return { posts: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
   }
@@ -594,7 +729,7 @@ fastify.get(
         where applause.user_id = $2 and p.status = 'published' and p.is_public = true`)}
        order by applause.created_at desc
        limit $3 offset $4`,
-      [request.user.uid, request.user.uid, limit + 1, (page - 1) * limit]
+      [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
     );
     return { posts: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
   }
@@ -616,13 +751,13 @@ fastify.get(
       )}
        order by history.last_read_at desc
        limit $3 offset $4`,
-      [request.user.uid, request.user.uid, limit + 1, (page - 1) * limit]
+      [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
     );
     const summary = await database.query(
       `select count(*)::int as "storiesRead",
               coalesce(round(sum(read_seconds)::numeric / 3600, 1), 0) as "hoursRead"
        from public.reading_history where user_id = $1`,
-      [request.user.uid]
+      [request.profileId]
     );
     return {
       items: history.rows.slice(0, limit),
@@ -642,7 +777,7 @@ fastify.post(
     if (!parsed.success) {
       return reply.code(400).send({ error: 'Invalid reading progress', details: parsed.error.flatten().fieldErrors });
     }
-    await ensureProfile(request.user);
+    await ensureProfileForId(request.user, request.profileId);
     const result = await database.query(
       `insert into public.reading_history (user_id, post_id, progress, read_seconds)
        select $1, p.id, $3, $4 from public.posts p
@@ -652,7 +787,7 @@ fastify.post(
          read_seconds = public.reading_history.read_seconds + excluded.read_seconds,
          last_read_at = now(), updated_at = now()
        returning progress, read_seconds as "readSeconds", last_read_at as "lastReadAt"`,
-      [request.user.uid, postId, parsed.data.progress, parsed.data.readSeconds]
+      [request.profileId, postId, parsed.data.progress, parsed.data.readSeconds]
     );
     if (result.rowCount === 0) return reply.code(404).send({ error: 'Story not found' });
     return result.rows[0];
@@ -710,11 +845,11 @@ fastify.post(
       });
     }
 
-    await ensureProfile(request.user);
+    await ensureProfileForId(request.user, request.profileId);
     const client = await database.connect();
     try {
       await client.query('begin');
-      const post = await fetchInteractionPost(client, postId, request.user.uid);
+      const post = await fetchInteractionPost(client, postId, request.profileId);
       if (!post) {
         await client.query('rollback');
         return reply.code(404).send({ error: 'Story not found' });
@@ -724,7 +859,7 @@ fastify.post(
         `insert into public.comments (post_id, author_id, content)
          values ($1, $2, $3)
          returning id, post_id, author_id, content, created_at`,
-        [postId, request.user.uid, parsed.data.content]
+        [postId, request.profileId, parsed.data.content]
       );
       await client.query(
         `update public.posts set comments_count = comments_count + 1, updated_at = now() where id = $1`,
@@ -733,11 +868,11 @@ fastify.post(
       const author = await client.query(
         `select id, pen_name, full_name, avatar_url, bio, followers_count, following_count
          from public.profiles where id = $1`,
-        [request.user.uid]
+        [request.profileId]
       );
       await createNotification(client, {
         recipientId: post.author_id,
-        actorId: request.user.uid,
+        actorId: request.profileId,
         postId,
         commentId: inserted.rows[0].id,
         kind: 'comment',
@@ -750,7 +885,7 @@ fastify.post(
         postId,
         commentId: inserted.rows[0].id,
         postAuthorId: post.author_id,
-        commentAuthorId: request.user.uid,
+        commentAuthorId: request.profileId,
         content: parsed.data.content
       }).catch((err) => fastify.log.warn(`[Spark Comment Trigger Exception] ${err.message}`));
 
@@ -831,11 +966,11 @@ fastify.post(
   async (request, reply) => {
     const profileId = parseProfileIdentifier(request, reply);
     if (!profileId) return;
-    if (profileId === request.user.uid) {
+    if (profileId === request.profileId) {
       return reply.code(400).send({ error: 'You cannot follow yourself' });
     }
 
-    await ensureProfile(request.user);
+    await ensureProfileForId(request.user, request.profileId);
     const client = await database.connect();
     try {
       await client.query('begin');
@@ -850,24 +985,24 @@ fastify.post(
 
       const existing = await client.query(
         `select 1 from public.follows where follower_id = $1 and following_id = $2`,
-        [request.user.uid, profileId]
+        [request.profileId, profileId]
       );
       const following = existing.rowCount === 0;
       if (following) {
         await client.query(
           `insert into public.follows (follower_id, following_id) values ($1, $2)`,
-          [request.user.uid, profileId]
+          [request.profileId, profileId]
         );
         await createNotification(client, {
           recipientId: profileId,
-          actorId: request.user.uid,
+          actorId: request.profileId,
           kind: 'follow',
           message: 'started following you',
         });
       } else {
         await client.query(
           `delete from public.follows where follower_id = $1 and following_id = $2`,
-          [request.user.uid, profileId]
+          [request.profileId, profileId]
         );
       }
 
@@ -882,7 +1017,7 @@ fastify.post(
         `update public.profiles
          set following_count = greatest(following_count + $2, 0), updated_at = now()
          where id = $1`,
-        [request.user.uid, following ? 1 : -1]
+        [request.profileId, following ? 1 : -1]
       );
       await client.query('commit');
 
@@ -921,7 +1056,7 @@ fastify.get(
          and ($2::text is null or notification.kind = $2)
        order by notification.created_at desc
        limit $3 offset $4`,
-      [request.user.uid, kind ?? null, limit + 1, (page - 1) * limit]
+      [request.profileId, kind ?? null, limit + 1, (page - 1) * limit]
     );
     return { notifications: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
   }
@@ -954,7 +1089,7 @@ fastify.put(
               location = coalesce(excluded.location, public.profiles.location)
         returning ${profileReturningColumns}`,
         [
-          request.user.uid,
+          request.profileId,
           request.user.email ?? null,
           profile.penName,
           profile.fullName,
@@ -1257,16 +1392,17 @@ fastify.put(
     '/api/v1/me',
     { preHandler: [requireUser] },
     async (request, reply) => {
-      const userId = request.user.uid;
-      await database.query('delete from public.comments where user_id = $1', [userId]);
-      await database.query('delete from public.likes where user_id = $1', [userId]);
-      await database.query('delete from public.bookmarks where user_id = $1', [userId]);
-      await database.query('delete from public.posts where author_id = $1', [userId]);
-      await database.query('delete from public.profiles where id = $1', [userId]);
+      const profileId = request.profileId;
+      const firebaseUid = request.user.uid;
+      await database.query('delete from public.comments where user_id = $1', [profileId]);
+      await database.query('delete from public.likes where user_id = $1', [profileId]);
+      await database.query('delete from public.bookmarks where user_id = $1', [profileId]);
+      await database.query('delete from public.posts where author_id = $1', [profileId]);
+      await database.query('delete from public.profiles where id = $1', [profileId]);
 
       if (firebaseAuth) {
         try {
-          await firebaseAuth.deleteUser(userId);
+          await firebaseAuth.deleteUser(firebaseUid);
         } catch (e) {
           request.log.warn({ err: e }, 'Could not delete user from Firebase Auth directly');
         }
