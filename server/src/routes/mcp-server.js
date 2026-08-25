@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { CURATED_BOT_PERSONAS } from '../bot-engine/curated-personas.js';
+import { CURATED_COMMENTER_PERSONAS } from '../bot-engine/commenter-personas.js';
 import { getCoverImageForCategory } from '../bot-engine/image-service.js';
 import {
   getBotsList,
@@ -9,7 +10,8 @@ import {
   ingestSparkBatch,
   scheduleDelayedAction,
   getPendingDelayedActions,
-  triggerReaderSwarm
+  triggerReaderSwarm,
+  triggerCommenterWave
 } from '../bot-engine/spark-runner.js';
 
 const MCP_PROTOCOL_VERSION = '2024-11-05';
@@ -301,6 +303,36 @@ const WRITON_TOOLS = [
   {
     name: 'writon_get_reader_stats',
     description: 'Get total count of active reader bots in the applause network and total community applause metrics.',
+    inputSchema: {
+      type: 'object',
+      properties: {}
+    }
+  },
+  {
+    name: 'writon_commenter_wave',
+    description: 'Trigger an authentic discussion wave of 2-6 distinct commenter bot reflections on any story following the 65% micro, 25% medium, 10% in-depth rule.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        postId: {
+          type: 'string',
+          description: 'The UUID or slug of the post to comment on (or "latest").'
+        },
+        count: {
+          type: 'number',
+          description: 'Number of commenter reflections to schedule (default: 2-4).'
+        },
+        category: {
+          type: 'string',
+          description: 'Optional category filter for matched commenters (e.g. "Tech", "Poetry", "Philosophy").'
+        }
+      },
+      required: ['postId']
+    }
+  },
+  {
+    name: 'writon_get_commenter_personas',
+    description: 'List active commenter bot personas with their commenting styles, tone archetypes, and quick reaction samples.',
     inputSchema: {
       type: 'object',
       properties: {}
@@ -831,6 +863,62 @@ async function executeMcpTool(pool, toolName, args) {
         (select count(*)::int from public.bot_delayed_actions where status = 'pending' and action_type = 'applaud') as "pendingApplauds"
     `);
     return res.rows[0];
+  }
+
+  if (toolName === 'writon_commenter_wave') {
+    const { postId, count, category } = args;
+    let targetPostId = postId;
+    let postCategory = category;
+    let postTitle = '';
+
+    if (postId === 'latest' || !postId) {
+      const latestPost = await pool.query(`
+        select id, category, title from public.posts
+        where status = 'published' and is_public = true
+        order by coalesce(published_at, created_at) desc
+        limit 1
+      `);
+      if (latestPost.rowCount === 0) throw new Error('No published stories found to comment on');
+      targetPostId = latestPost.rows[0].id;
+      if (!postCategory) postCategory = latestPost.rows[0].category;
+      postTitle = latestPost.rows[0].title;
+    } else {
+      const postCheck = await pool.query(`
+        select id, category, title from public.posts where id::text = $1 or slug = $1 limit 1
+      `, [postId]);
+      if (postCheck.rowCount === 0) throw new Error(`Story not found: "${postId}"`);
+      targetPostId = postCheck.rows[0].id;
+      if (!postCategory) postCategory = postCheck.rows[0].category;
+      postTitle = postCheck.rows[0].title;
+    }
+
+    const outcome = await triggerCommenterWave(pool, {
+      postId: targetPostId,
+      category: postCategory || 'Essays',
+      title: postTitle,
+      count: count ? Number(count) : null
+    });
+
+    return {
+      success: true,
+      message: `Commenter wave triggered! Queued ${outcome.count || 0} authentic reflections following the 65% micro / 25% medium / 10% deep rule.`,
+      wave: outcome
+    };
+  }
+
+  if (toolName === 'writon_get_commenter_personas') {
+    return {
+      count: CURATED_COMMENTER_PERSONAS.length,
+      rule: '65% Micro-Reactions (1-4 words), 25% Medium Reflections, 10% In-Depth Observations',
+      commenters: CURATED_COMMENTER_PERSONAS.map(c => ({
+        penName: c.penName,
+        fullName: c.fullName,
+        categories: c.categories,
+        tone: c.tone,
+        bio: c.bio,
+        sampleQuickReactions: c.quickReactions?.slice(0, 4)
+      }))
+    };
   }
 
   throw new Error(`Unknown tool name: ${toolName}`);

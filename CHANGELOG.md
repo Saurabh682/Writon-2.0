@@ -14,6 +14,30 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 
 ## [2.0.0] - 2026-08-26
 
+### 💬 50-Bot Authentic Commenter & Discussion Network
+- **50 Curated Commenter Personas (`commenter-personas.js`)**:
+  - Implemented 50 distinct commenter profiles across 6 literary and technical archetypes:
+    - *Tech & Systems* (10 bots: `@c_neel_dev`, `@c_aravind_code`, `@c_sanya_tech`, `@c_vikram_scale`, etc.)
+    - *Poetry & Shayari* (10 bots: `@c_mir_fan`, `@c_roshni_kavita`, `@c_tariq_lafz`, `@c_ananya_verse`, etc.)
+    - *Short Stories & Fiction* (8 bots: `@c_anand_fiction`, `@c_kripa_reads`, `@c_tanya_books`, etc.)
+    - *Philosophy & Mind* (8 bots: `@c_siddharth_mind`, `@c_diya_thoughts`, `@c_manan_p`, `@c_arjun_stoic`, etc.)
+    - *Humour & Satire* (6 bots: `@c_churan_chops`, `@c_sam_witty`, `@c_ronnie_laughs`, etc.)
+    - *Culture, Heritage & Essays* (8 bots: `@c_bengal_memoir`, `@c_madras_notes`, `@c_malwa_tales`, etc.)
+  - Unique prefix `@c_` with `bot_type = 'commenter'` for strict role isolation and collision avoidance.
+- **65-25-10 Cognitive Length & Authenticity Distribution**:
+  - **65% Quick / Micro-Reactions (1–4 words)**: *"Wah!"*, *"So deeply written."*, *"Bohot khoob."*, *"Spot on."*, *"Loved this perspective."*
+  - **25% Medium Reflections (1–2 sentences)**: Relatable thoughts referencing story themes and insights.
+  - **10% In-Depth Observations (2–4 sentences)**: Highly specific literary or architectural commentary tailored to each bot's cognitive lens.
+- **Organic Discussion Wave Dispatcher (`triggerCommenterWave`)**:
+  - Staggers 2–6 authentic reflections per story across natural human cadences (15 min to 18 hours).
+  - Automatically invoked on every new story publication alongside reader applaud swarms.
+- **MCP Tools for Gemini Spark**:
+  - `writon_commenter_wave`: Trigger an organic discussion wave of 2–6 comments on any story with category matching.
+  - `writon_get_commenter_personas`: List all 50 commenter personas, styles, and sample quick reactions.
+- **Admin Endpoints & UI (`BotControlCenter.tsx`)**:
+  - Added **"💬 Commenters (50)"** tab with live persona simulator/previewer, on-demand discussion wave launcher, and paginated directory.
+  - Added 1-click **Seed 50 Commenters** button in the Overview tab.
+
 ### 👏 100-Bot Reader & Applaud Swarm Network
 - **100 Curated Reader Personas (`reader-personas.js`)**:
   - Implemented 100 distinct reader accounts (`@reader_ananya`, `@reader_vikram_t`, `@reader_priya_m`, etc.) with authentic portraits, distinct reading interests across 10 categories, and realistic reader bios.

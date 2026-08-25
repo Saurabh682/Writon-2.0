@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   BotPersona,
   ReaderBotPersona,
+  CommenterBotPersona,
   BotGlobalSettings,
   BotActivityLog,
   BotOverviewStats,
@@ -25,7 +26,11 @@ import {
   processDelayedActionsNow,
   seedReaderBotsApi,
   fetchReaderBots,
-  triggerReaderSwarmApi
+  triggerReaderSwarmApi,
+  seedCommenterBotsApi,
+  fetchCommenterBots,
+  triggerCommenterWaveApi,
+  previewCommentApi
 } from '../../lib/api';
 
 interface BotControlCenterProps {
@@ -58,7 +63,7 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
   onClose,
   onStoryPublished
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'readers' | 'delayed_queue' | 'mcp_app' | 'spark_web' | 'personas' | 'settings' | 'trigger' | 'logs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'readers' | 'commenters' | 'delayed_queue' | 'mcp_app' | 'spark_web' | 'personas' | 'settings' | 'trigger' | 'logs'>('overview');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -92,6 +97,20 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
   const [swarmCustomCount, setSwarmCustomCount] = useState<string>('');
   const [seedingReaders, setSeedingReaders] = useState<boolean>(false);
   const [triggeringSwarm, setTriggeringSwarm] = useState<boolean>(false);
+
+  // Commenter Swarm State (50 Commenters)
+  const [commentersList, setCommentersList] = useState<CommenterBotPersona[]>([]);
+  const [commentersTotal, setCommentersTotal] = useState<number>(0);
+  const [commentersPage, setCommentersPage] = useState<number>(1);
+  const [selectedCommenterCategory, setSelectedCommenterCategory] = useState<string>('All');
+  const [selectedWavePostId, setSelectedWavePostId] = useState<string>('latest');
+  const [waveCustomCount, setWaveCustomCount] = useState<string>('');
+  const [seedingCommenters, setSeedingCommenters] = useState<boolean>(false);
+  const [triggeringWave, setTriggeringWave] = useState<boolean>(false);
+  const [previewBotId, setPreviewBotId] = useState<string>('');
+  const [previewDepth, setPreviewDepth] = useState<'micro' | 'medium' | 'deep'>('micro');
+  const [previewResult, setPreviewResult] = useState<string>('');
+  const [generatingPreview, setGeneratingPreview] = useState<boolean>(false);
 
   // Gemini Spark Web State
   const [sparkPromptText, setSparkPromptText] = useState<string>('');
@@ -138,6 +157,21 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
     }
   };
 
+  const loadCommenterBots = async (page = 1, category = selectedCommenterCategory) => {
+    try {
+      const cat = category === 'All' ? undefined : category;
+      const data = await fetchCommenterBots(page, 50, cat);
+      setCommentersList(data.commenters);
+      setCommentersTotal(data.total);
+      setCommentersPage(page);
+      if (data.commenters.length > 0 && !previewBotId) {
+        setPreviewBotId(data.commenters[0].id);
+      }
+    } catch (err: unknown) {
+      console.warn('Failed to fetch commenter bots:', err);
+    }
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -160,6 +194,7 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
         setSelectedBotId(botsData.bots[0].id);
       }
       loadReaderBots(1);
+      loadCommenterBots(1);
     } catch (err: unknown) {
       setStatusMessage({ type: 'error', text: getErrorMessage(err) });
     } finally {
@@ -236,6 +271,52 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       showStatus(getErrorMessage(err), 'error');
     } finally {
       setTriggeringSwarm(false);
+    }
+  };
+
+  const handleSeedCommenters = async () => {
+    try {
+      setSeedingCommenters(true);
+      const res = await seedCommenterBotsApi();
+      showStatus(`🎉 ${res.message || `Successfully seeded ${res.count} commenter personas!`}`);
+      loadCommenterBots(1);
+      loadData();
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
+    } finally {
+      setSeedingCommenters(false);
+    }
+  };
+
+  const handleTriggerCommentWave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedWavePostId) {
+      showStatus('Please enter or select a post to comment on', 'error');
+      return;
+    }
+    try {
+      setTriggeringWave(true);
+      const customNum = waveCustomCount ? parseInt(waveCustomCount, 10) : undefined;
+      const res = await triggerCommenterWaveApi(selectedWavePostId, customNum, selectedCommenterCategory === 'All' ? undefined : selectedCommenterCategory);
+      showStatus(`💬 Discussion wave queued: ${res.count} authentic reflections scheduled!`);
+      loadData();
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
+    } finally {
+      setTriggeringWave(false);
+    }
+  };
+
+  const handleGeneratePreview = async () => {
+    if (!previewBotId) return;
+    try {
+      setGeneratingPreview(true);
+      const res = await previewCommentApi(previewBotId, previewDepth);
+      setPreviewResult(res.comment);
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
+    } finally {
+      setGeneratingPreview(false);
     }
   };
 
@@ -563,6 +644,7 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
         >
           {[
             { id: 'overview', label: '📊 Overview' },
+            { id: 'commenters', label: `💬 Commenters (${stats?.activeCommentersCount ?? commentersTotal ?? 50})` },
             { id: 'readers', label: `👏 Reader Swarm (${stats?.activeReadersCount ?? readersTotal ?? 100})` },
             { id: 'delayed_queue', label: `🕒 Human Queue ${delayedActions.length > 0 ? `(${delayedActions.length})` : ''}` },
             { id: 'mcp_app', label: '🔌 Custom Spark App (MCP)' },
@@ -600,26 +682,30 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
               {/* TAB 1: OVERVIEW */}
               {activeTab === 'overview' && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                    <div className="p-3.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
-                      <p className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">✍️ Writers</p>
-                      <p className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.activeBotsCount ?? 6} / {bots.length}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-6 gap-3">
+                    <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">✍️ Writers</p>
+                      <p className="text-xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.activeBotsCount ?? 6}</p>
                     </div>
-                    <div className="p-3.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
-                      <p className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">👏 Reader Swarm</p>
-                      <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats?.activeReadersCount ?? readersTotal ?? 100} Bots</p>
+                    <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">💬 Commenters</p>
+                      <p className="text-xl font-bold text-blue-600 dark:text-blue-400 mt-1">{stats?.activeCommentersCount ?? commentersTotal ?? 50}</p>
                     </div>
-                    <div className="p-3.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
-                      <p className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">📝 Bot Articles</p>
-                      <p className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.totalBotPosts ?? 0}</p>
+                    <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">👏 Readers</p>
+                      <p className="text-xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats?.activeReadersCount ?? readersTotal ?? 100}</p>
                     </div>
-                    <div className="p-3.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
-                      <p className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">💬 Comments</p>
-                      <p className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.totalBotComments ?? 0}</p>
+                    <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">📝 Articles</p>
+                      <p className="text-xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.totalBotPosts ?? 0}</p>
                     </div>
-                    <div className="p-3.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
-                      <p className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">❤️ Applauds</p>
-                      <p className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.totalBotApplauds ?? 0}</p>
+                    <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">💬 Comments</p>
+                      <p className="text-xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.totalBotComments ?? 0}</p>
+                    </div>
+                    <div className="p-3 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[10px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">❤️ Applauds</p>
+                      <p className="text-xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.totalBotApplauds ?? 0}</p>
                     </div>
                   </div>
 
@@ -652,21 +738,38 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
                         ⚡ Quick Network Initialization
                       </h4>
                       <p className="text-xs text-stone-600 dark:text-stone-400 mt-0.5">
-                        Seed 6 curated writer personas and 100 dedicated reader personas across Tech, Poetry, Shayari, Fiction, Essays, and Humour.
+                        Seed 6 curated writers, 50 discussion commenters, and 100 reader bots across all literary genres.
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                       <button
                         onClick={handleSeedBots}
                         disabled={actionLoading}
-                        className="flex-1 sm:flex-initial px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+                        className="flex-1 sm:flex-initial px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
                       >
                         {actionLoading ? 'Seeding...' : '👥 Seed 6 Writers'}
                       </button>
                       <button
+                        onClick={handleSeedCommenters}
+                        disabled={seedingCommenters}
+                        className="flex-1 sm:flex-initial px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors flex items-center gap-1 justify-center"
+                      >
+                        {seedingCommenters ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Seeding...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>💬</span>
+                            <span>Seed 50 Commenters</span>
+                          </>
+                        )}
+                      </button>
+                      <button
                         onClick={handleSeedReaders}
                         disabled={seedingReaders}
-                        className="flex-1 sm:flex-initial px-3.5 py-2 bg-stone-800 hover:bg-stone-900 text-white dark:bg-stone-700 dark:hover:bg-stone-600 rounded-xl text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 justify-center"
+                        className="flex-1 sm:flex-initial px-3 py-1.5 bg-stone-800 hover:bg-stone-900 text-white dark:bg-stone-700 dark:hover:bg-stone-600 rounded-xl text-xs font-semibold shadow-sm transition-colors flex items-center gap-1 justify-center"
                       >
                         {seedingReaders ? (
                           <>
@@ -683,7 +786,7 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
                       <button
                         onClick={handleTriggerPulse}
                         disabled={actionLoading}
-                        className="flex-1 sm:flex-initial px-3.5 py-2 bg-stone-200 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-xl text-xs font-semibold transition-colors"
+                        className="flex-1 sm:flex-initial px-3 py-1.5 bg-stone-200 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-xl text-xs font-semibold transition-colors"
                       >
                         💓 Pulse Now
                       </button>
@@ -710,6 +813,267 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
                             {log.postTitle && <span className="text-stone-500 truncate max-w-xs">"{log.postTitle}"</span>}
                           </div>
                           <span className="text-[11px] text-stone-400">{new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: COMMENTER NETWORK (50 Commenters) */}
+              {activeTab === 'commenters' && (
+                <div className="space-y-6">
+                  {/* Banner Card */}
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-500/10 via-indigo-500/5 to-purple-500/10 border border-blue-500/20">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">💬</span>
+                          <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                            Discussion & Commenter Network (50 Personas)
+                          </h3>
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                            Active ({commentersTotal || 50} Commenters)
+                          </span>
+                        </div>
+                        <p className="text-xs text-stone-600 dark:text-stone-400 mt-1 max-w-2xl">
+                          50 distinct commenter profiles across Tech, Poetry, Shayari, Fiction, Philosophy, Humour, and Culture.
+                          They obey the authentic human ratio: <strong>65% Micro (1–4 words)</strong>, <strong>25% Medium Reflections</strong>, and <strong>10% In-Depth Observations</strong> with organic 15m–18h staggering.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={handleSeedCommenters}
+                        disabled={seedingCommenters}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all flex items-center gap-2 whitespace-nowrap"
+                      >
+                        {seedingCommenters ? (
+                          <>
+                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Seeding 50 Commenters...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>🔄</span>
+                            <span>Reseed 50 Commenters</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* On-Demand Discussion Wave Trigger Card */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm">
+                      <div className="flex items-center gap-2 mb-3">
+                        <span className="text-lg">🚀</span>
+                        <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                          Launch Discussion Wave
+                        </h4>
+                      </div>
+                      <form onSubmit={handleTriggerCommentWave} className="space-y-3">
+                        <div>
+                          <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                            Target Story UUID / Slug
+                          </label>
+                          <input
+                            type="text"
+                            value={selectedWavePostId}
+                            onChange={e => setSelectedWavePostId(e.target.value)}
+                            placeholder="e.g. latest, or post UUID"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                              Comment Count (2–6)
+                            </label>
+                            <input
+                              type="number"
+                              min="1"
+                              max="10"
+                              value={waveCustomCount}
+                              onChange={e => setWaveCustomCount(e.target.value)}
+                              placeholder="Auto (2-4)"
+                              className="w-full px-3 py-2 text-xs rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                              Genre Matching
+                            </label>
+                            <select
+                              value={selectedCommenterCategory}
+                              onChange={e => setSelectedCommenterCategory(e.target.value)}
+                              className="w-full px-3 py-2 text-xs rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="All">All Categories</option>
+                              {CATEGORIES_LIST.map(cat => (
+                                <option key={cat} value={cat}>{cat}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end pt-1">
+                          <button
+                            type="submit"
+                            disabled={triggeringWave}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center gap-1.5"
+                          >
+                            {triggeringWave ? (
+                              <>
+                                <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                <span>Scheduling Wave...</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>💬</span>
+                                <span>Dispatch Discussion Wave</span>
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+
+                    {/* Live Comment Simulator & Previewer */}
+                    <div className="p-5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm flex flex-col justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-lg">⚡</span>
+                          <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                            Persona Comment Simulator
+                          </h4>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mb-3">
+                          <div>
+                            <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">
+                              Select Persona
+                            </label>
+                            <select
+                              value={previewBotId}
+                              onChange={e => setPreviewBotId(e.target.value)}
+                              className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                            >
+                              {commentersList.map(c => (
+                                <option key={c.id} value={c.id}>
+                                  {c.fullName} (@{c.penName})
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-semibold text-stone-600 dark:text-stone-400 mb-1">
+                              Depth Tier
+                            </label>
+                            <div className="grid grid-cols-3 gap-1">
+                              {(['micro', 'medium', 'deep'] as const).map(d => (
+                                <button
+                                  type="button"
+                                  key={d}
+                                  onClick={() => setPreviewDepth(d)}
+                                  className={`px-1 py-1.5 text-[10px] font-bold rounded capitalize border ${
+                                    previewDepth === d
+                                      ? 'bg-blue-600 text-white border-blue-700'
+                                      : 'bg-stone-50 dark:bg-stone-800 border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300'
+                                  }`}
+                                >
+                                  {d === 'micro' ? '1-4 words' : d === 'medium' ? '1-2 lines' : 'Deep'}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        {previewResult && (
+                          <div className="p-3 rounded-lg bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200/60 dark:border-blue-900/40 text-xs text-stone-800 dark:text-stone-200 italic mb-2">
+                            "{previewResult}"
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleGeneratePreview}
+                          disabled={generatingPreview}
+                          className="px-3.5 py-1.5 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-lg text-xs font-semibold transition-colors"
+                        >
+                          {generatingPreview ? 'Generating...' : '⚡ Test Generate Comment'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Commenter Directory */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                        Commenter Directory ({commentersTotal || 50})
+                      </h4>
+                      <div className="text-xs text-stone-500 dark:text-stone-400">
+                        Page {commentersPage} of {Math.ceil((commentersTotal || 50) / 50)}
+                      </div>
+                    </div>
+
+                    {/* Category Filter Pills */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                      {['All', 'Tech', 'Poetry', 'Shayari', 'Short Stories', 'Philosophy', 'Humour', 'Culture'].map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            setSelectedCommenterCategory(cat);
+                            loadCommenterBots(1, cat);
+                          }}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                            selectedCommenterCategory === cat
+                              ? 'bg-blue-600 text-white font-bold'
+                              : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Commenter Cards Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {commentersList.map(commenter => (
+                        <div
+                          key={commenter.id}
+                          className="p-3.5 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900/60 shadow-xs hover:border-blue-500/40 transition-all flex flex-col justify-between"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={commenter.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                              alt={commenter.fullName}
+                              className="w-10 h-10 rounded-full object-cover border border-stone-200 dark:border-stone-700"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
+                                {commenter.fullName}
+                              </div>
+                              <div className="text-[11px] text-blue-600 dark:text-blue-400 font-mono truncate">
+                                @{commenter.penName}
+                              </div>
+                            </div>
+                          </div>
+
+                          <p className="text-[11px] text-stone-600 dark:text-stone-400 mt-2 line-clamp-2 leading-relaxed">
+                            {commenter.bio}
+                          </p>
+
+                          <div className="mt-3 pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-[10px]">
+                            <span className="px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-mono font-medium">
+                              {commenter.commentStyle || 'reflective'}
+                            </span>
+                            <span className="text-stone-500">
+                              {commenter.categories?.slice(0, 2).join(', ')}
+                            </span>
+                          </div>
                         </div>
                       ))}
                     </div>

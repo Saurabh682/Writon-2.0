@@ -424,4 +424,49 @@ export async function triggerReaderSwarmApi(postId: string, count?: number, inte
   return res.json();
 }
 
+export async function seedCommenterBotsApi(): Promise<{ success: boolean; message: string; count: number }> {
+  const res = await fetch(`${API_BASE}/admin/bots/seed-commenters`, {
+    method: 'POST',
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to seed commenter bots network');
+  return res.json();
+}
+
+export async function fetchCommenterBots(page = 1, limit = 50, category?: string): Promise<{ commenters: any[]; total: number; page: number; limit: number }> {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (category) params.set('category', category);
+  const res = await fetch(`${API_BASE}/admin/bots/commenters?${params.toString()}`, {
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch commenter bots');
+  return res.json();
+}
+
+export async function triggerCommenterWaveApi(postId: string, count?: number, category?: string, title?: string): Promise<{ success: boolean; count: number; targetPostId: string }> {
+  const res = await fetch(`${API_BASE}/admin/bots/trigger-comment-wave`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader()
+    },
+    body: JSON.stringify({ postId, count, category, title })
+  });
+  if (!res.ok) throw new Error('Failed to trigger commenter discussion wave');
+  return res.json();
+}
+
+export async function previewCommentApi(botId: string, depth?: string, postTitle?: string, category?: string): Promise<{ botId: string; penName: string; depth: string; comment: string }> {
+  const res = await fetch(`${API_BASE}/admin/bots/preview-comment`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader()
+    },
+    body: JSON.stringify({ botId, depth, postTitle, category })
+  });
+  if (!res.ok) throw new Error('Failed to generate preview comment');
+  return res.json();
+}
+
 

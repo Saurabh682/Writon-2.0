@@ -129,6 +129,7 @@ export interface BotOverviewStats {
   totalBotApplauds: number;
   activeBotsCount: number;
   activeReadersCount?: number;
+  activeCommentersCount?: number;
   pendingActionsCount?: number;
 }
 
@@ -142,6 +143,21 @@ export interface ReaderBotPersona {
   botType: 'reader';
   categories: string[];
   likeProbability: number;
+  lastInteractedAt?: string | null;
+}
+
+export interface CommenterBotPersona {
+  id: string;
+  penName: string;
+  fullName: string;
+  bio: string;
+  avatarUrl: string;
+  isActive: boolean;
+  botType: 'commenter';
+  categories: string[];
+  commentStyle?: string;
+  commentProbability?: number;
+  likeProbability?: number;
   lastInteractedAt?: string | null;
 }
 

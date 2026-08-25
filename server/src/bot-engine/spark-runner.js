@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { CURATED_BOT_PERSONAS } from './curated-personas.js';
 import { CURATED_READER_PERSONAS } from './reader-personas.js';
+import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from './commenter-personas.js';
 import { generateSparkArticle, generateSparkComment, generateSparkReply } from './gemini-spark-client.js';
 import { getCoverImageForCategory } from './image-service.js';
 
@@ -97,13 +98,16 @@ export async function ensureBotTables(pool) {
       );
     `);
 
-    // Ensure bot_type column exists on bot_configs
+    // Ensure bot_type column exists on bot_configs and settings columns
     await pool.query(`
       alter table public.bot_configs add column if not exists bot_type text not null default 'writer';
       alter table public.bot_global_settings add column if not exists reader_swarm_enabled boolean not null default true;
       alter table public.bot_global_settings add column if not exists applaud_swarm_intensity text not null default 'healthy';
       alter table public.bot_global_settings add column if not exists min_swarm_applauds_per_post integer not null default 12;
       alter table public.bot_global_settings add column if not exists max_swarm_applauds_per_post integer not null default 35;
+      alter table public.bot_global_settings add column if not exists commenter_swarm_enabled boolean not null default true;
+      alter table public.bot_global_settings add column if not exists min_comments_per_post integer not null default 2;
+      alter table public.bot_global_settings add column if not exists max_comments_per_post integer not null default 6;
     `);
 
     // Indexes from migration that auto-migration was missing
@@ -271,6 +275,67 @@ export async function seedReaderBotNetwork(pool) {
   }
 }
 
+export async function seedCommenterBotNetwork(pool) {
+  await ensureBotTables(pool);
+  const client = await pool.connect();
+  try {
+    await client.query('begin');
+
+    for (const commenter of CURATED_COMMENTER_PERSONAS) {
+      await client.query(`
+        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url)
+        values ($1, $2, $3, $4, $5, $6)
+        on conflict (id) do update set
+          pen_name = excluded.pen_name,
+          full_name = excluded.full_name,
+          bio = excluded.bio,
+          avatar_url = excluded.avatar_url,
+          updated_at = now()
+      `, [
+        commenter.id,
+        `${commenter.penName}@commenters.writon.internal`,
+        commenter.penName,
+        commenter.fullName,
+        commenter.bio,
+        commenter.avatarUrl
+      ]);
+
+      await client.query(`
+        insert into public.bot_configs (
+          id, is_active, persona_prompt, categories, post_frequency_hours,
+          like_probability, comment_probability, comment_style, bot_type
+        )
+        values ($1, true, $2, $3, $4, $5, $6, $7, 'commenter')
+        on conflict (id) do update set
+          is_active = excluded.is_active,
+          categories = excluded.categories,
+          like_probability = excluded.like_probability,
+          comment_probability = excluded.comment_probability,
+          comment_style = excluded.comment_style,
+          bot_type = 'commenter',
+          updated_at = now()
+      `, [
+        commenter.id,
+        `Commenter profile for ${commenter.fullName}. Tone: ${commenter.tone}. Active discussion participant across ${commenter.categories.join(', ')}.`,
+        commenter.categories,
+        9999,
+        commenter.likeProbability,
+        commenter.commentProbability,
+        commenter.tone
+      ]);
+    }
+
+    await client.query('commit');
+    return { success: true, count: CURATED_COMMENTER_PERSONAS.length };
+  } catch (error) {
+    await client.query('rollback');
+    console.error('[Spark Runner] Failed to seed commenter network:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 export async function getGlobalSettings(pool) {
   await ensureBotTables(pool);
   const result = await pool.query(`select * from public.bot_global_settings where id = 'global' limit 1`);
@@ -399,6 +464,46 @@ export async function getReaderBotsList(pool, { page = 1, limit = 50, category =
 
   return {
     readers: result.rows,
+    total: countRes.rows[0]?.total || 0,
+    page,
+    limit
+  };
+}
+
+export async function getCommenterBotsList(pool, { page = 1, limit = 50, category = null } = {}) {
+  await ensureBotTables(pool);
+  const offset = (page - 1) * limit;
+  const result = await pool.query(`
+    select
+      p.id,
+      p.pen_name as "penName",
+      p.full_name as "fullName",
+      p.bio,
+      p.avatar_url as "avatarUrl",
+      bc.is_active as "isActive",
+      bc.bot_type as "botType",
+      bc.categories,
+      bc.comment_style as "commentStyle",
+      bc.comment_probability as "commentProbability",
+      bc.like_probability as "likeProbability",
+      bc.last_interacted_at as "lastInteractedAt"
+    from public.bot_configs bc
+    inner join public.profiles p on p.id = bc.id
+    where bc.bot_type = 'commenter'
+      and ($1::text is null or $1 = any(bc.categories))
+    order by p.full_name asc
+    limit $2 offset $3
+  `, [category, limit, offset]);
+
+  const countRes = await pool.query(`
+    select count(*)::int as total
+    from public.bot_configs bc
+    where bc.bot_type = 'commenter'
+      and ($1::text is null or $1 = any(bc.categories))
+  `, [category]);
+
+  return {
+    commenters: result.rows,
     total: countRes.rows[0]?.total || 0,
     page,
     limit
@@ -969,8 +1074,83 @@ export async function triggerReaderSwarm(pool, { postId, category = 'Essays', co
 }
 
 /**
+ * Organic Discussion & Commenter Wave Dispatcher:
+ * Schedules 2-6 authentic comments following the 65% micro / 25% medium / 10% deep rule
+ * Staggered organically across 15m - 18h.
+ */
+export async function triggerCommenterWave(pool, { postId, category = 'Essays', title = '', snippet = '', count = null }) {
+  try {
+    const settings = await getGlobalSettings(pool);
+    if (!settings.is_engine_enabled) return { skipped: 'Engine disabled' };
+    if (settings.commenter_swarm_enabled === false) return { skipped: 'Commenter swarm disabled' };
+
+    const targetCount = count || Math.floor(Math.random() * 3) + 2; // 2 to 4 comments by default
+
+    // Find commenter bots matching category or general commenters
+    const candidates = await pool.query(`
+      select p.id, p.pen_name, p.full_name, bc.categories, bc.comment_style
+      from public.bot_configs bc
+      inner join public.profiles p on p.id = bc.id
+      where bc.is_active = true and bc.bot_type = 'commenter'
+      order by case when $1 = any(bc.categories) then 0 else 1 end, random()
+      limit $2
+    `, [category, targetCount]);
+
+    if (candidates.rowCount === 0) return { skipped: 'No active commenter bots' };
+
+    let scheduledCount = 0;
+    for (let i = 0; i < candidates.rows.length; i++) {
+      const commenter = candidates.rows[i];
+      const personaObj = CURATED_COMMENTER_PERSONAS.find(c => c.id === commenter.id) || {
+        tone: commenter.comment_style,
+        quickReactions: ['Wah!', 'So deeply written.', 'Spot on.', 'Bohot khoob.', 'Loved this perspective.'],
+        mediumTemplates: ['Really resonated with this perspective.', 'Such a thoughtful piece. Thanks for sharing.']
+      };
+
+      // Generate authentic comment (65% micro / 25% medium / 10% in-depth)
+      const commentText = generateAuthenticComment(personaObj, {
+        postTitle: title,
+        category,
+        snippet,
+        depth: 'auto'
+      });
+
+      // Stagger delays organically:
+      // Comment 1: 15-45 minutes
+      // Comment 2: 1.5-4.5 hours
+      // Comment 3: 5-11 hours
+      // Comment 4+: 12-24 hours
+      let delayMinutes = 20;
+      if (i === 0) {
+        delayMinutes = Math.floor(Math.random() * 30) + 15;
+      } else if (i === 1) {
+        delayMinutes = Math.floor(Math.random() * 180) + 90;
+      } else if (i === 2) {
+        delayMinutes = Math.floor(Math.random() * 360) + 300;
+      } else {
+        delayMinutes = Math.floor(Math.random() * 720) + 720;
+      }
+
+      await scheduleDelayedAction(pool, {
+        botId: commenter.id,
+        actionType: 'comment',
+        targetPostId: postId,
+        payload: { content: commentText },
+        delayMinutes
+      });
+      scheduledCount++;
+    }
+
+    return { success: true, count: scheduledCount, targetPostId: postId };
+  } catch (err) {
+    console.error('[Spark Commenter Wave Error]', err.message);
+    return { error: err.message };
+  }
+}
+
+/**
  * Event-Driven Spark Reaction Hook:
- * Dispatches actions with realistic staggered delays across writer personas AND reader swarm
+ * Dispatches actions with realistic staggered delays across writer personas, reader swarm, and commenter network
  */
 export async function triggerSparkReaction(pool, { postId, authorId, category, title, summary }) {
   try {
@@ -982,6 +1162,13 @@ export async function triggerSparkReaction(pool, { postId, authorId, category, t
     if (settings.reader_swarm_enabled !== false) {
       triggerReaderSwarm(pool, { postId, category }).catch(err =>
         console.warn('[Spark Swarm Auto-Trigger Warning]', err.message)
+      );
+    }
+
+    // 2. Dispatch 2-5 authentic commenter bot reflections across 18h wave
+    if (settings.commenter_swarm_enabled !== false) {
+      triggerCommenterWave(pool, { postId, category, title, snippet: summary }).catch(err =>
+        console.warn('[Spark Commenter Auto-Trigger Warning]', err.message)
       );
     }
 

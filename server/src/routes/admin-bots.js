@@ -8,6 +8,9 @@ import {
   seedReaderBotNetwork,
   getReaderBotsList,
   triggerReaderSwarm,
+  seedCommenterBotNetwork,
+  getCommenterBotsList,
+  triggerCommenterWave,
   executePostAction,
   executeInteractAction,
   runSparkPulse,
@@ -20,6 +23,7 @@ import {
   processDueDelayedActions
 } from '../bot-engine/spark-runner.js';
 import { CURATED_BOT_PERSONAS } from '../bot-engine/curated-personas.js';
+import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from '../bot-engine/commenter-personas.js';
 
 const botUpdateSchema = z.object({
   isActive: z.boolean().optional(),
@@ -179,6 +183,7 @@ export async function adminBotsRoutes(fastify, options) {
           (select count(*)::int from public.post_applauds where user_id like 'bot_%') as "totalBotApplauds",
           (select count(*)::int from public.bot_configs where is_active = true and bot_type = 'writer') as "activeBotsCount",
           (select count(*)::int from public.bot_configs where is_active = true and bot_type = 'reader') as "activeReadersCount",
+          (select count(*)::int from public.bot_configs where is_active = true and bot_type = 'commenter') as "activeCommentersCount",
           (select count(*)::int from public.bot_delayed_actions where status = 'pending') as "pendingActionsCount"
       `);
 
@@ -232,6 +237,58 @@ export async function adminBotsRoutes(fastify, options) {
       fastify.log.error(error);
       return reply.code(500).send({ error: 'Failed to trigger reader swarm', message: error.message });
     }
+  });
+
+  // Seed 50 Commenter Bot Network
+  fastify.post('/api/v1/admin/bots/seed-commenters', async (request, reply) => {
+    try {
+      const outcome = await seedCommenterBotNetwork(pool);
+      return { success: true, message: `Successfully seeded ${outcome.count} commenter bot personas!`, count: outcome.count };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to seed commenter personas', message: error.message });
+    }
+  });
+
+  // Get paginated commenter bots
+  fastify.get('/api/v1/admin/bots/commenters', async (request) => {
+    const page = Math.max(1, Number(request.query?.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(request.query?.limit) || 50));
+    const category = request.query?.category || null;
+    return await getCommenterBotsList(pool, { page, limit, category });
+  });
+
+  // Trigger an on-demand commenter discussion wave on a post
+  fastify.post('/api/v1/admin/bots/trigger-comment-wave', async (request, reply) => {
+    const { postId, category, title, snippet, count } = request.body || {};
+    if (!postId) {
+      return reply.code(400).send({ error: 'postId is required' });
+    }
+    try {
+      const outcome = await triggerCommenterWave(pool, {
+        postId,
+        category: category || 'Essays',
+        title: title || '',
+        snippet: snippet || '',
+        count: count ? Number(count) : null
+      });
+      return outcome;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to trigger commenter wave', message: error.message });
+    }
+  });
+
+  // Generate test preview comment for a persona
+  fastify.post('/api/v1/admin/bots/preview-comment', async (request, reply) => {
+    const { botId, depth, postTitle, category } = request.body || {};
+    const persona = CURATED_COMMENTER_PERSONAS.find(c => c.id === botId) || CURATED_COMMENTER_PERSONAS[0];
+    const comment = generateAuthenticComment(persona, {
+      postTitle: postTitle || 'Sample Story Title',
+      category: category || 'Essays',
+      depth: depth || 'auto'
+    });
+    return { botId: persona.id, penName: persona.penName, depth, comment };
   });
 
   // Create a new bot persona

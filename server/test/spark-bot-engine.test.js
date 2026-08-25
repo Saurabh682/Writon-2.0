@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CURATED_BOT_PERSONAS } from '../src/bot-engine/curated-personas.js';
 import { CURATED_READER_PERSONAS } from '../src/bot-engine/reader-personas.js';
+import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from '../src/bot-engine/commenter-personas.js';
 import { generateSparkArticle, generateSparkComment } from '../src/bot-engine/gemini-spark-client.js';
 import { getCoverImageForCategory } from '../src/bot-engine/image-service.js';
 import { buildServer } from '../src/server.js';
@@ -52,6 +53,45 @@ describe('Gemini Spark Bot Network & Engine', () => {
         ids.add(reader.id);
         penNames.add(reader.penName);
       }
+    });
+
+    it('contains 50 distinct commenter personas adhering to 65-25-10 cognitive rules', () => {
+      expect(CURATED_COMMENTER_PERSONAS.length).toBe(50);
+
+      const ids = new Set();
+      const penNames = new Set();
+
+      for (const commenter of CURATED_COMMENTER_PERSONAS) {
+        expect(commenter.id).toMatch(/^bot_commenter_\d{3}$/);
+        expect(commenter.penName).toMatch(/^c_[a-z0-9_]+$/);
+        expect(commenter.fullName).toBeTruthy();
+        expect(commenter.bio).toBeTruthy();
+        expect(commenter.avatarUrl).toBeTruthy();
+        expect(commenter.botType).toBe('commenter');
+        expect(commenter.commentStyle).toBeTruthy();
+        expect(commenter.categories.length).toBeGreaterThan(0);
+        expect(commenter.quickReactions.length).toBeGreaterThan(0);
+        expect(commenter.mediumTemplates.length).toBeGreaterThan(0);
+
+        expect(ids.has(commenter.id)).toBe(false);
+        expect(penNames.has(commenter.penName)).toBe(false);
+
+        ids.add(commenter.id);
+        penNames.add(commenter.penName);
+      }
+    });
+
+    it('generates authentic comments according to depth tier', () => {
+      const sample = CURATED_COMMENTER_PERSONAS[0];
+      const micro = generateAuthenticComment(sample, { depth: 'micro' });
+      expect(micro.length).toBeGreaterThan(0);
+      expect(micro.split(/\s+/).length).toBeLessThanOrEqual(5);
+
+      const medium = generateAuthenticComment(sample, { depth: 'medium', postTitle: 'Distributed Log Systems' });
+      expect(medium.length).toBeGreaterThan(10);
+
+      const deep = generateAuthenticComment(sample, { depth: 'deep', postTitle: 'Distributed Log Systems' });
+      expect(deep.length).toBeGreaterThan(15);
     });
   });
 
@@ -322,6 +362,8 @@ describe('Gemini Spark Bot Network & Engine', () => {
       expect(toolNames).toContain('writon_get_pending_actions');
       expect(toolNames).toContain('writon_clapping_swarm');
       expect(toolNames).toContain('writon_get_reader_stats');
+      expect(toolNames).toContain('writon_commenter_wave');
+      expect(toolNames).toContain('writon_get_commenter_personas');
       expect(toolNames).toContain('writon_get_feed');
       expect(toolNames).toContain('writon_comment_story');
       expect(toolNames).toContain('writon_applaud_story');
