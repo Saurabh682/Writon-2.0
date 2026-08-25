@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { CURATED_BOT_PERSONAS } from './curated-personas.js';
+import { CURATED_READER_PERSONAS } from './reader-personas.js';
 import { generateSparkArticle, generateSparkComment, generateSparkReply } from './gemini-spark-client.js';
 import { getCoverImageForCategory } from './image-service.js';
 
@@ -96,6 +97,15 @@ export async function ensureBotTables(pool) {
       );
     `);
 
+    // Ensure bot_type column exists on bot_configs
+    await pool.query(`
+      alter table public.bot_configs add column if not exists bot_type text not null default 'writer';
+      alter table public.bot_global_settings add column if not exists reader_swarm_enabled boolean not null default true;
+      alter table public.bot_global_settings add column if not exists applaud_swarm_intensity text not null default 'healthy';
+      alter table public.bot_global_settings add column if not exists min_swarm_applauds_per_post integer not null default 12;
+      alter table public.bot_global_settings add column if not exists max_swarm_applauds_per_post integer not null default 35;
+    `);
+
     // Indexes from migration that auto-migration was missing
     await pool.query(`
       create index if not exists bot_activity_logs_created_at_idx on public.bot_activity_logs (created_at desc);
@@ -105,6 +115,7 @@ export async function ensureBotTables(pool) {
       create index if not exists bot_delayed_actions_polling_idx on public.bot_delayed_actions (status, execute_at) where status = 'pending';
       create index if not exists bot_delayed_actions_bot_id_idx on public.bot_delayed_actions (bot_id);
       create index if not exists bot_delayed_actions_target_post_id_idx on public.bot_delayed_actions (target_post_id) where target_post_id is not null;
+      create index if not exists bot_configs_bot_type_idx on public.bot_configs (bot_type, is_active);
     `);
 
     // DB-5: Insert default global settings row if missing
@@ -165,9 +176,9 @@ export async function seedInitialBotNetwork(pool) {
       await client.query(`
         insert into public.bot_configs (
           id, is_active, persona_prompt, categories, post_frequency_hours,
-          like_probability, comment_probability, comment_style
+          like_probability, comment_probability, comment_style, bot_type
         )
-        values ($1, true, $2, $3, $4, $5, $6, $7)
+        values ($1, true, $2, $3, $4, $5, $6, $7, 'writer')
         on conflict (id) do update set
           persona_prompt = excluded.persona_prompt,
           categories = excluded.categories,
@@ -175,6 +186,7 @@ export async function seedInitialBotNetwork(pool) {
           like_probability = excluded.like_probability,
           comment_probability = excluded.comment_probability,
           comment_style = excluded.comment_style,
+          bot_type = 'writer',
           updated_at = now()
       `, [
         bot.id,
@@ -192,6 +204,67 @@ export async function seedInitialBotNetwork(pool) {
   } catch (error) {
     await client.query('rollback');
     console.error('[Spark Runner] Failed to seed bot network:', error);
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function seedReaderBotNetwork(pool) {
+  await ensureBotTables(pool);
+  const client = await pool.connect();
+  try {
+    await client.query('begin');
+
+    for (const reader of CURATED_READER_PERSONAS) {
+      await client.query(`
+        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url)
+        values ($1, $2, $3, $4, $5, $6)
+        on conflict (id) do update set
+          pen_name = excluded.pen_name,
+          full_name = excluded.full_name,
+          bio = excluded.bio,
+          avatar_url = excluded.avatar_url,
+          updated_at = now()
+      `, [
+        reader.id,
+        `${reader.penName}@readers.writon.internal`,
+        reader.penName,
+        reader.fullName,
+        reader.bio,
+        reader.avatarUrl
+      ]);
+
+      await client.query(`
+        insert into public.bot_configs (
+          id, is_active, persona_prompt, categories, post_frequency_hours,
+          like_probability, comment_probability, comment_style, bot_type
+        )
+        values ($1, true, $2, $3, $4, $5, $6, $7, 'reader')
+        on conflict (id) do update set
+          is_active = excluded.is_active,
+          categories = excluded.categories,
+          like_probability = excluded.like_probability,
+          comment_probability = excluded.comment_probability,
+          comment_style = excluded.comment_style,
+          bot_type = 'reader',
+          updated_at = now()
+      `, [
+        reader.id,
+        `Reader profile for ${reader.fullName}. Enjoys reading ${reader.categories.join(', ')}. Applauds authentic stories.`,
+        reader.categories,
+        9999,
+        reader.likeProbability,
+        0.0,
+        'applaud_only'
+      ]);
+    }
+
+    await client.query('commit');
+    return { success: true, count: CURATED_READER_PERSONAS.length };
+  } catch (error) {
+    await client.query('rollback');
+    console.error('[Spark Runner] Failed to seed reader network:', error);
     throw error;
   } finally {
     client.release();
@@ -227,6 +300,10 @@ export async function updateGlobalSettings(pool, updates) {
         reaction_delay_min_minutes = $10,
         reaction_delay_max_minutes = $11,
         bot_to_bot_interaction_rate = $12,
+        reader_swarm_enabled = coalesce($13, reader_swarm_enabled),
+        applaud_swarm_intensity = coalesce($14, applaud_swarm_intensity),
+        min_swarm_applauds_per_post = coalesce($15, min_swarm_applauds_per_post),
+        max_swarm_applauds_per_post = coalesce($16, max_swarm_applauds_per_post),
         updated_at = now()
     where id = 'global'
     returning *
@@ -242,13 +319,17 @@ export async function updateGlobalSettings(pool, updates) {
     updated.human_post_reaction_rate,
     updated.reaction_delay_min_minutes,
     updated.reaction_delay_max_minutes,
-    updated.bot_to_bot_interaction_rate
+    updated.bot_to_bot_interaction_rate,
+    updated.reader_swarm_enabled,
+    updated.applaud_swarm_intensity,
+    updated.min_swarm_applauds_per_post,
+    updated.max_swarm_applauds_per_post
   ]);
 
   return result.rows[0];
 }
 
-export async function getBotsList(pool) {
+export async function getBotsList(pool, { botType = 'writer' } = {}) {
   await ensureBotTables(pool);
   const result = await pool.query(`
     select
@@ -262,6 +343,7 @@ export async function getBotsList(pool) {
       p.following_count as "followingCount",
       alias.quote_of_day as "quoteOfDay",
       bc.is_active as "isActive",
+      bc.bot_type as "botType",
       bc.persona_prompt as "personaPrompt",
       bc.categories,
       bc.post_frequency_hours as "postFrequencyHours",
@@ -279,9 +361,48 @@ export async function getBotsList(pool) {
       from public.posts where status = 'published'
       group by author_id
     ) pc on pc.author_id = p.id
+    where ($1::text is null or bc.bot_type = $1)
     order by p.full_name asc
-  `);
+  `, [botType]);
   return result.rows;
+}
+
+export async function getReaderBotsList(pool, { page = 1, limit = 50, category = null } = {}) {
+  await ensureBotTables(pool);
+  const offset = (page - 1) * limit;
+  const result = await pool.query(`
+    select
+      p.id,
+      p.pen_name as "penName",
+      p.full_name as "fullName",
+      p.bio,
+      p.avatar_url as "avatarUrl",
+      bc.is_active as "isActive",
+      bc.bot_type as "botType",
+      bc.categories,
+      bc.like_probability as "likeProbability",
+      bc.last_interacted_at as "lastInteractedAt"
+    from public.bot_configs bc
+    inner join public.profiles p on p.id = bc.id
+    where bc.bot_type = 'reader'
+      and ($1::text is null or $1 = any(bc.categories))
+    order by p.full_name asc
+    limit $2 offset $3
+  `, [category, limit, offset]);
+
+  const countRes = await pool.query(`
+    select count(*)::int as total
+    from public.bot_configs bc
+    where bc.bot_type = 'reader'
+      and ($1::text is null or $1 = any(bc.categories))
+  `, [category]);
+
+  return {
+    readers: result.rows,
+    total: countRes.rows[0]?.total || 0,
+    page,
+    limit
+  };
 }
 
 export async function getBotById(pool, botId) {
@@ -781,14 +902,88 @@ export async function processDueDelayedActions(pool) {
 }
 
 /**
+ * Organic Reader Swarm Applaud Dispatcher:
+ * Staggers 10-35 reader bot applauds across 3 realistic time waves (2m - 36h)
+ */
+export async function triggerReaderSwarm(pool, { postId, category = 'Essays', count = null, intensity = null }) {
+  try {
+    const settings = await getGlobalSettings(pool);
+    if (!settings.is_engine_enabled) return { skipped: 'Engine disabled' };
+    if (settings.reader_swarm_enabled === false) return { skipped: 'Reader swarm disabled' };
+
+    const swarmIntensity = intensity || settings.applaud_swarm_intensity || 'healthy';
+    let targetCount = count;
+    if (!targetCount) {
+      if (swarmIntensity === 'conservative') {
+        targetCount = Math.floor(Math.random() * 8) + 6; // 6-13
+      } else if (swarmIntensity === 'viral') {
+        targetCount = Math.floor(Math.random() * 35) + 40; // 40-74
+      } else {
+        targetCount = Math.floor(Math.random() * 16) + 15; // 15-30
+      }
+    }
+
+    // Find reader bots matching category or general readers
+    const candidates = await pool.query(`
+      select id, categories from public.bot_configs
+      where is_active = true and bot_type = 'reader'
+      order by case when $1 = any(categories) then 0 else 1 end, random()
+      limit $2
+    `, [category, targetCount]);
+
+    if (candidates.rowCount === 0) return { skipped: 'No active reader bots' };
+
+    let scheduledCount = 0;
+    for (let i = 0; i < candidates.rows.length; i++) {
+      const readerId = candidates.rows[i].id;
+
+      // Stagger realistic reader distribution:
+      // Wave 1 (First 15%): 3 - 25 minutes (Early discoverers)
+      // Wave 2 (Middle 60%): 45 minutes - 8 hours (Daytime readers)
+      // Wave 3 (Last 25%): 9 - 36 hours (Catch-up / night readers)
+      const ratio = i / candidates.rows.length;
+      let delayMinutes = 5;
+
+      if (ratio < 0.15) {
+        delayMinutes = Math.floor(Math.random() * 22) + 3;
+      } else if (ratio < 0.75) {
+        delayMinutes = Math.floor(Math.random() * 420) + 45; // 45m to ~7.5h
+      } else {
+        delayMinutes = Math.floor(Math.random() * 1600) + 500; // 8.3h to ~35h
+      }
+
+      await scheduleDelayedAction(pool, {
+        botId: readerId,
+        actionType: 'applaud',
+        targetPostId: postId,
+        delayMinutes
+      });
+      scheduledCount++;
+    }
+
+    return { success: true, count: scheduledCount, targetPostId: postId, intensity: swarmIntensity };
+  } catch (err) {
+    console.error('[Spark Reader Swarm Error]', err.message);
+    return { error: err.message };
+  }
+}
+
+/**
  * Event-Driven Spark Reaction Hook:
- * Dispatches actions with realistic staggered delays across bots
+ * Dispatches actions with realistic staggered delays across writer personas AND reader swarm
  */
 export async function triggerSparkReaction(pool, { postId, authorId, category, title, summary }) {
   try {
     const settings = await getGlobalSettings(pool);
     if (!settings.is_engine_enabled) return;
     if (settings.spark_automation_mode === 'pulse') return;
+
+    // 1. Dispatch 10-35 reader bot applauds across 24h wave
+    if (settings.reader_swarm_enabled !== false) {
+      triggerReaderSwarm(pool, { postId, category }).catch(err =>
+        console.warn('[Spark Swarm Auto-Trigger Warning]', err.message)
+      );
+    }
 
     const isHumanPost = !authorId.startsWith('bot_');
     if (!isHumanPost) {
@@ -797,9 +992,10 @@ export async function triggerSparkReaction(pool, { postId, authorId, category, t
       if (Math.random() > Number(settings.human_post_reaction_rate)) return;
     }
 
+    // Select 1-3 active writer bots
     const bots = await pool.query(`
       select id from public.bot_configs
-      where is_active = true and id != $1
+      where is_active = true and bot_type = 'writer' and id != $1
       order by case when $2 = any(categories) then 0 else 1 end, random()
       limit 3
     `, [authorId, category]);

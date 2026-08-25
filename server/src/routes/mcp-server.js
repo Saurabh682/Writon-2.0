@@ -8,7 +8,8 @@ import {
   executeInteractAction,
   ingestSparkBatch,
   scheduleDelayedAction,
-  getPendingDelayedActions
+  getPendingDelayedActions,
+  triggerReaderSwarm
 } from '../bot-engine/spark-runner.js';
 
 const MCP_PROTOCOL_VERSION = '2024-11-05';
@@ -271,6 +272,38 @@ const WRITON_TOOLS = [
           description: 'List of follow connections to create.'
         }
       }
+    }
+  },
+  {
+    name: 'writon_clapping_swarm',
+    description: 'Trigger an organic wave of 10-50 authentic reader bot applauds on any story, staggered naturally over minutes or hours.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        postId: {
+          type: 'string',
+          description: 'The UUID or slug of the post to applaud (or "latest").'
+        },
+        intensity: {
+          type: 'string',
+          enum: ['conservative', 'healthy', 'viral'],
+          default: 'healthy',
+          description: 'Swarm size: conservative (6-12), healthy (15-30), viral (40-75).'
+        },
+        count: {
+          type: 'number',
+          description: 'Explicit count of reader applauds to queue (overrides intensity).'
+        }
+      },
+      required: ['postId']
+    }
+  },
+  {
+    name: 'writon_get_reader_stats',
+    description: 'Get total count of active reader bots in the applause network and total community applause metrics.',
+    inputSchema: {
+      type: 'object',
+      properties: {}
     }
   }
 ];
@@ -754,6 +787,50 @@ async function executeMcpTool(pool, toolName, args) {
   if (toolName === 'writon_batch_ingest') {
     const outcome = await ingestSparkBatch(pool, args);
     return outcome;
+  }
+
+  if (toolName === 'writon_clapping_swarm') {
+    const { postId, intensity, count } = args;
+    let targetPostId = postId;
+
+    if (postId === 'latest' || !postId) {
+      const latestPost = await pool.query(`
+        select id from public.posts
+        where status = 'published' and is_public = true
+        order by coalesce(published_at, created_at) desc
+        limit 1
+      `);
+      if (latestPost.rowCount === 0) throw new Error('No published stories found to applaud');
+      targetPostId = latestPost.rows[0].id;
+    } else {
+      const postCheck = await pool.query(`
+        select id from public.posts where id::text = $1 or slug = $1 limit 1
+      `, [postId]);
+      if (postCheck.rowCount === 0) throw new Error(`Story not found: "${postId}"`);
+      targetPostId = postCheck.rows[0].id;
+    }
+
+    const outcome = await triggerReaderSwarm(pool, {
+      postId: targetPostId,
+      intensity: intensity || 'healthy',
+      count: count ? Number(count) : null
+    });
+
+    return {
+      success: true,
+      message: `Reader swarm triggered! Queued ${outcome.count || 0} authentic reader applauds with natural delays.`,
+      swarm: outcome
+    };
+  }
+
+  if (toolName === 'writon_get_reader_stats') {
+    const res = await pool.query(`
+      select
+        (select count(*)::int from public.bot_configs where bot_type = 'reader' and is_active = true) as "totalReaders",
+        (select count(*)::int from public.post_applauds where user_id like 'bot_reader_%') as "totalReaderApplauds",
+        (select count(*)::int from public.bot_delayed_actions where status = 'pending' and action_type = 'applaud') as "pendingApplauds"
+    `);
+    return res.rows[0];
   }
 
   throw new Error(`Unknown tool name: ${toolName}`);

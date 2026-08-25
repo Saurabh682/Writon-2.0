@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   BotPersona,
+  ReaderBotPersona,
   BotGlobalSettings,
   BotActivityLog,
   BotOverviewStats,
@@ -21,7 +22,10 @@ import {
   fetchSparkAutomationScript,
   fetchDelayedActions,
   cancelDelayedActionApi,
-  processDelayedActionsNow
+  processDelayedActionsNow,
+  seedReaderBotsApi,
+  fetchReaderBots,
+  triggerReaderSwarmApi
 } from '../../lib/api';
 
 interface BotControlCenterProps {
@@ -54,7 +58,7 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
   onClose,
   onStoryPublished
 }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'delayed_queue' | 'mcp_app' | 'spark_web' | 'personas' | 'settings' | 'trigger' | 'logs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'readers' | 'delayed_queue' | 'mcp_app' | 'spark_web' | 'personas' | 'settings' | 'trigger' | 'logs'>('overview');
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -71,13 +75,23 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
     };
   }, []);
 
-
   // State
   const [settings, setSettings] = useState<BotGlobalSettings | null>(null);
   const [stats, setStats] = useState<BotOverviewStats | null>(null);
   const [bots, setBots] = useState<BotPersona[]>([]);
   const [logs, setLogs] = useState<BotActivityLog[]>([]);
   const [delayedActions, setDelayedActions] = useState<any[]>([]);
+
+  // Reader Swarm State (100 Readers)
+  const [readersList, setReadersList] = useState<ReaderBotPersona[]>([]);
+  const [readersTotal, setReadersTotal] = useState<number>(0);
+  const [readersPage, setReadersPage] = useState<number>(1);
+  const [selectedReaderCategory, setSelectedReaderCategory] = useState<string>('All');
+  const [selectedSwarmPostId, setSelectedSwarmPostId] = useState<string>('latest');
+  const [swarmIntensity, setSwarmIntensity] = useState<'conservative' | 'healthy' | 'viral'>('healthy');
+  const [swarmCustomCount, setSwarmCustomCount] = useState<string>('');
+  const [seedingReaders, setSeedingReaders] = useState<boolean>(false);
+  const [triggeringSwarm, setTriggeringSwarm] = useState<boolean>(false);
 
   // Gemini Spark Web State
   const [sparkPromptText, setSparkPromptText] = useState<string>('');
@@ -112,6 +126,18 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
     }
   }, [isOpen]);
 
+  const loadReaderBots = async (page = 1, category = selectedReaderCategory) => {
+    try {
+      const cat = category === 'All' ? undefined : category;
+      const data = await fetchReaderBots(page, 50, cat);
+      setReadersList(data.readers);
+      setReadersTotal(data.total);
+      setReadersPage(page);
+    } catch (err: unknown) {
+      console.warn('Failed to fetch reader bots:', err);
+    }
+  };
+
   const loadData = async () => {
     try {
       setLoading(true);
@@ -133,6 +159,7 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       if (botsData.bots.length > 0 && !selectedBotId) {
         setSelectedBotId(botsData.bots[0].id);
       }
+      loadReaderBots(1);
     } catch (err: unknown) {
       setStatusMessage({ type: 'error', text: getErrorMessage(err) });
     } finally {
@@ -176,6 +203,39 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
       showStatus(getErrorMessage(err), 'error');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleSeedReaders = async () => {
+    try {
+      setSeedingReaders(true);
+      const res = await seedReaderBotsApi();
+      showStatus(`🎉 ${res.message || `Successfully seeded ${res.count} reader personas!`}`);
+      loadReaderBots(1);
+      loadData();
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
+    } finally {
+      setSeedingReaders(false);
+    }
+  };
+
+  const handleTriggerSwarm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSwarmPostId) {
+      showStatus('Please enter or select a post to applaud', 'error');
+      return;
+    }
+    try {
+      setTriggeringSwarm(true);
+      const customNum = swarmCustomCount ? parseInt(swarmCustomCount, 10) : undefined;
+      const res = await triggerReaderSwarmApi(selectedSwarmPostId, customNum, swarmIntensity);
+      showStatus(`🚀 Reader swarm queued: ${res.count} authentic reader applauds dispatched!`);
+      loadData();
+    } catch (err: unknown) {
+      showStatus(getErrorMessage(err), 'error');
+    } finally {
+      setTriggeringSwarm(false);
     }
   };
 
@@ -503,10 +563,11 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
         >
           {[
             { id: 'overview', label: '📊 Overview' },
+            { id: 'readers', label: `👏 Reader Swarm (${stats?.activeReadersCount ?? readersTotal ?? 100})` },
             { id: 'delayed_queue', label: `🕒 Human Queue ${delayedActions.length > 0 ? `(${delayedActions.length})` : ''}` },
             { id: 'mcp_app', label: '🔌 Custom Spark App (MCP)' },
             { id: 'spark_web', label: '✨ Gemini Spark Web (Batch Ingest)' },
-            { id: 'personas', label: `👥 Personas (${bots.length})` },
+            { id: 'personas', label: `👥 Writers (${bots.length})` },
             { id: 'settings', label: '⚙️ Spark Settings' },
             { id: 'trigger', label: '⚡ Instant Actions' },
             { id: 'logs', label: '📜 Activity Stream' }
@@ -539,21 +600,25 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
               {/* TAB 1: OVERVIEW */}
               {activeTab === 'overview' && (
                 <div className="space-y-6">
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
-                      <p className="text-xs text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">Active Bots</p>
-                      <p className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.activeBotsCount ?? 0} / {bots.length}</p>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    <div className="p-3.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">✍️ Writers</p>
+                      <p className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.activeBotsCount ?? 6} / {bots.length}</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
-                      <p className="text-xs text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">Bot Articles</p>
+                    <div className="p-3.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">👏 Reader Swarm</p>
+                      <p className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats?.activeReadersCount ?? readersTotal ?? 100} Bots</p>
+                    </div>
+                    <div className="p-3.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">📝 Bot Articles</p>
                       <p className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.totalBotPosts ?? 0}</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
-                      <p className="text-xs text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">Bot Comments</p>
+                    <div className="p-3.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">💬 Comments</p>
                       <p className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.totalBotComments ?? 0}</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
-                      <p className="text-xs text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">Applauds Given</p>
+                    <div className="p-3.5 rounded-xl bg-stone-100/70 dark:bg-stone-800/50 border border-stone-200/60 dark:border-stone-800">
+                      <p className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-wider font-semibold">❤️ Applauds</p>
                       <p className="text-2xl font-bold text-stone-900 dark:text-stone-100 mt-1">{stats?.totalBotApplauds ?? 0}</p>
                     </div>
                   </div>
@@ -587,21 +652,38 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
                         ⚡ Quick Network Initialization
                       </h4>
                       <p className="text-xs text-stone-600 dark:text-stone-400 mt-0.5">
-                        Seed 6 curated writer personas across Tech, Poetry, Shayari, Fiction, Essays, and Humour with pre-configured styles.
+                        Seed 6 curated writer personas and 100 dedicated reader personas across Tech, Poetry, Shayari, Fiction, Essays, and Humour.
                       </p>
                     </div>
-                    <div className="flex gap-2 w-full sm:w-auto">
+                    <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                       <button
                         onClick={handleSeedBots}
                         disabled={actionLoading}
-                        className="flex-1 sm:flex-initial px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
+                        className="flex-1 sm:flex-initial px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold shadow-sm transition-colors"
                       >
-                        {actionLoading ? 'Seeding...' : '👥 Seed Starter Bots'}
+                        {actionLoading ? 'Seeding...' : '👥 Seed 6 Writers'}
+                      </button>
+                      <button
+                        onClick={handleSeedReaders}
+                        disabled={seedingReaders}
+                        className="flex-1 sm:flex-initial px-3.5 py-2 bg-stone-800 hover:bg-stone-900 text-white dark:bg-stone-700 dark:hover:bg-stone-600 rounded-xl text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5 justify-center"
+                      >
+                        {seedingReaders ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Seeding...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>👏</span>
+                            <span>Seed 100 Readers</span>
+                          </>
+                        )}
                       </button>
                       <button
                         onClick={handleTriggerPulse}
                         disabled={actionLoading}
-                        className="flex-1 sm:flex-initial px-4 py-2 bg-stone-200 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-xl text-xs font-semibold transition-colors"
+                        className="flex-1 sm:flex-initial px-3.5 py-2 bg-stone-200 hover:bg-stone-300 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-xl text-xs font-semibold transition-colors"
                       >
                         💓 Pulse Now
                       </button>
@@ -631,6 +713,229 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
                         </div>
                       ))}
                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB: READER SWARM (100 Readers) */}
+              {activeTab === 'readers' && (
+                <div className="space-y-6">
+                  {/* Swarm Banner & Controls */}
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-rose-500/10 border border-amber-500/20">
+                    <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-2xl">👏</span>
+                          <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
+                            Audience & Reader Swarm (100 Bots)
+                          </h3>
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
+                            Active ({readersTotal || 100} Readers)
+                          </span>
+                        </div>
+                        <p className="text-xs text-stone-600 dark:text-stone-400 mt-1 max-w-2xl">
+                          100 dedicated reader accounts with realistic portraits and genre affinities. 
+                          They automatically discover published stories and distribute 15–35 authentic applauds staggered over 24 hours with zero LLM token costs.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={handleSeedReaders}
+                        disabled={seedingReaders}
+                        className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all flex items-center gap-2 whitespace-nowrap"
+                      >
+                        {seedingReaders ? (
+                          <>
+                            <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>Seeding 100 Readers...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>🔄</span>
+                            <span>Reseed 100 Reader Network</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* On-Demand Swarm Trigger Card */}
+                  <div className="p-5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 shadow-sm">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-lg">🚀</span>
+                      <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                        Launch Instant Reader Applaud Wave
+                      </h4>
+                    </div>
+                    <form onSubmit={handleTriggerSwarm} className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                            Target Story UUID / Slug
+                          </label>
+                          <input
+                            type="text"
+                            value={selectedSwarmPostId}
+                            onChange={e => setSelectedSwarmPostId(e.target.value)}
+                            placeholder="e.g. latest, or post UUID"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                          />
+                          <p className="text-[10px] text-stone-500 mt-1">Use "latest" to applaud the newest story.</p>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                            Swarm Intensity
+                          </label>
+                          <div className="grid grid-cols-3 gap-1">
+                            {(['conservative', 'healthy', 'viral'] as const).map(mode => (
+                              <button
+                                type="button"
+                                key={mode}
+                                onClick={() => setSwarmIntensity(mode)}
+                                className={`px-2 py-2 text-[11px] font-bold rounded-lg border transition-all capitalize ${
+                                  swarmIntensity === mode
+                                    ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
+                                    : 'bg-stone-50 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 hover:bg-stone-100'
+                                }`}
+                              >
+                                {mode === 'conservative' ? '🌱 6–12' : mode === 'healthy' ? '⚡ 15–30' : '🔥 40–75'}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                            Custom Count (Optional)
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="100"
+                            value={swarmCustomCount}
+                            onChange={e => setSwarmCustomCount(e.target.value)}
+                            placeholder="Auto from intensity"
+                            className="w-full px-3 py-2 text-xs rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="submit"
+                          disabled={triggeringSwarm}
+                          className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center gap-2"
+                        >
+                          {triggeringSwarm ? (
+                            <>
+                              <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                              <span>Scheduling Wave...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>👏</span>
+                              <span>Dispatch Reader Swarm</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+
+                  {/* Reader Directory Filters */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100">
+                        Reader Directory ({readersTotal || 100})
+                      </h4>
+                      <div className="text-xs text-stone-500 dark:text-stone-400">
+                        Page {readersPage} of {Math.ceil((readersTotal || 100) / 50)}
+                      </div>
+                    </div>
+
+                    {/* Category Filter Pills */}
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                      {['All', 'Tech', 'Poetry', 'Shayari', 'Short Stories', 'Essays', 'Philosophy', 'Humour', 'Culture'].map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => {
+                            setSelectedReaderCategory(cat);
+                            loadReaderBots(1, cat);
+                          }}
+                          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
+                            selectedReaderCategory === cat
+                              ? 'bg-amber-600 text-white font-bold'
+                              : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Reader Cards Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {readersList.map(reader => (
+                        <div
+                          key={reader.id}
+                          className="p-3.5 rounded-xl border border-stone-200/80 dark:border-stone-800 bg-white dark:bg-stone-900/60 shadow-xs hover:border-amber-500/40 transition-all flex flex-col justify-between"
+                        >
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={reader.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                              alt={reader.fullName}
+                              className="w-10 h-10 rounded-full object-cover border border-stone-200 dark:border-stone-700"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
+                                {reader.fullName}
+                              </div>
+                              <div className="text-[11px] text-amber-600 dark:text-amber-400 font-mono truncate">
+                                @{reader.penName}
+                              </div>
+                            </div>
+                          </div>
+
+                          <p className="text-[11px] text-stone-600 dark:text-stone-400 mt-2 line-clamp-2 leading-relaxed">
+                            {reader.bio}
+                          </p>
+
+                          <div className="mt-3 pt-2 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-[10px]">
+                            <div className="flex flex-wrap gap-1">
+                              {reader.categories?.slice(0, 2).map((c: string) => (
+                                <span key={c} className="px-1.5 py-0.5 rounded bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 font-medium">
+                                  {c}
+                                </span>
+                              ))}
+                            </div>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-bold">
+                              {Math.round((reader.likeProbability || 0.85) * 100)}% Clap Rate
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Pagination */}
+                    {readersTotal > 50 && (
+                      <div className="flex justify-center gap-2 pt-2">
+                        <button
+                          disabled={readersPage <= 1}
+                          onClick={() => loadReaderBots(readersPage - 1)}
+                          className="px-3 py-1 bg-stone-100 dark:bg-stone-800 text-xs rounded-lg disabled:opacity-40"
+                        >
+                          &larr; Previous
+                        </button>
+                        <button
+                          disabled={readersPage * 50 >= readersTotal}
+                          onClick={() => loadReaderBots(readersPage + 1)}
+                          className="px-3 py-1 bg-stone-100 dark:bg-stone-800 text-xs rounded-lg disabled:opacity-40"
+                        >
+                          Next &rarr;
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

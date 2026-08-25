@@ -5,6 +5,9 @@ import {
   getGlobalSettings,
   updateGlobalSettings,
   seedInitialBotNetwork,
+  seedReaderBotNetwork,
+  getReaderBotsList,
+  triggerReaderSwarm,
   executePostAction,
   executeInteractAction,
   runSparkPulse,
@@ -174,7 +177,9 @@ export async function adminBotsRoutes(fastify, options) {
           (select count(*)::int from public.posts where author_id like 'bot_%' and status = 'published') as "totalBotPosts",
           (select count(*)::int from public.comments where author_id like 'bot_%') as "totalBotComments",
           (select count(*)::int from public.post_applauds where user_id like 'bot_%') as "totalBotApplauds",
-          (select count(*)::int from public.bot_configs where is_active = true) as "activeBotsCount"
+          (select count(*)::int from public.bot_configs where is_active = true and bot_type = 'writer') as "activeBotsCount",
+          (select count(*)::int from public.bot_configs where is_active = true and bot_type = 'reader') as "activeReadersCount",
+          (select count(*)::int from public.bot_delayed_actions where status = 'pending') as "pendingActionsCount"
       `);
 
       return {
@@ -189,10 +194,44 @@ export async function adminBotsRoutes(fastify, options) {
     }
   });
 
-  // Get all bot personas
+  // Get all writer bot personas
   fastify.get('/api/v1/admin/bots', async () => {
-    const bots = await getBotsList(pool);
+    const bots = await getBotsList(pool, { botType: 'writer' });
     return { bots };
+  });
+
+  // Seed 100 Reader Bot Network
+  fastify.post('/api/v1/admin/bots/seed-readers', async (request, reply) => {
+    try {
+      const outcome = await seedReaderBotNetwork(pool);
+      return { success: true, message: `Successfully seeded ${outcome.count} reader bot personas!`, count: outcome.count };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to seed reader personas', message: error.message });
+    }
+  });
+
+  // Get paginated reader bots
+  fastify.get('/api/v1/admin/bots/readers', async (request) => {
+    const page = Math.max(1, Number(request.query?.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(request.query?.limit) || 50));
+    const category = request.query?.category || null;
+    return await getReaderBotsList(pool, { page, limit, category });
+  });
+
+  // Trigger an on-demand reader applaud swarm on a post
+  fastify.post('/api/v1/admin/bots/trigger-swarm', async (request, reply) => {
+    const { postId, count, intensity } = request.body || {};
+    if (!postId) {
+      return reply.code(400).send({ error: 'postId is required' });
+    }
+    try {
+      const outcome = await triggerReaderSwarm(pool, { postId, count: count ? Number(count) : null, intensity });
+      return outcome;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to trigger reader swarm', message: error.message });
+    }
   });
 
   // Create a new bot persona

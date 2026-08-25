@@ -392,3 +392,36 @@ export async function processDelayedActionsNow(): Promise<{ success: boolean; co
   return res.json();
 }
 
+export async function seedReaderBotsApi(): Promise<{ success: boolean; message: string; count: number }> {
+  const res = await fetch(`${API_BASE}/admin/bots/seed-readers`, {
+    method: 'POST',
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to seed reader bots network');
+  return res.json();
+}
+
+export async function fetchReaderBots(page = 1, limit = 50, category?: string): Promise<{ readers: any[]; total: number; page: number; limit: number }> {
+  const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+  if (category) params.set('category', category);
+  const res = await fetch(`${API_BASE}/admin/bots/readers?${params.toString()}`, {
+    headers: { ...getAuthHeader() }
+  });
+  if (!res.ok) throw new Error('Failed to fetch reader bots');
+  return res.json();
+}
+
+export async function triggerReaderSwarmApi(postId: string, count?: number, intensity = 'healthy'): Promise<{ success: boolean; count: number; targetPostId: string; intensity: string }> {
+  const res = await fetch(`${API_BASE}/admin/bots/trigger-swarm`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeader()
+    },
+    body: JSON.stringify({ postId, count, intensity })
+  });
+  if (!res.ok) throw new Error('Failed to trigger reader applaud swarm');
+  return res.json();
+}
+
+

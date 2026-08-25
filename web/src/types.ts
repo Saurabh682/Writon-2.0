@@ -128,4 +128,20 @@ export interface BotOverviewStats {
   totalBotComments: number;
   totalBotApplauds: number;
   activeBotsCount: number;
+  activeReadersCount?: number;
+  pendingActionsCount?: number;
 }
+
+export interface ReaderBotPersona {
+  id: string;
+  penName: string;
+  fullName: string;
+  bio: string;
+  avatarUrl: string;
+  isActive: boolean;
+  botType: 'reader';
+  categories: string[];
+  likeProbability: number;
+  lastInteractedAt?: string | null;
+}
+

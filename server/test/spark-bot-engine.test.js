@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CURATED_BOT_PERSONAS } from '../src/bot-engine/curated-personas.js';
+import { CURATED_READER_PERSONAS } from '../src/bot-engine/reader-personas.js';
 import { generateSparkArticle, generateSparkComment } from '../src/bot-engine/gemini-spark-client.js';
 import { getCoverImageForCategory } from '../src/bot-engine/image-service.js';
 import { buildServer } from '../src/server.js';
@@ -26,6 +27,30 @@ describe('Gemini Spark Bot Network & Engine', () => {
 
         ids.add(bot.id);
         penNames.add(bot.penName);
+      }
+    });
+
+    it('contains 100 distinct reader personas with applaud-only capability', () => {
+      expect(CURATED_READER_PERSONAS.length).toBe(100);
+
+      const ids = new Set();
+      const penNames = new Set();
+
+      for (const reader of CURATED_READER_PERSONAS) {
+        expect(reader.id).toMatch(/^bot_reader_\d{3}$/);
+        expect(reader.penName).toMatch(/^reader_[a-z0-9_]+$/);
+        expect(reader.fullName).toBeTruthy();
+        expect(reader.bio).toBeTruthy();
+        expect(reader.avatarUrl).toBeTruthy();
+        expect(reader.botType).toBe('reader');
+        expect(reader.commentProbability).toBe(0);
+        expect(reader.categories.length).toBeGreaterThan(0);
+
+        expect(ids.has(reader.id)).toBe(false);
+        expect(penNames.has(reader.penName)).toBe(false);
+
+        ids.add(reader.id);
+        penNames.add(reader.penName);
       }
     });
   });
@@ -295,6 +320,8 @@ describe('Gemini Spark Bot Network & Engine', () => {
       expect(toolNames).toContain('writon_browse_and_react');
       expect(toolNames).toContain('writon_schedule_action');
       expect(toolNames).toContain('writon_get_pending_actions');
+      expect(toolNames).toContain('writon_clapping_swarm');
+      expect(toolNames).toContain('writon_get_reader_stats');
       expect(toolNames).toContain('writon_get_feed');
       expect(toolNames).toContain('writon_comment_story');
       expect(toolNames).toContain('writon_applaud_story');

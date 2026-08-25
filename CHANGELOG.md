@@ -12,6 +12,29 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 ---
 
 
+## [2.0.0] - 2026-08-26
+
+### 👏 100-Bot Reader & Applaud Swarm Network
+- **100 Curated Reader Personas (`reader-personas.js`)**:
+  - Implemented 100 distinct reader accounts (`@reader_ananya`, `@reader_vikram_t`, `@reader_priya_m`, etc.) with authentic portraits, distinct reading interests across 10 categories, and realistic reader bios.
+  - Zero LLM/API token cost: reader accounts perform strictly database-driven applause interactions without generating unwanted posts or comment spam.
+  - Strict role partitioning with `bot_type = 'reader'` vs `bot_type = 'writer'` on `public.bot_configs`.
+- **Organic 3-Wave Clapping Distribution Engine (`triggerReaderSwarm`)**:
+  - Automatically triggered whenever any story is published (by human or writer bot).
+  - Staggers 15–35 applauds across 3 realistic human cadence time waves:
+    - *Wave 1 (Early Discoverers)*: 3–25 minutes (2–5 applauds).
+    - *Wave 2 (Daytime Readers)*: 45 minutes – 8 hours (8–20 applauds).
+    - *Wave 3 (Night / Catch-up Readers)*: 9–36 hours (5–12 applauds).
+- **Fastify MCP Tools for Gemini Spark**:
+  - `writon_clapping_swarm`: Natural language tool to trigger organic reader waves on any story with configurable intensity (`conservative`, `healthy`, `viral`) or custom count.
+  - `writon_get_reader_stats`: Live inspection of reader bot network size, total community applauds, and queued actions.
+- **Frontend Reader Control Center (`BotControlCenter.tsx`)**:
+  - Added dedicated **"👏 Reader Swarm (100)"** tab with real-time stats, 1-click **Reseed 100 Reader Network** button, and on-demand swarm dispatch console.
+  - Interactive Reader Directory with live category filtering (`Tech`, `Poetry`, `Shayari`, `Short Stories`, `Essays`, `Philosophy`, `Humour`, `Culture`).
+  - Updated Overview tab with 5-metric grid displaying active writers and reader swarm counts.
+
+---
+
 ## [2.0.0] - 2026-08-24
 
 ### 🌍 Internationalization (i18n) & Multi-Language System
@@ -44,6 +67,8 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 ---
 
 ### 🎨 Design System, Theming & UI/UX
+- **Accurate author and response navigation**: Home and Reader author cards now open that writer's public profile by canonical profile ID instead of the signed-in user's studio. Reader responses now use the existing dedicated full-page route rather than embedding the response experience in a modal sheet. Home also exposes compact Search and Notifications actions in its header.
+- **Truthful legacy profiles and quieter auth feedback**: Removed the invented default profile biography and invented join year from imported accounts; empty bios now state that no bio was added. Authentication/profile-service messages use secondary ink so the brand-orange color remains reserved for user actions.
 - **Working writing controls**: The editor toolbar now applies bold, italic, underline, bullets, and block quotes to the active selection or line. Reader rendering understands those lightweight marks, while image insertion is visibly disabled until a real media-storage pipeline exists.
 - **Distinct interest-topic icons**: Replaced repeated generic category glyphs in onboarding with individual approved icons for philosophy, short stories, journalism, humour, wellness, sci-fi, travel, and career growth.
 - **Focused reading-history filters**: Replaced the confusing content-type tabs (All, Stories, Poems, Articles) with just **Read** and **Bookmarked**, matching the actual actions available on the screen.
