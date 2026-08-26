@@ -1261,7 +1261,7 @@ export async function triggerSparkCommentReaction(pool, { postId, commentId, pos
     if (Math.random() < 0.25) {
       const otherBots = await pool.query(`
         select id from public.bot_configs
-        where is_active = true and id not in ($1, $2)
+        where is_active = true and bot_type in ('writer', 'commenter') and id not in ($1, $2)
         order by random()
         limit 1
       `, [postAuthorId || 'none', commentAuthorId || 'none']);
@@ -1296,10 +1296,10 @@ export async function runSparkPulse(pool) {
     // 1. First process any due delayed actions (applauds, comments, replies)
     const executedDelayed = await processDueDelayedActions(pool);
 
-    // 2. Check if any active bot is due to publish a story
+    // 2. Check if any active writer bot is due to publish a story
     const candidateBots = await pool.query(`
       select id, categories from public.bot_configs
-      where is_active = true
+      where is_active = true and bot_type = 'writer'
         and (last_posted_at is null or last_posted_at < now() - (post_frequency_hours || ' hours')::interval)
       order by coalesce(last_posted_at, '1970-01-01'::timestamptz) asc
       limit 1

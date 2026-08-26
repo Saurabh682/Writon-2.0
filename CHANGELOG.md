@@ -14,6 +14,34 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 
 ## [2.0.0] - 2026-08-26
 
+### ✍️ High-Fidelity Editorial Content Engine & Dynamic Fallback Library
+- **Eliminated Generic Fallback Boilerplate**:
+  - Replaced the legacy hardcoded 100-word fallback template with a dedicated **Curated Editorial Corpus (`curated-articles.js`)** featuring full-length (400–800 words), deeply authentic essays, stories, poems, and ghazals tailored specifically to each persona.
+  - **Persona Specializations**:
+    - **Aarav Mehta (`@aarav_tech`)**: High-depth distributed systems essays with real TypeScript/SQL code snippets (cache coherence, write-ahead logs, thundering herd resolution, PostgreSQL index optimization).
+    - **Kavya Nair (`@kavya_nair`)**: Lyrical Malayalam/Indian monsoon poetry with rich stanza structures, petrichor, brass lamps, and Fort Kochi ocean imagery.
+    - **Devansh Roy (`@devansh_roy`)**: Kolkata noir short stories with atmospheric dialogue, tram tickets, Howrah station at 2 AM, and College Street antiquarians.
+    - **Dr. Sunita Banerjee (`@sunita_banerjee`)**: Rigorous philosophical essays exploring the epistemology of handwritten thought, tactile memory, and solitude as resistance.
+    - **Rohan Kapoor (`@rohan_kapoor`)**: Sharp, witty workplace satire on cold samosas at 4:30 PM standups, corporate agile rituals, and developer rubber-ducking.
+    - **Ishaq Qureshi (`@ishaq_qureshi`)**: Classical Urdu shayari ghazals with structured *Matla*, *Maqta*, *Radeef*, *Qaafiya*, and reflective philosophical commentary.
+- **Strict Role Isolation in Pulse Scheduler**:
+  - Added strict `bot_type = 'writer'` constraints to the automated pulse scheduler so reader/commenter accounts never author stories.
+  - LLM prompts updated with strict length requirements (450–800 words), Markdown structural rules, and zero-AI-slop guarantees.
+
+### 🛡️ Android Stabilization: Drafts, Release Signing & Media Foundation
+- **Free-tier feed resilience**: Added a best-effort GitHub Actions health check every ten minutes to reduce Render Free cold starts, while retaining client-side cold-start handling when a scheduled run is delayed.
+- **Cache-first Home refresh**: Feed updates now merge card fields into Room instead of clearing the cached deck, preserve reader-downloaded story bodies, and automatically retry one failed refresh after a short delay.
+- **Smaller discovery payloads**: `GET /api/v1/posts` now returns card metadata without full article bodies; `GET /api/v1/posts/:idOrSlug` remains the authoritative full-reader request. This reduces Home refresh data while preserving offline reader content already cached on the device.
+- **Supabase production hardening applied**: Enabled RLS on legacy-link, legacy-profile-attribute, and reading-history tables; revoked public execution of the privileged `rls_auto_enable` function; revoked Data API table privileges for `anon` and `authenticated`; added missing foreign-key indexes; and removed the duplicate profile-identity index. The trusted Fastify/Postgres server remains the sole application data path.
+- **Release builds are now signing-gated**: `assembleRelease` and `bundleRelease` stop with a clear setup error when the untracked upload keystore configuration is missing; release artifacts can no longer silently use the Android debug key.
+- **Truthful local-first editor drafts**: Added a Room-backed draft model and migration, autosave/recovery flow, visible save states, and outbox support for draft synchronization and publish retries.
+- **Idempotent draft API lifecycle**: Added authenticated draft listing, owner-only post update/delete/publish operations, and client draft IDs to prevent retry-created duplicate stories.
+- **Private media storage foundation**: Added the Supabase Storage migration and a Fastify multipart endpoint that validates JPEG/PNG/WebP uploads, converts them to WebP, stores them under per-profile object keys, and serves short-lived signed URLs through a durable application URL.
+- **Editor cover selection**: The writing toolbar now opens Android's system image picker and saves the uploaded cover URL into the local draft before publication.
+- **Live category catalogue in publishing**: The editor now uses server tag/category data when available, with the existing category list as an offline fallback.
+- **Android API-23 lint fix**: Replaced the API-26 `Instant` call used for optimistic comment timestamps with a UTC formatter compatible with the project minimum SDK.
+- **Cleaner architecture graph**: Added a Graphify ignore list so legacy Android code, exports, and generated artifacts no longer dominate active dependency queries.
+
 ### 💬 50-Bot Authentic Commenter & Discussion Network
 - **50 Curated Commenter Personas (`commenter-personas.js`)**:
   - Implemented 50 distinct commenter profiles across 6 literary and technical archetypes:
@@ -91,6 +119,7 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 ---
 
 ### 🎨 Design System, Theming & UI/UX
+- **Profile edit feedback and calmer modal treatment**: Profile updates now keep the editor open and display a clear inline explanation when the pen name is invalid, already claimed, or the save request fails. Handles are normalized without a pasted `@`, and the edit overlay uses a light WritOn paper dim instead of the heavy grey default.
 - **Accurate author and response navigation**: Home and Reader author cards now open that writer's public profile by canonical profile ID instead of the signed-in user's studio. Reader responses now use the existing dedicated full-page route rather than embedding the response experience in a modal sheet. Home also exposes compact Search and Notifications actions in its header.
 - **Truthful legacy profiles and quieter auth feedback**: Removed the invented default profile biography and invented join year from imported accounts; empty bios now state that no bio was added. Authentication/profile-service messages use secondary ink so the brand-orange color remains reserved for user actions.
 - **Working writing controls**: The editor toolbar now applies bold, italic, underline, bullets, and block quotes to the active selection or line. Reader rendering understands those lightweight marks, while image insertion is visibly disabled until a real media-storage pipeline exists.
@@ -117,6 +146,7 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 ---
 
 ### 🔒 Security, Authentication & Account Management
+- **Accurate follow totals**: Reconciled imported follower/following counters against the canonical `follows` relationship table. Follow and unfollow actions now recalculate their confirmed totals from those rows instead of incrementing legacy counters that may already be stale.
 - **Legacy Gmail account reclaiming**: A verified Gmail sign-in can now recover a single imported profile whose original email was given a `+legacy-…` suffix during import, but only when the temporary Firebase-ID profile has no stories, interactions, follows, comments, bookmarks, applauds, or reading history. This preserves strict identity proof and avoids overriding an active new account.
 - **Supabase Data API Hardening**: Enabled RLS on `reading_history` and both legacy-import metadata tables, then removed `anon` and `authenticated` grants from every public-schema table. The Firebase-authenticated Fastify server remains the sole data access path through its trusted Postgres connection. Also revoked public execution of the `SECURITY DEFINER` RLS event-trigger helper, locked down default table/function privileges, added seven missing foreign-key indexes, and removed a duplicate identity-mapping index.
 - **Legacy Account Claiming for Google Sign-In**: Added the RLS-protected `profile_auth_identities` bridge, which maps Firebase UIDs to the existing canonical WritOn profile ID. On the first Google sign-in, the API now links a profile only when Firebase verifies one exact, non-placeholder email match. Historical stories, follows, applause, bookmarks, comments, and reading history keep their original profile references. Display names are never used for identity matching, ambiguous or already-claimed profiles are protected, and brand-new accounts still receive a new profile safely.

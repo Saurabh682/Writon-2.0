@@ -1,3 +1,5 @@
+import { getAuthenticFallbackArticle } from './curated-articles.js';
+
 /**
  * Gemini Spark Client
  * High-performance, low-latency integration with Google Gemini Flash models.
@@ -61,7 +63,8 @@ export async function callGeminiApi({ apiKey, model = 'gemini-2.0-flash', prompt
 }
 
 export async function generateSparkArticle({ apiKey, model, persona, category, topicHint }) {
-  if (!apiKey) {
+  const activeApiKey = apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!activeApiKey) {
     return generateFallbackArticle(persona, category, topicHint);
   }
 
@@ -79,12 +82,13 @@ Editorial Quality Rules:
 - ZERO AI Slop: NEVER use clichés like "In today's fast-paced digital world", "Delve", "Let's dive in", "Tapestry", "Beacon", or "In conclusion".
 - Structure: Start in media res with a vivid sensory scene or concrete engineering/life moment. Avoid symmetrical 3-bullet listicles.
 - Controlled Imperfection: Include personal anecdotes, mild self-corrections, or honest admissions of doubt.
+- Length: Full, comprehensive article between 450 and 800 words. Format with clean Markdown headers (###), pull quotes (>), and code/stanzas where appropriate.
 
 Please return a strictly valid JSON object with the following structure:
 {
   "title": "A captivating, evocative title (under 90 chars)",
   "summary": "A punchy 1-2 sentence hook or synopsis (under 250 chars)",
-  "content": "A complete, beautifully formatted Markdown article/poem/essay (around 400-800 words, using clean headings, paragraphs, and poetic line breaks if poetry/shayari)",
+  "content": "A complete, beautifully formatted Markdown article/poem/essay (around 450-800 words, using clean headings, paragraphs, and poetic line breaks if poetry/shayari)",
   "themeKeyword": "A single aesthetic keyword (e.g. 'monsoon', 'minimalism', 'city', 'coffee', 'code', 'night') for visual matching"
 }
 
@@ -92,7 +96,7 @@ Ensure the response is raw JSON without extraneous commentary.`;
 
   try {
     const rawOutput = await callGeminiApi({
-      apiKey,
+      apiKey: activeApiKey,
       model: model || 'gemini-2.0-flash',
       prompt,
       systemInstruction: 'You are an acclaimed writer generating authentic literature with a distinctive voice. Output strictly valid JSON without boilerplate.',
@@ -113,7 +117,8 @@ Ensure the response is raw JSON without extraneous commentary.`;
 }
 
 export async function generateSparkComment({ apiKey, model, persona, postTitle, postCategory, postExcerpt, existingComments }) {
-  if (!apiKey) {
+  const activeApiKey = apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  if (!activeApiKey) {
     return generateFallbackComment(persona, postTitle, postCategory);
   }
 
@@ -148,7 +153,7 @@ Return strictly a JSON object:
 
   try {
     const rawOutput = await callGeminiApi({
-      apiKey,
+      apiKey: activeApiKey,
       model: model || 'gemini-2.0-flash-lite',
       prompt,
       systemInstruction: 'You are an active community member engaging in thoughtful literary and cultural discourse. Output raw JSON only.',
@@ -164,50 +169,7 @@ Return strictly a JSON object:
 }
 
 function generateFallbackArticle(persona, category, topicHint) {
-  const titles = {
-    'Tech': [
-      'The Lost Art of Clean Architecture in the AI Era',
-      'Why Every Engineer Needs a Digital Garden',
-      'Reflections on Latency, Simplicity, and Modern Craft'
-    ],
-    'Poetry': [
-      'Monsoon Letters Left Unread',
-      'Between The Breath and The Silence',
-      'Midnight Chai and Quiet Echoes'
-    ],
-    'Shayari': [
-      'Khaamoshiyon Ka Safar',
-      'Dard Aur Umeed Ka Taraana',
-      'Zindagi Ke Lamhe'
-    ],
-    'Short Stories': [
-      'The Last Train from Howrah Station',
-      'A Cup of Filter Coffee at Sunrise',
-      'Echoes in the Old Bookshop'
-    ],
-    'Essays': [
-      'On Solitude and The Modern Attention Span',
-      'The Beauty of Slow Reading in an Accelerated Age',
-      'Why We Still Need Handwritten Thoughts'
-    ],
-    'Humour': [
-      'How to Look Productive While Staring Blankly at Slack',
-      'The Modern Tragedy of Cold Samosas',
-      'An Honest Guide to Coffee Dependency'
-    ]
-  };
-
-  const pool = titles[category] || titles['Essays'];
-  const title = topicHint || pool[Math.floor(Math.random() * pool.length)];
-
-  const content = `### ${title}\n\n*By ${persona.fullName}*\n\nThere is a peculiar rhythm to moments when the world slows down just enough for thought to take root. We often race against clocks of our own making, forgetting that clarity rarely arrives in haste.\n\nWhether exploring the architecture of code, the cadence of a poem, or the quiet honesty of everyday life, true craft requires presence. It invites us to pause, look closely, and listen to what remains unsaid.\n\n> "In stillness, the quietest truths find their voice."\n\nAs writers and thinkers, our greatest gift is not merely producing answers, but holding space for genuine wonder.`;
-
-  return {
-    title,
-    summary: `A thoughtful reflection on ${category.toLowerCase()} and modern craft by ${persona.fullName}.`,
-    content,
-    themeKeyword: category
-  };
+  return getAuthenticFallbackArticle(persona, category, topicHint);
 }
 
 function generateFallbackComment(persona, postTitle, category) {
