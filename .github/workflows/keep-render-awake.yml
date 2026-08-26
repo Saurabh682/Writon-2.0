@@ -1,0 +1,20 @@
+name: Keep WritOn API awake
+
+on:
+  schedule:
+    # Render Free sleeps after 15 idle minutes. This is best-effort: GitHub may
+    # delay scheduled workflows, so the Android app still handles a cold start.
+    - cron: '*/8 * * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Wake the public API health endpoint
+        run: |
+          curl --fail --silent --show-error --max-time 55 --retry 2 https://writon-ab.onrender.com/health
+          curl --fail --silent --show-error --max-time 55 --retry 2 https://writon-powerup.onrender.com/health || true
