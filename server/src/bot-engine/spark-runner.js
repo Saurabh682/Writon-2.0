@@ -1754,6 +1754,12 @@ export async function ingestSparkBatch(pool, rawPayload) {
     }
 
     await client.query('commit');
+
+    // Auto-trigger organic reader applauds and discussion wave in background
+    for (const created of storiesCreated) {
+      triggerSparkReaction(pool, created.id, created.author_id || defaultBotId).catch(() => {});
+    }
+
     return {
       success: true,
       storiesCount: storiesCreated.length,
