@@ -461,11 +461,14 @@ Every couplet above adheres to classical *bahr* (poetic meter). The rhythm is de
 /**
  * Returns an authentic long-form editorial piece tailored to the persona and category.
  */
-export function getAuthenticFallbackArticle(persona, category, topicHint) {
+export function getAuthenticFallbackArticle(persona, category, topicHint, excludeTitles = []) {
   const penName = persona?.penName?.toLowerCase() || '';
+  const excludedSet = new Set((excludeTitles || []).map(t => (t || '').toLowerCase().trim()));
   
   // 1. Check if we have tailored articles for this specific persona
-  const personaArticles = CURATED_PERSONA_ARTICLES[penName] || [];
+  const personaArticles = (CURATED_PERSONA_ARTICLES[penName] || []).filter(
+    a => !excludedSet.has(a.title.toLowerCase().trim())
+  );
   
   // Filter by category if possible
   const categoryMatched = personaArticles.filter(a => 
@@ -484,19 +487,32 @@ export function getAuthenticFallbackArticle(persona, category, topicHint) {
     };
   }
 
-  // 2. Fallback to generic category search across all curated articles
-  const allArticles = Object.values(CURATED_PERSONA_ARTICLES).flat();
+  // 2. Fallback to generic category search across all curated articles (excluding existing)
+  const allArticles = Object.values(CURATED_PERSONA_ARTICLES).flat().filter(
+    a => !excludedSet.has(a.title.toLowerCase().trim())
+  );
   const catMatches = allArticles.filter(a => 
     category && a.category.toLowerCase() === category.toLowerCase()
   );
   
   const fallbackPool = catMatches.length > 0 ? catMatches : allArticles;
-  const fallback = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
+  if (fallbackPool.length > 0) {
+    const fallback = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
+    return {
+      title: topicHint || fallback.title,
+      summary: fallback.summary,
+      content: fallback.content,
+      themeKeyword: fallback.themeKeyword || category || 'Essays'
+    };
+  }
 
+  // 3. Fallback when all curated articles have already been published
+  const basePool = CURATED_PERSONA_ARTICLES[penName] || Object.values(CURATED_PERSONA_ARTICLES)[0];
+  const chosen = basePool[Math.floor(Math.random() * basePool.length)];
   return {
-    title: topicHint || fallback.title,
-    summary: fallback.summary,
-    content: fallback.content,
-    themeKeyword: fallback.themeKeyword || category || 'Essays'
+    title: topicHint || `${chosen.title} (Part II)`,
+    summary: chosen.summary,
+    content: chosen.content,
+    themeKeyword: chosen.themeKeyword || category || 'Essays'
   };
 }

@@ -545,6 +545,13 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
   const settings = await getGlobalSettings(pool);
   const targetCategory = category || bot.categories[Math.floor(Math.random() * bot.categories.length)] || 'Essays';
 
+  // Fetch titles already published by this author to prevent duplicate stories
+  const existingRes = await pool.query(
+    `select title from public.posts where author_id = $1`,
+    [bot.id]
+  );
+  const existingTitles = existingRes.rows.map(r => r.title);
+
   let articleData;
   if (customTitle && customContent) {
     articleData = {
@@ -564,7 +571,8 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
         personaPrompt: bot.personaPrompt
       },
       category: targetCategory,
-      topicHint
+      topicHint,
+      excludeTitles: existingTitles
     });
   }
 
@@ -612,6 +620,16 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     ]);
 
     await client.query('commit');
+
+    // Auto-trigger reader applaud wave and commenter reflections in background
+    triggerSparkReaction(pool, {
+      postId: createdPost.id,
+      authorId: bot.id,
+      category: targetCategory,
+      title: createdPost.title,
+      summary: articleData.summary
+    }).catch(() => {});
+
     return createdPost;
   } catch (error) {
     await client.query('rollback');

@@ -62,10 +62,10 @@ export async function callGeminiApi({ apiKey, model = 'gemini-2.0-flash', prompt
   return text;
 }
 
-export async function generateSparkArticle({ apiKey, model, persona, category, topicHint }) {
+export async function generateSparkArticle({ apiKey, model, persona, category, topicHint, excludeTitles = [] }) {
   const activeApiKey = apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!activeApiKey) {
-    return generateFallbackArticle(persona, category, topicHint);
+    return generateFallbackArticle(persona, category, topicHint, excludeTitles);
   }
 
   const prompt = `You are writing a new editorial piece for the publishing app 'WritOn'.
@@ -77,6 +77,7 @@ ${persona.personaPrompt}
 
 Target Category: ${category}
 ${topicHint ? `Topic/Theme guidance: ${topicHint}` : 'Choose a timely, evocative, and compelling topic suited to your persona and category.'}
+${excludeTitles?.length ? `Do NOT write about or use any of the following already published titles:\n${excludeTitles.map(t => `- "${t}"`).join('\n')}` : ''}
 
 Editorial Quality Rules:
 - ZERO AI Slop: NEVER use clichés like "In today's fast-paced digital world", "Delve", "Let's dive in", "Tapestry", "Beacon", or "In conclusion".
@@ -112,7 +113,7 @@ Ensure the response is raw JSON without extraneous commentary.`;
     };
   } catch (error) {
     console.warn(`[Gemini Spark Client] API call failed, using fallback generator: ${error.message}`);
-    return generateFallbackArticle(persona, category, topicHint);
+    return generateFallbackArticle(persona, category, topicHint, excludeTitles);
   }
 }
 
@@ -168,18 +169,67 @@ Return strictly a JSON object:
   }
 }
 
-function generateFallbackArticle(persona, category, topicHint) {
-  return getAuthenticFallbackArticle(persona, category, topicHint);
+function generateFallbackArticle(persona, category, topicHint, excludeTitles = []) {
+  return getAuthenticFallbackArticle(persona, category, topicHint, excludeTitles);
 }
 
-function generateFallbackComment(persona, postTitle, category) {
-  const templates = [
-    `This resonated deeply with me. The way you approached "${postTitle}" captures something truly essential about modern craft.`,
-    `A wonderfully nuanced piece. Especially loved the perspective you shared here!`,
-    `Such an evocative read. It reminds me of why slow, thoughtful writing matters so much. Looking forward to reading more of your work!`,
-    `Brilliant perspective on this! The imagery and pacing made it a delight to read.`
-  ];
-  return templates[Math.floor(Math.random() * templates.length)];
+function generateFallbackComment(persona, postTitle, category = 'Essays') {
+  const cat = (category || '').toLowerCase();
+  const penName = (persona?.penName || '').toLowerCase();
+
+  const commentsByDomain = {
+    tech: [
+      `The latency and state synchronization trade-offs you noted in "${postTitle}" are spot on. Simplicity in the write path is vastly underrated.`,
+      `Very solid architectural analysis. It's refreshing to see someone advocate for database indexes before prematurely reaching for distributed caches.`,
+      `This resonated with our team's recent post-mortem. Singleflight in-flight deduping saved our p99 tail latency during our last spike.`,
+      `Sharp observation on distributed complexity. We often trade simple local invariants for complex network failures without realizing it.`
+    ],
+    poetry: [
+      `These verses linger like petrichor after an unhurried downpour. The silence between the lines carries as much weight as the words themselves.`,
+      `Such delicate imagery in "${postTitle}". The rhythm has a meditative, slow-breathing quality that feels rare and grounding.`,
+      `The pause in the second stanza gives the imagery so much room to breathe. Beautifully observed.`,
+      `Reading this felt like stepping out onto a rain-washed balcony at dusk. Lyrical and profound.`
+    ],
+    stories: [
+      `The dialogue in "${postTitle}" captures that gritty, atmospheric urban tension with remarkable precision.`,
+      `The sensory details of the night tram and tea stall bring the scene completely to life. Superb storytelling.`,
+      `The quiet realization in the final paragraph carries tremendous emotional resonance. Truly immersive read.`,
+      `Loved the pacing here—unhurried yet taut with unspoken history between the characters.`
+    ],
+    philosophy: [
+      `A timely counterweight to the frantic urgency of our feeds. The idea that quiet attention is a form of cognitive resistance is compelling.`,
+      `Your reflection in "${postTitle}" touches on something essential: the physical friction of thought versus instant digital convenience.`,
+      `Bookmarking this essay. The distinction between reactionary output and slow synthesis cannot be overemphasized.`,
+      `Such measured, thoughtful prose. It reminds the reader why deep reading remains an indispensable intellectual practice.`
+    ],
+    humour: [
+      `Dying laughing at this. The accuracy of the sprint ceremony choreography hurts because it's so real!`,
+      `Saved to share with our engineering Slack channel tomorrow morning. Spot-on satire!`,
+      `The 4:30 PM standup dynamic has never been captured with such painful comedic precision. Pure gold.`,
+      `Brilliant observational humor. It's the little everyday corporate rituals that drive us all mad.`
+    ],
+    shayari: [
+      `Bohot khoob! Matla aur Maqta dono mein kya khoobsurat rawani aur jazba hai. Daad qubool kijiye!`,
+      `Lajawaab sukhan. Lafzon ki tehzeeb aur bahr ka riyaaz saaf jhalakta hai.`,
+      `Seedhe dil pe asar karne wale ash'aar. Yeh shaam is ghazal ke naam!`,
+      `SubhanAllah. Kitni saadgi se itna gehra ehsaas bayaan kar diya.`
+    ]
+  };
+
+  let pool = commentsByDomain.philosophy;
+  if (cat.includes('tech') || cat.includes('code') || penName.includes('tech') || penName.includes('aarav')) {
+    pool = commentsByDomain.tech;
+  } else if (cat.includes('poet') || penName.includes('kavya') || penName.includes('poetry')) {
+    pool = commentsByDomain.poetry;
+  } else if (cat.includes('stor') || cat.includes('fict') || penName.includes('devansh')) {
+    pool = commentsByDomain.stories;
+  } else if (cat.includes('humour') || cat.includes('satire') || penName.includes('rohan')) {
+    pool = commentsByDomain.humour;
+  } else if (cat.includes('shayar') || cat.includes('ghazal') || cat.includes('urdu') || penName.includes('ishaq')) {
+    pool = commentsByDomain.shayari;
+  }
+
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 export async function generateSparkReply({
