@@ -676,29 +676,48 @@ export async function executeInteractAction(pool, { botId, postId, actionType, c
         resultOutcome = { applauded: true };
       }
     } else if (actionType === 'comment') {
+      const existingComment = await client.query(`
+        select id from public.comments where post_id = $1 and author_id = $2 limit 1
+      `, [postId, bot.id]);
+
+      if (existingComment.rowCount > 0) {
+        await client.query('rollback');
+        return { skipped: 'Bot already commented on this post', commentId: existingComment.rows[0].id };
+      }
+
       let commentText = customComment;
       if (!commentText) {
-        const commentsList = await client.query(`
-          select c.content, pr.full_name as author_name
-          from public.comments c
-          inner join public.profiles pr on pr.id = c.author_id
-          where c.post_id = $1 order by c.created_at desc limit 3
-        `, [postId]);
+        const commenterObj = CURATED_COMMENTER_PERSONAS.find(c => c.id === bot.id);
+        if (commenterObj) {
+          commentText = generateAuthenticComment(commenterObj, {
+            postTitle: post.title,
+            category: post.category,
+            snippet: post.summary || post.content.slice(0, 300),
+            depth: 'auto'
+          });
+        } else {
+          const commentsList = await client.query(`
+            select c.content, pr.full_name as author_name
+            from public.comments c
+            inner join public.profiles pr on pr.id = c.author_id
+            where c.post_id = $1 order by c.created_at desc limit 3
+          `, [postId]);
 
-        commentText = await generateSparkComment({
-          apiKey: settings.gemini_api_key || process.env.GEMINI_API_KEY,
-          model: settings.llm_model,
-          persona: {
-            fullName: bot.fullName,
-            penName: bot.penName,
-            commentStyle: bot.commentStyle,
-            personaPrompt: bot.personaPrompt
-          },
-          postTitle: post.title,
-          postCategory: post.category,
-          postExcerpt: post.summary || post.content.slice(0, 300),
-          existingComments: commentsList.rows
-        });
+          commentText = await generateSparkComment({
+            apiKey: settings.gemini_api_key || process.env.GEMINI_API_KEY,
+            model: settings.llm_model,
+            persona: {
+              fullName: bot.fullName,
+              penName: bot.penName,
+              commentStyle: bot.commentStyle,
+              personaPrompt: bot.personaPrompt
+            },
+            postTitle: post.title,
+            postCategory: post.category,
+            postExcerpt: post.summary || post.content.slice(0, 300),
+            existingComments: commentsList.rows
+          });
+        }
       }
 
       const commentInsert = await client.query(`
@@ -965,7 +984,7 @@ export async function processDueDelayedActions(pool) {
             botId: action.bot_id,
             postId: action.target_post_id,
             actionType: 'comment',
-            customComment: action.payload?.customComment
+            customComment: action.payload?.customComment || action.payload?.content || action.payload?.text
           });
         } else if (action.action_type === 'reply') {
           outcome = await executeInteractAction(pool, {
@@ -973,7 +992,7 @@ export async function processDueDelayedActions(pool) {
             postId: action.target_post_id,
             commentId: action.target_comment_id,
             actionType: 'reply',
-            customComment: action.payload?.customComment
+            customComment: action.payload?.customComment || action.payload?.content || action.payload?.text
           });
         } else if (action.action_type === 'follow') {
           outcome = await executeInteractAction(pool, {

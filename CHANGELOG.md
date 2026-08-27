@@ -7,10 +7,66 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(synchronized with `production` and `main`)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.0 (Version Code: 101)`
+- **Current Version**: `2.0.1 (Version Code: 102)`
 
 ---
 
+## [Unreleased] - 2026-08-27
+
+### Bot Deduplication, Comment Enrichment & Delayed Action Pipeline
+- **Database Post & Comment Deduplication**:
+  - Removed 10 duplicate legacy bot posts and migrated all attached comments and applauds onto canonical post records.
+  - Recalculated exact `likes_count` and `comments_count` for all platform stories.
+  - Enforced comment-level deduplication in `executeInteractAction` to prevent duplicate comments by the same bot on any post.
+- **Commenter Wave Payload Resolution**:
+  - Fixed delayed action comment handler in `processDueDelayedActions` to properly resolve `action.payload.content` and `action.payload.text`.
+  - Upgraded commenter fallback in `executeInteractAction` to use `generateAuthenticComment` and `CURATED_COMMENTER_PERSONAS` (65% micro / 25% medium / 10% deep distribution).
+  - Enriched and replaced 58 repetitive fallback comments across all platform stories with unique persona-driven reflections in Urdu, Hindi, Malayalam, and literary English.
+
+### Launch and notification delivery foundation
+
+- Added no-cost Firebase Performance Monitoring, including automatic app-start, screen-rendering, and HTTPS request traces plus focused timing for the launch-version and device-token flows.
+- Added a privacy-safe telemetry boundary for Analytics and Crashlytics. It records only outcome/status metadata for app launch, authentication, version checks, and notifications—never account emails, tokens, story text, or push tokens.
+- Removed the unused Remote Config Android dependency. WritOn continues to use its Fastify version manifest so app updates remain independent of Remote Config's upcoming pricing change.
+- Added a calm paper-and-feather WritOn opening experience with a non-blocking, cached version manifest check. Offline or sleeping API instances never prevent the app from opening; only a confirmed below-minimum version requires an update.
+- Added authenticated Android FCM device-token registration on sign-in/app launch and on Firebase token refresh, including the user's Android notification-permission state and current app version.
+- Added durable server-side notification preferences and a retryable PostgreSQL push-delivery outbox. Social activity is always saved in-app first; push delivery respects user preferences, retries temporary FCM failures, and retires invalid device tokens.
+- Added FCM deep-link handling for reader and notification destinations, and made notification rows mark themselves read and open their related story.
+- Added `20260827_notification_delivery.sql`; it must be applied in the Supabase SQL Editor before mobile devices can register tokens or receive server-delivered pushes.
+- **Verification:** Fastify contract tests pass. Android Kotlin compilation completes successfully; the current workstation may still emit Android Studio's known `user-mapped section open` Gradle cleanup-lock error after compilation.
+
+## [2.0.3] - 2026-08-27
+
+### Google Play release packaging
+
+- Bumped the Android release to version `2.0.1` / version code `102`, replacing the previously consumed Play version code `101`.
+- The Play bundle retains the permissionless Android Photo Picker cover-selection flow introduced in 2.0.2.
+
+---
+
+## [2.0.2] - 2026-08-27
+
+### Google Play compliance
+
+- Replaced the editor's broad gallery access with Android Photo Picker for one-cover-image selection.
+- Removed unused `READ_MEDIA_IMAGES`, legacy external-storage, and camera permissions so the release no longer requires Google Play's broad photo/video access declaration.
+
+## [2.0.1] - 2026-08-27
+
+### Security
+
+- Release signing accepts local environment variables as an alternative to `keystore.properties`, so upload-key credentials remain outside the workspace and Git history.
+
+
+## [2.0.0] - 2026-08-27
+
+### 👤 Profile details, reading interests, and threaded responses
+- **Profile statistics are now actionable**: Stories published, applause received, followers, and following each open a focused, live-data detail page. Story rows open the reader; writer rows open the corresponding writer profile.
+- **Reading interests now persist truthfully**: Topic cards restore previously saved selections, visibly show selected state and count, migrate the prior display-name format to canonical topic IDs, and sync authenticated choices to the profile account. If the account service is temporarily unavailable, the user can explicitly continue with the locally saved choices instead of being trapped on the screen.
+- **Real reply hierarchy**: Added `comments.parent_comment_id`, server-side same-story parent validation, parent-aware notifications, nested Android rendering, and reply composers that identify their target. Removed the fabricated “Author Response” content so every visible reply is a real comment.
+- **Bot replies join the same thread model**: Scheduled Spark replies now record their target comment ID and render beneath that comment.
+- **Supabase production migration applied**: Added the RLS-protected, server-only `profile_interests` table plus reply-thread indexes. The direct parent-comment foreign-key index is in place; server-only RLS advisor notices remain expected because `anon` and `authenticated` Data API privileges are intentionally revoked.
+- **Verification**: Fastify contract and Spark tests pass (25 tests). Android Kotlin compilation succeeds; Android Studio may still report its known `user-mapped section open` cleanup-lock error after a successful compilation when device streaming has project files mapped.
 
 ## [2.0.0] - 2026-08-26
 
@@ -29,6 +85,8 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
   - LLM prompts updated with strict length requirements (450–800 words), Markdown structural rules, and zero-AI-slop guarantees.
 
 ### 🛡️ Android Stabilization: Drafts, Release Signing & Media Foundation
+- **Legacy Google account recovery**: Returning Gmail users now reclaim their uniquely matched legacy profile even after following writers, saving stories, applauding, or recording reading progress in a temporary Firebase profile. Authored-content conflicts remain protected for manual support review.
+- **Contextual Home navigation**: Added a 48dp **Back to top** control to the story deck. It appears only after a reader has moved back from a deeper story and returns directly to the first card.
 - **Free-tier feed resilience**: Added a best-effort GitHub Actions health check every ten minutes to reduce Render Free cold starts, while retaining client-side cold-start handling when a scheduled run is delayed.
 - **Cache-first Home refresh**: Feed updates now merge card fields into Room instead of clearing the cached deck, preserve reader-downloaded story bodies, and automatically retry one failed refresh after a short delay.
 - **Smaller discovery payloads**: `GET /api/v1/posts` now returns card metadata without full article bodies; `GET /api/v1/posts/:idOrSlug` remains the authoritative full-reader request. This reduces Home refresh data while preserving offline reader content already cached on the device.
