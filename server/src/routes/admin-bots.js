@@ -147,13 +147,9 @@ export async function adminBotsRoutes(fastify, options) {
         }
       }
 
-      // Allow /api/v1/spark/ingest if matching X-Bot-Secret header is provided
-      if (request.url.startsWith('/api/v1/spark/ingest')) {
-        const botSecret = process.env.BOT_INGEST_SECRET;
-        const headerSecret = request.headers['x-bot-secret'];
-        if (botSecret && headerSecret === botSecret) {
-          return;
-        }
+      // Allow all public /api/v1/spark/* endpoints (used by ChatGPT Actions, MCP, and cloud automations)
+      if (request.url.startsWith('/api/v1/spark/')) {
+        return;
       }
 
       return requireUser(request, reply);
@@ -624,15 +620,14 @@ export async function adminBotsRoutes(fastify, options) {
     };
   });
 
-  // Spark ingest uses a separate secret-based auth (bypasses the requireUser hook above)
-  fastify.post('/api/v1/spark/ingest', { preHandler: async (request, reply) => {
-    // Allow if user is authenticated OR if bot secret header matches
+  // Spark ingest: open for automated bot publishing / ChatGPT Actions
+  fastify.post('/api/v1/spark/ingest', async (request, reply) => {
     const botSecret = process.env.BOT_INGEST_SECRET;
     const headerSecret = request.headers['x-bot-secret'];
-    if (botSecret && headerSecret === botSecret) return; // Secret matches
-    if (request.user) return; // Already authenticated via requireUser hook
-    return reply.code(401).send({ error: 'Authentication required. Provide X-Bot-Secret header or Bearer token.' });
-  }}, async (request, reply) => {
+    if (botSecret && headerSecret && headerSecret !== botSecret) {
+      return reply.code(401).send({ error: 'Invalid bot secret header' });
+    }
+
     const rawPayload = request.body;
     const parsed = sparkIngestSchema.safeParse(rawPayload);
     if (typeof rawPayload === 'object' && !parsed.success) {
