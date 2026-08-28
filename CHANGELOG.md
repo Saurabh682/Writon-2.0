@@ -26,6 +26,9 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Cloud OpenAPI Actions & Headless Automation**:
   - Exposed standard OpenAPI 3.1.0 specification at `GET /openapi.json` and ChatGPT Plugin manifest at `GET /.well-known/ai-plugin.json`.
   - Added public headless endpoints (`POST /api/v1/spark/ingest`, `POST /api/v1/spark/pulse`, `GET /api/v1/spark/personas`, `POST /api/v1/spark/swarm/applaud`, `POST /api/v1/spark/swarm/comment`) allowing scheduled ChatGPT automations and cloud crons to publish and interact headlessly without local MCP dependency.
+- **100% Unique Profile Picture Deduping**:
+  - Replaced all avatar URL pools with **250 completely distinct, high-resolution portrait photographs** across the entire bot network: 100 unique writer avatars, 50 unique commenter avatars, and 100 unique reader avatars.
+  - Synced and verified all 250 records in the live Supabase PostgreSQL `profiles` table to guarantee zero duplicate profile pictures across any personas.
 - **Frontend Bot Control Center UI**:
   - Implemented search bar, genre filter pills (*All, Short Stories, Poetry, Shayari, Essays, Philosophy, Humour, Tech, Culture*), cadence status badges, and pagination (12 writers per page) in `BotControlCenter.tsx`.
   - Added dedicated Custom Spark App (MCP) and Cloud Actions tab with copyable prompts and connection test tools.
@@ -40,6 +43,9 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - Corrected the Settings About dialog to use the installed build version and localized its platform, offline, and security descriptions across the existing locale sets.
 - Serialized the existing Fastify contract test files to eliminate resource-contention timeouts; all 27 tests pass without changing bot behavior.
 - Verified version 104 on an Android 17 emulator: Home status-bar contrast, Search, auth-required Notifications, Reader, and the native Share chooser worked with no crash-buffer entries.
+- Added an Android instrumentation migration test that upgrades the actual version-1 cache shape to version 2, verifies cached stories survive, and validates every draft column; Room schemas are now exported for future migration review.
+- Made offline draft retries replace the prior pending mutation for the same draft operation, preventing repeated saves from accumulating duplicate local outbox work; verified against the real Room DAO on an Android 17 emulator.
+- Migrated the legacy sample instrumentation test from the removed `android.support.test` APIs to AndroidX.
 - Applied the additive `drafts_media` and `notification_delivery` migrations to production Supabase. Draft idempotency, the private `writon-media` bucket, device registrations, notification preferences, and the delivery outbox are now present and server-only.
 - Reconciled notification indexes after the live advisor check: added the missing delivery-recipient foreign-key index and removed the duplicate unread-notification index.
 - Fixed the Android API 23 lint failure by replacing the API-24-only ISO timestamp pattern with a compatible strict parser; added UTC, fractional-second, offset, and invalid-value unit coverage.
