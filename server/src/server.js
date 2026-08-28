@@ -14,6 +14,7 @@ import { getMessaging } from 'firebase-admin/messaging';
 import { z } from 'zod';
 import { loadFirebaseServiceAccount, loadRuntimeConfig } from './config.js';
 import { adminBotsRoutes } from './routes/admin-bots.js';
+import { appMetaRoutes } from './routes/app-meta.js';
 import { triggerSparkReaction, triggerSparkCommentReaction, startSparkScheduler } from './bot-engine/spark-runner.js';
 import { mcpRoutes } from './routes/mcp-server.js';
 
@@ -142,7 +143,8 @@ await fastify.register(multipart, {
       version: '2.0.0'
     },
     servers: [
-      { url: 'https://writon-ab.onrender.com', description: 'Production Cloud Server (writon-AB)' },
+      { url: 'https://writon-api-802112841589.asia-south1.run.app', description: 'Google Cloud Run Production (Mumbai asia-south1)' },
+      { url: 'https://writon-ab.onrender.com', description: 'Alternative Cloud Server (writon-AB)' },
       { url: 'https://writon-powerup.onrender.com', description: 'Alternative Server' },
       { url: 'http://localhost:3001', description: 'Local Server' }
     ],
@@ -316,11 +318,39 @@ await fastify.register(multipart, {
     return openApiSpec;
   });
 
-fastify.get('/api/v1/app/version', async () => ({
-  latestVersionCode: config.latestAppVersionCode ?? 102,
-  minSupportedVersionCode: config.minSupportedAppVersionCode ?? 101,
-  updateUrl: config.playStoreAppUrl ?? 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
-}));
+  fastify.get('/', async (req, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    return {
+      name: 'WritOn Autonomous Publishing API',
+      version: '2.0.0',
+      status: 'online',
+      cloud: 'Google Cloud Run (Mumbai asia-south1)',
+      endpoints: {
+        health: '/health',
+        openApiSpecification: '/openapi.json',
+        chatGptPluginManifest: '/.well-known/ai-plugin.json',
+        feed: '/api/v1/spark/feed',
+        personas: '/api/v1/spark/personas',
+        publishStory: 'POST /api/v1/spark/publish'
+      }
+    };
+  });
+
+  fastify.get('/api/v1/spark/publish', async (req, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    return reply.code(200).send({
+      message: 'The /api/v1/spark/publish endpoint accepts HTTP POST requests to publish stories.',
+      method: 'POST',
+      examplePayload: {
+        authorPenName: 'aarav_tech',
+        title: 'Story Title',
+        summary: 'Brief synopsis',
+        content: 'Full story markdown content...',
+        category: 'Tech'
+      },
+      openApiSchemaUrl: '/openapi.json'
+    });
+  });
 
 function mediaObjectPath(key) {
   return key.split('/').map((segment) => encodeURIComponent(segment)).join('/');
@@ -1042,16 +1072,6 @@ async function ensureProfileForId(decodedToken, profileId) {
 
   return toProfile(result.rows[0]);
 }
-
-fastify.get('/health', async () => {
-  const result = await database.query('select now() as database_time');
-
-  return {
-    status: 'ok',
-    database: 'connected',
-    databaseTime: result.rows[0].database_time,
-  };
-});
 
 fastify.get(
   '/auth-check',
@@ -2388,6 +2408,7 @@ fastify.put(
     }
   );
 
+  await fastify.register(appMetaRoutes, { config, database });
   await fastify.register(adminBotsRoutes, { pool: database, requireUser });
   await fastify.register(mcpRoutes, { pool: database });
 
