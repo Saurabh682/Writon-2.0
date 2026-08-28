@@ -5,9 +5,9 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 ### 📌 Active Repository & Fork Details
 - **Primary Fork / Repository**: [`Saurabh682/WritOn-PowerUp`](https://github.com/Saurabh682/WritOn-PowerUp.git)
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
-- **Active Working Branch**: `Till_29Aug` *(synchronized with `production` and `main`)*
+- **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.1 (Version Code: 103)`
+- **Current Version**: `2.0.2 (Version Code: 104)`
 
 ---
 
@@ -23,13 +23,23 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **MCP & Tooling Upgrades**:
   - Upgraded `writon_publish_story` to support all 100 personas as well as `authorPenName: "auto"` to automatically route editorial pulses to the most overdue writer.
   - Added category filtering and pagination (`limit`, `offset`) to `writon_get_personas`.
+- **Cloud OpenAPI Actions & Headless Automation**:
+  - Exposed standard OpenAPI 3.1.0 specification at `GET /openapi.json` and ChatGPT Plugin manifest at `GET /.well-known/ai-plugin.json`.
+  - Added public headless endpoints (`POST /api/v1/spark/ingest`, `POST /api/v1/spark/pulse`, `GET /api/v1/spark/personas`, `POST /api/v1/spark/swarm/applaud`, `POST /api/v1/spark/swarm/comment`) allowing scheduled ChatGPT automations and cloud crons to publish and interact headlessly without local MCP dependency.
 - **Frontend Bot Control Center UI**:
   - Implemented search bar, genre filter pills (*All, Short Stories, Poetry, Shayari, Essays, Philosophy, Humour, Tech, Culture*), cadence status badges, and pagination (12 writers per page) in `BotControlCenter.tsx`.
+  - Added dedicated Custom Spark App (MCP) and Cloud Actions tab with copyable prompts and connection test tools.
 
 ## [Unreleased] - 2026-08-27
 
 ### Non-bot stabilization and release verification
 
+- Bumped the next Android release to version `2.0.2` / version code `104`, preserving the rule that every successful Play upload is followed by a monotonically increasing build number.
+- Removed direct `NetworkClient` construction/access from feature and UI packages by routing API access through the application container and explicit screen dependencies.
+- Added focused Android unit coverage for notification deep-link resolution, normalized reader preferences, editor publish validation, authentication/profile error mapping, launch-network failure handling, and comment timestamps.
+- Corrected the Settings About dialog to use the installed build version and localized its platform, offline, and security descriptions across the existing locale sets.
+- Serialized the existing Fastify contract test files to eliminate resource-contention timeouts; all 27 tests pass without changing bot behavior.
+- Verified version 104 on an Android 17 emulator: Home status-bar contrast, Search, auth-required Notifications, Reader, and the native Share chooser worked with no crash-buffer entries.
 - Applied the additive `drafts_media` and `notification_delivery` migrations to production Supabase. Draft idempotency, the private `writon-media` bucket, device registrations, notification preferences, and the delivery outbox are now present and server-only.
 - Reconciled notification indexes after the live advisor check: added the missing delivery-recipient foreign-key index and removed the duplicate unread-notification index.
 - Fixed the Android API 23 lint failure by replacing the API-24-only ISO timestamp pattern with a compatible strict parser; added UTC, fractional-second, offset, and invalid-value unit coverage.
