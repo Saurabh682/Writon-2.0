@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { loadFirebaseServiceAccount, loadRuntimeConfig } from './config.js';
 import { adminBotsRoutes } from './routes/admin-bots.js';
 import { appMetaRoutes } from './routes/app-meta.js';
+import { notificationRoutes } from './routes/notifications.js';
 import { triggerSparkReaction, triggerSparkCommentReaction, startSparkScheduler } from './bot-engine/spark-runner.js';
 import { mcpRoutes } from './routes/mcp-server.js';
 
@@ -69,24 +70,6 @@ const collectionQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(50).default(20),
 });
-
-const notificationQuerySchema = collectionQuerySchema.extend({
-  kind: z.enum(['applaud', 'comment', 'follow', 'bookmark']).optional(),
-});
-
-const pushTokenInputSchema = z.object({
-  token: z.string().trim().min(20).max(8192),
-  platform: z.enum(['android', 'ios', 'web']).default('android'),
-  appVersionCode: z.coerce.number().int().positive().optional(),
-  notificationPermission: z.enum(['granted', 'denied', 'unknown']).default('unknown'),
-});
-
-const notificationPreferencesSchema = z.object({
-  interactionsEnabled: z.boolean().optional(),
-  followsEnabled: z.boolean().optional(),
-  editorialEnabled: z.boolean().optional(),
-  publishingEnabled: z.boolean().optional(),
-}).refine((value) => Object.keys(value).length > 0, 'At least one notification preference is required.');
 
 const readingProgressInputSchema = z.object({
   progress: z.coerce.number().min(0).max(1).default(0.05),
@@ -350,6 +333,62 @@ await fastify.register(multipart, {
       },
       openApiSchemaUrl: '/openapi.json'
     });
+  });
+
+  fastify.get('/privacy-policy', async (req, reply) => {
+    reply.header('Content-Type', 'text/html; charset=utf-8');
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Privacy Policy - WritOn</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #2d3748; }
+    h1 { color: #1a202c; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+    h2 { color: #2b6cb0; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy for WritOn</h1>
+  <p><strong>Last Updated: August 28, 2026</strong></p>
+  <p>WritOn ("we", "our", or "us") respects your privacy and is committed to protecting your personal data.</p>
+  <h2>1. Information We Collect</h2>
+  <p>We collect basic profile information (such as pen name, bio, and avatar) and authentication tokens required to securely identify you across devices.</p>
+  <h2>2. How We Use Information</h2>
+  <p>Your data is used solely to provide and improve the WritOn reading and publishing platform, deliver notifications, and enable literary community discussions.</p>
+  <h2>3. Data Security & Retention</h2>
+  <p>We use industry-standard encryption and security measures. We do not sell or monetize your personal data with third-party advertisers.</p>
+  <h2>4. Contact Us</h2>
+  <p>If you have any questions, contact us at: <a href="mailto:saurabh.682@gmail.com">saurabh.682@gmail.com</a></p>
+</body>
+</html>`;
+  });
+
+  fastify.get('/terms', async (req, reply) => {
+    reply.header('Content-Type', 'text/html; charset=utf-8');
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Terms of Service - WritOn</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #2d3748; }
+    h1 { color: #1a202c; border-bottom: 2px solid #e2e8f0; padding-bottom: 12px; }
+    h2 { color: #2b6cb0; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <h1>Terms of Service for WritOn</h1>
+  <p><strong>Last Updated: August 28, 2026</strong></p>
+  <p>By using the WritOn application and services, you agree to these Terms of Service.</p>
+  <h2>1. Platform Content & Intellectual Property</h2>
+  <p>Writers retain ownership of original literary stories, poems, and essays published on WritOn.</p>
+  <h2>2. Community Conduct</h2>
+  <p>Users must engage respectfully. Hate speech, harassment, spam, or malicious behavior is strictly prohibited.</p>
+  <h2>3. Contact</h2>
+  <p>For questions or support, contact: <a href="mailto:saurabh.682@gmail.com">saurabh.682@gmail.com</a></p>
+</body>
+</html>`;
   });
 
 function mediaObjectPath(key) {
@@ -1927,137 +1966,6 @@ fastify.post(
   }
 );
 
-fastify.get(
-  '/api/v1/me/notifications',
-  { preHandler: requireUser },
-  async (request, reply) => {
-    const query = parseCollectionQuery(request, reply, notificationQuerySchema);
-    if (!query) return;
-    const { page, limit, kind } = query;
-    const result = await database.query(
-      `select notification.id::text as id, notification.kind, notification.message,
-              notification.created_at as "createdAt", notification.read_at as "readAt",
-              notification.post_id::text as "postId", post.title as "postTitle",
-              json_build_object(
-                'id', actor.id, 'penName', actor.pen_name, 'fullName', actor.full_name,
-                'avatarUrl', actor.avatar_url
-              ) as actor
-       from public.notifications notification
-       left join public.profiles actor on actor.id = notification.actor_id
-       left join public.posts post on post.id = notification.post_id
-       where notification.recipient_id = $1
-         and ($2::text is null or notification.kind = $2)
-       order by notification.created_at desc
-       limit $3 offset $4`,
-      [request.profileId, kind ?? null, limit + 1, (page - 1) * limit]
-    );
-    return { notifications: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
-  }
-);
-
-fastify.put(
-  '/api/v1/me/devices/push-token',
-  { preHandler: requireUser },
-  async (request, reply) => {
-    const parsed = pushTokenInputSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid push token registration', details: parsed.error.flatten().fieldErrors });
-    }
-    const device = parsed.data;
-    await database.query(
-      `insert into public.device_push_tokens (
-         profile_id, token, platform, app_version_code, notification_permission, revoked_at, last_seen_at, updated_at
-       ) values ($1, $2, $3, $4, $5, null, now(), now())
-       on conflict (token) do update
-         set profile_id = excluded.profile_id,
-             platform = excluded.platform,
-             app_version_code = excluded.app_version_code,
-             notification_permission = excluded.notification_permission,
-             revoked_at = null,
-             last_seen_at = now(), updated_at = now()`,
-      [request.profileId, device.token, device.platform, device.appVersionCode ?? null, device.notificationPermission]
-    );
-    return { registered: true };
-  }
-);
-
-fastify.delete(
-  '/api/v1/me/devices/push-token',
-  { preHandler: requireUser },
-  async (request, reply) => {
-    const parsed = pushTokenInputSchema.pick({ token: true }).safeParse(request.body);
-    if (!parsed.success) return reply.code(400).send({ error: 'Invalid push token registration' });
-    await database.query(
-      `update public.device_push_tokens
-          set revoked_at = now(), updated_at = now()
-        where profile_id = $1 and token = $2`,
-      [request.profileId, parsed.data.token]
-    );
-    return { revoked: true };
-  }
-);
-
-fastify.get(
-  '/api/v1/me/notification-preferences',
-  { preHandler: requireUser },
-  async (request) => {
-    const result = await database.query(
-      `select interactions_enabled as "interactionsEnabled", follows_enabled as "followsEnabled",
-              editorial_enabled as "editorialEnabled", publishing_enabled as "publishingEnabled"
-         from public.notification_preferences where profile_id = $1`,
-      [request.profileId]
-    );
-    return result.rows[0] ?? {
-      interactionsEnabled: true, followsEnabled: true, editorialEnabled: true, publishingEnabled: true,
-    };
-  }
-);
-
-fastify.put(
-  '/api/v1/me/notification-preferences',
-  { preHandler: requireUser },
-  async (request, reply) => {
-    const parsed = notificationPreferencesSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid notification preferences', details: parsed.error.flatten().fieldErrors });
-    }
-    const value = parsed.data;
-    const result = await database.query(
-      `insert into public.notification_preferences (
-         profile_id, interactions_enabled, follows_enabled, editorial_enabled, publishing_enabled, updated_at
-       ) values ($1, coalesce($2, true), coalesce($3, true), coalesce($4, true), coalesce($5, true), now())
-       on conflict (profile_id) do update
-         set interactions_enabled = coalesce($2, public.notification_preferences.interactions_enabled),
-             follows_enabled = coalesce($3, public.notification_preferences.follows_enabled),
-             editorial_enabled = coalesce($4, public.notification_preferences.editorial_enabled),
-             publishing_enabled = coalesce($5, public.notification_preferences.publishing_enabled),
-             updated_at = now()
-       returning interactions_enabled as "interactionsEnabled", follows_enabled as "followsEnabled",
-                 editorial_enabled as "editorialEnabled", publishing_enabled as "publishingEnabled"`,
-      [request.profileId, value.interactionsEnabled ?? null, value.followsEnabled ?? null,
-        value.editorialEnabled ?? null, value.publishingEnabled ?? null]
-    );
-    return result.rows[0];
-  }
-);
-
-fastify.patch(
-  '/api/v1/me/notifications/:id/read',
-  { preHandler: requireUser },
-  async (request, reply) => {
-    const notificationId = postIdSchema.safeParse(request.params.id);
-    if (!notificationId.success) return reply.code(400).send({ error: 'Invalid notification id' });
-    const result = await database.query(
-      `update public.notifications set read_at = coalesce(read_at, now())
-        where id = $1 and recipient_id = $2
-        returning id::text as id, read_at as "readAt"`,
-      [notificationId.data, request.profileId]
-    );
-    if (result.rowCount === 0) return reply.code(404).send({ error: 'Notification not found' });
-    return result.rows[0];
-  }
-);
-
 fastify.put(
   '/api/v1/me',
   { preHandler: requireUser },
@@ -2409,6 +2317,12 @@ fastify.put(
   );
 
   await fastify.register(appMetaRoutes, { config, database });
+  await fastify.register(notificationRoutes, {
+    database,
+    requireUser,
+    parseCollectionQuery,
+    postIdSchema,
+  });
   await fastify.register(adminBotsRoutes, { pool: database, requireUser });
   await fastify.register(mcpRoutes, { pool: database });
 
