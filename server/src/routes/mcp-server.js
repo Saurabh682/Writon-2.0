@@ -14,13 +14,13 @@ import {
   triggerCommenterWave
 } from '../bot-engine/spark-runner.js';
 
-const MCP_PROTOCOL_VERSION = '2024-11-05';
-const SERVER_INFO = {
+export const MCP_PROTOCOL_VERSION = '2024-11-05';
+export const SERVER_INFO = {
   name: 'writon-mcp-server',
   version: '2.0.0'
 };
 
-const WRITON_TOOLS = [
+export const WRITON_TOOLS = [
   {
     name: 'writon_publish_story',
     description: 'Publish a new editorial article, essay, or poem on the WritOn publishing platform under a specific bot persona (or auto-select the next due persona from the 100-writer network).',
@@ -573,7 +573,7 @@ export async function mcpRoutes(fastify, options) {
 }
 
 // Tool Implementation Logic
-async function executeMcpTool(pool, toolName, args) {
+export async function executeMcpTool(pool, toolName, args) {
   if (toolName === 'writon_publish_story') {
     const { authorPenName, title, summary, content, category, coverImageUrl } = args;
     const bots = await getBotsList(pool, { botType: 'writer' });
