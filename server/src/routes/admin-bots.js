@@ -125,40 +125,35 @@ export async function adminBotsRoutes(fastify, options) {
   const pool = options.pool;
   const requireUser = options.requireUser;
 
-  // Admin auth guard - bot admin routes require authentication
-  if (requireUser) {
-    fastify.addHook('preHandler', async (request, reply) => {
-      const path = request.routerPath || request.url || request.raw?.url || '';
-      // Only protect admin endpoints under /api/v1/admin/bots/
-      if (!path.includes('/admin/')) {
-        return;
-      }
-
-      // In development mode, allow unauthenticated access from the UI
-      if (process.env.NODE_ENV === 'development' && !request.headers.authorization) {
-        request.user = { uid: 'dev-admin', email: 'admin@writon.internal' };
-        return;
-      }
-
-      // Allow admin secret key in header or Bearer token
-      const adminSecret = process.env.ADMIN_SECRET_KEY;
-      if (adminSecret) {
-        const headerKey = request.headers['x-admin-key'];
-        const bearer = request.headers.authorization?.startsWith('Bearer ')
-          ? request.headers.authorization.substring(7)
-          : null;
-        if (headerKey === adminSecret || bearer === adminSecret) {
-          request.user = { uid: 'secret-admin', email: 'admin@writon.internal' };
+  // Scoped Admin Sub-Plugin (Auth hook ONLY applies to routes inside adminScope)
+  await fastify.register(async (adminScope) => {
+    if (requireUser) {
+      adminScope.addHook('preHandler', async (request, reply) => {
+        // In development mode, allow unauthenticated access from the UI
+        if (process.env.NODE_ENV === 'development' && !request.headers.authorization) {
+          request.user = { uid: 'dev-admin', email: 'admin@writon.internal' };
           return;
         }
-      }
 
-      return requireUser(request, reply);
-    });
-  }
+        // Allow admin secret key in header or Bearer token
+        const adminSecret = process.env.ADMIN_SECRET_KEY;
+        if (adminSecret) {
+          const headerKey = request.headers['x-admin-key'];
+          const bearer = request.headers.authorization?.startsWith('Bearer ')
+            ? request.headers.authorization.substring(7)
+            : null;
+          if (headerKey === adminSecret || bearer === adminSecret) {
+            request.user = { uid: 'secret-admin', email: 'admin@writon.internal' };
+            return;
+          }
+        }
 
-  // Overview stats & status
-  fastify.get('/api/v1/admin/bots/overview', async (request, reply) => {
+        return requireUser(request, reply);
+      });
+    }
+
+    // Overview stats & status
+    adminScope.get('/api/v1/admin/bots/overview', async (request, reply) => {
     try {
       const settings = await getGlobalSettings(pool);
       const bots = await getBotsList(pool);
@@ -196,67 +191,67 @@ export async function adminBotsRoutes(fastify, options) {
     }
   });
 
-  // Get all writer bot personas
-  fastify.get('/api/v1/admin/bots', async () => {
-    const bots = await getBotsList(pool, { botType: 'writer' });
-    return { bots };
-  });
+    // Get all writer bot personas
+    adminScope.get('/api/v1/admin/bots', async () => {
+      const bots = await getBotsList(pool, { botType: 'writer' });
+      return { bots };
+    });
 
-  // Seed 100 Reader Bot Network
-  fastify.post('/api/v1/admin/bots/seed-readers', async (request, reply) => {
-    try {
-      const outcome = await seedReaderBotNetwork(pool);
-      return { success: true, message: `Successfully seeded ${outcome.count} reader bot personas!`, count: outcome.count };
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to seed reader personas', message: error.message });
-    }
-  });
+    // Seed 100 Reader Bot Network
+    adminScope.post('/api/v1/admin/bots/seed-readers', async (request, reply) => {
+      try {
+        const outcome = await seedReaderBotNetwork(pool);
+        return { success: true, message: `Successfully seeded ${outcome.count} reader bot personas!`, count: outcome.count };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Failed to seed reader personas', message: error.message });
+      }
+    });
 
-  // Get paginated reader bots
-  fastify.get('/api/v1/admin/bots/readers', async (request) => {
-    const page = Math.max(1, Number(request.query?.page) || 1);
-    const limit = Math.min(100, Math.max(1, Number(request.query?.limit) || 50));
-    const category = request.query?.category || null;
-    return await getReaderBotsList(pool, { page, limit, category });
-  });
+    // Get paginated reader bots
+    adminScope.get('/api/v1/admin/bots/readers', async (request) => {
+      const page = Math.max(1, Number(request.query?.page) || 1);
+      const limit = Math.min(100, Math.max(1, Number(request.query?.limit) || 50));
+      const category = request.query?.category || null;
+      return await getReaderBotsList(pool, { page, limit, category });
+    });
 
-  // Trigger an on-demand reader applaud swarm on a post
-  fastify.post('/api/v1/admin/bots/trigger-swarm', async (request, reply) => {
-    const { postId, count, intensity } = request.body || {};
-    if (!postId) {
-      return reply.code(400).send({ error: 'postId is required' });
-    }
-    try {
-      const outcome = await triggerReaderSwarm(pool, { postId, count: count ? Number(count) : null, intensity });
-      return outcome;
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to trigger reader swarm', message: error.message });
-    }
-  });
+    // Trigger an on-demand reader applaud swarm on a post
+    adminScope.post('/api/v1/admin/bots/trigger-swarm', async (request, reply) => {
+      const { postId, count, intensity } = request.body || {};
+      if (!postId) {
+        return reply.code(400).send({ error: 'postId is required' });
+      }
+      try {
+        const outcome = await triggerReaderSwarm(pool, { postId, count: count ? Number(count) : null, intensity });
+        return outcome;
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Failed to trigger reader swarm', message: error.message });
+      }
+    });
 
-  // Seed 50 Commenter Bot Network
-  fastify.post('/api/v1/admin/bots/seed-commenters', async (request, reply) => {
-    try {
-      const outcome = await seedCommenterBotNetwork(pool);
-      return { success: true, message: `Successfully seeded ${outcome.count} commenter bot personas!`, count: outcome.count };
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to seed commenter personas', message: error.message });
-    }
-  });
+    // Seed 50 Commenter Bot Network
+    adminScope.post('/api/v1/admin/bots/seed-commenters', async (request, reply) => {
+      try {
+        const outcome = await seedCommenterBotNetwork(pool);
+        return { success: true, message: `Successfully seeded ${outcome.count} commenter bot personas!`, count: outcome.count };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Failed to seed commenter personas', message: error.message });
+      }
+    });
 
-  // Get paginated commenter bots
-  fastify.get('/api/v1/admin/bots/commenters', async (request) => {
-    const page = Math.max(1, Number(request.query?.page) || 1);
-    const limit = Math.min(100, Math.max(1, Number(request.query?.limit) || 50));
-    const category = request.query?.category || null;
-    return await getCommenterBotsList(pool, { page, limit, category });
-  });
+    // Get paginated commenter bots
+    adminScope.get('/api/v1/admin/bots/commenters', async (request) => {
+      const page = Math.max(1, Number(request.query?.page) || 1);
+      const limit = Math.min(100, Math.max(1, Number(request.query?.limit) || 50));
+      const category = request.query?.category || null;
+      return await getCommenterBotsList(pool, { page, limit, category });
+    });
 
-  // Trigger an on-demand commenter discussion wave on a post
-  fastify.post('/api/v1/admin/bots/trigger-comment-wave', async (request, reply) => {
+    // Trigger an on-demand commenter discussion wave on a post
+    adminScope.post('/api/v1/admin/bots/trigger-comment-wave', async (request, reply) => {
     const { postId, category, title, snippet, count } = request.body || {};
     if (!postId) {
       return reply.code(400).send({ error: 'postId is required' });
@@ -276,329 +271,330 @@ export async function adminBotsRoutes(fastify, options) {
     }
   });
 
-  // Generate test preview comment for a persona
-  fastify.post('/api/v1/admin/bots/preview-comment', async (request, reply) => {
-    const { botId, depth, postTitle, category } = request.body || {};
-    const persona = CURATED_COMMENTER_PERSONAS.find(c => c.id === botId) || CURATED_COMMENTER_PERSONAS[0];
-    const comment = generateAuthenticComment(persona, {
-      postTitle: postTitle || 'Sample Story Title',
-      category: category || 'Essays',
-      depth: depth || 'auto'
+    // Generate test preview comment for a persona
+    adminScope.post('/api/v1/admin/bots/preview-comment', async (request, reply) => {
+      const { botId, depth, postTitle, category } = request.body || {};
+      const persona = CURATED_COMMENTER_PERSONAS.find(c => c.id === botId) || CURATED_COMMENTER_PERSONAS[0];
+      const comment = generateAuthenticComment(persona, {
+        postTitle: postTitle || 'Sample Story Title',
+        category: category || 'Essays',
+        depth: depth || 'auto'
+      });
+      return { botId: persona.id, penName: persona.penName, depth, comment };
     });
-    return { botId: persona.id, penName: persona.penName, depth, comment };
-  });
 
-  // Create a new bot persona
-  fastify.post('/api/v1/admin/bots', async (request, reply) => {
-    const parsed = botCreateSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid bot data', details: parsed.error.flatten().fieldErrors });
-    }
-
-    const data = parsed.data;
-    const botId = `bot_${data.penName}`;
-
-    const client = await pool.connect();
-    try {
-      await client.query('begin');
-      await client.query(`
-        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url, location)
-        values ($1, $2, $3, $4, $5, $6, $7)
-        on conflict (id) do update set
-          pen_name = excluded.pen_name,
-          full_name = excluded.full_name,
-          bio = excluded.bio,
-          avatar_url = excluded.avatar_url,
-          location = excluded.location
-      `, [
-        botId,
-        `${data.penName}@bots.writon.internal`,
-        data.penName,
-        data.fullName,
-        data.bio || null,
-        data.avatarUrl || null,
-        data.location || null
-      ]);
-
-      if (data.quoteOfDay) {
-        await client.query(`
-          insert into public.legacy_import_profile_attributes (profile_id, legacy_user_id, quote_of_day)
-          values ($1, $2, $3)
-          on conflict (profile_id) do update set quote_of_day = excluded.quote_of_day
-        `, [botId, botId, data.quoteOfDay]);
+    // Create a new bot persona
+    adminScope.post('/api/v1/admin/bots', async (request, reply) => {
+      const parsed = botCreateSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Invalid bot data', details: parsed.error.flatten().fieldErrors });
       }
 
-      await client.query(`
-        insert into public.bot_configs (
-          id, is_active, persona_prompt, categories, post_frequency_hours,
-          like_probability, comment_probability, comment_style
-        )
-        values ($1, true, $2, $3, $4, $5, $6, $7)
-        on conflict (id) do update set
-          persona_prompt = excluded.persona_prompt,
-          categories = excluded.categories,
-          post_frequency_hours = excluded.post_frequency_hours,
-          like_probability = excluded.like_probability,
-          comment_probability = excluded.comment_probability,
-          comment_style = excluded.comment_style
-      `, [
-        botId,
-        data.personaPrompt,
-        data.categories,
-        data.postFrequencyHours,
-        data.likeProbability,
-        data.commentProbability,
-        data.commentStyle
-      ]);
+      const data = parsed.data;
+      const botId = `bot_${data.penName}`;
 
-      await client.query('commit');
-      const created = await getBotById(pool, botId);
-      return reply.code(201).send({ bot: created });
-    } catch (error) {
-      await client.query('rollback');
-      throw error;
-    } finally {
-      client.release();
-    }
-  });
-
-  // Update existing bot persona
-  fastify.put('/api/v1/admin/bots/:id', async (request, reply) => {
-    const botId = request.params.id;
-    const parsed = botUpdateSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid update data', details: parsed.error.flatten().fieldErrors });
-    }
-
-    const current = await getBotById(pool, botId);
-    if (!current) return reply.code(404).send({ error: 'Bot persona not found' });
-
-    const data = parsed.data;
-    const client = await pool.connect();
-    try {
-      await client.query('begin');
-
-      if (data.fullName || data.bio !== undefined || data.avatarUrl !== undefined || data.location !== undefined) {
+      const client = await pool.connect();
+      try {
+        await client.query('begin');
         await client.query(`
-          update public.profiles
-          set full_name = coalesce($2, full_name),
-              bio = coalesce($3, bio),
-              avatar_url = coalesce($4, avatar_url),
-              location = coalesce($5, location),
+          insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url, location)
+          values ($1, $2, $3, $4, $5, $6, $7)
+          on conflict (id) do update set
+            pen_name = excluded.pen_name,
+            full_name = excluded.full_name,
+            bio = excluded.bio,
+            avatar_url = excluded.avatar_url,
+            location = excluded.location
+        `, [
+          botId,
+          `${data.penName}@bots.writon.internal`,
+          data.penName,
+          data.fullName,
+          data.bio || null,
+          data.avatarUrl || null,
+          data.location || null
+        ]);
+
+        if (data.quoteOfDay) {
+          await client.query(`
+            insert into public.legacy_import_profile_attributes (profile_id, legacy_user_id, quote_of_day)
+            values ($1, $2, $3)
+            on conflict (profile_id) do update set quote_of_day = excluded.quote_of_day
+          `, [botId, botId, data.quoteOfDay]);
+        }
+
+        await client.query(`
+          insert into public.bot_configs (
+            id, is_active, persona_prompt, categories, post_frequency_hours,
+            like_probability, comment_probability, comment_style
+          )
+          values ($1, true, $2, $3, $4, $5, $6, $7)
+          on conflict (id) do update set
+            persona_prompt = excluded.persona_prompt,
+            categories = excluded.categories,
+            post_frequency_hours = excluded.post_frequency_hours,
+            like_probability = excluded.like_probability,
+            comment_probability = excluded.comment_probability,
+            comment_style = excluded.comment_style
+        `, [
+          botId,
+          data.personaPrompt,
+          data.categories,
+          data.postFrequencyHours,
+          data.likeProbability,
+          data.commentProbability,
+          data.commentStyle
+        ]);
+
+        await client.query('commit');
+        const created = await getBotById(pool, botId);
+        return reply.code(201).send({ bot: created });
+      } catch (error) {
+        await client.query('rollback');
+        throw error;
+      } finally {
+        client.release();
+      }
+    });
+
+    // Update existing bot persona
+    adminScope.put('/api/v1/admin/bots/:id', async (request, reply) => {
+      const botId = request.params.id;
+      const parsed = botUpdateSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.code(400).send({ error: 'Invalid update data', details: parsed.error.flatten().fieldErrors });
+      }
+
+      const current = await getBotById(pool, botId);
+      if (!current) return reply.code(404).send({ error: 'Bot persona not found' });
+
+      const data = parsed.data;
+      const client = await pool.connect();
+      try {
+        await client.query('begin');
+
+        if (data.fullName || data.bio !== undefined || data.avatarUrl !== undefined || data.location !== undefined) {
+          await client.query(`
+            update public.profiles
+            set full_name = coalesce($2, full_name),
+                bio = coalesce($3, bio),
+                avatar_url = coalesce($4, avatar_url),
+                location = coalesce($5, location),
+                updated_at = now()
+            where id = $1
+          `, [
+            botId,
+            data.fullName || null,
+            data.bio !== undefined ? data.bio : null,
+            data.avatarUrl !== undefined ? data.avatarUrl : null,
+            data.location !== undefined ? data.location : null
+          ]);
+        }
+
+        if (data.quoteOfDay !== undefined) {
+          await client.query(`
+            insert into public.legacy_import_profile_attributes (profile_id, quote_of_day)
+            values ($1, $2)
+            on conflict (profile_id) do update set quote_of_day = excluded.quote_of_day
+          `, [botId, data.quoteOfDay]);
+        }
+
+        await client.query(`
+          update public.bot_configs
+          set is_active = coalesce($2, is_active),
+              persona_prompt = coalesce($3, persona_prompt),
+              categories = coalesce($4, categories),
+              post_frequency_hours = coalesce($5, post_frequency_hours),
+              like_probability = coalesce($6, like_probability),
+              comment_probability = coalesce($7, comment_probability),
+              comment_style = coalesce($8, comment_style),
               updated_at = now()
           where id = $1
         `, [
           botId,
-          data.fullName || null,
-          data.bio !== undefined ? data.bio : null,
-          data.avatarUrl !== undefined ? data.avatarUrl : null,
-          data.location !== undefined ? data.location : null
+          data.isActive !== undefined ? data.isActive : null,
+          data.personaPrompt || null,
+          data.categories || null,
+          data.postFrequencyHours || null,
+          data.likeProbability !== undefined ? data.likeProbability : null,
+          data.commentProbability !== undefined ? data.commentProbability : null,
+          data.commentStyle || null
         ]);
+
+        await client.query('commit');
+        const updated = await getBotById(pool, botId);
+        return { bot: updated };
+      } catch (error) {
+        await client.query('rollback');
+        throw error;
+      } finally {
+        client.release();
       }
-
-      if (data.quoteOfDay !== undefined) {
-        await client.query(`
-          insert into public.legacy_import_profile_attributes (profile_id, quote_of_day)
-          values ($1, $2)
-          on conflict (profile_id) do update set quote_of_day = excluded.quote_of_day
-        `, [botId, data.quoteOfDay]);
-      }
-
-      await client.query(`
-        update public.bot_configs
-        set is_active = coalesce($2, is_active),
-            persona_prompt = coalesce($3, persona_prompt),
-            categories = coalesce($4, categories),
-            post_frequency_hours = coalesce($5, post_frequency_hours),
-            like_probability = coalesce($6, like_probability),
-            comment_probability = coalesce($7, comment_probability),
-            comment_style = coalesce($8, comment_style),
-            updated_at = now()
-        where id = $1
-      `, [
-        botId,
-        data.isActive !== undefined ? data.isActive : null,
-        data.personaPrompt || null,
-        data.categories || null,
-        data.postFrequencyHours || null,
-        data.likeProbability !== undefined ? data.likeProbability : null,
-        data.commentProbability !== undefined ? data.commentProbability : null,
-        data.commentStyle || null
-      ]);
-
-      await client.query('commit');
-      const updated = await getBotById(pool, botId);
-      return { bot: updated };
-    } catch (error) {
-      await client.query('rollback');
-      throw error;
-    } finally {
-      client.release();
-    }
-  });
-
-  // Toggle active status
-  fastify.post('/api/v1/admin/bots/:id/toggle', async (request, reply) => {
-    const botId = request.params.id;
-    const current = await getBotById(pool, botId);
-    if (!current) return reply.code(404).send({ error: 'Bot persona not found' });
-
-    const newActiveState = !current.isActive;
-    await pool.query(`update public.bot_configs set is_active = $2, updated_at = now() where id = $1`, [
-      botId,
-      newActiveState
-    ]);
-    return { id: botId, isActive: newActiveState };
-  });
-
-  // Get global settings
-  fastify.get('/api/v1/admin/bots/settings', async () => {
-    const settings = await getGlobalSettings(pool);
-    return { settings };
-  });
-
-  // Update global settings
-  fastify.put('/api/v1/admin/bots/settings', async (request, reply) => {
-    const parsed = globalSettingsSchema.safeParse(request.body);
-    if (!parsed.success) {
-      return reply.code(400).send({ error: 'Invalid settings data', details: parsed.error.flatten().fieldErrors });
-    }
-
-    const d = parsed.data;
-    const updated = await updateGlobalSettings(pool, {
-      is_engine_enabled: d.isEngineEnabled,
-      spark_automation_mode: d.sparkAutomationMode,
-      llm_provider: d.llmProvider,
-      llm_model: d.llmModel,
-      gemini_api_key: d.geminiApiKey,
-      posts_per_day_target: d.postsPerDayTarget,
-      spark_pulse_interval_minutes: d.sparkPulseIntervalMinutes,
-      human_post_reaction_rate: d.humanPostReactionRate,
-      reaction_delay_min_minutes: d.reactionDelayMinMinutes,
-      reaction_delay_max_minutes: d.reactionDelayMaxMinutes,
-      bot_to_bot_interaction_rate: d.botToBotInteractionRate,
     });
 
-    return { settings: updated };
-  });
+    // Toggle active status
+    adminScope.post('/api/v1/admin/bots/:id/toggle', async (request, reply) => {
+      const botId = request.params.id;
+      const current = await getBotById(pool, botId);
+      if (!current) return reply.code(404).send({ error: 'Bot persona not found' });
 
-  // 1-Click seed starter bots
-  fastify.post('/api/v1/admin/bots/seed', async (request, reply) => {
-    try {
-      const result = await seedInitialBotNetwork(pool);
-      const bots = await getBotsList(pool);
-      return { success: true, count: result.count, bots };
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
-    }
-  });
+      const newActiveState = !current.isActive;
+      await pool.query(`update public.bot_configs set is_active = $2, updated_at = now() where id = $1`, [
+        botId,
+        newActiveState
+      ]);
+      return { id: botId, isActive: newActiveState };
+    });
 
-  // Trigger on-demand post generation
-  fastify.post('/api/v1/admin/bots/trigger-post', async (request, reply) => {
-    try {
-      const parsed = triggerPostSchema.safeParse(request.body);
+    // Get global settings
+    adminScope.get('/api/v1/admin/bots/settings', async () => {
+      const settings = await getGlobalSettings(pool);
+      return { settings };
+    });
+
+    // Update global settings
+    adminScope.put('/api/v1/admin/bots/settings', async (request, reply) => {
+      const parsed = globalSettingsSchema.safeParse(request.body);
       if (!parsed.success) {
-        return reply.code(400).send({ error: 'Invalid post trigger data', details: parsed.error.flatten().fieldErrors });
+        return reply.code(400).send({ error: 'Invalid settings data', details: parsed.error.flatten().fieldErrors });
       }
 
-      const createdPost = await executePostAction(pool, parsed.data);
-      return reply.code(201).send({ post: createdPost });
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
-    }
-  });
+      const d = parsed.data;
+      const updated = await updateGlobalSettings(pool, {
+        is_engine_enabled: d.isEngineEnabled,
+        spark_automation_mode: d.sparkAutomationMode,
+        llm_provider: d.llmProvider,
+        llm_model: d.llmModel,
+        gemini_api_key: d.geminiApiKey,
+        posts_per_day_target: d.postsPerDayTarget,
+        spark_pulse_interval_minutes: d.sparkPulseIntervalMinutes,
+        human_post_reaction_rate: d.humanPostReactionRate,
+        reaction_delay_min_minutes: d.reactionDelayMinMinutes,
+        reaction_delay_max_minutes: d.reactionDelayMaxMinutes,
+        bot_to_bot_interaction_rate: d.botToBotInteractionRate,
+      });
 
-  // Trigger on-demand interaction (like / comment / follow)
-  fastify.post('/api/v1/admin/bots/trigger-interact', async (request, reply) => {
-    try {
-      const parsed = triggerInteractSchema.safeParse(request.body);
-      if (!parsed.success) {
-        return reply.code(400).send({ error: 'Invalid interact trigger data', details: parsed.error.flatten().fieldErrors });
+      return { settings: updated };
+    });
+
+    // 1-Click seed starter bots
+    adminScope.post('/api/v1/admin/bots/seed', async (request, reply) => {
+      try {
+        const result = await seedInitialBotNetwork(pool);
+        const bots = await getBotsList(pool);
+        return { success: true, count: result.count, bots };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
       }
+    });
 
-      const outcome = await executeInteractAction(pool, parsed.data);
-      return { outcome };
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
-    }
-  });
+    // Trigger on-demand post generation
+    adminScope.post('/api/v1/admin/bots/trigger-post', async (request, reply) => {
+      try {
+        const parsed = triggerPostSchema.safeParse(request.body);
+        if (!parsed.success) {
+          return reply.code(400).send({ error: 'Invalid post trigger data', details: parsed.error.flatten().fieldErrors });
+        }
 
-  // Trigger pulse execution immediately
-  fastify.post('/api/v1/admin/bots/trigger-pulse', async (request, reply) => {
-    try {
-      const pulseResult = await runSparkPulse(pool);
-      return { pulse: pulseResult };
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
-    }
-  });
-
-  // Get pending delayed actions queue
-  fastify.get('/api/v1/admin/bots/delayed-actions', async (request, reply) => {
-    try {
-      const limit = Math.min(50, Math.max(1, parseInt(request.query.limit, 10) || 20));
-      const actions = await getPendingDelayedActions(pool, { limit });
-      return { actions };
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to fetch delayed actions', message: error.message });
-    }
-  });
-
-  // Cancel a pending delayed action
-  fastify.post('/api/v1/admin/bots/delayed-actions/:id/cancel', async (request, reply) => {
-    try {
-      const actionId = request.params.id;
-      const cancelled = await cancelDelayedAction(pool, actionId);
-      return { success: cancelled };
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to cancel action', message: error.message });
-    }
-  });
-
-  // Process all due actions immediately
-  fastify.post('/api/v1/admin/bots/delayed-actions/process-now', async (request, reply) => {
-    try {
-      const executed = await processDueDelayedActions(pool);
-      return { success: true, count: executed.length, executed };
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to process actions', message: error.message });
-    }
-  });
-
-  // Fetch paginated activity logs
-  fastify.get('/api/v1/admin/bots/logs', async (request) => {
-    const page = Math.max(1, parseInt(request.query.page, 10) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(request.query.limit, 10) || 30));
-    const offset = (page - 1) * limit;
-
-    const result = await pool.query(`
-      select log.id, log.bot_id as "botId", log.action_type as "actionType",
-             log.target_post_id as "targetPostId", log.details, log.status,
-             log.error_message as "errorMessage", log.created_at as "createdAt",
-             p.full_name as "botName", p.avatar_url as "botAvatar",
-             post.title as "postTitle"
-      from public.bot_activity_logs log
-      left join public.profiles p on p.id = log.bot_id
-      left join public.posts post on post.id = log.target_post_id
-      order by log.created_at desc
-      limit $1 offset $2
-    `, [limit + 1, offset]);
-
-    return {
-      logs: result.rows.slice(0, limit),
-      pagination: {
-        page,
-        limit,
-        hasMore: result.rows.length > limit
+        const createdPost = await executePostAction(pool, parsed.data);
+        return reply.code(201).send({ post: createdPost });
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
       }
-    };
+    });
+
+    // Trigger on-demand interaction (like / comment / follow)
+    adminScope.post('/api/v1/admin/bots/trigger-interact', async (request, reply) => {
+      try {
+        const parsed = triggerInteractSchema.safeParse(request.body);
+        if (!parsed.success) {
+          return reply.code(400).send({ error: 'Invalid interact trigger data', details: parsed.error.flatten().fieldErrors });
+        }
+
+        const outcome = await executeInteractAction(pool, parsed.data);
+        return { outcome };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+      }
+    });
+
+    // Trigger pulse execution immediately
+    adminScope.post('/api/v1/admin/bots/trigger-pulse', async (request, reply) => {
+      try {
+        const pulseResult = await runSparkPulse(pool);
+        return { pulse: pulseResult };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+      }
+    });
+
+    // Get pending delayed actions queue
+    adminScope.get('/api/v1/admin/bots/delayed-actions', async (request, reply) => {
+      try {
+        const limit = Math.min(50, Math.max(1, parseInt(request.query.limit, 10) || 20));
+        const actions = await getPendingDelayedActions(pool, { limit });
+        return { actions };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Failed to fetch delayed actions', message: error.message });
+      }
+    });
+
+    // Cancel a pending delayed action
+    adminScope.post('/api/v1/admin/bots/delayed-actions/:id/cancel', async (request, reply) => {
+      try {
+        const actionId = request.params.id;
+        const cancelled = await cancelDelayedAction(pool, actionId);
+        return { success: cancelled };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Failed to cancel action', message: error.message });
+      }
+    });
+
+    // Process all due actions immediately
+    adminScope.post('/api/v1/admin/bots/delayed-actions/process-now', async (request, reply) => {
+      try {
+        const executed = await processDueDelayedActions(pool);
+        return { success: true, count: executed.length, executed };
+      } catch (error) {
+        fastify.log.error(error);
+        return reply.code(500).send({ error: 'Failed to process actions', message: error.message });
+      }
+    });
+
+    // Fetch paginated activity logs
+    adminScope.get('/api/v1/admin/bots/logs', async (request) => {
+      const page = Math.max(1, parseInt(request.query.page, 10) || 1);
+      const limit = Math.min(100, Math.max(1, parseInt(request.query.limit, 10) || 30));
+      const offset = (page - 1) * limit;
+
+      const result = await pool.query(`
+        select log.id, log.bot_id as "botId", log.action_type as "actionType",
+               log.target_post_id as "targetPostId", log.details, log.status,
+               log.error_message as "errorMessage", log.created_at as "createdAt",
+               p.full_name as "botName", p.avatar_url as "botAvatar",
+               post.title as "postTitle"
+        from public.bot_activity_logs log
+        left join public.profiles p on p.id = log.bot_id
+        left join public.posts post on post.id = log.target_post_id
+        order by log.created_at desc
+        limit $1 offset $2
+      `, [limit + 1, offset]);
+
+      return {
+        logs: result.rows.slice(0, limit),
+        pagination: {
+          page,
+          limit,
+          hasMore: result.rows.length > limit
+        }
+      };
+    });
   });
 
   // Get pre-formatted prompt for https://gemini.google.com/spark
