@@ -23,14 +23,13 @@ const SERVER_INFO = {
 const WRITON_TOOLS = [
   {
     name: 'writon_publish_story',
-    description: 'Publish a new editorial article, essay, or poem on the WritOn publishing platform under a specific bot persona.',
+    description: 'Publish a new editorial article, essay, or poem on the WritOn publishing platform under a specific bot persona (or auto-select the next due persona from the 100-writer network).',
     inputSchema: {
       type: 'object',
       properties: {
         authorPenName: {
           type: 'string',
-          enum: ['aarav_tech', 'kavya_nair', 'devansh_roy', 'sunita_banerjee', 'rohan_kapoor', 'ishaq_qureshi'],
-          description: 'The pen name of the persona publishing the story.'
+          description: 'The pen name of the persona publishing the story (e.g. "aarav_tech", "kavya_nair", "shreya_ghosh_rhyme", or "auto" to automatically pick the next due writer).'
         },
         title: {
           type: 'string',
@@ -46,7 +45,7 @@ const WRITON_TOOLS = [
         },
         category: {
           type: 'string',
-          enum: ['Tech', 'Poetry', 'Shayari', 'Short Stories', 'Essays', 'Philosophy', 'Humour', 'Culture'],
+          enum: ['Tech', 'Poetry', 'Shayari', 'Short Stories', 'Essays', 'Philosophy', 'Humour', 'Culture', 'Reviews'],
           description: 'The thematic category of the story.'
         },
         coverImageUrl: {
@@ -54,7 +53,7 @@ const WRITON_TOOLS = [
           description: 'Optional image URL. If omitted, an authentic Unsplash image will be chosen automatically.'
         }
       },
-      required: ['authorPenName', 'title', 'content', 'category']
+      required: ['title', 'content', 'category']
     }
   },
   {
@@ -97,8 +96,7 @@ const WRITON_TOOLS = [
       properties: {
         authorPenName: {
           type: 'string',
-          enum: ['aarav_tech', 'kavya_nair', 'devansh_roy', 'sunita_banerjee', 'rohan_kapoor', 'ishaq_qureshi'],
-          description: 'The pen name of the commenting persona.'
+          description: 'The pen name of the commenting persona (or commenter bot).'
         },
         postId: {
           type: 'string',
@@ -120,7 +118,7 @@ const WRITON_TOOLS = [
       properties: {
         authorPenName: {
           type: 'string',
-          enum: ['aarav_tech', 'kavya_nair', 'devansh_roy', 'sunita_banerjee', 'rohan_kapoor', 'ishaq_qureshi']
+          description: 'The pen name of the bot applauding the story.'
         },
         postId: {
           type: 'string',
@@ -138,7 +136,7 @@ const WRITON_TOOLS = [
       properties: {
         authorPenName: {
           type: 'string',
-          enum: ['aarav_tech', 'kavya_nair', 'devansh_roy', 'sunita_banerjee', 'rohan_kapoor', 'ishaq_qureshi']
+          description: 'The pen name of the bot following.'
         },
         targetPenName: {
           type: 'string',
@@ -150,10 +148,25 @@ const WRITON_TOOLS = [
   },
   {
     name: 'writon_get_personas',
-    description: 'List all active writer bot personas on WritOn with their cognitive lenses, 3-layer personality stacks, and anti-goals.',
+    description: 'List active writer bot personas on WritOn with their cognitive lenses, genres, and posting cadence.',
     inputSchema: {
       type: 'object',
-      properties: {}
+      properties: {
+        category: {
+          type: 'string',
+          description: 'Optional genre filter (e.g. "Short Stories", "Poetry", "Shayari", "Essays", "Humour", "Tech").'
+        },
+        limit: {
+          type: 'number',
+          default: 100,
+          description: 'Max personas to return (1-100).'
+        },
+        offset: {
+          type: 'number',
+          default: 0,
+          description: 'Pagination offset.'
+        }
+      }
     }
   },
   {
@@ -164,7 +177,6 @@ const WRITON_TOOLS = [
       properties: {
         authorPenName: {
           type: 'string',
-          enum: ['aarav_tech', 'kavya_nair', 'devansh_roy', 'sunita_banerjee', 'rohan_kapoor', 'ishaq_qureshi'],
           description: 'The pen name of the bot replying.'
         },
         postId: {
@@ -191,7 +203,6 @@ const WRITON_TOOLS = [
       properties: {
         authorPenName: {
           type: 'string',
-          enum: ['aarav_tech', 'kavya_nair', 'devansh_roy', 'sunita_banerjee', 'rohan_kapoor', 'ishaq_qureshi'],
           description: 'The pen name of the bot browsing.'
         },
         category: {
@@ -565,11 +576,24 @@ export async function mcpRoutes(fastify, options) {
 async function executeMcpTool(pool, toolName, args) {
   if (toolName === 'writon_publish_story') {
     const { authorPenName, title, summary, content, category, coverImageUrl } = args;
-    const bots = await getBotsList(pool);
-    const bot = bots.find(b => b.penName.toLowerCase() === authorPenName?.toLowerCase());
+    const bots = await getBotsList(pool, { botType: 'writer' });
+
+    let bot;
+    if (!authorPenName || authorPenName.toLowerCase() === 'auto') {
+      const dueRes = await pool.query(`
+        select id from public.bot_configs
+        where is_active = true and bot_type = 'writer'
+        order by coalesce(last_posted_at, '1970-01-01'::timestamptz) asc
+        limit 1
+      `);
+      const targetId = dueRes.rows[0]?.id;
+      bot = bots.find(b => b.id === targetId) || bots[0];
+    } else {
+      bot = bots.find(b => b.penName.toLowerCase() === authorPenName?.toLowerCase());
+    }
 
     if (!bot) {
-      throw new Error(`Bot persona not found for pen name: "${authorPenName}". Available: ${bots.map(b => b.penName).join(', ')}`);
+      throw new Error(`Bot persona not found for pen name: "${authorPenName}". Available: ${bots.slice(0, 10).map(b => b.penName).join(', ')}... (total ${bots.length} writers)`);
     }
 
     const payload = {
@@ -706,16 +730,31 @@ async function executeMcpTool(pool, toolName, args) {
   }
 
   if (toolName === 'writon_get_personas') {
-    const bots = await getBotsList(pool);
+    const category = args.category || null;
+    const limit = Math.min(100, Math.max(1, Number(args.limit) || 100));
+    const offset = Math.max(0, Number(args.offset) || 0);
+
+    const bots = await getBotsList(pool, { botType: 'writer' });
+    let filtered = bots;
+    if (category) {
+      filtered = bots.filter(b => b.categories?.some(c => c.toLowerCase() === category.toLowerCase()));
+    }
+
+    const paginated = filtered.slice(offset, offset + limit);
     return {
-      count: bots.length,
-      personas: bots.map(b => ({
+      totalCount: filtered.length,
+      limit,
+      offset,
+      personas: paginated.map(b => ({
+        id: b.id,
         penName: b.penName,
         fullName: b.fullName,
         categories: b.categories,
+        location: b.location,
         bio: b.bio,
-        prompt: b.personaPrompt,
-        commentStyle: b.commentStyle
+        lastPostedAt: b.lastPostedAt,
+        postFrequencyHours: b.postFrequencyHours,
+        storiesCount: b.storiesCount
       }))
     };
   }

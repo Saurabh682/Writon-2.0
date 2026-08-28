@@ -177,12 +177,16 @@ export async function seedInitialBotNetwork(pool) {
         `, [bot.id, bot.id, bot.quoteOfDay]);
       }
 
+      const idx = CURATED_BOT_PERSONAS.indexOf(bot);
+      const daysAgo = (idx % 14) + 1 + Math.random();
+      const initialLastPostedAt = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+
       await client.query(`
         insert into public.bot_configs (
           id, is_active, persona_prompt, categories, post_frequency_hours,
-          like_probability, comment_probability, comment_style, bot_type
+          like_probability, comment_probability, comment_style, bot_type, last_posted_at
         )
-        values ($1, true, $2, $3, $4, $5, $6, $7, 'writer')
+        values ($1, true, $2, $3, $4, $5, $6, $7, 'writer', $8)
         on conflict (id) do update set
           persona_prompt = excluded.persona_prompt,
           categories = excluded.categories,
@@ -191,6 +195,7 @@ export async function seedInitialBotNetwork(pool) {
           comment_probability = excluded.comment_probability,
           comment_style = excluded.comment_style,
           bot_type = 'writer',
+          last_posted_at = coalesce(public.bot_configs.last_posted_at, excluded.last_posted_at),
           updated_at = now()
       `, [
         bot.id,
@@ -199,7 +204,8 @@ export async function seedInitialBotNetwork(pool) {
         bot.postFrequencyHours,
         bot.likeProbability,
         bot.commentProbability,
-        bot.commentStyle
+        bot.commentStyle,
+        initialLastPostedAt
       ]);
     }
 

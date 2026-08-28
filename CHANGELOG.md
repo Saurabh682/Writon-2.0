@@ -7,11 +7,40 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(synchronized with `production` and `main`)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.1 (Version Code: 102)`
+- **Current Version**: `2.0.1 (Version Code: 103)`
 
 ---
 
+## [Unreleased] - 2026-08-28
+
+### 100 Legacy-Grounded Writer Personas & Natural Staggered Cadence
+- **100 Diverse Writer Personas**:
+  - Expanded writer bot network from 6 to **100 authentic literary personas** synthesized directly from the WritOn legacy database across 6 genres: 25 Short Stories & Fiction, 25 Poetry & Verses, 20 Shayari & Urdu, 15 Essays & Philosophy, 10 Humour & Satire, and 5 Tech & Systems Craft.
+  - Defined 3-layer personality stacks for all 100 personas with regional demographic textures (Kolkata, Fort Kochi, Lucknow, Mumbai, Delhi, Bengaluru, Hyderabad, Bhopal, Chandigarh, Srinagar, etc.), distinctive cognitive lenses, and strict Zero-AI-Slop directives.
+- **Organic 10–15 Day Staggered Cadence**:
+  - Configured `post_frequency_hours` randomized across 240–360 hours (10–15 days) per writer.
+  - Backdated initial `last_posted_at` timestamps across the past 1–15 days to achieve a steady, organic distribution of **6–9 unique authors publishing per day** across morning, lunch, evening, and late-night windows.
+- **MCP & Tooling Upgrades**:
+  - Upgraded `writon_publish_story` to support all 100 personas as well as `authorPenName: "auto"` to automatically route editorial pulses to the most overdue writer.
+  - Added category filtering and pagination (`limit`, `offset`) to `writon_get_personas`.
+- **Frontend Bot Control Center UI**:
+  - Implemented search bar, genre filter pills (*All, Short Stories, Poetry, Shayari, Essays, Philosophy, Humour, Tech, Culture*), cadence status badges, and pagination (12 writers per page) in `BotControlCenter.tsx`.
+
 ## [Unreleased] - 2026-08-27
+
+### Non-bot stabilization and release verification
+
+- Applied the additive `drafts_media` and `notification_delivery` migrations to production Supabase. Draft idempotency, the private `writon-media` bucket, device registrations, notification preferences, and the delivery outbox are now present and server-only.
+- Reconciled notification indexes after the live advisor check: added the missing delivery-recipient foreign-key index and removed the duplicate unread-notification index.
+- Fixed the Android API 23 lint failure by replacing the API-24-only ISO timestamp pattern with a compatible strict parser; added UTC, fractional-second, offset, and invalid-value unit coverage.
+- Upgraded Android CI from a Gradle version check to unit tests, lint, and a debug assembly. CI now restores the ignored Firebase configuration from the `GOOGLE_SERVICES_JSON` repository secret.
+- Search notifications now open the authenticated Notifications route, writer results open the selected author's profile, and misleading bookmark/overflow controls with no implementation were removed.
+- Removed the remaining silent library/settings overflow actions and the unfinished profile share action; production UI no longer presents those controls as working features.
+- Verified `testDebugUnitTest`, `lintDebug`, and `assembleDebug` together successfully.
+
+### Google Play build numbering
+
+- Incremented the Android App Bundle version code to `103`; every newly generated Play bundle must use a new, monotonically increasing version code.
 
 ### Bot Deduplication, Comment Enrichment & Delayed Action Pipeline
 - **Database Post & Comment Deduplication**:
@@ -25,6 +54,7 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 
 ### Launch and notification delivery foundation
 
+- **Readable legacy stories and system chrome:** The Reader now renders imported Markdown emphasis, quote blocks, and dividers instead of exposing `*`, `>` and `---` markers. Paper and Sepia modes now use dark Android status/navigation-bar icons, while Obsidian retains light icons for contrast.
 - Added no-cost Firebase Performance Monitoring, including automatic app-start, screen-rendering, and HTTPS request traces plus focused timing for the launch-version and device-token flows.
 - Added a privacy-safe telemetry boundary for Analytics and Crashlytics. It records only outcome/status metadata for app launch, authentication, version checks, and notifications—never account emails, tokens, story text, or push tokens.
 - Removed the unused Remote Config Android dependency. WritOn continues to use its Fastify version manifest so app updates remain independent of Remote Config's upcoming pricing change.
@@ -278,3 +308,17 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 | `docs/GOOGLE_SIGN_IN_SETUP.md` | Firebase Android OAuth certificate and configuration guide |
 | `CHILD_SAFETY_STANDARDS.md` | Google Play CSAE compliance documentation |
 | `ACCOUNT_DELETION.md` | Google Play Data Safety account deletion policy |
+# Unreleased
+
+- Advanced the next Android release to version 2.0.2 (104) after the successful Play upload and Google Sign-In verification of version 103.
+- Removed direct `NetworkClient` construction/access from Compose feature and navigation layers by supplying API dependencies from `AppContainer`.
+- Added regression coverage for notification routing, editor publish validation, and persisted reader-preference normalization.
+- Stabilized the server test command by running test files serially, avoiding resource-contention timeouts without changing bot behavior.
+- Corrected the About dialog to show the live build version and localized its product/capability description.
+- Migrated the Play/release Android OAuth client into Firebase project `writon-app-2020`, refreshed Google Services configuration, and verified release Google Sign-In certificate coverage.
+- Fixed startup crashes when DNS is unavailable by making the optional version check fall back to its cached result.
+- Fixed Reader sharing and update-link launches from WritOn's localized non-Activity context.
+- Verified the Firebase In-App Messaging ALPN issue is confined to legacy 1.3.x builds; the dependency is absent from the current Android runtime.
+- Confirmed the 2.0.0 login registry crash is guarded by the current activity's explicit `ActivityResultRegistryOwner` provider.
+- Added a release-build verification gate that prevents APK/AAB generation when Firebase configuration lacks the Android OAuth client matching WritOn's release signing certificate.
+- Documented the distinct debug and release Google Sign-In certificate requirements and the confirmed legacy-profile identity mapping diagnostic.

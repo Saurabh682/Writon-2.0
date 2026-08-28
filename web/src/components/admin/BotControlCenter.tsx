@@ -87,6 +87,12 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
   const [logs, setLogs] = useState<BotActivityLog[]>([]);
   const [delayedActions, setDelayedActions] = useState<any[]>([]);
 
+  // Writer Personas Filtering & Pagination State (100 Writers)
+  const [writerSearchQuery, setWriterSearchQuery] = useState<string>('');
+  const [selectedWriterCategory, setSelectedWriterCategory] = useState<string>('All');
+  const [writerPage, setWriterPage] = useState<number>(1);
+  const writerPageSize = 12;
+
   // Reader Swarm State (100 Readers)
   const [readersList, setReadersList] = useState<ReaderBotPersona[]>([]);
   const [readersTotal, setReadersTotal] = useState<number>(0);
@@ -1750,81 +1756,215 @@ export const BotControlCenter: React.FC<BotControlCenterProps> = ({
               )}
 
               {/* TAB 2: PERSONAS */}
-              {activeTab === 'personas' && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100">Writer Personas ({bots.length})</h3>
-                    <button
-                      onClick={handleSeedBots}
-                      disabled={actionLoading}
-                      className="text-xs text-amber-600 dark:text-amber-400 font-semibold hover:underline"
-                    >
-                      Reset to Default 6 Personas
-                    </button>
-                  </div>
+              {activeTab === 'personas' && (() => {
+                const categoriesList = ['All', 'Short Stories', 'Poetry', 'Shayari', 'Essays', 'Philosophy', 'Humour', 'Tech', 'Culture'];
+                const filteredWriters = bots.filter(b => {
+                  const matchesCat = selectedWriterCategory === 'All' || b.categories?.some(c => c.toLowerCase() === selectedWriterCategory.toLowerCase());
+                  const q = writerSearchQuery.toLowerCase().trim();
+                  const matchesSearch = !q ||
+                    b.fullName.toLowerCase().includes(q) ||
+                    b.penName.toLowerCase().includes(q) ||
+                    (b.bio || '').toLowerCase().includes(q) ||
+                    (b.location || '').toLowerCase().includes(q);
+                  return matchesCat && matchesSearch;
+                });
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {bots.map(bot => (
-                      <div
-                        key={bot.id}
-                        className={`p-4 rounded-xl border transition-all ${
-                          bot.isActive
-                            ? 'bg-white dark:bg-stone-800/60 border-stone-200 dark:border-stone-700 shadow-sm'
-                            : 'bg-stone-50 dark:bg-stone-900/40 border-stone-200/50 dark:border-stone-800 opacity-60'
-                        }`}
+                const totalPages = Math.ceil(filteredWriters.length / writerPageSize) || 1;
+                const paginatedWriters = filteredWriters.slice((writerPage - 1) * writerPageSize, writerPage * writerPageSize);
+
+                return (
+                  <div className="space-y-4">
+                    {/* Header & Seeder */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                          <span>👥 Writer Personas</span>
+                          <span className="px-2 py-0.5 text-xs rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 font-bold">
+                            {bots.length} Active Voices
+                          </span>
+                        </h3>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                          Authentic South Asian literary personas publishing on a randomized 10–15 day natural cadence.
+                        </p>
+                      </div>
+                      <button
+                        onClick={handleSeedBots}
+                        disabled={actionLoading}
+                        className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold shadow-sm transition-all self-start sm:self-auto"
                       >
-                        <div className="flex items-start gap-3">
-                          <img
-                            src={bot.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
-                            alt={bot.fullName}
-                            className="w-12 h-12 rounded-full object-cover border border-stone-200 dark:border-stone-700"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2">
-                              <h4 className="text-sm font-bold text-stone-900 dark:text-stone-100 truncate">
-                                {bot.fullName}
-                              </h4>
-                              <button
-                                onClick={() => handleToggleBot(bot.id)}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                                  bot.isActive
-                                    ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                                    : 'bg-stone-200 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
-                                }`}
-                              >
-                                {bot.isActive ? 'Active' : 'Disabled'}
-                              </button>
-                            </div>
-                            <p className="text-xs text-stone-500 dark:text-stone-400">@{bot.penName}</p>
-                            <p className="text-xs text-stone-600 dark:text-stone-300 mt-1 line-clamp-2">{bot.bio}</p>
+                        🔄 Re-seed 100 Personas
+                      </button>
+                    </div>
 
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {bot.categories?.map(cat => (
-                                <span
-                                  key={cat}
-                                  className="px-2 py-0.5 text-[10px] rounded-md bg-stone-100 dark:bg-stone-700/60 text-stone-700 dark:text-stone-300 font-medium"
-                                >
-                                  {cat}
-                                </span>
-                              ))}
-                            </div>
+                    {/* Search & Category Filter */}
+                    <div className="flex flex-col md:flex-row gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value={writerSearchQuery}
+                          onChange={e => {
+                            setWriterSearchQuery(e.target.value);
+                            setWriterPage(1);
+                          }}
+                          placeholder="🔍 Search by name, @pen_name, bio, or city..."
+                          className="w-full px-3 py-2 text-xs bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                        />
+                        {writerSearchQuery && (
+                          <button
+                            onClick={() => { setWriterSearchQuery(''); setWriterPage(1); }}
+                            className="absolute right-2.5 top-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 text-xs font-bold"
+                          >
+                            ✕
+                          </button>
+                        )}
+                      </div>
+                    </div>
 
-                            <div className="flex items-center justify-between mt-3 pt-2 border-t border-stone-100 dark:border-stone-800 text-[11px] text-stone-500">
-                              <span>Published: <b>{bot.storiesCount || 0}</b> stories</span>
-                              <button
-                                onClick={() => setEditingBot(bot)}
-                                className="text-amber-600 dark:text-amber-400 hover:underline font-semibold"
-                              >
-                                ✏️ Edit Persona
-                              </button>
+                    {/* Category Filter Pills */}
+                    <div className="flex flex-wrap gap-1.5 pb-1">
+                      {categoriesList.map(cat => (
+                        <button
+                          key={cat}
+                          onClick={() => { setSelectedWriterCategory(cat); setWriterPage(1); }}
+                          className={`px-2.5 py-1 text-xs rounded-lg font-medium transition-all ${
+                            selectedWriterCategory === cat
+                              ? 'bg-amber-500 text-white font-bold shadow-sm'
+                              : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700'
+                          }`}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Writers Grid */}
+                    {paginatedWriters.length === 0 ? (
+                      <div className="p-8 text-center bg-stone-50 dark:bg-stone-900/30 rounded-2xl border border-dashed border-stone-200 dark:border-stone-800">
+                        <p className="text-sm text-stone-500 dark:text-stone-400">No writer personas found matching "{writerSearchQuery}".</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {paginatedWriters.map(bot => {
+                          const hoursSince = bot.lastPostedAt ? (Date.now() - new Date(bot.lastPostedAt).getTime()) / 3600000 : 9999;
+                          const freqHours = bot.postFrequencyHours || 288;
+                          const isDue = hoursSince >= freqHours;
+                          const daysUntilDue = Math.max(0, Math.round((freqHours - hoursSince) / 24));
+
+                          return (
+                            <div
+                              key={bot.id}
+                              className={`p-3.5 rounded-xl border transition-all ${
+                                bot.isActive
+                                  ? 'bg-white dark:bg-stone-800/60 border-stone-200 dark:border-stone-700 shadow-sm hover:border-amber-300 dark:hover:border-amber-700/50'
+                                  : 'bg-stone-50 dark:bg-stone-900/40 border-stone-200/50 dark:border-stone-800 opacity-60'
+                              }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <img
+                                  src={bot.avatarUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'}
+                                  alt={bot.fullName}
+                                  className="w-11 h-11 rounded-full object-cover border border-stone-200 dark:border-stone-700 shrink-0"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between gap-1.5">
+                                    <h4 className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate">
+                                      {bot.fullName}
+                                    </h4>
+                                    <button
+                                      onClick={() => handleToggleBot(bot.id)}
+                                      className={`px-1.5 py-0.5 rounded text-[9px] font-bold shrink-0 ${
+                                        bot.isActive
+                                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                          : 'bg-stone-200 text-stone-600 dark:bg-stone-800 dark:text-stone-400'
+                                      }`}
+                                    >
+                                      {bot.isActive ? 'Active' : 'Disabled'}
+                                    </button>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 mt-0.5">
+                                    <span className="text-[11px] text-stone-500 dark:text-stone-400">@{bot.penName}</span>
+                                    {bot.location && (
+                                      <span className="text-[10px] text-stone-400 dark:text-stone-500 truncate">
+                                        📍 {bot.location}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <p className="text-[11px] text-stone-600 dark:text-stone-300 mt-1 line-clamp-2 leading-relaxed">
+                                    {bot.bio}
+                                  </p>
+
+                                  {/* Cadence & Category Badges */}
+                                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                                    <span className={`px-2 py-0.5 text-[10px] rounded-md font-semibold ${
+                                      isDue
+                                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                        : 'bg-stone-100 dark:bg-stone-700/50 text-stone-600 dark:text-stone-400'
+                                    }`}>
+                                      {isDue ? '🟢 Due for Next Story' : `⏳ Due in ~${daysUntilDue}d`}
+                                    </span>
+
+                                    {bot.categories?.map(cat => (
+                                      <span
+                                        key={cat}
+                                        className="px-1.5 py-0.5 text-[9px] rounded-md bg-stone-100 dark:bg-stone-700/60 text-stone-700 dark:text-stone-300 font-medium"
+                                      >
+                                        {cat}
+                                      </span>
+                                    ))}
+                                  </div>
+
+                                  {/* Footer: Stories count & Edit button */}
+                                  <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-stone-100 dark:border-stone-800/80 text-[10px] text-stone-500 dark:text-stone-400">
+                                    <span>
+                                      Published: <b className="text-stone-700 dark:text-stone-200">{bot.storiesCount || 0}</b> | Cadence: every ~{Math.round(freqHours / 24)}d
+                                    </span>
+                                    <button
+                                      onClick={() => setEditingBot(bot)}
+                                      className="text-amber-600 dark:text-amber-400 hover:underline font-semibold"
+                                    >
+                                      ✏️ Edit
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Pagination Bar */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between pt-2 border-t border-stone-200 dark:border-stone-800">
+                        <span className="text-xs text-stone-500 dark:text-stone-400">
+                          Showing {(writerPage - 1) * writerPageSize + 1}–{Math.min(writerPage * writerPageSize, filteredWriters.length)} of {filteredWriters.length} writers
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setWriterPage(p => Math.max(1, p - 1))}
+                            disabled={writerPage === 1}
+                            className="px-2.5 py-1 text-xs rounded-lg border border-stone-300 dark:border-stone-700 disabled:opacity-40 hover:bg-stone-100 dark:hover:bg-stone-800 font-medium"
+                          >
+                            ← Prev
+                          </button>
+                          <span className="px-2 text-xs font-semibold text-stone-700 dark:text-stone-300">
+                            {writerPage} / {totalPages}
+                          </span>
+                          <button
+                            onClick={() => setWriterPage(p => Math.min(totalPages, p + 1))}
+                            disabled={writerPage >= totalPages}
+                            className="px-2.5 py-1 text-xs rounded-lg border border-stone-300 dark:border-stone-700 disabled:opacity-40 hover:bg-stone-100 dark:hover:bg-stone-800 font-medium"
+                          >
+                            Next →
+                          </button>
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* TAB 3: SPARK SETTINGS */}
               {activeTab === 'settings' && (
