@@ -324,7 +324,7 @@ private fun TutorialSlideContent(slide: TutorialSlide) {
             style = MaterialTheme.typography.labelSmall.copy(
                 letterSpacing = 2.5.sp,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Normal
             ),
             color = BrandRedColor
         )

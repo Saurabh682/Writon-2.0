@@ -48,6 +48,24 @@ data class OutboxMutationEntity(
     val isSynced: Boolean = false
 )
 
+/** Local-first editor state. A draft is kept independently of the feed cache. */
+@Entity(tableName = "drafts")
+data class DraftEntity(
+    @PrimaryKey val localId: String,
+    val remotePostId: String? = null,
+    val title: String = "",
+    val content: String = "",
+    val summary: String = "",
+    val category: String = "Essays",
+    val tagsJson: String = "[]",
+    val coverImage: String? = null,
+    val visibility: String = "public",
+    val createdAt: Long = System.currentTimeMillis(),
+    val updatedAt: Long = System.currentTimeMillis(),
+    val syncState: String = "local",
+    val lastError: String? = null
+)
+
 @Entity(tableName = "comments")
 data class CommentEntity(
     @PrimaryKey val id: String,

@@ -30,8 +30,6 @@ class ReaderViewModel(
             initialValue = emptyList()
         )
 
-    val commentText = MutableStateFlow("")
-
     init {
         refreshPost()
         refreshComments()
@@ -56,13 +54,11 @@ class ReaderViewModel(
         }
     }
 
-    fun submitComment(authorName: String) {
-        val content = commentText.value
+    fun submitComment(content: String, authorName: String, parentId: String? = null) {
         if (content.isBlank()) return
 
         viewModelScope.launch {
-            repository.addComment(postId, content, authorName)
-            commentText.value = ""
+            repository.addComment(postId, content, authorName, parentId)
         }
     }
 

@@ -3,6 +3,7 @@ package com.ibitvalley.writon.modern.core.auth
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.ibitvalley.writon.modern.core.network.NetworkClient
+import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
 
 object FirebaseAuthManager {
     private val auth: FirebaseAuth
@@ -16,10 +17,17 @@ object FirebaseAuthManager {
     ) {
         auth.signInWithEmailAndPassword(email.trim(), password)
             .addOnSuccessListener { result ->
-                result.user?.let(onSuccess)
-                    ?: onError("Could not retrieve the signed-in user.")
+                result.user?.let {
+                    WritOnTelemetry.authOutcome("password", true)
+                    onSuccess(it)
+                } ?: run {
+                    WritOnTelemetry.authOutcome("password", false)
+                    onError("Could not retrieve the signed-in user.")
+                }
             }
             .addOnFailureListener { error ->
+                WritOnTelemetry.authOutcome("password", false)
+                WritOnTelemetry.recordNonFatal("password_sign_in", error)
                 onError(error.localizedMessage ?: "Sign-in failed.")
             }
     }
@@ -32,10 +40,17 @@ object FirebaseAuthManager {
     ) {
         auth.createUserWithEmailAndPassword(email.trim(), password)
             .addOnSuccessListener { result ->
-                result.user?.let(onSuccess)
-                    ?: onError("Could not retrieve the new user.")
+                result.user?.let {
+                    WritOnTelemetry.authOutcome("password", true)
+                    onSuccess(it)
+                } ?: run {
+                    WritOnTelemetry.authOutcome("password", false)
+                    onError("Could not retrieve the new user.")
+                }
             }
             .addOnFailureListener { error ->
+                WritOnTelemetry.authOutcome("password", false)
+                WritOnTelemetry.recordNonFatal("account_creation", error)
                 onError(error.localizedMessage ?: "Account creation failed.")
             }
     }
@@ -48,10 +63,17 @@ object FirebaseAuthManager {
         val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnSuccessListener { result ->
-                result.user?.let(onSuccess)
-                    ?: onError("Could not retrieve the signed-in user.")
+                result.user?.let {
+                    WritOnTelemetry.authOutcome("google", true)
+                    onSuccess(it)
+                } ?: run {
+                    WritOnTelemetry.authOutcome("google", false)
+                    onError("Could not retrieve the signed-in user.")
+                }
             }
             .addOnFailureListener { error ->
+                WritOnTelemetry.authOutcome("google", false)
+                WritOnTelemetry.recordNonFatal("google_sign_in", error)
                 onError(error.localizedMessage ?: "Google sign-in failed.")
             }
     }
@@ -107,5 +129,10 @@ object FirebaseAuthManager {
                 NetworkClient.setAuthToken(null)
                 onComplete(false)
             }
+    }
+
+    fun signOut() {
+        auth.signOut()
+        NetworkClient.setAuthToken(null)
     }
 }

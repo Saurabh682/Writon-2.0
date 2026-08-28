@@ -93,7 +93,9 @@ private fun PostDto.asSearchStory() = SearchStory(
 fun SearchScreen(
     viewModel: SearchViewModel,
     onStoryClick: (String) -> Unit,
-    onExploreClick: () -> Unit = {}
+    onExploreClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    onAuthorClick: (String) -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var selectedTab by rememberSaveable { mutableStateOf(SearchTab.Stories) }
@@ -109,7 +111,7 @@ fun SearchScreen(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = WritOnSpacing.lg, end = WritOnSpacing.lg, top = WritOnSpacing.md, bottom = WritOnSpacing.lg)
     ) {
-        item { SearchHeader() }
+        item { SearchHeader(onNotificationsClick) }
         item { SearchHero() }
         item {
             SearchField(value = query, onValueChange = { query = it })
@@ -163,10 +165,7 @@ fun SearchScreen(
                         items(writers.size) { index ->
                             SearchWriterCard(
                                 writer = writers[index],
-                                onClick = {
-                                    query = writers[index].fullName
-                                    selectedTab = SearchTab.Stories
-                                }
+                                onClick = { onAuthorClick(writers[index].id) }
                             )
                         }
                     }
@@ -195,14 +194,14 @@ fun SearchScreen(
 
 
 @Composable
-private fun SearchHeader() {
+private fun SearchHeader(onNotificationsClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
         WritOnBrandMark(width = 108.dp)
         Spacer(Modifier.weight(1f))
-        IconButton(onClick = { }) {
+        IconButton(onClick = onNotificationsClick) {
             Image(
                 painterResource(R.drawable.ic_notification),
                 contentDescription = "Notifications",
@@ -218,7 +217,7 @@ private fun SearchHero() {
     Column(modifier = Modifier.padding(top = 54.dp, bottom = WritOnSpacing.lg)) {
         Text(
             stringResource(R.string.search_title),
-            style = MaterialTheme.typography.displayLarge.copy(fontFamily = SearchEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 42.sp)
+            style = MaterialTheme.typography.displayLarge.copy(fontFamily = SearchEditorialFamily, fontWeight = FontWeight.Normal, fontSize = 42.sp)
         )
         Text(
             stringResource(R.string.search_subtitle),
@@ -367,10 +366,6 @@ private fun SearchResultCard(story: SearchStory, onClick: () -> Unit) {
                     Text(story.author, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                IconButton(onClick = { }) { Image(painterResource(R.drawable.ic_bookmark), contentDescription = "Save ${story.title}", modifier = Modifier.size(24.dp)) }
-                IconButton(onClick = { }) { Image(painterResource(R.drawable.ic_more_vertical), contentDescription = "More options", modifier = Modifier.size(24.dp)) }
-            }
         }
     }
     Spacer(Modifier.height(WritOnSpacing.sm))
@@ -386,8 +381,7 @@ private fun SearchCover(story: SearchStory) {
             .width(88.dp)
             .height(112.dp)
             .clip(RoundedCornerShape(WritOnRadius.field)),
-        categoryFontSize = 13.sp,
-        forceDefault = story.coverImage.isNullOrBlank()
+        categoryFontSize = 13.sp
     )
 }
 

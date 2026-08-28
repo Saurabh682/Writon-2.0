@@ -13,5 +13,6 @@ Rules:
 
 ## Documentation & Changelog Maintenance
 - Always update `CHANGELOG.md` with any new features, bug fixes, UI/UX refinements, security updates, or architectural changes made during any task.
+- For every delivery that changes or updates the Android app, increment both `versionName` and `versionCode` once before generating release artifacts. The version code must always increase and must never reuse a Google Play version code.
 - Ensure all branches (`Till_29Aug`, `production`, and `main`) are kept synchronized with the latest `CHANGELOG.md` and release builds.
 

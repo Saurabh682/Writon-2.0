@@ -226,4 +226,8 @@
     <string name="notif_title">Notifications</string>
     <string name="notif_empty_title">Aucune notification pour le moment</string>
     <string name="notif_empty_desc">L\'activité des histoires apparaîtra ici.</string>
+    <string name="settings_about_platform_desc">WritOn est une plateforme éditoriale sans distraction pour les auteurs et lecteurs attentifs.</string>
+    <string name="settings_about_android">• Créée avec Kotlin et Jetpack Compose</string>
+    <string name="settings_about_offline">• Brouillons hors ligne et cache de lecture</string>
+    <string name="settings_about_security">• Authentification Firebase et verrouillage biométrique facultatif</string>
 </resources>

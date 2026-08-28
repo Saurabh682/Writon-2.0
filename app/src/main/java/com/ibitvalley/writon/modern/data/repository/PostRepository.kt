@@ -9,10 +9,23 @@ import com.ibitvalley.writon.modern.core.database.model.OutboxMutationEntity
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.core.network.WritOnApiService
 import com.ibitvalley.writon.modern.core.network.model.CreatePostRequestDto
+import com.ibitvalley.writon.modern.core.network.model.AddCommentRequestDto
 import com.ibitvalley.writon.modern.core.network.model.ReadingProgressRequestDto
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+
+/** Result returned after a single server page has been merged into the Room cache. */
+data class PostPageResult(
+    val hasMore: Boolean,
+    val loadedCount: Int,
+    val wasFetched: Boolean
+)
 
 class PostRepository(
     private val apiService: WritOnApiService,
@@ -21,6 +34,9 @@ class PostRepository(
     private val outboxDao: OutboxDao,
     private val gson: Gson = Gson()
 ) {
+    private fun utcNowIso(): String = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
+        timeZone = TimeZone.getTimeZone("UTC")
+    }.format(Date())
 
     suspend fun seedInitialStoriesIfEmpty() = withContext(Dispatchers.IO) {
         val count = postDao.getPostCount()
@@ -164,7 +180,12 @@ class PostRepository(
         }
     }
 
-    suspend fun addComment(postId: String, content: String, authorName: String) = withContext(Dispatchers.IO) {
+    suspend fun addComment(
+        postId: String,
+        content: String,
+        authorName: String,
+        parentId: String? = null,
+    ) = withContext(Dispatchers.IO) {
         val tempId = "temp_${System.currentTimeMillis()}"
         val tempComment = CommentEntity(
             id = tempId,
@@ -173,7 +194,8 @@ class PostRepository(
             authorName = authorName,
             authorAvatarUrl = null,
             content = content,
-            createdAt = java.time.Instant.now().toString()
+            createdAt = utcNowIso(),
+            parentId = parentId,
         )
 
         // Optimistic UI update
@@ -183,26 +205,67 @@ class PostRepository(
         } catch (_: Exception) {}
 
         try {
-            val response = apiService.addComment(postId, mapOf("content" to content))
+            val response = apiService.addComment(postId, AddCommentRequestDto(content = content, parentId = parentId))
             if (response.isSuccessful) {
                 refreshComments(postId)
             } else {
-                queueComment(postId, content)
+                queueComment(postId, content, parentId)
             }
             Unit
         } catch (e: Exception) {
-            queueComment(postId, content)
+            queueComment(postId, content, parentId)
         }
     }
 
-    suspend fun refreshPosts(category: String? = null, tab: String = "latest", query: String? = null) {
-        withContext(Dispatchers.IO) {
+    /**
+     * Replaces the cached first page for the active feed. Later pages must be loaded with
+     * [loadPostsPage] so a refresh never discards already paged-in stories by accident.
+     */
+    suspend fun refreshPosts(
+        category: String? = null,
+        tab: String = "latest",
+        query: String? = null,
+        limit: Int = 20
+    ): PostPageResult {
+        val firstAttempt = loadPostsPage(category, tab, query, page = 1, limit = limit, replaceCachedPage = true)
+        if (firstAttempt.wasFetched) return firstAttempt
+
+        // A free Render service can take time to wake after idling. Retry once while
+        // cached Room stories remain visible instead of making the user refresh again.
+        delay(2_000)
+        return loadPostsPage(category, tab, query, page = 1, limit = limit, replaceCachedPage = true)
+    }
+
+    suspend fun getCategories(): List<String> = withContext(Dispatchers.IO) {
+        runCatching { apiService.getTags() }
+            .getOrNull()
+            ?.takeIf { it.isSuccessful }
+            ?.body()
+            ?.tags
+            ?.map { it.name }
+            ?.distinct()
+            ?.sorted()
+            .orEmpty()
+    }
+
+    /** Fetches and appends one page of the active server feed to the local Room cache. */
+    suspend fun loadPostsPage(
+        category: String? = null,
+        tab: String = "latest",
+        query: String? = null,
+        page: Int,
+        limit: Int = 20,
+        replaceCachedPage: Boolean = false
+    ): PostPageResult {
+        return withContext(Dispatchers.IO) {
             try {
                 val categoryQuery = if (category == "All") null else category
                 val response = apiService.getPosts(
                     category = categoryQuery,
                     tab = tab,
-                    searchQuery = query
+                    searchQuery = query,
+                    page = page,
+                    limit = limit
                 )
                 if (response.isSuccessful && response.body() != null) {
                     val payload = response.body()!!
@@ -229,19 +292,21 @@ class PostRepository(
                         )
                     }
 
-                    // Synchronize Room cache with authoritative server list, removing deleted posts
-                    if (categoryQuery == null && query.isNullOrBlank() && tab == "latest") {
-                        postDao.replaceAllPosts(postEntities)
-                    } else if (categoryQuery != null && query.isNullOrBlank()) {
-                        postDao.replaceCategoryPosts(categoryQuery, postEntities)
-                    } else {
-                        postDao.insertPosts(postEntities)
-                    }
+                    // Feed rows deliberately omit full story content. Merge card fields into
+                    // Room so the current deck stays visible and a previously downloaded reader
+                    // body is never erased by a background refresh.
+                    postDao.mergeFeedPosts(postEntities)
+                    return@withContext PostPageResult(
+                        hasMore = payload.pagination.hasMore,
+                        loadedCount = postEntities.size,
+                        wasFetched = true
+                    )
                 }
             } catch (e: Exception) {
                 // Network failure: Room offline cache will continue serving content seamlessly
                 e.printStackTrace()
             }
+            return@withContext PostPageResult(hasMore = false, loadedCount = 0, wasFetched = false)
         }
     }
 
@@ -315,12 +380,12 @@ class PostRepository(
         }
     }
 
-    private suspend fun queueComment(postId: String, content: String) {
+    private suspend fun queueComment(postId: String, content: String, parentId: String?) {
         outboxDao.enqueueMutation(
             OutboxMutationEntity(
                 mutationType = "ADD_COMMENT",
                 targetId = postId,
-                payloadJson = gson.toJson(mapOf("content" to content))
+                payloadJson = gson.toJson(mapOf("content" to content, "parentId" to parentId))
             )
         )
     }

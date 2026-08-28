@@ -39,7 +39,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -65,40 +64,31 @@ private val HistoryEditorialFamily = FontFamily(
 )
 
 private enum class HistoryFilter(val label: String) {
-    All("All"), Stories("Stories"), Poems("Poems"), Articles("Articles")
+    Read("Read"), Bookmarked("Bookmarked")
 }
 
 private data class HistoryStory(
     val id: String,
     val group: String,
-    val kind: HistoryFilter,
     val title: String,
     val author: String,
     val minutes: Int,
     val progress: Float,
     val bookmarked: Boolean,
     val coverImage: String?,
-    val coverTone: Color,
     val coverLabel: String
 )
 
 private fun ReadingHistoryItemDto.asHistoryStory(): HistoryStory {
-    val kind = when (category.lowercase()) {
-        "poetry", "poem", "shayari" -> HistoryFilter.Poems
-        "essay", "article", "philosophy", "journalism" -> HistoryFilter.Articles
-        else -> HistoryFilter.Stories
-    }
     return HistoryStory(
         id = id,
         group = "Recently read",
-        kind = kind,
         title = title,
         author = author.fullName,
         minutes = readingTimeMin,
         progress = progress.coerceIn(0f, 1f),
         bookmarked = isBookmarked,
         coverImage = coverImage,
-        coverTone = Color(0xFFF2ECE4),
         coverLabel = category
     )
 }
@@ -110,12 +100,12 @@ fun ReadingHistoryScreen(
     onSearchClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {}
 ) {
-    var filter by rememberSaveable { mutableStateOf(HistoryFilter.All) }
+    var filter by rememberSaveable { mutableStateOf(HistoryFilter.Read) }
     var menuFor by rememberSaveable { mutableStateOf<String?>(null) }
     var showTip by rememberSaveable { mutableStateOf(true) }
     LaunchedEffect(Unit) { viewModel.loadHistory() }
     val filteredStories = viewModel.historyItems.map { it.asHistoryStory() }
-        .filter { filter == HistoryFilter.All || it.kind == filter }
+        .filter { filter == HistoryFilter.Read || it.bookmarked }
     val groups = filteredStories.groupBy { it.group }
 
     LazyColumn(
@@ -186,7 +176,7 @@ private fun HistoryHeader(onSearchClick: () -> Unit, onSettingsClick: () -> Unit
         Text(
             stringResource(R.string.history_title),
             modifier = Modifier.padding(top = 40.dp),
-            style = MaterialTheme.typography.displayLarge.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 48.sp, lineHeight = 54.sp),
+            style = MaterialTheme.typography.displayLarge.copy(fontFamily = HistoryEditorialFamily, fontWeight = FontWeight.Normal, fontSize = 48.sp, lineHeight = 54.sp),
             color = MaterialTheme.colorScheme.onBackground
         )
         Text(
@@ -210,10 +200,8 @@ private fun HistoryFilters(selected: HistoryFilter, onSelect: (HistoryFilter) ->
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(
                         painterResource(when (filter) {
-                            HistoryFilter.All -> if (selectedFilter) R.drawable.ic_history_orange else R.drawable.ic_history
-                            HistoryFilter.Stories -> if (selectedFilter) R.drawable.ic_book_orange else R.drawable.ic_book
-                            HistoryFilter.Poems -> if (selectedFilter) R.drawable.ic_category_orange else R.drawable.ic_category
-                            HistoryFilter.Articles -> if (selectedFilter) R.drawable.ic_bookmark_orange else R.drawable.ic_bookmark
+                            HistoryFilter.Read -> if (selectedFilter) R.drawable.ic_history_orange else R.drawable.ic_history
+                            HistoryFilter.Bookmarked -> if (selectedFilter) R.drawable.ic_bookmark_orange else R.drawable.ic_bookmark
                         }), contentDescription = null, modifier = Modifier.size(20.dp)
                     )
                     Spacer(Modifier.width(6.dp))
@@ -323,8 +311,7 @@ private fun HistoryCover(story: HistoryStory) {
         modifier = Modifier
             .size(112.dp, 142.dp)
             .clip(RoundedCornerShape(14.dp)),
-        categoryFontSize = 14.sp,
-        forceDefault = story.coverImage.isNullOrBlank()
+        categoryFontSize = 14.sp
     )
 }
 

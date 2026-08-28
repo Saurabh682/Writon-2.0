@@ -160,7 +160,7 @@ private fun ApplaudsHeader(onSearchClick: () -> Unit, onSettingsClick: () -> Uni
         Text(
             "Applauds",
             modifier = Modifier.padding(top = 48.dp),
-            style = MaterialTheme.typography.displayLarge.copy(fontFamily = ApplaudsEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 48.sp)
+            style = MaterialTheme.typography.displayLarge.copy(fontFamily = ApplaudsEditorialFamily, fontWeight = FontWeight.Normal, fontSize = 48.sp)
         )
         Text(
             "Stories you applauded.",
@@ -292,8 +292,7 @@ private fun StoryCover(story: ApplaudedStory) {
         modifier = Modifier
             .size(72.dp)
             .clip(RoundedCornerShape(WritOnRadius.field)),
-        categoryFontSize = 11.sp,
-        forceDefault = story.coverImage.isNullOrBlank()
+        categoryFontSize = 11.sp
     )
 }
 

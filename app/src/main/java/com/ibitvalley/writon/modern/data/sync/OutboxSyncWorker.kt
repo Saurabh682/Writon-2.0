@@ -8,6 +8,9 @@ import com.google.gson.JsonParser
 import com.ibitvalley.writon.modern.core.database.WritOnDatabase
 import com.ibitvalley.writon.modern.core.network.NetworkClient
 import com.ibitvalley.writon.modern.core.network.model.CreatePostRequestDto
+import com.ibitvalley.writon.modern.core.network.model.UpdatePostRequestDto
+import com.ibitvalley.writon.modern.core.network.model.AddCommentRequestDto
+import com.ibitvalley.writon.modern.core.database.model.DraftEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -91,8 +94,57 @@ class OutboxSyncWorker(
                             allSuccessful = false
                             continue
                         }
-                        val response = apiService.addComment(mutation.targetId, mapOf("content" to content))
+                        val parentId = JsonParser.parseString(mutation.payloadJson)
+                            .asJsonObject
+                            .get("parentId")
+                            ?.takeUnless { it.isJsonNull }
+                            ?.asString
+                        val response = apiService.addComment(
+                            mutation.targetId,
+                            AddCommentRequestDto(content = content, parentId = parentId)
+                        )
                         if (response.isSuccessful) {
+                            outboxDao.markMutationSynced(mutation.mutationId)
+                        } else {
+                            allSuccessful = false
+                        }
+                    }
+                    "UPSERT_DRAFT", "PUBLISH_DRAFT" -> {
+                        val draft = gson.fromJson(mutation.payloadJson, DraftEntity::class.java)
+                        val shouldPublish = mutation.mutationType == "PUBLISH_DRAFT"
+                        val response = if (draft.remotePostId == null) {
+                            apiService.createPost(
+                                CreatePostRequestDto(
+                                    title = draft.title.ifBlank { "Untitled draft" },
+                                    content = draft.content,
+                                    summary = draft.summary.ifBlank { null },
+                                    category = draft.category,
+                                    coverImage = draft.coverImage,
+                                    isPublished = shouldPublish,
+                                    clientDraftId = draft.localId
+                                )
+                            )
+                        } else {
+                            apiService.updatePost(
+                                draft.remotePostId,
+                                UpdatePostRequestDto(
+                                    title = draft.title.ifBlank { "Untitled draft" },
+                                    content = draft.content,
+                                    summary = draft.summary.ifBlank { null },
+                                    category = draft.category,
+                                    coverImage = draft.coverImage,
+                                    isPublished = shouldPublish,
+                                    clientDraftId = draft.localId
+                                )
+                            )
+                        }
+                        val remote = response.body()?.post
+                        if (response.isSuccessful && remote != null) {
+                            if (shouldPublish) {
+                                db.draftDao().deleteById(draft.localId)
+                            } else {
+                                db.draftDao().markSynced(draft.localId, remote.id, "synced")
+                            }
                             outboxDao.markMutationSynced(mutation.mutationId)
                         } else {
                             allSuccessful = false

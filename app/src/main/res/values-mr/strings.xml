@@ -226,4 +226,8 @@
     <string name="notif_title">सूचना</string>
     <string name="notif_empty_title">अद्याप कोणत्याही सूचना नाहीत</string>
     <string name="notif_empty_desc">कथेचा क्रियाकलाप येथे दिसेल।</string>
+    <string name="settings_about_platform_desc">WritOn हे विचारशील लेखक आणि वाचकांसाठी लक्ष विचलित न करणारे प्रकाशन व वाचन व्यासपीठ आहे.</string>
+    <string name="settings_about_android">• Kotlin आणि Jetpack Compose वापरून तयार केलेले</string>
+    <string name="settings_about_offline">• ऑफलाइन मसुदे आणि वाचन कॅशे</string>
+    <string name="settings_about_security">• Firebase प्रमाणीकरण आणि ऐच्छिक बायोमेट्रिक लॉक</string>
 </resources>

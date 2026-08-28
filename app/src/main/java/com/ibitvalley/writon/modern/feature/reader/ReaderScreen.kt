@@ -20,12 +20,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +41,7 @@ import coil.compose.AsyncImage
 
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
+import com.ibitvalley.writon.modern.feature.launch.startActivitySafely
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
@@ -55,19 +62,29 @@ fun ReaderScreen(
     viewModel: ReaderViewModel,
     userPreferences: com.ibitvalley.writon.modern.core.preferences.UserPreferences? = null,
     onBackClick: () -> Unit,
+    onAuthorClick: (String) -> Unit = {},
+    onCommentsClick: () -> Unit = {},
     onLoginRequired: () -> Unit = {}
 ) {
     val post by viewModel.post.collectAsState()
     val comments by viewModel.comments.collectAsState()
-    val commentInput by viewModel.commentText.collectAsState()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
-    var showCommentsSheet by remember { mutableStateOf(false) }
     var showAppearanceSheet by remember { mutableStateOf(false) }
 
-    var readerFontSizeSp by remember { mutableFloatStateOf(userPreferences?.readerFontSizeSp ?: 20f) }
-    var readerLineMultiplier by remember { mutableFloatStateOf(userPreferences?.readerLineHeightMultiplier ?: 1.6f) }
-    var readerFontFamilyChoice by remember { mutableStateOf(userPreferences?.readerFontFamily ?: "serif") }
+    val savedReaderPreferences = remember(userPreferences) { userPreferences?.readerPreferences }
+    var readerFontSizeSp by remember(savedReaderPreferences) { mutableFloatStateOf(savedReaderPreferences?.fontSizeSp ?: 20f) }
+    var readerLineMultiplier by remember(savedReaderPreferences) { mutableFloatStateOf(savedReaderPreferences?.lineHeightMultiplier ?: 1.6f) }
+    var readerFontFamilyChoice by remember(savedReaderPreferences) { mutableStateOf(savedReaderPreferences?.fontFamily ?: "serif") }
+    fun saveReaderOptions() {
+        userPreferences?.saveReaderPreferences(
+            com.ibitvalley.writon.modern.core.preferences.ReaderPreferences(
+                fontSizeSp = readerFontSizeSp,
+                lineHeightMultiplier = readerLineMultiplier,
+                fontFamily = readerFontFamilyChoice
+            )
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -126,7 +143,7 @@ fun ReaderScreen(
                         if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
                         else viewModel.toggleLike()
                     },
-                    onComment = { showCommentsSheet = true },
+                    onComment = onCommentsClick,
                     onSave = {
                         if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
                         else viewModel.toggleBookmark()
@@ -138,15 +155,7 @@ fun ReaderScreen(
         containerColor = MaterialTheme.colorScheme.background
     ) { innerPadding ->
         post?.let { story ->
-            val paragraphs = remember(story.content) {
-                story.content
-                    .lineSequence()
-                    .filterNot { it.trimStart().startsWith("#") }
-                    .joinToString("\n")
-                    .split(Regex("\\n\\s*\\n"))
-                    .map(String::trim)
-                    .filter(String::isNotEmpty)
-            }
+            val contentBlocks = remember(story.content) { parseReaderContent(story.content) }
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -163,7 +172,7 @@ fun ReaderScreen(
                         fontFamily = ReaderEditorialFamily,
                         fontSize = 38.sp,
                         lineHeight = 46.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Normal
                     ),
                     color = MaterialTheme.colorScheme.onBackground
                 )
@@ -176,13 +185,13 @@ fun ReaderScreen(
                     )
                 }
                 Spacer(Modifier.height(WritOnSpacing.xl))
-                ReaderAuthorMetadata(story)
+                ReaderAuthorMetadata(story, onClick = { onAuthorClick(story.authorId) })
                 HorizontalDivider(Modifier.padding(vertical = WritOnSpacing.xl), color = MaterialTheme.colorScheme.outlineVariant)
-                if (paragraphs.isEmpty()) {
+                if (contentBlocks.isEmpty()) {
                     Text("This story has no text yet.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 } else {
                     ReaderBody(
-                        paragraphs = paragraphs,
+                        blocks = contentBlocks,
                         fontSizeSp = readerFontSizeSp,
                         lineMultiplier = readerLineMultiplier,
                         fontFamilyChoice = readerFontFamilyChoice
@@ -194,7 +203,7 @@ fun ReaderScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(WritOnRadius.card))
-                        .clickable { showCommentsSheet = true }
+                        .clickable(onClick = onCommentsClick)
                         .padding(vertical = WritOnSpacing.sm),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -218,7 +227,7 @@ fun ReaderScreen(
                         "No responses yet. Tap to leave the first response.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.clickable { showCommentsSheet = true }
+                        modifier = Modifier.clickable(onClick = onCommentsClick)
                     )
                 } else {
                     comments.take(3).forEach { comment ->
@@ -230,7 +239,7 @@ fun ReaderScreen(
                             "See all ${comments.size} responses →",
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                             color = BrandRed,
-                            modifier = Modifier.clickable { showCommentsSheet = true }
+                            modifier = Modifier.clickable(onClick = onCommentsClick)
                         )
                     }
                 }
@@ -272,7 +281,7 @@ fun ReaderScreen(
                         value = readerFontSizeSp,
                         onValueChange = {
                             readerFontSizeSp = it
-                            userPreferences?.readerFontSizeSp = it
+                            saveReaderOptions()
                         },
                         valueRange = 16f..24f,
                         steps = 3,
@@ -299,7 +308,7 @@ fun ReaderScreen(
                         Button(
                             onClick = {
                                 readerLineMultiplier = mult
-                                userPreferences?.readerLineHeightMultiplier = mult
+                                saveReaderOptions()
                             },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
@@ -327,7 +336,7 @@ fun ReaderScreen(
                         Button(
                             onClick = {
                                 readerFontFamilyChoice = family
-                                userPreferences?.readerFontFamily = family
+                                saveReaderOptions()
                             },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
@@ -344,43 +353,23 @@ fun ReaderScreen(
         }
     }
 
-    if (showCommentsSheet) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-        ModalBottomSheet(
-            onDismissRequest = { showCommentsSheet = false },
-            sheetState = sheetState,
-            containerColor = MaterialTheme.colorScheme.surface,
-            dragHandle = { BottomSheetDefaults.DragHandle(color = MaterialTheme.colorScheme.outlineVariant) }
-        ) {
-            val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-            val authorName = user?.displayName ?: user?.email?.substringBefore("@") ?: "You"
-            com.ibitvalley.writon.modern.feature.comments.CommentsScreen(
-                comments = comments,
-                currentUserInitials = authorName,
-                totalCount = comments.size.coerceAtLeast(post?.commentsCnt ?: 0),
-                onBackClick = { showCommentsSheet = false },
-                onSubmitComment = { content, _ ->
-                    if (user == null) {
-                        showCommentsSheet = false
-                        onLoginRequired()
-                    } else {
-                        viewModel.commentText.value = content
-                        viewModel.submitComment(authorName)
-                    }
-                }
-            )
-        }
-    }
 }
 
 
 @Composable
-private fun ReaderAuthorMetadata(post: PostEntity) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
+private fun ReaderAuthorMetadata(post: PostEntity, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(WritOnRadius.field))
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         com.ibitvalley.writon.modern.core.designsystem.components.UserAvatar(
             url = post.authorAvatarUrl,
             name = post.authorName,
-            size = 52.dp
+            size = 52.dp,
+            onClick = onClick
         )
         Spacer(Modifier.width(WritOnSpacing.md))
         Column {
@@ -399,12 +388,12 @@ private fun ReaderAuthorMetadata(post: PostEntity) {
 
 @Composable
 private fun ReaderBody(
-    paragraphs: List<String>,
+    blocks: List<ReaderContentBlock>,
     fontSizeSp: Float = 20f,
     lineMultiplier: Float = 1.6f,
     fontFamilyChoice: String = "serif"
 ) {
-    if (paragraphs.isEmpty()) return
+    if (blocks.isEmpty()) return
 
     val chosenFontFamily = when (fontFamilyChoice) {
         "sans" -> FontFamily.Default
@@ -424,45 +413,136 @@ private fun ReaderBody(
         )
     )
 
-    val first = paragraphs.first()
-    if (first.isNotBlank()) {
-        val dropCap = first.take(1)
-        val rest = first.drop(1).trimStart()
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Top
-        ) {
-            Text(
-                text = dropCap,
-                style = MaterialTheme.typography.displayLarge.copy(
-                    fontFamily = chosenFontFamily,
-                    fontSize = (fontSizeSp * 2.8f).sp,
-                    lineHeight = (fontSizeSp * 2.5f).sp,
-                    fontWeight = FontWeight.Bold,
-                    platformStyle = PlatformTextStyle(includeFontPadding = false),
-                    lineHeightStyle = LineHeightStyle(
-                        alignment = LineHeightStyle.Alignment.Top,
-                        trim = LineHeightStyle.Trim.Both
-                    )
-                ),
-                modifier = Modifier
-                    .offset(y = (-5).dp)
-                    .padding(end = 8.dp)
-            )
-            Text(
-                text = rest,
-                style = bodyTextStyle,
-                modifier = Modifier.weight(1f)
-            )
+    var hasRenderedText = false
+    blocks.forEachIndexed { index, block ->
+        if (index > 0) Spacer(Modifier.height(WritOnSpacing.lg))
+        when (block) {
+            ReaderContentBlock.Divider -> HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+            is ReaderContentBlock.Quote -> ReaderQuoteBlock(block.text, bodyTextStyle, fontSizeSp, lineMultiplier)
+            is ReaderContentBlock.Paragraph -> {
+                val startsWithInlineMarkup = block.text.trimStart().startsWithAny("**", "__", "*", "_")
+                if (!hasRenderedText && !startsWithInlineMarkup) {
+                    val dropCap = block.text.take(1)
+                    val rest = block.text.drop(1).trimStart()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Text(
+                            text = dropCap,
+                            style = MaterialTheme.typography.displayLarge.copy(
+                                fontFamily = chosenFontFamily,
+                                fontSize = (fontSizeSp * 2.8f).sp,
+                                lineHeight = (fontSizeSp * 2.5f).sp,
+                                fontWeight = FontWeight.Bold,
+                                platformStyle = PlatformTextStyle(includeFontPadding = false),
+                                lineHeightStyle = LineHeightStyle(
+                                    alignment = LineHeightStyle.Alignment.Top,
+                                    trim = LineHeightStyle.Trim.Both
+                                )
+                            ),
+                            modifier = Modifier
+                                .offset(y = (-5).dp)
+                                .padding(end = 8.dp)
+                        )
+                        Text(
+                            text = editorMarkupText(rest),
+                            style = bodyTextStyle,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                } else {
+                    Text(editorMarkupText(block.text), style = bodyTextStyle)
+                }
+                hasRenderedText = true
+            }
         }
     }
+}
 
-    paragraphs.drop(1).forEach { paragraph ->
-        Spacer(Modifier.height(WritOnSpacing.lg))
-        Text(paragraph, style = bodyTextStyle)
+@Composable
+private fun ReaderQuoteBlock(
+    text: String,
+    bodyTextStyle: androidx.compose.ui.text.TextStyle,
+    fontSizeSp: Float,
+    lineMultiplier: Float
+) {
+    Row(verticalAlignment = Alignment.Top) {
+        VerticalDivider(
+            modifier = Modifier.heightIn(min = (fontSizeSp * lineMultiplier).dp),
+            color = BrandRed
+        )
+        Spacer(Modifier.width(WritOnSpacing.sm))
+        Text(
+            text = editorMarkupText(text),
+            style = bodyTextStyle,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
+
+private sealed interface ReaderContentBlock {
+    data class Paragraph(val text: String) : ReaderContentBlock
+    data class Quote(val text: String) : ReaderContentBlock
+    data object Divider : ReaderContentBlock
+}
+
+/** Parses the small Markdown subset used by imported legacy stories without executing HTML. */
+private fun parseReaderContent(content: String): List<ReaderContentBlock> {
+    val blocks = mutableListOf<ReaderContentBlock>()
+    val lines = mutableListOf<String>()
+    var isQuoteBlock: Boolean? = null
+
+    fun flushTextBlock() {
+        if (lines.isNotEmpty()) {
+            val text = lines.joinToString("\n").trim()
+            if (text.isNotEmpty()) {
+                blocks += if (isQuoteBlock == true) ReaderContentBlock.Quote(text) else ReaderContentBlock.Paragraph(text)
+            }
+        }
+        lines.clear()
+        isQuoteBlock = null
+    }
+
+    content.replace("\r\n", "\n").lineSequence().forEach { rawLine ->
+        val trimmed = rawLine.trim()
+        when {
+            trimmed.isBlank() -> flushTextBlock()
+            trimmed.startsWith("#") -> flushTextBlock()
+            trimmed in setOf("---", "***", "___") -> {
+                flushTextBlock()
+                blocks += ReaderContentBlock.Divider
+            }
+            else -> {
+                val isQuote = trimmed.startsWith(">")
+                if (isQuoteBlock != null && isQuoteBlock != isQuote) flushTextBlock()
+                isQuoteBlock = isQuote
+                lines += if (isQuote) trimmed.removePrefix(">").trimStart() else rawLine.trim()
+            }
+        }
+    }
+    flushTextBlock()
+    return blocks
+}
+
+private fun editorMarkupText(value: String): AnnotatedString = buildAnnotatedString {
+    val tokenPattern = Regex("(\\*\\*.+?\\*\\*|__.+?__|\\*.+?\\*|_.+?_)")
+    var cursor = 0
+    tokenPattern.findAll(value).forEach { match ->
+        append(value.substring(cursor, match.range.first))
+        val token = match.value
+        when {
+            token.startsWith("**") -> withStyle(SpanStyle(fontWeight = FontWeight.Bold)) { append(token.removePrefix("**").removeSuffix("**")) }
+            token.startsWith("__") -> withStyle(SpanStyle(textDecoration = TextDecoration.Underline)) { append(token.removePrefix("__").removeSuffix("__")) }
+            token.startsWith("*") -> withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(token.removePrefix("*").removeSuffix("*")) }
+            else -> withStyle(SpanStyle(fontStyle = FontStyle.Italic)) { append(token.removePrefix("_").removeSuffix("_")) }
+        }
+        cursor = match.range.last + 1
+    }
+    append(value.substring(cursor))
+}
+
+private fun String.startsWithAny(vararg prefixes: String): Boolean = prefixes.any(::startsWith)
 
 
 @Composable
@@ -564,7 +644,7 @@ private fun shareStory(context: Context, post: PostEntity) {
         putExtra(Intent.EXTRA_TEXT, "Check out this story: ${post.title}\n\nhttps://writon.co/posts/${post.slug}")
         type = "text/plain"
     }
-    context.startActivity(Intent.createChooser(intent, null))
+    context.startActivitySafely(Intent.createChooser(intent, null))
 }
 
 @Composable

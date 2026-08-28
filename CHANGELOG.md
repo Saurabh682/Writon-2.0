@@ -7,11 +7,16 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.2 (Version Code: 104)`
+- **Current Version**: `2.0.3 (Version Code: 105)`
 
 ---
 
 ## [Unreleased] - 2026-08-28
+
+### Android release versioning
+
+- Advanced the Android release to version `2.0.3` / version code `105` for the current stabilization update.
+- Made version advancement a permanent release rule: each app-changing delivery increments both the human-readable version and the monotonically increasing Android version code before signed APK/AAB artifacts are generated.
 
 ### 100 Legacy-Grounded Writer Personas & Natural Staggered Cadence
 - **100 Diverse Writer Personas**:

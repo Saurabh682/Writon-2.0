@@ -14,21 +14,21 @@ private val InterfaceFamily = FontFamily.SansSerif
 val EditorialTypography = Typography(
     displayLarge = TextStyle(
         fontFamily = DisplayFamily,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Normal,
         fontSize = 40.sp,
         lineHeight = 46.sp,
         letterSpacing = (-0.6).sp
     ),
     displayMedium = TextStyle(
         fontFamily = DisplayFamily,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Normal,
         fontSize = 34.sp,
         lineHeight = 40.sp,
         letterSpacing = (-0.4).sp
     ),
     headlineLarge = TextStyle(
         fontFamily = DisplayFamily,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Normal,
         fontSize = 30.sp,
         lineHeight = 37.sp,
         letterSpacing = (-0.3).sp

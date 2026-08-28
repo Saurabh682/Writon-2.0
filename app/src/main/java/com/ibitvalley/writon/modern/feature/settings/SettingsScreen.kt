@@ -26,14 +26,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.BuildConfig
 import com.ibitvalley.writon.modern.core.auth.BiometricAuthManager
+import com.ibitvalley.writon.modern.core.database.WritOnDatabase
 import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 import com.ibitvalley.writon.modern.core.locale.LocaleManager
+import retrofit2.Response
+import com.ibitvalley.writon.modern.core.network.model.AccountDeletionResponseDto
 import com.ibitvalley.writon.modern.core.preferences.UserPreferences
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private val SettingsEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
@@ -45,6 +52,7 @@ private val SettingsEditorialFamily = FontFamily(
 @Composable
 fun SettingsScreen(
     userPreferences: UserPreferences,
+    deleteAccount: suspend () -> Response<AccountDeletionResponseDto>,
     onBackClick: () -> Unit = {},
     onAppearanceClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
@@ -55,6 +63,7 @@ fun SettingsScreen(
 ) {
     val context = LocalContext.current
     val fragmentActivity = context as? FragmentActivity
+    val coroutineScope = rememberCoroutineScope()
 
     var showAboutDialog by remember { mutableStateOf(false) }
     var showTutorialDialog by remember { mutableStateOf(false) }
@@ -194,12 +203,12 @@ fun SettingsScreen(
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.settings_about_desc, "2.0.0", 101), fontWeight = FontWeight.SemiBold)
-                    Text("WritOn is a distraction-free editorial publishing & reading platform built for thoughtful writers and avid readers.", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.settings_about_desc, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE), fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.settings_about_platform_desc), style = MaterialTheme.typography.bodyMedium)
                     Spacer(Modifier.height(4.dp))
-                    Text("• Kotlin Jetpack Compose Modern Architecture", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("• Offline-First Room DB & Cloud Firestore Sync", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("• On-Device Biometric Security & Smart Analytics", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.settings_about_android), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.settings_about_offline), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.settings_about_security), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             confirmButton = {
@@ -319,14 +328,23 @@ fun SettingsScreen(
                     onClick = {
                         isDeletingAccount = true
                         deleteAccountError = null
-                        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
-                        user?.delete()?.addOnCompleteListener { task ->
+                        coroutineScope.launch {
+                            val deletionResult = withContext(Dispatchers.IO) {
+                                runCatching { deleteAccount() }
+                            }
                             isDeletingAccount = false
-                            if (task.isSuccessful) {
+                            val response = deletionResult.getOrNull()
+                            if (response?.isSuccessful == true && response.body()?.success == true) {
+                                withContext(Dispatchers.IO) {
+                                    WritOnDatabase.getDatabase(context.applicationContext).clearAllTables()
+                                }
                                 showDeleteAccountDialog = false
                                 onLogOut()
                             } else {
-                                deleteAccountError = task.exception?.localizedMessage ?: "Could not delete account. Please log in again and retry."
+                                deleteAccountError = when (response?.code()) {
+                                    401 -> "Your session expired. Please sign in again before deleting your account."
+                                    else -> "Could not delete your account. Your data has not been removed; please try again."
+                                }
                             }
                         }
                     },
@@ -352,7 +370,7 @@ fun SettingsScreen(
         contentPadding = PaddingValues(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
         verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
     ) {
-        item { SettingsHeader(onSearchClick) }
+        item { SettingsHeader(onBackClick = onBackClick, onSearchClick = onSearchClick) }
         item {
             SettingsSection(stringResource(R.string.settings_section_preferences)) {
                 SettingsRow(
@@ -378,29 +396,6 @@ fun SettingsScreen(
                     subtitle = stringResource(R.string.settings_notifications_desc),
                     icon = R.drawable.ic_notification_orange,
                     onClick = onNotificationsClick
-                )
-                SettingsRow(
-                    title = stringResource(R.string.settings_test_notif_title),
-                    subtitle = stringResource(R.string.settings_test_notif_desc),
-                    icon = R.drawable.ic_notification_orange,
-                    onClick = { com.ibitvalley.writon.modern.core.notification.WritOnNotificationManager.sendTestNotification(context) }
-                )
-                SettingsRow(
-                    title = stringResource(R.string.settings_copy_token_title),
-                    subtitle = stringResource(R.string.settings_copy_token_desc),
-                    icon = R.drawable.ic_notification_orange,
-                    onClick = {
-                        com.google.firebase.messaging.FirebaseMessaging.getInstance().token
-                            .addOnSuccessListener { token ->
-                                val clipboard = context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                                val clip = android.content.ClipData.newPlainText("FCM Token", token)
-                                clipboard.setPrimaryClip(clip)
-                                android.widget.Toast.makeText(context, "FCM Token copied to clipboard!", android.widget.Toast.LENGTH_LONG).show()
-                            }
-                            .addOnFailureListener {
-                                android.widget.Toast.makeText(context, "Failed to get token: ${it.message}", android.widget.Toast.LENGTH_SHORT).show()
-                            }
-                    }
                 )
                 SettingsRow(
                     title = stringResource(R.string.settings_applause_title),
@@ -507,23 +502,24 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SettingsHeader(onSearchClick: () -> Unit) {
+private fun SettingsHeader(onBackClick: () -> Unit, onSearchClick: () -> Unit) {
     Column {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBackClick) {
+                Image(
+                    painterResource(R.drawable.ic_back),
+                    contentDescription = stringResource(R.string.common_back),
+                    modifier = Modifier.size(24.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                )
+            }
+            Spacer(Modifier.width(WritOnSpacing.xs))
             WritOnBrandMark(width = 108.dp)
             Spacer(Modifier.weight(1f))
             IconButton(onClick = onSearchClick) {
                 Image(
                     painterResource(R.drawable.ic_search),
                     contentDescription = stringResource(R.string.common_search),
-                    modifier = Modifier.size(24.dp),
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-                )
-            }
-            IconButton(onClick = { }) {
-                Image(
-                    painterResource(R.drawable.ic_more_vertical),
-                    contentDescription = stringResource(R.string.common_more),
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                 )

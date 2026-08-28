@@ -47,6 +47,16 @@ fun AppearanceScreen(
     var lineMultiplier by remember { mutableFloatStateOf(userPreferences.readerLineHeightMultiplier) }
     var fontFamilyChoice by remember { mutableStateOf(userPreferences.readerFontFamily) }
 
+    fun saveReaderOptions() {
+        userPreferences.saveReaderPreferences(
+            com.ibitvalley.writon.modern.core.preferences.ReaderPreferences(
+                fontSizeSp = fontSizeSp,
+                lineHeightMultiplier = lineMultiplier,
+                fontFamily = fontFamilyChoice
+            )
+        )
+    }
+
     fun updateTheme(newTheme: String) {
         themeMode = newTheme
         userPreferences.themeMode = newTheme
@@ -55,17 +65,17 @@ fun AppearanceScreen(
 
     fun updateFontSize(newSize: Float) {
         fontSizeSp = newSize
-        userPreferences.readerFontSizeSp = newSize
+        saveReaderOptions()
     }
 
     fun updateLineMultiplier(newMultiplier: Float) {
         lineMultiplier = newMultiplier
-        userPreferences.readerLineHeightMultiplier = newMultiplier
+        saveReaderOptions()
     }
 
     fun updateFontFamily(newFamily: String) {
         fontFamilyChoice = newFamily
-        userPreferences.readerFontFamily = newFamily
+        saveReaderOptions()
     }
 
     val previewFontFamily = when (fontFamilyChoice) {

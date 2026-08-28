@@ -226,4 +226,8 @@
     <string name="notif_title">বিজ্ঞপ্তি</string>
     <string name="notif_empty_title">এখনও কোনো বিজ্ঞপ্তি নেই</string>
     <string name="notif_empty_desc">গল্পের কার্যকলাপ এখানে দেখা যাবে।</string>
+    <string name="settings_about_platform_desc">WritOn মননশীল লেখক ও পাঠকদের জন্য একটি মনোযোগ-বান্ধব প্রকাশনা ও পাঠের প্ল্যাটফর্ম।</string>
+    <string name="settings_about_android">• Kotlin ও Jetpack Compose দিয়ে নির্মিত</string>
+    <string name="settings_about_offline">• অফলাইন ড্রাফ্ট ও পাঠের ক্যাশ</string>
+    <string name="settings_about_security">• Firebase প্রমাণীকরণ ও ঐচ্ছিক বায়োমেট্রিক লক</string>
 </resources>

@@ -84,7 +84,41 @@ data class CreatePostRequestDto(
     @SerializedName("summary") val summary: String?,
     @SerializedName("category") val category: String,
     @SerializedName("coverImage") val coverImage: String?,
-    @SerializedName("isPublished") val isPublished: Boolean = true
+    @SerializedName("isPublished") val isPublished: Boolean = true,
+    @SerializedName("clientDraftId") val clientDraftId: String? = null
+)
+
+data class AddCommentRequestDto(
+    @SerializedName("content") val content: String,
+    @SerializedName("parentId") val parentId: String? = null,
+)
+
+data class InterestsResponseDto(
+    @SerializedName("topicIds") val topicIds: List<String>,
+)
+
+data class UpdateInterestsRequestDto(
+    @SerializedName("topicIds") val topicIds: List<String>,
+)
+
+data class UpdatePostRequestDto(
+    @SerializedName("title") val title: String,
+    @SerializedName("content") val content: String,
+    @SerializedName("summary") val summary: String? = null,
+    @SerializedName("category") val category: String,
+    @SerializedName("coverImage") val coverImage: String? = null,
+    @SerializedName("isPublished") val isPublished: Boolean = false,
+    @SerializedName("clientDraftId") val clientDraftId: String? = null
+)
+
+data class DraftsResponseDto(
+    @SerializedName("posts") val posts: List<PostDto>,
+    @SerializedName("pagination") val pagination: PaginationDto
+)
+
+data class MediaUploadResponseDto(
+    @SerializedName("url") val url: String,
+    @SerializedName("key") val key: String
 )
 
 data class UserProfileResponseDto(
@@ -195,6 +229,31 @@ data class MyProfileDto(
 
 data class MyProfileResponseDto(
     @SerializedName("profile") val profile: MyProfileDto
+)
+
+data class AppVersionResponseDto(
+    @SerializedName("latestVersionCode") val latestVersionCode: Int,
+    @SerializedName("minSupportedVersionCode") val minSupportedVersionCode: Int,
+    @SerializedName("updateUrl") val updateUrl: String
+)
+
+data class PushTokenRegistrationRequestDto(
+    @SerializedName("token") val token: String,
+    @SerializedName("platform") val platform: String = "android",
+    @SerializedName("appVersionCode") val appVersionCode: Int,
+    @SerializedName("notificationPermission") val notificationPermission: String
+)
+
+data class NotificationPreferencesDto(
+    @SerializedName("interactionsEnabled") val interactionsEnabled: Boolean = true,
+    @SerializedName("followsEnabled") val followsEnabled: Boolean = true,
+    @SerializedName("editorialEnabled") val editorialEnabled: Boolean = true,
+    @SerializedName("publishingEnabled") val publishingEnabled: Boolean = true
+)
+
+data class AccountDeletionResponseDto(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("message") val message: String
 )
 
 data class UpsertMyProfileRequestDto(

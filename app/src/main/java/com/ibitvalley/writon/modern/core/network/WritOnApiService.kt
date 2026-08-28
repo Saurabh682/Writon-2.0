@@ -3,8 +3,12 @@ package com.ibitvalley.writon.modern.core.network
 import com.ibitvalley.writon.modern.core.network.model.*
 import retrofit2.Response
 import retrofit2.http.*
+import okhttp3.MultipartBody
 
 interface WritOnApiService {
+
+    @GET("api/v1/app/version")
+    suspend fun getAppVersion(): Response<AppVersionResponseDto>
 
     @GET("api/v1/me")
     suspend fun getMyProfile(): Response<MyProfileResponseDto>
@@ -13,6 +17,9 @@ interface WritOnApiService {
     suspend fun upsertMyProfile(
         @Body request: UpsertMyProfileRequestDto
     ): Response<MyProfileResponseDto>
+
+    @DELETE("api/v1/me")
+    suspend fun deleteMyAccount(): Response<AccountDeletionResponseDto>
 
     @GET("api/v1/posts")
     suspend fun getPosts(
@@ -48,6 +55,28 @@ interface WritOnApiService {
         @Body request: CreatePostRequestDto
     ): Response<PostDetailResponseDto>
 
+    @PUT("api/v1/posts/{id}")
+    suspend fun updatePost(
+        @Path("id") postId: String,
+        @Body request: UpdatePostRequestDto
+    ): Response<PostDetailResponseDto>
+
+    @DELETE("api/v1/posts/{id}")
+    suspend fun deletePost(@Path("id") postId: String): Response<Unit>
+
+    @POST("api/v1/posts/{id}/publish")
+    suspend fun publishDraft(@Path("id") postId: String): Response<PostDetailResponseDto>
+
+    @GET("api/v1/me/drafts")
+    suspend fun getMyDrafts(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<DraftsResponseDto>
+
+    @Multipart
+    @POST("api/v1/media/upload")
+    suspend fun uploadMedia(@Part file: MultipartBody.Part): Response<MediaUploadResponseDto>
+
     @POST("api/v1/posts/{id}/like")
     suspend fun toggleLike(
         @Path("id") postId: String
@@ -70,6 +99,38 @@ interface WritOnApiService {
         @Query("limit") limit: Int = 50
     ): Response<PostsResponseDto>
 
+    @GET("api/v1/me/stories")
+    suspend fun getMyPublishedStories(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 50
+    ): Response<PostsResponseDto>
+
+    @GET("api/v1/me/applause-received")
+    suspend fun getMyReceivedApplauseStories(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 50
+    ): Response<PostsResponseDto>
+
+    @GET("api/v1/me/followers")
+    suspend fun getMyFollowers(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 50
+    ): Response<UsersResponseDto>
+
+    @GET("api/v1/me/following")
+    suspend fun getMyFollowing(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 50
+    ): Response<UsersResponseDto>
+
+    @GET("api/v1/me/interests")
+    suspend fun getMyInterests(): Response<InterestsResponseDto>
+
+    @PUT("api/v1/me/interests")
+    suspend fun updateMyInterests(
+        @Body request: UpdateInterestsRequestDto
+    ): Response<InterestsResponseDto>
+
     @GET("api/v1/me/reading-history")
     suspend fun getMyReadingHistory(
         @Query("page") page: Int = 1,
@@ -89,6 +150,22 @@ interface WritOnApiService {
         @Query("limit") limit: Int = 50
     ): Response<NotificationsResponseDto>
 
+    @PUT("api/v1/me/devices/push-token")
+    suspend fun registerPushToken(
+        @Body request: PushTokenRegistrationRequestDto
+    ): Response<Map<String, Boolean>>
+
+    @GET("api/v1/me/notification-preferences")
+    suspend fun getNotificationPreferences(): Response<NotificationPreferencesDto>
+
+    @PUT("api/v1/me/notification-preferences")
+    suspend fun updateNotificationPreferences(
+        @Body request: NotificationPreferencesDto
+    ): Response<NotificationPreferencesDto>
+
+    @PATCH("api/v1/me/notifications/{id}/read")
+    suspend fun markNotificationRead(@Path("id") notificationId: String): Response<Map<String, String>>
+
     @GET("api/v1/comments/{postId}")
     suspend fun getComments(
         @Path("postId") postId: String
@@ -97,7 +174,7 @@ interface WritOnApiService {
     @POST("api/v1/comments/{postId}")
     suspend fun addComment(
         @Path("postId") postId: String,
-        @Body payload: Map<String, String>
+        @Body payload: AddCommentRequestDto
     ): Response<Map<String, Any>>
 
     @GET("api/v1/users/{idOrPenName}")

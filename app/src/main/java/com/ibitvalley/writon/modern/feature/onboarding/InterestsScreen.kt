@@ -30,8 +30,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +46,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,27 +74,39 @@ private data class Topic(val id: String, val title: String, val icon: Int)
 
 @Composable
 fun InterestsScreen(
+    initialSelectedTopicIds: Set<String>,
+    isSaving: Boolean,
+    errorMessage: String?,
     onBackClick: () -> Unit,
-    onContinueClick: (List<String>) -> Unit,
+    onContinueClick: (Set<String>) -> Unit,
+    onContinueWithSavedChoices: () -> Unit,
     onSkipClick: () -> Unit
 ) {
     val topics = remember {
         listOf(
             Topic("poetry", "Poetry", R.drawable.ic_write_quill_orange),
             Topic("essays", "Essays", R.drawable.ic_book_orange),
-            Topic("philosophy", "Philosophy", R.drawable.ic_category_orange),
-            Topic("short_stories", "Short Stories", R.drawable.ic_book_orange),
+            Topic("philosophy", "Philosophy", R.drawable.ic_quote_orange),
+            Topic("short_stories", "Short Stories", R.drawable.ic_collection_open_orange),
             Topic("shayari", "Shayari", R.drawable.ic_heart_orange),
-            Topic("journalism", "Journalism", R.drawable.ic_write_quill_orange),
-            Topic("humour", "Humour", R.drawable.ic_category_orange),
-            Topic("life_wellness", "Life & Wellness", R.drawable.ic_heart_orange),
-            Topic("sci_fi_fantasy", "Sci-Fi & Fantasy", R.drawable.ic_category_orange),
-            Topic("travel", "Travel", R.drawable.ic_public_orange),
-            Topic("career_growth", "Career & Growth", R.drawable.ic_collection_orange),
+            Topic("journalism", "Journalism", R.drawable.ic_tag_orange),
+            Topic("humour", "Humour", R.drawable.ic_achievement_orange),
+            Topic("life_wellness", "Life & Wellness", R.drawable.ic_sun_orange),
+            Topic("sci_fi_fantasy", "Sci-Fi & Fantasy", R.drawable.ic_shuffle_orange),
+            Topic("travel", "Travel", R.drawable.ic_explore_orange),
+            Topic("career_growth", "Career & Growth", R.drawable.ic_folder_orange),
             Topic("more_topics", "More Topics", R.drawable.ic_category_orange)
         )
     }
-    var selectedTopics by remember { mutableStateOf(setOf<String>()) }
+    var selectedTopicsCsv by rememberSaveable { mutableStateOf(initialSelectedTopicIds.sorted().joinToString(",")) }
+    val selectedTopics = selectedTopicsCsv
+        .split(',')
+        .filter(String::isNotBlank)
+        .toSet()
+
+    LaunchedEffect(initialSelectedTopicIds) {
+        selectedTopicsCsv = initialSelectedTopicIds.sorted().joinToString(",")
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = ScreenBackground) {
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
@@ -106,10 +124,30 @@ fun InterestsScreen(
                         topic = topic,
                         isSelected = topic.id in selectedTopics,
                         onClick = {
-                            selectedTopics = if (topic.id in selectedTopics) selectedTopics - topic.id else selectedTopics + topic.id
+                            selectedTopicsCsv = (if (topic.id in selectedTopics) selectedTopics - topic.id else selectedTopics + topic.id)
+                                .sorted()
+                                .joinToString(",")
                         }
                     )
                 }
+            }
+
+            Text(
+                text = if (selectedTopics.isEmpty()) "Choose topics to personalize your feed." else "${selectedTopics.size} ${if (selectedTopics.size == 1) "topic" else "topics"} selected",
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = if (selectedTopics.isEmpty()) SecondaryText else Accent,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                textAlign = TextAlign.Center,
+            )
+
+            errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Accent,
+                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                    textAlign = TextAlign.Center,
+                )
             }
 
             Row(
@@ -128,13 +166,14 @@ fun InterestsScreen(
             }
 
             Button(
-                onClick = { onContinueClick(topics.filter { it.id in selectedTopics }.map(Topic::title)) },
+                onClick = { onContinueClick(selectedTopics) },
+                enabled = !isSaving,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = SurfacePaper)
             ) {
                 Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(stringResource(R.string.common_continue), style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp))
+                    Text(if (isSaving) "Saving…" else stringResource(R.string.common_continue), style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp))
                     Image(
                         painter = painterResource(R.drawable.ic_forward_white),
                         contentDescription = null,
@@ -143,8 +182,23 @@ fun InterestsScreen(
                 }
             }
 
+            if (errorMessage != null) {
+                TextButton(
+                    onClick = onContinueWithSavedChoices,
+                    enabled = !isSaving,
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                ) {
+                    Text(
+                        "Continue with saved choices",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Accent,
+                    )
+                }
+            }
+
             TextButton(
                 onClick = onSkipClick,
+                enabled = !isSaving,
                 modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 8.dp)
             ) {
                 Text(
@@ -179,7 +233,7 @@ private fun InterestsHeader(onBackClick: () -> Unit) {
                     fontFamily = InterestsEditorialFamily,
                     fontSize = 38.sp,
                     lineHeight = 42.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.Normal
                 ),
                 color = PrimaryText
             )
@@ -200,9 +254,13 @@ private fun TopicCard(topic: Topic, isSelected: Boolean, onClick: () -> Unit) {
             .fillMaxWidth()
             .height(96.dp)
             .clip(RoundedCornerShape(18.dp))
-            .background(SurfacePaper)
-            .border(1.dp, if (isSelected) Accent else Border, RoundedCornerShape(18.dp))
+            .background(if (isSelected) MutedChip else SurfacePaper)
+            .border(if (isSelected) 2.dp else 1.dp, if (isSelected) Accent else Border, RoundedCornerShape(18.dp))
             .clickable(onClick = onClick)
+            .semantics {
+                role = Role.Checkbox
+                contentDescription = "${topic.title}, ${if (isSelected) "selected" else "not selected"}"
+            }
             .padding(8.dp)
     ) {
         Column(
@@ -242,5 +300,15 @@ private fun TopicCard(topic: Topic, isSelected: Boolean, onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 private fun InterestsScreenPreview() {
-    WritOnTheme { InterestsScreen(onBackClick = {}, onContinueClick = {}, onSkipClick = {}) }
+    WritOnTheme {
+        InterestsScreen(
+            initialSelectedTopicIds = emptySet(),
+            isSaving = false,
+            errorMessage = null,
+            onBackClick = {},
+            onContinueClick = {},
+            onContinueWithSavedChoices = {},
+            onSkipClick = {},
+        )
+    }
 }

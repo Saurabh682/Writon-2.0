@@ -134,14 +134,6 @@ private fun LibraryHeader(onSearchClick: () -> Unit) {
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                 )
             }
-            IconButton(onClick = { }) {
-                Image(
-                    painterResource(R.drawable.ic_more_vertical),
-                    contentDescription = "More library options",
-                    modifier = Modifier.size(24.dp),
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-                )
-            }
         }
         Spacer(Modifier.height(WritOnSpacing.lg))
         Text(

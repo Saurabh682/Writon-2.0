@@ -3,13 +3,16 @@ package com.ibitvalley.writon.modern.feature.feed
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.awaitEachGesture
@@ -38,6 +41,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
@@ -71,7 +75,10 @@ import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 
-val CATEGORIES = listOf("All", "Essays", "Poetry", "Tech", "Philosophy", "Fiction", "Culture")
+val CATEGORIES = listOf(
+    "All", "Essays", "Poetry", "Short Stories", "Shayari", "Humour", "Reviews",
+    "Journalism", "Tech", "Philosophy", "Satire", "Fiction", "Culture"
+)
 
 private val HomeEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
@@ -79,30 +86,60 @@ private val HomeEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_semibold, FontWeight.Bold)
 )
 
+private const val ReturnToTopThreshold = 4
+
 @Composable
 fun FeedScreen(
     viewModel: FeedViewModel,
     onStoryClick: (String) -> Unit,
     onWriteClick: () -> Unit,
     onLibraryClick: () -> Unit = {},
+    onSearchClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
+    onAuthorClick: (String) -> Unit = {},
     isAuthenticated: Boolean = true,
     onLoginRequired: () -> Unit = {}
 ) {
     val posts by viewModel.posts.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
+    val isLoadingMore by viewModel.isLoadingMore.collectAsState()
+    val hasMore by viewModel.hasMore.collectAsState()
     var currentIndex by rememberSaveable { mutableIntStateOf(0) }
+    var advanceWhenPageArrives by rememberSaveable { mutableStateOf(false) }
+    var showReturnToTop by rememberSaveable { mutableStateOf(false) }
     val safeIndex = currentIndex.coerceIn(0, posts.lastIndex.coerceAtLeast(0))
 
-    LaunchedEffect(posts.size) {
+    LaunchedEffect(posts.size, hasMore) {
         if (currentIndex > posts.lastIndex) currentIndex = 0
+        if (advanceWhenPageArrives && currentIndex < posts.lastIndex) {
+            currentIndex += 1
+            advanceWhenPageArrives = false
+        } else if (advanceWhenPageArrives && !hasMore) {
+            advanceWhenPageArrives = false
+        }
+    }
+
+    // Keep the next page ready before the reader reaches the end of the current deck.
+    LaunchedEffect(safeIndex, posts.size, hasMore) {
+        if (posts.isNotEmpty() && hasMore && safeIndex >= posts.lastIndex - 2) {
+            viewModel.loadNextPage()
+        }
+    }
+
+    LaunchedEffect(safeIndex) {
+        if (safeIndex == 0) showReturnToTop = false
     }
 
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 18.dp, vertical = 16.dp)
     ) {
-        HomeHeader(onLibraryClick = onLibraryClick, onProfileClick = onProfileClick)
+        HomeHeader(
+            onLibraryClick = onLibraryClick,
+            onSearchClick = onSearchClick,
+            onNotificationsClick = onNotificationsClick,
+            onProfileClick = onProfileClick
+        )
         Spacer(Modifier.height(14.dp))
 
         if (isRefreshing) {
@@ -123,6 +160,72 @@ fun FeedScreen(
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+        }
+
+        if (isLoadingMore && !isRefreshing) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                androidx.compose.material3.CircularProgressIndicator(
+                    modifier = Modifier.size(14.dp),
+                    color = BrandRed,
+                    strokeWidth = 2.dp
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Loading more stories…",
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+
+        AnimatedVisibility(
+            visible = showReturnToTop && safeIndex > 0,
+            enter = expandVertically(animationSpec = tween(180)) + fadeIn(animationSpec = tween(180)),
+            exit = shrinkVertically(animationSpec = tween(150)) + fadeOut(animationSpec = tween(150))
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .height(48.dp)
+                        .semantics {
+                            contentDescription = "Return to the first story"
+                            role = Role.Button
+                        },
+                    shape = RoundedCornerShape(24.dp),
+                    color = BrandRed,
+                    onClick = {
+                        currentIndex = 0
+                        advanceWhenPageArrives = false
+                        showReturnToTop = false
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 18.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_chevron_up_white),
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "Back to top",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.White
+                        )
+                    }
+                }
             }
         }
 
@@ -160,13 +263,25 @@ fun FeedScreen(
                         post = post,
                         modifier = Modifier.fillMaxSize(),
                         onRead = { onStoryClick(post.id) },
-                        onPrevious = { if (index > 0) currentIndex = index - 1 },
-                        onNext = { if (index < posts.lastIndex) currentIndex = index + 1 },
+                        onPrevious = {
+                            if (index > 0) {
+                                if (index >= ReturnToTopThreshold) showReturnToTop = true
+                                currentIndex = index - 1
+                            }
+                        },
+                        onNext = {
+                            if (index < posts.lastIndex) {
+                                currentIndex = index + 1
+                            } else if (hasMore) {
+                                advanceWhenPageArrives = true
+                                viewModel.loadNextPage()
+                            }
+                        },
                         onApplaud = {
                             if (isAuthenticated) viewModel.toggleLike(post.id, post.isLiked, post.likesCnt)
                             else onLoginRequired()
                         },
-                        onAuthorClick = onProfileClick,
+                        onAuthorClick = { onAuthorClick(post.authorId) },
                         isFirstCard = (index == 0),
                         onRefresh = { viewModel.refreshFeed() }
                     )
@@ -177,10 +292,31 @@ fun FeedScreen(
 }
 
 @Composable
-private fun HomeHeader(onLibraryClick: () -> Unit, onProfileClick: () -> Unit) {
+private fun HomeHeader(
+    onLibraryClick: () -> Unit,
+    onSearchClick: () -> Unit,
+    onNotificationsClick: () -> Unit,
+    onProfileClick: () -> Unit
+) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         WritOnBrandMark(width = 118.dp)
         Spacer(Modifier.weight(1f))
+        IconButton(onClick = onSearchClick) {
+            Image(
+                painterResource(R.drawable.ic_search),
+                contentDescription = "Search stories",
+                modifier = Modifier.size(25.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+            )
+        }
+        IconButton(onClick = onNotificationsClick) {
+            Image(
+                painterResource(R.drawable.ic_notification),
+                contentDescription = "Open notifications",
+                modifier = Modifier.size(25.dp),
+                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+            )
+        }
         IconButton(onClick = onLibraryClick) {
             Image(
                 painterResource(R.drawable.ic_bookmark),
@@ -305,7 +441,7 @@ private fun DiscoveryStoryCard(
                     post.title,
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontFamily = HomeEditorialFamily,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 44.sp,
                         lineHeight = 48.sp
                     ),
@@ -323,8 +459,7 @@ private fun DiscoveryStoryCard(
                     category = post.category,
                     contentDescription = "Cover image for ${post.title}",
                     modifier = Modifier.fillMaxWidth().height(228.dp),
-                    categoryFontSize = 38.sp,
-                    forceDefault = true
+                    categoryFontSize = 38.sp
                 )
             }
 

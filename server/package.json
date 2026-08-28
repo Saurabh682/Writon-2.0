@@ -8,16 +8,18 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "db:import-legacy-postgres": "node src/db/import-legacy-postgres.mjs --dry-run",
-    "test": "vitest run test/fastify.contract.test.js test/spark-bot-engine.test.js"
+    "test": "vitest run --no-file-parallelism test/fastify.contract.test.js test/spark-bot-engine.test.js"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",
     "@fastify/helmet": "^13.1.1",
+    "@fastify/multipart": "^10.1.1",
     "dotenv": "^16.6.1",
     "fastify": "^5.12.1",
     "firebase-admin": "^14.3.0",
     "nanoid": "^5.1.3",
     "pg": "^8.23.0",
+    "sharp": "^0.35.3",
     "slugify": "^1.6.6",
     "zod": "^3.25.76"
   },
@@ -33,4 +35,3 @@
   "author": "",
   "license": "ISC"
 }
-

@@ -188,6 +188,10 @@
     <string name="settings_guide_desc">सुविधा ट्यूटोरियल और सुझाव</string>
     <string name="settings_about_title">WritOn के बारे में</string>
     <string name="settings_about_desc">संस्करण %1$s (%2$d)</string>
+    <string name="settings_about_platform_desc">WritOn विचारशील लेखकों और पाठकों के लिए एक ध्यान-मुक्त लेखन और पठन मंच है।</string>
+    <string name="settings_about_android">• Kotlin और Jetpack Compose से निर्मित</string>
+    <string name="settings_about_offline">• ऑफ़लाइन ड्राफ़्ट और पठन कैश</string>
+    <string name="settings_about_security">• Firebase प्रमाणीकरण और वैकल्पिक बायोमेट्रिक लॉक</string>
     <string name="settings_logout_title">लॉग आउट करें</string>
     <string name="appearance_title">दिखावट और पठन</string>
     <string name="appearance_preview">लाइव पूर्वावलोकन</string>

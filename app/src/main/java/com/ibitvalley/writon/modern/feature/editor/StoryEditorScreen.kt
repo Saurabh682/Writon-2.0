@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -26,31 +27,39 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import com.ibitvalley.writon.R
-import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
-import com.ibitvalley.writon.modern.feature.feed.CATEGORIES
 
 private val EditorEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
@@ -67,7 +76,20 @@ fun StoryEditorScreen(
 ) {
     val title by viewModel.title.collectAsStateWithLifecycle()
     val content by viewModel.content.collectAsStateWithLifecycle()
-    var draftStatus by rememberSaveable { mutableStateOf("Just now") }
+    val draftStatus by viewModel.draftStatus.collectAsStateWithLifecycle()
+    var bodyValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(content))
+    }
+    val context = LocalContext.current
+    val coverPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        uri?.let { viewModel.uploadCover(context, it) }
+    }
+
+    LaunchedEffect(content) {
+        if (content != bodyValue.text) {
+            bodyValue = TextFieldValue(content, selection = TextRange(content.length))
+        }
+    }
 
     val wordCount = content.trim().split(Regex("\\s+")).filter { it.isNotBlank() }.size
     val readTime = if (wordCount == 0) 0 else maxOf(1, (wordCount + 199) / 200)
@@ -75,10 +97,19 @@ fun StoryEditorScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            EditorStatusCard(
+            EditorWritingFooter(
                 wordCount = wordCount,
                 readTime = readTime,
-                savedStatus = draftStatus
+                savedStatus = draftStatus.label(),
+                onFormat = { action ->
+                    bodyValue = bodyValue.apply(action)
+                    viewModel.updateContent(bodyValue.text)
+                },
+                onPickImage = {
+                    coverPicker.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                }
             )
         }
     ) { innerPadding ->
@@ -86,155 +117,161 @@ fun StoryEditorScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = WritOnSpacing.lg)
+                .padding(horizontal = 28.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = WritOnSpacing.md),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                WritOnBrandMark(width = 118.dp)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { }) {
-                        Image(
-                            painterResource(R.drawable.ic_sun),
-                            contentDescription = "Appearance",
-                            modifier = Modifier.size(24.dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-                        )
-                    }
-                    IconButton(onClick = { }) {
-                        Image(
-                            painterResource(R.drawable.ic_more_vertical),
-                            contentDescription = "More options",
-                            modifier = Modifier.size(24.dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-                        )
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = WritOnSpacing.md),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = onBackClick) {
-                    Image(
-                        painterResource(R.drawable.ic_back),
-                        contentDescription = stringResource(R.string.common_back),
-                        modifier = Modifier.size(24.dp),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.common_back), color = MaterialTheme.colorScheme.onBackground)
-                }
-                Spacer(Modifier.weight(1f))
-                TextButton(onClick = { draftStatus = "Just now" }) {
-                    Text(stringResource(R.string.editor_save_draft), fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onBackground)
-                }
-                Spacer(Modifier.width(8.dp))
-                Button(
-                    onClick = onPublishClick,
-                    enabled = title.isNotBlank() && content.isNotBlank(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = BrandRed,
-                        contentColor = Color(0xFFFFFDF9),
-                        disabledContainerColor = BrandRed.copy(alpha = 0.35f),
-                        disabledContentColor = Color(0xFFFFFDF9).copy(alpha = 0.8f)
-                    ),
-                    shape = RoundedCornerShape(WritOnRadius.field)
-                ) {
-                    Text(stringResource(R.string.editor_publish), fontWeight = FontWeight.SemiBold)
-                }
-            }
+            EditorWritingTopBar(
+                onBackClick = onBackClick,
+                onSaveClick = viewModel::saveDraft,
+                onPublishClick = onPublishClick,
+                canPublish = title.isNotBlank() && content.isNotBlank()
+            )
 
             TextField(
                 value = title,
                 onValueChange = viewModel::updateTitle,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = WritOnSpacing.xl)
-                    .heightIn(min = 76.dp),
+                    .padding(top = 42.dp)
+                    .heightIn(min = 108.dp),
                 placeholder = {
                     Text(
                         "Add a title…",
-                        style = MaterialTheme.typography.displaySmall.copy(
-                            fontFamily = EditorEditorialFamily,
-                            fontSize = 40.sp,
-                            fontWeight = FontWeight.SemiBold
-                        ),
-                        color = Color(0xFF6D6963)
+                        style = editorTitleStyle(),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 },
-                textStyle = MaterialTheme.typography.displaySmall.copy(
-                    fontFamily = EditorEditorialFamily,
-                    fontSize = 40.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF151718)
-                ),
+                textStyle = editorTitleStyle(),
                 colors = editorTextFieldColors(),
                 singleLine = false
             )
 
-            Text(
-                "Start writing your story…",
-                modifier = Modifier.padding(top = WritOnSpacing.xs),
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontFamily = EditorEditorialFamily,
-                    color = Color(0xFF6D6963)
-                )
-            )
-
-            EditorToolbar(modifier = Modifier.padding(top = WritOnSpacing.lg))
-
-            Box(
+            EditorBodyField(
+                value = bodyValue,
+                onValueChange = {
+                    bodyValue = it
+                    viewModel.updateContent(it.text)
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .padding(top = WritOnSpacing.xl)
-            ) {
-                if (content.isBlank()) {
-                    Row(modifier = Modifier.padding(top = WritOnSpacing.sm)) {
-                        Text(
-                            "“",
-                            style = MaterialTheme.typography.displayMedium.copy(
-                                fontFamily = EditorEditorialFamily,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = Color(0xFFE9E1D7)
-                        )
-                        Spacer(Modifier.width(WritOnSpacing.sm))
-                        Text(
-                            "Every great story begins\nwith a single first sentence.",
-                            style = MaterialTheme.typography.titleLarge.copy(
-                                fontFamily = EditorEditorialFamily,
-                                fontStyle = FontStyle.Italic,
-                                lineHeight = 31.sp
-                            ),
-                            color = Color(0xFF6D6963)
-                        )
-                    }
-                }
-                TextField(
-                    value = content,
-                    onValueChange = viewModel::updateContent,
-                    modifier = Modifier.fillMaxSize(),
-                    textStyle = MaterialTheme.typography.titleLarge.copy(
-                        fontFamily = EditorEditorialFamily,
-                        fontSize = 21.sp,
-                        lineHeight = 32.sp,
-                        color = Color(0xFF151718)
-                    ),
-                    colors = editorTextFieldColors(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text)
+                    .padding(top = 6.dp)
+            )
+            if (draftStatus is EditorDraftStatus.Failed) {
+                Text(
+                    text = (draftStatus as EditorDraftStatus.Failed).message,
+                    color = BrandRed,
+                    style = MaterialTheme.typography.labelMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
             }
         }
     }
+}
+
+private fun EditorDraftStatus.label(): String = when (this) {
+    EditorDraftStatus.Unsaved -> "Unsaved changes"
+    EditorDraftStatus.Saving -> "Saving…"
+    EditorDraftStatus.Saved -> "Saved"
+    EditorDraftStatus.Offline -> "Saved on this device"
+    is EditorDraftStatus.Failed -> "Save needs attention"
+}
+
+@Composable
+private fun EditorWritingTopBar(
+    onBackClick: () -> Unit,
+    onSaveClick: () -> Unit,
+    onPublishClick: () -> Unit,
+    canPublish: Boolean
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = onBackClick) {
+                    Image(
+                        painterResource(R.drawable.ic_back),
+                        contentDescription = stringResource(R.string.common_back),
+                        modifier = Modifier.size(24.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                    )
+        }
+        Spacer(Modifier.weight(1f))
+        TextButton(onClick = onSaveClick) {
+            Text("Save", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onBackground)
+        }
+        Spacer(Modifier.width(6.dp))
+        Button(
+            onClick = onPublishClick,
+            enabled = canPublish,
+            modifier = Modifier.height(44.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = BrandRed,
+                contentColor = MaterialTheme.colorScheme.surface,
+                disabledContainerColor = BrandRed.copy(alpha = 0.35f),
+                disabledContentColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
+            ),
+            shape = RoundedCornerShape(WritOnRadius.pill),
+            contentPadding = PaddingValues(horizontal = 19.dp, vertical = 0.dp)
+        ) {
+            Text(stringResource(R.string.editor_publish), style = MaterialTheme.typography.labelLarge)
+        }
+    }
+}
+
+@Composable
+private fun editorTitleStyle() = MaterialTheme.typography.displayMedium.copy(
+    fontFamily = EditorEditorialFamily,
+    fontSize = 40.sp,
+    lineHeight = 46.sp,
+    fontWeight = FontWeight.Normal,
+    color = MaterialTheme.colorScheme.onBackground
+)
+
+@Composable
+private fun EditorBodyField(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val bodyStyle = MaterialTheme.typography.bodyLarge.copy(
+        fontFamily = EditorEditorialFamily,
+        fontSize = 18.sp,
+        lineHeight = 31.sp,
+        color = MaterialTheme.colorScheme.onBackground
+    )
+
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier.semantics { contentDescription = "Story content" },
+        textStyle = bodyStyle,
+        cursorBrush = SolidColor(BrandRed),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+        decorationBox = { innerTextField ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                if (value.text.isBlank()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        VerticalDivider(
+                            modifier = Modifier.height(25.dp).width(2.dp),
+                            color = BrandRed
+                        )
+                        Spacer(Modifier.width(9.dp))
+                        Text(
+                            "Start writing your story…",
+                            style = bodyStyle.copy(fontStyle = FontStyle.Italic, fontSize = 17.sp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+                innerTextField()
+            }
+        }
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -249,112 +286,145 @@ private fun editorTextFieldColors() = TextFieldDefaults.colors(
     cursorColor = BrandRed
 )
 
+private enum class EditorFormatAction { Bold, Italic, Underline, Bullet, Quote }
+
+private fun TextFieldValue.apply(action: EditorFormatAction): TextFieldValue = when (action) {
+    EditorFormatAction.Bold -> wrapSelection("**")
+    EditorFormatAction.Italic -> wrapSelection("_")
+    EditorFormatAction.Underline -> wrapSelection("__")
+    EditorFormatAction.Bullet -> prefixCurrentLine("• ")
+    EditorFormatAction.Quote -> prefixCurrentLine("> ")
+}
+
+private fun TextFieldValue.wrapSelection(marker: String): TextFieldValue {
+    val start = selection.min.coerceIn(0, text.length)
+    val end = selection.max.coerceIn(start, text.length)
+    val selected = text.substring(start, end)
+    val replacement = "$marker$selected$marker"
+    val updated = text.replaceRange(start, end, replacement)
+    val cursor = if (selected.isEmpty()) start + marker.length else start + replacement.length
+    return TextFieldValue(updated, TextRange(cursor))
+}
+
+private fun TextFieldValue.prefixCurrentLine(prefix: String): TextFieldValue {
+    val cursor = selection.start.coerceIn(0, text.length)
+    val lineStart = text.lastIndexOf('\n', (cursor - 1).coerceAtLeast(0)).let { if (it < 0) 0 else it + 1 }
+    val lineEnd = text.indexOf('\n', cursor).let { if (it < 0) text.length else it }
+    val line = text.substring(lineStart, lineEnd)
+    val replacement = if (line.startsWith(prefix)) line.removePrefix(prefix) else prefix + line
+    val delta = replacement.length - line.length
+    return TextFieldValue(
+        text.replaceRange(lineStart, lineEnd, replacement),
+        TextRange((cursor + delta).coerceAtLeast(lineStart + if (replacement.startsWith(prefix)) prefix.length else 0))
+    )
+}
+
 @Composable
-private fun EditorToolbar(modifier: Modifier = Modifier) {
+private fun EditorToolbar(
+    onFormat: (EditorFormatAction) -> Unit,
+    onPickImage: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Surface(
         modifier = modifier.fillMaxWidth(),
-        color = Color(0xFFFFFDF9),
-        shape = RoundedCornerShape(WritOnRadius.feature),
-        shadowElevation = WritOnElevation.raised
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(WritOnRadius.field),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 9.dp, vertical = WritOnSpacing.sm),
+                .horizontalScroll(rememberScrollState())
+                .padding(horizontal = 8.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            ToolbarLabel("H₁")
-            ToolbarLabel("H₂")
-            ToolbarLabel("H₃")
-            VerticalDivider(modifier = Modifier.height(28.dp))
-            ToolbarIcon(R.drawable.ic_bold, "Bold")
-            ToolbarIcon(R.drawable.ic_italic, "Italic")
-            ToolbarIcon(R.drawable.ic_quote, "Quote")
-            ToolbarIcon(R.drawable.ic_bullet_list, "Bulleted list")
-            ToolbarIcon(R.drawable.ic_numbered_list, "Numbered list")
-            ToolbarIcon(R.drawable.ic_link, "Link")
-            ToolbarIcon(R.drawable.ic_image, "Insert image")
-            ToolbarIcon(R.drawable.ic_divider, "Divider")
+            ToolbarLabel("B", "Bold", FontWeight.Bold, onClick = { onFormat(EditorFormatAction.Bold) })
+            ToolbarLabel("I", "Italic", FontWeight.Normal, FontStyle.Italic, onClick = { onFormat(EditorFormatAction.Italic) })
+            ToolbarLabel("U", "Underline", onClick = { onFormat(EditorFormatAction.Underline) })
+            VerticalDivider(modifier = Modifier.height(24.dp), color = MaterialTheme.colorScheme.outlineVariant)
+            ToolbarIcon(R.drawable.ic_bullet_list, "Bulleted list", onClick = { onFormat(EditorFormatAction.Bullet) })
+            ToolbarIcon(R.drawable.ic_quote, "Block quote", onClick = { onFormat(EditorFormatAction.Quote) })
+            ToolbarIcon(R.drawable.ic_image, "Add cover image", onClick = onPickImage)
         }
     }
 }
 
 @Composable
-private fun ToolbarLabel(text: String) {
+private fun ToolbarLabel(
+    text: String,
+    description: String,
+    weight: FontWeight = FontWeight.Medium,
+    style: FontStyle = FontStyle.Normal,
+    onClick: () -> Unit
+) {
     Box(
         modifier = Modifier
-            .width(34.dp)
-            .height(38.dp)
-            .clickable { },
+            .width(38.dp)
+            .height(40.dp)
+            .semantics { contentDescription = description }
+            .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text(text, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold, fontSize = 17.sp)
+        Text(text, color = MaterialTheme.colorScheme.onSurface, fontWeight = weight, fontStyle = style, fontSize = 16.sp)
     }
 }
 
 @Composable
-private fun ToolbarIcon(icon: Int, description: String) {
+private fun ToolbarIcon(icon: Int, description: String, enabled: Boolean = true, onClick: () -> Unit = {}) {
     Box(
         modifier = Modifier
-            .width(34.dp)
-            .height(38.dp)
-            .clickable { },
+            .width(40.dp)
+            .height(40.dp)
+            .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         Image(
             painterResource(icon),
             contentDescription = description,
-            modifier = Modifier.width(21.dp),
-            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+            modifier = Modifier.size(20.dp),
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else 0.35f))
         )
     }
 }
 
 @Composable
-private fun EditorStatusCard(wordCount: Int, readTime: Int, savedStatus: String) {
+private fun EditorWritingFooter(
+    wordCount: Int,
+    readTime: Int,
+    savedStatus: String,
+    onFormat: (EditorFormatAction) -> Unit,
+    onPickImage: () -> Unit
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.sm),
+            .padding(horizontal = 28.dp, vertical = 12.dp),
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
-        shape = RoundedCornerShape(WritOnRadius.feature),
-        shadowElevation = WritOnElevation.raised
+        shape = RoundedCornerShape(WritOnRadius.card),
+        shadowElevation = WritOnElevation.flat
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(78.dp)
-                .padding(horizontal = WritOnSpacing.md),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 12.dp, vertical = 10.dp)
         ) {
-            StatusMetric(R.drawable.ic_bullet_list, "Words", wordCount.toString(), Modifier.weight(1f))
-            VerticalDivider(modifier = Modifier.height(42.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            StatusMetric(R.drawable.ic_clock, "Read time", "$readTime min", Modifier.weight(1f))
-            VerticalDivider(modifier = Modifier.height(42.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            StatusMetric(R.drawable.ic_bullet_list, "Saved", savedStatus, Modifier.weight(1f), BrandRed)
-        }
-    }
-}
-
-@Composable
-private fun StatusMetric(
-    icon: Int,
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    valueColor: Color = MaterialTheme.colorScheme.onSurface
-) {
-    Row(
-        modifier = modifier.padding(horizontal = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(painterResource(icon), contentDescription = null, modifier = Modifier.width(20.dp))
-        Spacer(Modifier.width(5.dp))
-        Column {
-            Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
-            Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, color = valueColor, maxLines = 1)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("$wordCount words", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("  •  ", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("$readTime min read", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.weight(1f))
+                Text(savedStatus, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.width(5.dp))
+                Image(
+                    painter = painterResource(R.drawable.ic_check_muted),
+                    contentDescription = savedStatus,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            EditorToolbar(onFormat = onFormat, onPickImage = onPickImage)
         }
     }
 }
@@ -370,6 +440,7 @@ fun PublishStoryScreen(
     val category by viewModel.category.collectAsStateWithLifecycle()
     val content by viewModel.content.collectAsStateWithLifecycle()
     val isPublishing by viewModel.isPublishing.collectAsStateWithLifecycle()
+    val categories by viewModel.categories.collectAsStateWithLifecycle()
     var selectedCover by rememberSaveable { mutableStateOf(1) }
     var isPublic by rememberSaveable { mutableStateOf(true) }
     var categoryExpanded by rememberSaveable { mutableStateOf(false) }
@@ -438,7 +509,7 @@ fun PublishStoryScreen(
                     }
                 }
                 DropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
-                    CATEGORIES.forEach { item ->
+                    categories.forEach { item ->
                         DropdownMenuItem(
                             text = { Text(item) },
                             onClick = { viewModel.updateCategory(item); categoryExpanded = false }
@@ -545,7 +616,7 @@ private fun PublishHeader(onBackClick: () -> Unit) {
         Text(
             "Publish",
             modifier = Modifier.padding(start = WritOnSpacing.sm),
-            style = MaterialTheme.typography.headlineLarge.copy(fontFamily = EditorEditorialFamily, fontWeight = FontWeight.SemiBold),
+            style = MaterialTheme.typography.headlineLarge.copy(fontFamily = EditorEditorialFamily, fontWeight = FontWeight.Normal),
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(Modifier.weight(1f))

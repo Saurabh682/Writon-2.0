@@ -30,13 +30,12 @@ fun PostCoverImage(
     contentDescription: String?,
     modifier: Modifier = Modifier,
     categoryFontSize: androidx.compose.ui.unit.TextUnit = 26.sp,
-    forceDefault: Boolean = false,
 ) {
     Box(
         modifier = modifier.clip(RoundedCornerShape(WritOnRadius.field)),
         contentAlignment = Alignment.Center
     ) {
-        if (forceDefault || imageUrl.isNullOrBlank()) {
+        if (imageUrl.isNullOrBlank()) {
             Image(
                 painter = painterResource(R.drawable.default_story_cover_wall),
                 contentDescription = contentDescription,

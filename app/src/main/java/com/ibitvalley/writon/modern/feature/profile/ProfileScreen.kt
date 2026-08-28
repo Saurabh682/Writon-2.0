@@ -12,10 +12,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -23,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogWindowProvider
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.network.model.PostDto
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
@@ -46,7 +51,10 @@ fun ProfileScreen(
     onStoryClick: (String) -> Unit,
     onWriteClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    onApplaudsClick: () -> Unit = {}
+    onStoriesClick: () -> Unit,
+    onApplaudsClick: () -> Unit,
+    onFollowersClick: () -> Unit,
+    onFollowingClick: () -> Unit,
 ) {
     val user by viewModel.userProfile.collectAsState()
     val stories by viewModel.userStories.collectAsState()
@@ -56,10 +64,13 @@ fun ProfileScreen(
     var selectedTab by remember { mutableIntStateOf(0) }
     var overflowExpanded by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
+    var profileSaveError by remember { mutableStateOf<String?>(null) }
 
     val name = user?.fullName ?: stringResource(R.string.profile_title)
     val penName = user?.penName ?: ""
-    val bio = user?.bio?.takeIf { it.isNotBlank() } ?: "Essayist, architectural critic, and student of quiet spaces. Writing about design systems, stillness, and human craft."
+    // A missing legacy bio must remain missing. Fabricated copy makes imported
+    // writer profiles look incorrect and prevents the owner from spotting it.
+    val bio = user?.bio?.trim()?.takeIf { it.isNotBlank() }
     val initials = initialsOf(name)
 
     Scaffold(
@@ -81,14 +92,6 @@ fun ProfileScreen(
                         Image(
                             painterResource(R.drawable.ic_edit_pencil),
                             contentDescription = stringResource(R.string.profile_edit_button),
-                            modifier = Modifier.size(24.dp),
-                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-                        )
-                    }
-                    IconButton(onClick = { }) {
-                        Image(
-                            painterResource(R.drawable.ic_share),
-                            contentDescription = "Share profile",
                             modifier = Modifier.size(24.dp),
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                         )
@@ -118,12 +121,33 @@ fun ProfileScreen(
             contentPadding = PaddingValues(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
             verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
         ) {
-            item { ProfileIdentity(name, penName, bio, initials, user?.location, user?.joinedAt, onEditClick = { showEditDialog = true }) }
-            item { ProfileStats(stories.size, user?.applaudsReceived ?: 0, user?.followersCount ?: 0, user?.followingCount ?: 0, onApplaudsClick) }
+            item {
+                ProfileIdentity(name, penName, bio, initials, user?.location, user?.joinedAt, onEditClick = {
+                    profileSaveError = null
+                    showEditDialog = true
+                })
+            }
+            item {
+                ProfileStats(
+                    stories = user?.storiesCount ?: stories.size,
+                    applauds = user?.applaudsReceived ?: 0,
+                    followers = user?.followersCount ?: 0,
+                    following = user?.followingCount ?: 0,
+                    onStoriesClick = onStoriesClick,
+                    onApplaudsClick = onApplaudsClick,
+                    onFollowersClick = onFollowersClick,
+                    onFollowingClick = onFollowingClick,
+                )
+            }
             item { ProfileTabs(selectedTab) { selectedTab = it } }
 
             when (selectedTab) {
-                0 -> item { ProfileAboutTab(name, bio, user?.location, user?.joinedAt, user?.quoteOfDay, onEditClick = { showEditDialog = true }) }
+                0 -> item {
+                    ProfileAboutTab(name, bio, user?.location, user?.joinedAt, user?.quoteOfDay, onEditClick = {
+                        profileSaveError = null
+                        showEditDialog = true
+                    })
+                }
                 1 -> {
                     if (stories.isEmpty()) {
                         item { ProfileEmptyTab("stories", onWriteClick) }
@@ -152,11 +176,25 @@ fun ProfileScreen(
             initialBio = user?.bio ?: "",
             initialLocation = user?.location ?: "",
             isLoading = isUpdating,
-            onDismiss = { showEditDialog = false },
+            errorMessage = profileSaveError,
+            onDismiss = {
+                profileSaveError = null
+                showEditDialog = false
+            },
             onSave = { newName, newPenName, newBio, newLocation ->
-                viewModel.updateProfile(newName, newPenName, newBio, newLocation, onSuccess = {
-                    showEditDialog = false
-                })
+                profileSaveError = null
+                viewModel.updateProfile(
+                    newName,
+                    newPenName,
+                    newBio,
+                    newLocation,
+                    onSuccess = {
+                        showEditDialog = false
+                    },
+                    onError = { error ->
+                        profileSaveError = error.toUserFacingProfileError()
+                    }
+                )
             }
         )
     }
@@ -166,7 +204,7 @@ fun ProfileScreen(
 private fun ProfileIdentity(
     name: String,
     penName: String,
-    bio: String,
+    bio: String?,
     initials: String,
     location: String?,
     joinedAt: String?,
@@ -199,8 +237,10 @@ private fun ProfileIdentity(
                     }
                 }
                 if (penName.isNotBlank()) Text("@$penName", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.height(WritOnSpacing.xxs))
-                Text(bio, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 19.sp), maxLines = 3, overflow = TextOverflow.Ellipsis)
+                bio?.let {
+                    Spacer(Modifier.height(WritOnSpacing.xxs))
+                    Text(it, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 19.sp), maxLines = 3, overflow = TextOverflow.Ellipsis)
+                }
                 Spacer(Modifier.height(WritOnSpacing.sm))
                 if (!location.isNullOrBlank() || !joinedAt.isNullOrBlank()) Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.xxs)) {
                     if (!location.isNullOrBlank()) {
@@ -251,7 +291,16 @@ private fun ProfileIdentity(
 }
 
 @Composable
-private fun ProfileStats(stories: Int, applauds: Int, followers: Int, following: Int, onApplaudsClick: () -> Unit) {
+private fun ProfileStats(
+    stories: Int,
+    applauds: Int,
+    followers: Int,
+    following: Int,
+    onStoriesClick: () -> Unit,
+    onApplaudsClick: () -> Unit,
+    onFollowersClick: () -> Unit,
+    onFollowingClick: () -> Unit,
+) {
     Surface(
         shape = RoundedCornerShape(WritOnRadius.card),
         color = MaterialTheme.colorScheme.surface,
@@ -261,21 +310,30 @@ private fun ProfileStats(stories: Int, applauds: Int, followers: Int, following:
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(vertical = WritOnSpacing.lg), horizontalArrangement = Arrangement.SpaceEvenly) {
-            ProfileStat(stories.toString(), "Stories\npublished")
+            ProfileStat(stories.toString(), "Stories\npublished", onClick = onStoriesClick)
             VerticalDivider(Modifier.height(54.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            ProfileStat(formatProfileCount(applauds), "Applauds\nreceived", accent = true, modifier = Modifier.clickable(onClick = onApplaudsClick))
+            ProfileStat(formatProfileCount(applauds), "Applauds\nreceived", onClick = onApplaudsClick)
             VerticalDivider(Modifier.height(54.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            ProfileStat(followers.toString(), "Followers")
+            ProfileStat(followers.toString(), "Followers", onClick = onFollowersClick)
             VerticalDivider(Modifier.height(54.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            ProfileStat(following.toString(), "Following")
+            ProfileStat(following.toString(), "Following", onClick = onFollowingClick)
         }
     }
 }
 
 @Composable
-private fun ProfileStat(value: String, label: String, accent: Boolean = true, modifier: Modifier = Modifier) {
-    Column(modifier = modifier.widthIn(min = 54.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp), color = if (accent) BrandRed else MaterialTheme.colorScheme.onSurface)
+private fun ProfileStat(value: String, label: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .widthIn(min = 54.dp)
+            .heightIn(min = 64.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .semantics { contentDescription = "$value ${label.replace("\n", " ")}" }
+            .padding(horizontal = 4.dp, vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Text(value, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp), color = BrandRed)
         Spacer(Modifier.height(WritOnSpacing.xxs))
         Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
     }
@@ -310,7 +368,7 @@ private fun ProfileTabs(selectedTab: Int, onSelected: (Int) -> Unit) {
 }
 
 @Composable
-private fun ProfileAboutTab(name: String, bio: String, location: String?, joinedAt: String?, quoteOfDay: String?, onEditClick: () -> Unit) {
+private fun ProfileAboutTab(name: String, bio: String?, location: String?, joinedAt: String?, quoteOfDay: String?, onEditClick: () -> Unit) {
     val firstName = name.substringBefore(' ')
     Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)) {
         Surface(
@@ -332,7 +390,11 @@ private fun ProfileAboutTab(name: String, bio: String, location: String?, joined
                     }
                 }
                 Spacer(Modifier.height(WritOnSpacing.sm))
-                Text(bio, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp, lineHeight = 22.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    bio ?: "No bio has been added yet.",
+                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp, lineHeight = 22.sp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
 
                 quoteOfDay?.takeIf { it.isNotBlank() }?.let { quote ->
                     Spacer(Modifier.height(WritOnSpacing.md))
@@ -354,7 +416,11 @@ private fun ProfileAboutTab(name: String, bio: String, location: String?, joined
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Image(painterResource(R.drawable.ic_bookmark_orange), contentDescription = null, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.width(WritOnSpacing.sm))
-                    Text("Writer on WritOn since ${joinedAt?.take(4) ?: "2024"}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        joinedAt?.take(4)?.let { "Writer on WritOn since $it" } ?: "Writer on WritOn",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -562,6 +628,7 @@ private fun EditProfileDialog(
     initialBio: String,
     initialLocation: String,
     isLoading: Boolean,
+    errorMessage: String?,
     onDismiss: () -> Unit,
     onSave: (fullName: String, penName: String, bio: String, location: String) -> Unit
 ) {
@@ -571,6 +638,15 @@ private fun EditProfileDialog(
     var location by remember { mutableStateOf(initialLocation) }
 
     Dialog(onDismissRequest = onDismiss) {
+        val dialogView = LocalView.current
+        // The platform Dialog default is a heavy black dim. Keep the edit form
+        // focused without turning the WritOn paper background into grey mud.
+        SideEffect {
+            (dialogView.parent as? DialogWindowProvider)?.window?.apply {
+                setDimAmount(0.12f)
+                setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.Transparent.toArgb()))
+            }
+        }
         Surface(
             shape = RoundedCornerShape(16.dp),
             color = MaterialTheme.colorScheme.surface,
@@ -611,13 +687,22 @@ private fun EditProfileDialog(
 
                 OutlinedTextField(
                     value = penName,
-                    onValueChange = { penName = it },
+                    onValueChange = { penName = it.removePrefix("@").lowercase() },
                     label = { Text(stringResource(R.string.profile_pen_name_hint)) },
                     prefix = { Text("@") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(10.dp)
                 )
+
+                errorMessage?.let { error ->
+                    Text(
+                        text = error,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = BrandRed,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
 
                 OutlinedTextField(
                     value = bio,
@@ -652,7 +737,7 @@ private fun EditProfileDialog(
                     Button(
                         onClick = {
                             if (fullName.isNotBlank() && penName.isNotBlank()) {
-                                onSave(fullName, penName, bio, location)
+                                onSave(fullName, penName.removePrefix("@").lowercase(), bio, location)
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = BrandRed),
@@ -675,5 +760,19 @@ private fun initialsOf(name: String): String = name.split(" ").mapNotNull { it.f
 
 private fun formatProfileCount(value: Int): String =
     if (value >= 1_000) String.format(java.util.Locale.getDefault(), "%.1fK", value / 1_000.0) else value.toString()
+
+private fun String.toUserFacingProfileError(): String {
+    val normalized = trim()
+    return when {
+        normalized.contains("username is already taken", ignoreCase = true) ->
+            "That pen name is already taken. Please choose another one."
+        normalized.contains("Username may contain only", ignoreCase = true) ->
+            "Use 3–32 lowercase letters, numbers, or underscores only."
+        normalized.contains("Invalid profile data", ignoreCase = true) ->
+            "Please check your name and pen name, then try again."
+        normalized.isBlank() -> "We couldn't save your profile. Please try again."
+        else -> normalized.removePrefix("{\"error\":\"").substringBefore("\"}")
+    }
+}
 
 

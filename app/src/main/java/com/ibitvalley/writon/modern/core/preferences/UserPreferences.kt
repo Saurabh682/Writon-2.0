@@ -3,6 +3,25 @@ package com.ibitvalley.writon.modern.core.preferences
 import android.content.Context
 import android.content.SharedPreferences
 
+data class ReaderPreferences(
+    val fontSizeSp: Float,
+    val lineHeightMultiplier: Float,
+    val fontFamily: String
+)
+
+internal fun ReaderPreferences.normalized() = ReaderPreferences(
+    fontSizeSp = fontSizeSp.coerceIn(16f, 24f),
+    lineHeightMultiplier = lineHeightMultiplier.coerceIn(1.3f, 1.9f),
+    fontFamily = fontFamily.takeIf { it in setOf("serif", "sans", "mono") } ?: "serif"
+)
+
+data class CachedAppVersion(
+    val latestVersionCode: Int,
+    val minSupportedVersionCode: Int,
+    val updateUrl: String,
+    val checkedAtMillis: Long
+)
+
 class UserPreferences(context: Context) {
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("writon_prefs", Context.MODE_PRIVATE)
@@ -19,6 +38,13 @@ class UserPreferences(context: Context) {
     var favouriteCategories: Set<String>
         get() = sharedPreferences.getStringSet("favourite_categories", emptySet()) ?: emptySet()
         set(value) = sharedPreferences.edit().putStringSet("favourite_categories", value).apply()
+
+    /** Stores canonical topic IDs synchronously so selection survives an immediate app close. */
+    fun saveFavouriteCategories(topicIds: Set<String>) {
+        sharedPreferences.edit()
+            .putStringSet("favourite_categories", topicIds.toSortedSet())
+            .commit()
+    }
 
     /** Theme mode: "paper", "sepia", "dark", "system" */
     var themeMode: String
@@ -40,6 +66,23 @@ class UserPreferences(context: Context) {
         get() = sharedPreferences.getString("reader_font_family", "serif") ?: "serif"
         set(value) = sharedPreferences.edit().putString("reader_font_family", value).apply()
 
+    val readerPreferences: ReaderPreferences
+        get() = ReaderPreferences(
+            fontSizeSp = readerFontSizeSp,
+            lineHeightMultiplier = readerLineHeightMultiplier,
+            fontFamily = readerFontFamily
+        )
+
+    /** Saves reader options together and synchronously so a selection survives an immediate close. */
+    fun saveReaderPreferences(preferences: ReaderPreferences) {
+        val normalized = preferences.normalized()
+        sharedPreferences.edit()
+            .putFloat("reader_font_size_sp", normalized.fontSizeSp)
+            .putFloat("reader_line_height_multiplier", normalized.lineHeightMultiplier)
+            .putString("reader_font_family", normalized.fontFamily)
+            .commit()
+    }
+
     /** True if biometric / fingerprint unlock is enabled by user */
     var isBiometricEnabled: Boolean
         get() = sharedPreferences.getBoolean("biometric_enabled", false)
@@ -50,7 +93,32 @@ class UserPreferences(context: Context) {
         get() = sharedPreferences.getString("app_language", "en") ?: "en"
         set(value) = sharedPreferences.edit().putString("app_language", value).apply()
 
+    val cachedAppVersion: CachedAppVersion?
+        get() {
+            val checkedAt = sharedPreferences.getLong("app_version_checked_at", 0L)
+            val latest = sharedPreferences.getInt("app_version_latest", 0)
+            val minimum = sharedPreferences.getInt("app_version_minimum", 0)
+            val updateUrl = sharedPreferences.getString("app_version_url", null)
+            return if (checkedAt > 0L && latest > 0 && minimum > 0 && !updateUrl.isNullOrBlank()) {
+                CachedAppVersion(latest, minimum, updateUrl, checkedAt)
+            } else null
+        }
+
+    fun saveAppVersion(version: CachedAppVersion) {
+        sharedPreferences.edit()
+            .putInt("app_version_latest", version.latestVersionCode)
+            .putInt("app_version_minimum", version.minSupportedVersionCode)
+            .putString("app_version_url", version.updateUrl)
+            .putLong("app_version_checked_at", version.checkedAtMillis)
+            .apply()
+    }
+
     fun clear() {
-        sharedPreferences.edit().clear().apply()
+        // Account/session data must not erase a reader's device-level typography choices.
+        sharedPreferences.edit()
+            .remove("onboarding_complete")
+            .remove("visitor_mode")
+            .remove("favourite_categories")
+            .apply()
     }
 }

@@ -4,6 +4,7 @@ apply plugin: 'com.google.devtools.ksp'
 apply plugin: 'org.jetbrains.kotlin.plugin.compose'
 apply plugin: 'com.google.gms.google-services'
 apply plugin: 'com.google.firebase.crashlytics'
+apply plugin: 'com.google.firebase.firebase-perf'
 
 def signingProperties = new Properties()
 def signingPropertiesFile = rootProject.file('keystore.properties')
@@ -12,7 +13,21 @@ if (signingPropertiesFile.exists()) {
 }
 
 def releaseSigningKeys = ['storeFile', 'storePassword', 'keyAlias', 'keyPassword']
-def releaseSigningConfigured = releaseSigningKeys.every { signingProperties.getProperty(it)?.trim() }
+def releaseSigningEnvironmentNames = [
+    storeFile: 'WRITON_RELEASE_STORE_FILE',
+    storePassword: 'WRITON_RELEASE_STORE_PASSWORD',
+    keyAlias: 'WRITON_RELEASE_KEY_ALIAS',
+    keyPassword: 'WRITON_RELEASE_KEY_PASSWORD',
+]
+def releaseSigningValues = releaseSigningKeys.collectEntries { key ->
+    def fromFile = signingProperties.getProperty(key)?.trim()
+    def fromEnvironment = System.getenv(releaseSigningEnvironmentNames[key])?.trim()
+    [(key): fromEnvironment ?: fromFile]
+}
+def releaseSigningConfigured = releaseSigningKeys.every { releaseSigningValues[it] }
+// Public certificate fingerprint for the upload key that signs WritOn release artifacts.
+// Google Sign-In requires a matching Android OAuth client in google-services.json.
+def releaseGoogleSignInSha1 = '663c9171d757475f8f94ab1c0826ad38f145c60f'
 if (signingPropertiesFile.exists() && !releaseSigningConfigured) {
     throw new GradleException('keystore.properties must define storeFile, storePassword, keyAlias, and keyPassword.')
 }
@@ -46,11 +61,14 @@ android {
         applicationId "com.ibitvalley.writon"
         minSdk 23
         targetSdk 35
-        versionCode 101
-        versionName '2.0.0'
+        // Each Google Play upload needs a unique, monotonically increasing code.
+        versionCode 105
+        versionName '2.0.3'
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary = true
 
         ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
             arg("room.queryVerification", "false")
             arg("room.incremental", "true")
             arg("room.expandProjection", "true")
@@ -86,15 +104,10 @@ android {
         }
         release {
             if (releaseSigningConfigured) {
-                keyAlias signingProperties.getProperty('keyAlias')
-                keyPassword signingProperties.getProperty('keyPassword')
-                storeFile rootProject.file(signingProperties.getProperty('storeFile'))
-                storePassword signingProperties.getProperty('storePassword')
-            } else {
-                storeFile file("${System.getProperty('user.home')}/.android/debug.keystore")
-                storePassword "android"
-                keyAlias "androiddebugkey"
-                keyPassword "android"
+                keyAlias releaseSigningValues.keyAlias
+                keyPassword releaseSigningValues.keyPassword
+                storeFile rootProject.file(releaseSigningValues.storeFile)
+                storePassword releaseSigningValues.storePassword
             }
         }
     }
@@ -109,9 +122,54 @@ android {
             buildConfigField 'String', 'API_BASE_URL', buildConfigString(releaseApiBaseUrl)
             manifestPlaceholders.usesCleartextTraffic = false
             minifyEnabled false
-            signingConfig signingConfigs.release
+            if (releaseSigningConfigured) {
+                signingConfig signingConfigs.release
+            }
         }
     }
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    def needsReleaseSigning = taskGraph.allTasks.any { task ->
+        task.name.toLowerCase().contains('release') &&
+            (task.name.toLowerCase().contains('assemble') || task.name.toLowerCase().contains('bundle'))
+    }
+    if (needsReleaseSigning && !releaseSigningConfigured) {
+        throw new GradleException('Release signing is not configured. Create an untracked keystore.properties with storeFile, storePassword, keyAlias, and keyPassword.')
+    }
+}
+
+tasks.register('verifyReleaseGoogleSignInConfig') {
+    group = 'verification'
+    description = 'Fails release builds when google-services.json lacks the release Android OAuth client.'
+
+    doLast {
+        def googleServicesFile = file('google-services.json')
+        if (!googleServicesFile.exists()) {
+            throw new GradleException('app/google-services.json is missing. Download it from Firebase before building a release.')
+        }
+
+        def googleServices = new groovy.json.JsonSlurper().parse(googleServicesFile)
+        def configuredHashes = (googleServices.client ?: []).collectMany { client ->
+            (client.oauth_client ?: []).findAll { oauthClient ->
+                oauthClient.client_type == 1 && oauthClient.android_info?.package_name == android.namespace
+            }.collect { oauthClient ->
+                oauthClient.android_info?.certificate_hash?.toString()?.replace(':', '')?.toLowerCase()
+            }
+        }.findAll { it }
+
+        if (!configuredHashes.contains(releaseGoogleSignInSha1)) {
+            throw new GradleException(
+                'Release Google Sign-In is not configured. Create an Android OAuth client for ' +
+                    android.namespace + ' with SHA-1 66:3C:91:71:D7:57:47:5F:8F:94:AB:1C:08:26:AD:38:F1:45:C6:0F, ' +
+                    'then download a fresh app/google-services.json from Firebase.'
+            )
+        }
+    }
+}
+
+tasks.matching { it.name == 'processReleaseGoogleServices' }.configureEach {
+    dependsOn tasks.named('verifyReleaseGoogleSignInConfig')
 }
 
 dependencies {
@@ -173,9 +231,12 @@ dependencies {
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-messaging'
     implementation 'com.google.firebase:firebase-crashlytics'
-    implementation 'com.google.firebase:firebase-config'
+    implementation 'com.google.firebase:firebase-perf'
 
     // Unit Testing
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test:runner:1.6.2'
+    androidTestImplementation "androidx.room:room-testing:$roomVersion"
 }

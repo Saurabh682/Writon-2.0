@@ -59,6 +59,13 @@ class CollectionsViewModel(
         else errorMessage = "Could not load notifications."
     }
 
+    fun markNotificationRead(notificationId: String) = launchRequest(showSpinner = false) {
+        val response = apiService.markNotificationRead(notificationId)
+        if (response.isSuccessful) {
+            notifications = notifications.map { if (it.id == notificationId) it.copy(readAt = response.body()?.get("readAt")) else it }
+        }
+    }
+
     fun toggleApplaud(postId: String) = launchRequest {
         val response = apiService.toggleLike(postId)
         if (response.isSuccessful) loadApplauds()

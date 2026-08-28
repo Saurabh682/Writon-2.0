@@ -22,6 +22,9 @@ interface PostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPosts(posts: List<PostEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertPostsIfMissing(posts: List<PostEntity>): List<Long>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPost(post: PostEntity)
 
@@ -61,16 +64,89 @@ interface PostDao {
     @Query("DELETE FROM posts WHERE category = :category")
     suspend fun deletePostsByCategory(category: String)
 
+    /**
+     * Updates list-card fields without replacing a full body that was already downloaded
+     * by the reader. Feed responses intentionally use an empty content field to stay small.
+     */
+    @Query(
+        """UPDATE posts SET
+            authorId = :authorId,
+            authorName = :authorName,
+            authorPenName = :authorPenName,
+            authorAvatarUrl = :authorAvatarUrl,
+            title = :title,
+            slug = :slug,
+            summary = :summary,
+            content = CASE WHEN :content = '' THEN content ELSE :content END,
+            category = :category,
+            coverImage = :coverImage,
+            readingTimeMin = :readingTimeMin,
+            likesCnt = :likesCnt,
+            commentsCnt = :commentsCnt,
+            bookmarksCnt = :bookmarksCnt,
+            isLiked = :isLiked,
+            isBookmarked = :isBookmarked,
+            createdAt = :createdAt
+            WHERE id = :id"""
+    )
+    suspend fun updateFeedPostKeepingContent(
+        id: String,
+        authorId: String,
+        authorName: String,
+        authorPenName: String,
+        authorAvatarUrl: String?,
+        title: String,
+        slug: String,
+        summary: String?,
+        content: String,
+        category: String,
+        coverImage: String?,
+        readingTimeMin: Int,
+        likesCnt: Int,
+        commentsCnt: Int,
+        bookmarksCnt: Int,
+        isLiked: Boolean,
+        isBookmarked: Boolean,
+        createdAt: String
+    )
+
+    @Transaction
+    suspend fun mergeFeedPosts(posts: List<PostEntity>) {
+        val insertResults = insertPostsIfMissing(posts)
+        posts.zip(insertResults).forEach { (post, insertResult) ->
+            if (insertResult == -1L) {
+                updateFeedPostKeepingContent(
+                    id = post.id,
+                    authorId = post.authorId,
+                    authorName = post.authorName,
+                    authorPenName = post.authorPenName,
+                    authorAvatarUrl = post.authorAvatarUrl,
+                    title = post.title,
+                    slug = post.slug,
+                    summary = post.summary,
+                    content = post.content,
+                    category = post.category,
+                    coverImage = post.coverImage,
+                    readingTimeMin = post.readingTimeMin,
+                    likesCnt = post.likesCnt,
+                    commentsCnt = post.commentsCnt,
+                    bookmarksCnt = post.bookmarksCnt,
+                    isLiked = post.isLiked,
+                    isBookmarked = post.isBookmarked,
+                    createdAt = post.createdAt
+                )
+            }
+        }
+    }
+
     @Transaction
     suspend fun replaceAllPosts(posts: List<PostEntity>) {
-        clearAll()
-        insertPosts(posts)
+        mergeFeedPosts(posts)
     }
 
     @Transaction
     suspend fun replaceCategoryPosts(category: String, posts: List<PostEntity>) {
-        deletePostsByCategory(category)
-        insertPosts(posts)
+        mergeFeedPosts(posts)
     }
 }
 

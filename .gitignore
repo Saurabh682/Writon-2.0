@@ -17,6 +17,7 @@ keystore.properties
 *.pem
 *.key
 credentials.json
+client_secret_*.json
 google-services.json
 serviceAccountKey*.json
 .env
@@ -56,6 +57,8 @@ dist/
 graphify-out/
 scratch/
 .worktrees/
+app/oracle key/
+.firebase/
 
 # Data exports (may contain PII)
 data-exports/*.sql

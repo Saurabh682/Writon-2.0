@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,8 +29,11 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.database.WritOnDatabase
 import com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager
 import com.ibitvalley.writon.modern.core.preferences.UserPreferences
-import com.ibitvalley.writon.modern.core.network.NetworkClient
+import com.ibitvalley.writon.modern.core.network.WritOnApiService
+import com.ibitvalley.writon.modern.core.notification.PushNotificationRegistration
 import com.ibitvalley.writon.modern.data.repository.PostRepository
+import com.ibitvalley.writon.modern.data.repository.DraftRepository
+import com.ibitvalley.writon.modern.data.repository.MediaRepository
 import com.ibitvalley.writon.modern.feature.auth.LoginScreen
 import com.ibitvalley.writon.modern.feature.auth.SignupScreen
 import com.ibitvalley.writon.modern.feature.editor.EditorViewModel
@@ -44,9 +48,14 @@ import com.ibitvalley.writon.modern.feature.library.LibraryScreen
 import com.ibitvalley.writon.modern.feature.library.ReadingHistoryScreen
 import com.ibitvalley.writon.modern.feature.notifications.NotificationsScreen
 import com.ibitvalley.writon.modern.feature.onboarding.InterestsScreen
+import com.ibitvalley.writon.modern.feature.onboarding.InterestsViewModel
 import com.ibitvalley.writon.modern.feature.profile.ApplaudsScreen
+import com.ibitvalley.writon.modern.feature.profile.AuthorProfileScreen
 import com.ibitvalley.writon.modern.feature.profile.ProfileScreen
 import com.ibitvalley.writon.modern.feature.profile.ProfileViewModel
+import com.ibitvalley.writon.modern.feature.profile.ProfileStatsDestination
+import com.ibitvalley.writon.modern.feature.profile.ProfileStatsDetailScreen
+import com.ibitvalley.writon.modern.feature.profile.ProfileStatsDetailViewModel
 import com.ibitvalley.writon.modern.feature.reader.ReaderScreen
 import com.ibitvalley.writon.modern.feature.reader.ReaderViewModel
 import com.ibitvalley.writon.modern.feature.search.SearchScreen
@@ -74,6 +83,12 @@ sealed class WritOnRoute(val route: String) {
     object Appearance : WritOnRoute("appearance")
     object Applauds : WritOnRoute("applauds")
     object Profile : WritOnRoute("profile")
+    object ProfileStats : WritOnRoute("profile-stats/{type}") {
+        fun createRoute(destination: ProfileStatsDestination) = "profile-stats/${destination.routeValue}"
+    }
+    object AuthorProfile : WritOnRoute("author/{authorId}") {
+        fun createRoute(authorId: String) = "author/${android.net.Uri.encode(authorId)}"
+    }
     object Reader : WritOnRoute("reader/{storyId}") {
         fun createRoute(storyId: String) = "reader/$storyId"
     }
@@ -100,16 +115,22 @@ private val bottomNavItems = listOf(
 fun WritOnNavigation(
     navController: NavHostController,
     repository: PostRepository,
+    draftRepository: DraftRepository,
+    mediaRepository: MediaRepository,
     userPreferences: UserPreferences,
     database: WritOnDatabase,
+    apiService: WritOnApiService,
+    initialNotificationRoute: String? = null,
+    onNotificationRouteConsumed: () -> Unit = {},
     onThemeChanged: (String) -> Unit = {}
 ) {
     val feedViewModel = remember { FeedViewModel(repository) }
-    val editorViewModel = remember { EditorViewModel(repository) }
-    val collectionsViewModel = remember { CollectionsViewModel(NetworkClient.apiService) }
-    val exploreViewModel = remember { ExploreViewModel(NetworkClient.apiService) }
-    val searchViewModel = remember { SearchViewModel(NetworkClient.apiService, database.postDao(), database.userDao()) }
+    val editorViewModel = remember { EditorViewModel(repository, draftRepository, mediaRepository) }
+    val collectionsViewModel = remember { CollectionsViewModel(apiService) }
+    val exploreViewModel = remember { ExploreViewModel(apiService) }
+    val searchViewModel = remember { SearchViewModel(apiService, database.postDao(), database.userDao()) }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
     var firebaseUser by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
     DisposableEffect(Unit) {
         val auth = FirebaseAuth.getInstance()
@@ -143,6 +164,11 @@ fun WritOnNavigation(
             WritOnRoute.Welcome.route
         }
     }
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val isWritingFlow = currentBackStackEntry?.destination?.route in setOf(
+        WritOnRoute.Write.route,
+        WritOnRoute.Publish.route
+    )
 
     LaunchedEffect(Unit) {
         FirebaseAuthManager.syncNetworkAuthToken { hasToken ->
@@ -150,7 +176,7 @@ fun WritOnNavigation(
 
             coroutineScope.launch {
                 runCatching {
-                    NetworkClient.apiService.getMyProfile()
+                    apiService.getMyProfile()
                 }.onSuccess { response ->
                     if (response.isSuccessful) {
                         Log.i("WritOnAuth", "Server session and Supabase profile are ready.")
@@ -164,10 +190,25 @@ fun WritOnNavigation(
         }
     }
 
+    LaunchedEffect(firebaseUser?.uid) {
+        if (firebaseUser != null) {
+            PushNotificationRegistration.syncCurrentDevice(context.applicationContext)
+                .onFailure { error -> Log.w("WritOnFCM", "Push registration will retry after the next app launch.", error) }
+        }
+    }
+
+    LaunchedEffect(initialNotificationRoute) {
+        val safeRoute = resolveNotificationRoute(initialNotificationRoute) ?: return@LaunchedEffect
+        navController.navigate(safeRoute) { launchSingleTop = true }
+        onNotificationRouteConsumed()
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         bottomBar = {
-            WritOnBottomNavigation(navController = navController, isSignedIn = signedIn, onLoginRequired = openLogin)
+            if (!isWritingFlow) {
+                WritOnBottomNavigation(navController = navController, isSignedIn = signedIn, onLoginRequired = openLogin)
+            }
         }
     ) { innerPadding ->
         NavHost(
@@ -209,32 +250,33 @@ fun WritOnNavigation(
                 )
             ) { backStackEntry ->
                 val fromSettings = backStackEntry.arguments?.getBoolean("fromSettings") ?: false
+                val interestsViewModel = remember(fromSettings, signedIn) {
+                    InterestsViewModel(apiService, userPreferences, signedIn)
+                }
+                val interestsUiState by interestsViewModel.uiState.collectAsState()
+                val continueFromInterests: () -> Unit = {
+                    feedViewModel.selectCategory("All")
+                    if (fromSettings) {
+                        navController.popBackStack()
+                    } else {
+                        navController.navigate(WritOnRoute.Home.route) {
+                            popUpTo(WritOnRoute.Welcome.route) { inclusive = true }
+                        }
+                    }
+                }
                 InterestsScreen(
+                    initialSelectedTopicIds = interestsUiState.selectedTopicIds,
+                    isSaving = interestsUiState.isSaving,
+                    errorMessage = interestsUiState.errorMessage,
                     onBackClick = { navController.popBackStack() },
                     onContinueClick = { selected ->
-                        userPreferences.isOnboardingComplete = true
-                        userPreferences.favouriteCategories = selected.toSet()
-                        if (selected.isNotEmpty()) {
-                            feedViewModel.selectCategory(selected.first())
-                        }
-                        if (fromSettings) {
-                            navController.popBackStack()
-                        } else {
-                            navController.navigate(WritOnRoute.Home.route) {
-                                popUpTo(WritOnRoute.Welcome.route) { inclusive = true }
-                            }
-                        }
+                        interestsViewModel.save(selected, continueFromInterests)
+                    },
+                    onContinueWithSavedChoices = {
+                        interestsViewModel.continueWithSavedChoices(continueFromInterests)
                     },
                     onSkipClick = {
-                        userPreferences.isOnboardingComplete = true
-                        userPreferences.favouriteCategories = emptySet()
-                        if (fromSettings) {
-                            navController.popBackStack()
-                        } else {
-                            navController.navigate(WritOnRoute.Home.route) {
-                                popUpTo(WritOnRoute.Welcome.route) { inclusive = true }
-                            }
-                        }
+                        interestsViewModel.save(emptySet(), continueFromInterests)
                     }
                 )
             }
@@ -260,6 +302,7 @@ fun WritOnNavigation(
                             }
                         } else openLogin()
                     },
+                    onSearchClick = { navController.navigate(WritOnRoute.Search.route) },
                     onNotificationsClick = { if (signedIn) navController.navigate(WritOnRoute.Notifications.route) else openLogin() },
                     onProfileClick = {
                         if (signedIn) {
@@ -270,6 +313,7 @@ fun WritOnNavigation(
                             }
                         } else openLogin()
                     },
+                    onAuthorClick = { authorId -> navController.navigate(WritOnRoute.AuthorProfile.createRoute(authorId)) },
                     isAuthenticated = signedIn,
                     onLoginRequired = openLogin
                 )
@@ -285,7 +329,11 @@ fun WritOnNavigation(
                 SearchScreen(
                     viewModel = searchViewModel,
                     onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) },
-                    onExploreClick = { navController.navigate(WritOnRoute.Explore.route) }
+                    onExploreClick = { navController.navigate(WritOnRoute.Explore.route) },
+                    onNotificationsClick = {
+                        if (signedIn) navController.navigate(WritOnRoute.Notifications.route) else openLogin()
+                    },
+                    onAuthorClick = { authorId -> navController.navigate(WritOnRoute.AuthorProfile.createRoute(authorId)) },
                 )
             }
             composable(WritOnRoute.Write.route) {
@@ -335,13 +383,15 @@ fun WritOnNavigation(
                     NotificationsScreen(
                         viewModel = collectionsViewModel,
                         onSearchClick = { navController.navigate(WritOnRoute.Search.route) },
-                        onSettingsClick = { navController.navigate(WritOnRoute.Settings.route) }
+                        onSettingsClick = { navController.navigate(WritOnRoute.Settings.route) },
+                        onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) }
                     )
                 } else LaunchedEffect(Unit) { openLogin() }
             }
             composable(WritOnRoute.Settings.route) {
                 if (signedIn) SettingsScreen(
                     userPreferences = userPreferences,
+                    deleteAccount = { apiService.deleteMyAccount() },
                     onBackClick = { navController.popBackStack() },
                     onAppearanceClick = { navController.navigate(WritOnRoute.Appearance.route) },
                     onInterestsClick = { navController.navigate(WritOnRoute.Interests.createRoute(true)) },
@@ -349,8 +399,7 @@ fun WritOnNavigation(
                     onNotificationsClick = { navController.navigate(WritOnRoute.Notifications.route) },
                     onSavedStoriesClick = { navController.navigate(WritOnRoute.Library.route) },
                     onLogOut = {
-                        FirebaseAuth.getInstance().signOut()
-                        NetworkClient.setAuthToken(null)
+                        FirebaseAuthManager.signOut()
                         userPreferences.clear()
                         navController.navigate(WritOnRoute.Welcome.route) {
                             popUpTo(navController.graph.id) { inclusive = true }
@@ -378,7 +427,7 @@ fun WritOnNavigation(
             composable(WritOnRoute.Profile.route) {
                 if (signedIn) {
                     val profileViewModel = remember {
-                        ProfileViewModel(NetworkClient.apiService, database.userDao())
+                        ProfileViewModel(apiService, database.userDao())
                     }
                     ProfileScreen(
                         viewModel = profileViewModel,
@@ -392,13 +441,41 @@ fun WritOnNavigation(
                         },
                         onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) },
                         onWriteClick = { navController.navigate(WritOnRoute.Write.route) },
-                        onApplaudsClick = { navController.navigate(WritOnRoute.Applauds.route) },
+                        onStoriesClick = { navController.navigate(WritOnRoute.ProfileStats.createRoute(ProfileStatsDestination.Stories)) },
+                        onApplaudsClick = { navController.navigate(WritOnRoute.ProfileStats.createRoute(ProfileStatsDestination.Applauds)) },
+                        onFollowersClick = { navController.navigate(WritOnRoute.ProfileStats.createRoute(ProfileStatsDestination.Followers)) },
+                        onFollowingClick = { navController.navigate(WritOnRoute.ProfileStats.createRoute(ProfileStatsDestination.Following)) },
                         onSettingsClick = { navController.navigate(WritOnRoute.Settings.route) }
                     )
 
                 } else {
                     LaunchedEffect(Unit) { openLogin() }
                 }
+            }
+            composable(WritOnRoute.ProfileStats.route) { backStackEntry ->
+                val destination = ProfileStatsDestination.fromRoute(backStackEntry.arguments?.getString("type"))
+                    ?: return@composable
+                val viewModel = remember(destination) {
+                    ProfileStatsDetailViewModel(destination, apiService)
+                }
+                ProfileStatsDetailScreen(
+                    destination = destination,
+                    viewModel = viewModel,
+                    onBackClick = { navController.popBackStack() },
+                    onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) },
+                    onAuthorClick = { id -> navController.navigate(WritOnRoute.AuthorProfile.createRoute(id)) },
+                )
+            }
+            composable(WritOnRoute.AuthorProfile.route) { backStackEntry ->
+                val authorId = backStackEntry.arguments?.getString("authorId") ?: return@composable
+                AuthorProfileScreen(
+                    authorId = authorId,
+                    apiService = apiService,
+                    isAuthenticated = signedIn,
+                    onBackClick = { navController.popBackStack() },
+                    onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) },
+                    onLoginRequired = openLogin
+                )
             }
             composable(WritOnRoute.Reader.route) { backStackEntry ->
                 val storyId = backStackEntry.arguments?.getString("storyId") ?: ""
@@ -409,6 +486,8 @@ fun WritOnNavigation(
                     viewModel = readerViewModel,
                     userPreferences = userPreferences,
                     onBackClick = { navController.popBackStack() },
+                    onAuthorClick = { authorId -> navController.navigate(WritOnRoute.AuthorProfile.createRoute(authorId)) },
+                    onCommentsClick = { navController.navigate(WritOnRoute.Comments.createRoute(storyId)) },
                     onLoginRequired = openLogin
                 )
             }
@@ -427,18 +506,24 @@ fun WritOnNavigation(
                     currentUserInitials = authorName,
                     totalCount = comments.size.coerceAtLeast(post?.commentsCnt ?: 0),
                     onBackClick = { navController.popBackStack() },
-                    onSubmitComment = { content, _ ->
+                    onSubmitComment = { content, parentId ->
                         if (user == null) {
                             openLogin()
                         } else {
-                            readerViewModel.commentText.value = content
-                            readerViewModel.submitComment(authorName)
+                            readerViewModel.submitComment(content, authorName, parentId)
                         }
                     }
                 )
             }
         }
     }
+}
+
+internal fun resolveNotificationRoute(route: String?): String? = when {
+    route == null -> null
+    route == WritOnRoute.Notifications.route -> route
+    route.startsWith("reader/") && route.removePrefix("reader/").isNotBlank() -> route
+    else -> WritOnRoute.Notifications.route
 }
 
 @Composable
@@ -454,6 +539,8 @@ private fun WritOnBottomNavigation(
     val hideBottomBarRoutes = listOf(
         WritOnRoute.Reader.route,
         WritOnRoute.Comments.route,
+        WritOnRoute.AuthorProfile.route,
+        WritOnRoute.ProfileStats.route,
         WritOnRoute.Publish.route,
         WritOnRoute.Welcome.route,
         WritOnRoute.Login.route,

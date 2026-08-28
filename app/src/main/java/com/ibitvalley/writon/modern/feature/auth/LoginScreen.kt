@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -34,9 +35,9 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager
+import com.ibitvalley.writon.modern.core.auth.GoogleSignInErrorMapper
+import com.ibitvalley.writon.modern.core.auth.ProfileSyncManager
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnTheme
-import com.ibitvalley.writon.modern.core.network.NetworkClient
-import com.ibitvalley.writon.modern.core.network.model.UpsertMyProfileRequestDto
 import kotlinx.coroutines.launch
 
 private val BrandBeigeColor = Color(0xFFF8F4EE)
@@ -62,8 +63,8 @@ fun LoginScreen(
     var resetSuccessMessage by remember { mutableStateOf<String?>(null) }
     var resetErrorMessage by remember { mutableStateOf<String?>(null) }
 
-    val webClientId = "802112841589-nuiftft451onasf3ou6ueput9in1vei2.apps.googleusercontent.com"
-    val googleSignInClient = remember {
+    val webClientId = stringResource(R.string.default_web_client_id)
+    val googleSignInClient = remember(webClientId) {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(webClientId)
             .requestEmail()
@@ -91,21 +92,11 @@ fun LoginScreen(
                                     authError = "Session verification failed."
                                     return@syncNetworkAuthToken
                                 }
-                                val rawName = user.displayName?.trim().orEmpty()
-                                val penName = rawName.lowercase().replace(Regex("[^a-z0-9_]"), "_").take(24).ifBlank { "writer_${user.uid.take(6)}" }
-                                val fullName = rawName.ifBlank { "WritOn Member" }
                                 coroutineScope.launch {
-                                    runCatching {
-                                        NetworkClient.apiService.upsertMyProfile(
-                                            UpsertMyProfileRequestDto(
-                                                penName = penName,
-                                                fullName = fullName,
-                                                avatarUrl = user.photoUrl?.toString()
-                                            )
-                                        )
-                                    }
+                                    val profileError = ProfileSyncManager.syncGoogleProfile()
                                     isSubmitting = false
-                                    onSignInClick()
+                                    if (profileError == null) onSignInClick()
+                                    else authError = "Google Sign-In succeeded, but $profileError"
                                 }
                             }
                         },
@@ -117,6 +108,8 @@ fun LoginScreen(
                 } else {
                     authError = "Google Sign-In token could not be retrieved."
                 }
+            } catch (e: ApiException) {
+                authError = GoogleSignInErrorMapper.messageFor(e.statusCode, e.localizedMessage)
             } catch (e: Exception) {
                 authError = e.localizedMessage ?: "Google Sign-In failed."
             }
@@ -280,7 +273,7 @@ fun LoginScreen(
                 text = "Welcome back",
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontSize = 40.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Normal
                 ),
                 color = Color(0xFF151718)
             )
@@ -416,7 +409,9 @@ fun LoginScreen(
             authError?.let { message ->
                 Text(
                     text = message,
-                    color = MaterialTheme.colorScheme.error,
+                    // Network/profile-sync status is explanatory copy, not a primary action.
+                    // Keep orange reserved for actions and use the readable secondary ink.
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                     modifier = Modifier.padding(top = 12.dp)
                 )

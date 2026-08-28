@@ -8,6 +8,9 @@ const runtimeConfig = {
   databasePoolMax: 1,
   databaseSslRejectUnauthorized: false,
   corsOrigins: [],
+  latestAppVersionCode: 102,
+  minSupportedAppVersionCode: 101,
+  playStoreAppUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
 };
 
 function profileRow(id = 'test-user') {
@@ -24,6 +27,36 @@ function profileRow(id = 'test-user') {
     following_count: 0,
     stories_count: 0,
     applauds_received: 0,
+  };
+}
+
+function feedPostRow() {
+  return {
+    id: '11111111-1111-1111-1111-111111111111',
+    title: 'A compact feed story',
+    slug: 'a-compact-feed-story',
+    summary: 'Only card data is returned by the feed.',
+    content: '',
+    category: 'Essays',
+    coverImage: null,
+    readingTimeMin: 2,
+    likesCnt: 0,
+    commentsCnt: 0,
+    bookmarksCnt: 0,
+    createdAt: '2026-08-26T00:00:00.000Z',
+    author: {
+      id: 'test-user',
+      penName: 'test_writer',
+      fullName: 'Test Writer',
+      avatarUrl: null,
+      bio: null,
+      quoteOfDay: null,
+      followersCnt: 0,
+      followingCnt: 0,
+    },
+    isLiked: false,
+    isBookmarked: false,
+    isFollowingAuthor: false,
   };
 }
 
@@ -44,6 +77,12 @@ function createPool() {
       }
       if (sql.includes('insert into public.profile_auth_identities')) {
         return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+      }
+      if (sql.includes('from public.posts p')) {
+        if (!sql.includes("''::text as content")) {
+          throw new Error('The feed query must not select full story content.');
+        }
+        return { rows: [feedPostRow()], rowCount: 1 };
       }
       throw new Error(`Unexpected database query in contract test: ${sql}`);
     },
@@ -113,6 +152,80 @@ describe('Fastify API contract', () => {
 
     expect(response.statusCode).toBe(401);
     expect(response.json()).toEqual({ error: 'Authentication required' });
+  });
+
+  it('publishes an unauthenticated, compact app-update manifest', async () => {
+    const app = await createApp();
+    const response = await app.inject({ method: 'GET', url: '/api/v1/app/version' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({
+      latestVersionCode: 102,
+      minSupportedVersionCode: 101,
+      updateUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+    });
+  });
+
+  it('does not accept a device token or notification preferences without Firebase authentication', async () => {
+    const app = await createApp();
+    const [token, preferences] = await Promise.all([
+      app.inject({
+        method: 'PUT',
+        url: '/api/v1/me/devices/push-token',
+        payload: { token: 'a'.repeat(200), platform: 'android', appVersionCode: 102, notificationPermission: 'granted' },
+      }),
+      app.inject({ method: 'PUT', url: '/api/v1/me/notification-preferences', payload: { interactionsEnabled: false } }),
+    ]);
+
+    for (const response of [token, preferences]) {
+      expect(response.statusCode).toBe(401);
+      expect(response.json()).toEqual({ error: 'Authentication required' });
+    }
+  });
+
+  it('protects profile-stat lists and reading interests before querying the database', async () => {
+    const app = await createApp();
+
+    const responses = await Promise.all([
+      app.inject({ method: 'GET', url: '/api/v1/me/stories' }),
+      app.inject({ method: 'GET', url: '/api/v1/me/applause-received' }),
+      app.inject({ method: 'GET', url: '/api/v1/me/followers' }),
+      app.inject({ method: 'GET', url: '/api/v1/me/following' }),
+      app.inject({ method: 'GET', url: '/api/v1/me/interests' }),
+      app.inject({ method: 'PUT', url: '/api/v1/me/interests', payload: { topicIds: ['poetry'] } }),
+    ]);
+
+    for (const response of responses) {
+      expect(response.statusCode).toBe(401);
+      expect(response.json()).toEqual({ error: 'Authentication required' });
+    }
+  });
+
+  it('returns compact card data from the feed and leaves full content for the reader endpoint', async () => {
+    const app = await createApp();
+
+    const response = await app.inject({ method: 'GET', url: '/api/v1/posts?limit=1' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().posts).toHaveLength(1);
+    expect(response.json().posts[0].content).toBe('');
+  });
+
+  it('protects draft lifecycle and media upload routes before accessing storage or data', async () => {
+    const app = await createApp();
+
+    const [drafts, update, publish, remove, upload] = await Promise.all([
+      app.inject({ method: 'GET', url: '/api/v1/me/drafts' }),
+      app.inject({ method: 'PUT', url: '/api/v1/posts/00000000-0000-0000-0000-000000000000', payload: {} }),
+      app.inject({ method: 'POST', url: '/api/v1/posts/00000000-0000-0000-0000-000000000000/publish' }),
+      app.inject({ method: 'DELETE', url: '/api/v1/posts/00000000-0000-0000-0000-000000000000' }),
+      app.inject({ method: 'POST', url: '/api/v1/media/upload' }),
+    ]);
+
+    for (const response of [drafts, update, publish, remove, upload]) {
+      expect(response.statusCode).toBe(401);
+      expect(response.json()).toEqual({ error: 'Authentication required' });
+    }
   });
 
   it('links a verified Firebase email to its existing canonical WritOn profile', async () => {
@@ -191,8 +304,9 @@ describe('Fastify API contract', () => {
       .toEqual(['test-user', 'legacy-rajesh']);
   });
 
-  it('reclaims a single empty Firebase profile for its verified Gmail legacy alias', async () => {
+  it('reclaims a temporary Firebase profile for its verified Gmail legacy alias', async () => {
     const queries = [];
+    const transactionQueries = [];
     const gmailAuth = {
       verifyIdToken: async () => ({
         uid: 'firebase-user',
@@ -217,6 +331,28 @@ describe('Fastify API contract', () => {
         }
         return { rows: [profileRow('legacy:writer-2019')], rowCount: 1 };
       },
+      connect: async () => ({
+        query: async (sql, params) => {
+          transactionQueries.push({ sql, params });
+          if (sql === 'begin' || sql === 'commit' || sql === 'rollback') {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql.includes("where id like 'legacy:%'")) {
+            return { rows: [{ id: 'legacy:writer-2019' }], rowCount: 1 };
+          }
+          if (sql.includes('where profile_id = $1')) {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql.includes('select id from public.profiles where id = $1')) {
+            return { rows: [{ id: 'firebase-user' }], rowCount: 1 };
+          }
+          if (sql.includes('as "hasAuthoredContent"')) {
+            return { rows: [{ hasAuthoredContent: false }], rowCount: 1 };
+          }
+          return { rows: [], rowCount: 1 };
+        },
+        release: () => {},
+      }),
     };
     const app = await buildServer({ runtimeConfig, pool, auth: gmailAuth });
     apps.push(app);
@@ -229,10 +365,13 @@ describe('Fastify API contract', () => {
     });
 
     expect(response.statusCode).toBe(200);
-    expect(queries.find((query) => query.sql.includes("where id like 'legacy:%'")).params)
+    expect(transactionQueries.find((query) => query.sql.includes("where id like 'legacy:%'")).params)
       .toEqual(['writer+legacy-%@gmail.com']);
-    expect(queries.find((query) => query.sql.includes('update public.profile_auth_identities')).params)
+    expect(transactionQueries.find((query) => query.sql.includes('insert into public.profile_auth_identities')).params)
       .toEqual(['firebase-user', 'legacy:writer-2019']);
+    expect(transactionQueries.some((query) => query.sql.includes('insert into public.bookmarks'))).toBe(true);
+    expect(transactionQueries.some((query) => query.sql.includes('insert into public.reading_history'))).toBe(true);
+    expect(transactionQueries.at(-1).sql).toBe('commit');
   });
 
   it('deletes only the authenticated user account data', async () => {

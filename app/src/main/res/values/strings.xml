@@ -188,6 +188,10 @@
     <string name="settings_guide_desc">Feature tutorials and tips</string>
     <string name="settings_about_title">About WritOn</string>
     <string name="settings_about_desc">Version %1$s (%2$d)</string>
+    <string name="settings_about_platform_desc">WritOn is a distraction-free editorial publishing and reading platform for thoughtful writers and readers.</string>
+    <string name="settings_about_android">• Built with Kotlin and Jetpack Compose</string>
+    <string name="settings_about_offline">• Offline-first drafts and reading cache</string>
+    <string name="settings_about_security">• Firebase authentication and optional biometric lock</string>
     <string name="settings_logout_title">Log out</string>
     <string name="appearance_title">Appearance &amp; Reading</string>
     <string name="appearance_preview">Live Preview</string>

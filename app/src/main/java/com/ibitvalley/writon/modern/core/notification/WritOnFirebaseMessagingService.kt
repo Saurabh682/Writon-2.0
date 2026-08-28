@@ -3,13 +3,20 @@ package com.ibitvalley.writon.modern.core.notification
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class WritOnFirebaseMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d("WritOnFCM", "New FCM token received: $token")
-        // Token can be synced to server during login / network sync
+        CoroutineScope(Dispatchers.IO).launch {
+            PushNotificationRegistration.syncCurrentDevice(applicationContext, token)
+                .onFailure { Log.w("WritOnFCM", "Could not register refreshed FCM token", it) }
+        }
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
@@ -29,6 +36,8 @@ class WritOnFirebaseMessagingService : FirebaseMessagingService() {
         val storyId = data["storyId"] ?: data["postId"]
         val actorName = data["actorName"] ?: data["authorName"]
         val kind = data["kind"] ?: data["type"] ?: "interaction"
+
+        WritOnTelemetry.pushReceived(applicationContext, kind, !storyId.isNullOrBlank())
 
         WritOnNotificationManager.showInteractionNotification(
             context = applicationContext,

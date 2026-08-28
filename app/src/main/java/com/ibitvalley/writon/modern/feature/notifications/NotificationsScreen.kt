@@ -48,6 +48,7 @@ private val NotificationEditorialFamily = FontFamily(
 private enum class NotificationKind { APPLAUD, COMMENT, FOLLOW, BOOKMARK, REMINDER, BADGE }
 
 private data class ActivityNotification(
+    val id: String,
     val name: String,
     val action: String,
     val detail: String,
@@ -55,6 +56,7 @@ private data class ActivityNotification(
     val kind: NotificationKind,
     val unread: Boolean = false,
     val hasStory: Boolean = false,
+    val postId: String? = null,
     val tone: Color = Color(0xFF6D6963)
 )
 
@@ -68,6 +70,7 @@ private fun NotificationDto.asActivityNotification(): ActivityNotification {
         else -> NotificationKind.REMINDER
     }
     return ActivityNotification(
+        id = id,
         name = actor?.fullName.orEmpty(),
         action = message,
         detail = postTitle ?: actor?.penName.orEmpty().ifBlank { "WritOn activity" },
@@ -75,6 +78,7 @@ private fun NotificationDto.asActivityNotification(): ActivityNotification {
         kind = notificationKind,
         unread = readAt == null,
         hasStory = postId != null,
+        postId = postId,
         tone = Color(0xFFF2ECE4)
     )
 }
@@ -83,7 +87,8 @@ private fun NotificationDto.asActivityNotification(): ActivityNotification {
 fun NotificationsScreen(
     viewModel: CollectionsViewModel,
     onSearchClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {}
+    onSettingsClick: () -> Unit = {},
+    onStoryClick: (String) -> Unit = {}
 ) {
     var selectedFilter by rememberSaveable { mutableStateOf("All") }
     LaunchedEffect(selectedFilter) {
@@ -109,11 +114,17 @@ fun NotificationsScreen(
         item { NotificationFilters(selectedFilter = selectedFilter, onSelected = { selectedFilter = it }) }
         if (filteredNew.isNotEmpty()) {
             item { SectionLabel("New") }
-            item { NotificationGroup(filteredNew) }
+            item { NotificationGroup(filteredNew, onNotificationClick = { notification ->
+                viewModel.markNotificationRead(notification.id)
+                notification.postId?.let(onStoryClick)
+            }) }
         }
         if (filteredEarlier.isNotEmpty()) {
             item { SectionLabel("Earlier") }
-            item { NotificationGroup(filteredEarlier) }
+            item { NotificationGroup(filteredEarlier, onNotificationClick = { notification ->
+                viewModel.markNotificationRead(notification.id)
+                notification.postId?.let(onStoryClick)
+            }) }
         }
         if (filteredNew.isEmpty() && filteredEarlier.isEmpty()) {
             item { EmptyNotifications() }
@@ -187,7 +198,7 @@ private fun NotificationHeader(onSearchClick: () -> Unit, onSettingsClick: () ->
         Text(
             "Notifications",
             modifier = Modifier.padding(top = 48.dp),
-            style = MaterialTheme.typography.displayLarge.copy(fontFamily = NotificationEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 42.sp)
+            style = MaterialTheme.typography.displayLarge.copy(fontFamily = NotificationEditorialFamily, fontWeight = FontWeight.Normal, fontSize = 42.sp)
         )
         Text(
             "Stay updated with what matters.",
@@ -241,7 +252,10 @@ private fun SectionLabel(label: String) {
 }
 
 @Composable
-private fun NotificationGroup(notifications: List<ActivityNotification>) {
+private fun NotificationGroup(
+    notifications: List<ActivityNotification>,
+    onNotificationClick: (ActivityNotification) -> Unit
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color(0xFFFFFDF9),
@@ -250,7 +264,7 @@ private fun NotificationGroup(notifications: List<ActivityNotification>) {
     ) {
         Column {
             notifications.forEachIndexed { index, notification ->
-                NotificationRow(notification)
+                NotificationRow(notification, onClick = { onNotificationClick(notification) })
                 if (index < notifications.lastIndex) {
                     androidx.compose.material3.HorizontalDivider(color = Color(0xFFE9E1D7), modifier = Modifier.padding(start = 18.dp))
                 }
@@ -260,11 +274,11 @@ private fun NotificationGroup(notifications: List<ActivityNotification>) {
 }
 
 @Composable
-private fun NotificationRow(notification: ActivityNotification) {
+private fun NotificationRow(notification: ActivityNotification, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

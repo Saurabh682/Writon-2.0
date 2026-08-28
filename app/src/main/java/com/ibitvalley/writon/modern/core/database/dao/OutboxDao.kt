@@ -12,6 +12,15 @@ interface OutboxDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun enqueueMutation(mutation: OutboxMutationEntity): Long
 
+    @Query("DELETE FROM outbox_mutations WHERE isSynced = 0 AND mutationType = :mutationType AND targetId = :targetId")
+    suspend fun deletePendingMutation(mutationType: String, targetId: String)
+
+    @Transaction
+    suspend fun enqueueLatestMutation(mutation: OutboxMutationEntity): Long {
+        deletePendingMutation(mutation.mutationType, mutation.targetId)
+        return enqueueMutation(mutation)
+    }
+
     @Query("UPDATE outbox_mutations SET isSynced = 1 WHERE mutationId = :id")
     suspend fun markMutationSynced(id: Long)
 
