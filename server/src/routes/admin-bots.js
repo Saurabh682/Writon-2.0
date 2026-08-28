@@ -128,6 +128,12 @@ export async function adminBotsRoutes(fastify, options) {
   // Admin auth guard - bot admin routes require authentication
   if (requireUser) {
     fastify.addHook('preHandler', async (request, reply) => {
+      const path = request.routerPath || request.url || request.raw?.url || '';
+      // Only protect admin endpoints under /api/v1/admin/bots/
+      if (!path.includes('/admin/')) {
+        return;
+      }
+
       // In development mode, allow unauthenticated access from the UI
       if (process.env.NODE_ENV === 'development' && !request.headers.authorization) {
         request.user = { uid: 'dev-admin', email: 'admin@writon.internal' };
@@ -145,11 +151,6 @@ export async function adminBotsRoutes(fastify, options) {
           request.user = { uid: 'secret-admin', email: 'admin@writon.internal' };
           return;
         }
-      }
-
-      // Allow all public /api/v1/spark/* endpoints (used by ChatGPT Actions, MCP, and cloud automations)
-      if (request.url.startsWith('/api/v1/spark/')) {
-        return;
       }
 
       return requireUser(request, reply);
