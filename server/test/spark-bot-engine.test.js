@@ -42,7 +42,7 @@ describe('Gemini Spark Bot Network & Engine', () => {
         expect(reader.penName).toMatch(/^reader_[a-z0-9_]+$/);
         expect(reader.fullName).toBeTruthy();
         expect(reader.bio).toBeTruthy();
-        expect(reader.avatarUrl).toBeTruthy();
+        expect(reader.avatarUrl === null || typeof reader.avatarUrl === 'string').toBe(true);
         expect(reader.botType).toBe('reader');
         expect(reader.commentProbability).toBe(0);
         expect(reader.categories.length).toBeGreaterThan(0);
@@ -53,6 +53,9 @@ describe('Gemini Spark Bot Network & Engine', () => {
         ids.add(reader.id);
         penNames.add(reader.penName);
       }
+
+      // Exactly 40% have no profile pic (use initials avatar badge)
+      expect(CURATED_READER_PERSONAS.filter(r => r.avatarUrl === null).length).toBe(40);
     });
 
     it('contains 50 distinct commenter personas adhering to 65-25-10 cognitive rules', () => {
@@ -66,7 +69,7 @@ describe('Gemini Spark Bot Network & Engine', () => {
         expect(commenter.penName).toMatch(/^c_[a-z0-9_]+$/);
         expect(commenter.fullName).toBeTruthy();
         expect(commenter.bio).toBeTruthy();
-        expect(commenter.avatarUrl).toBeTruthy();
+        expect(commenter.avatarUrl === null || typeof commenter.avatarUrl === 'string').toBe(true);
         expect(commenter.botType).toBe('commenter');
         expect(commenter.commentStyle).toBeTruthy();
         expect(commenter.categories.length).toBeGreaterThan(0);
@@ -79,6 +82,9 @@ describe('Gemini Spark Bot Network & Engine', () => {
         ids.add(commenter.id);
         penNames.add(commenter.penName);
       }
+
+      // Exactly 40% have no profile pic (use initials avatar badge)
+      expect(CURATED_COMMENTER_PERSONAS.filter(c => c.avatarUrl === null).length).toBe(20);
     });
 
     it('generates authentic comments according to depth tier', () => {

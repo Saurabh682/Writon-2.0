@@ -7,32 +7,26 @@
  */
 
 const MALE_AVATARS = [
+  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
   'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
   'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1496345875659-11f7dd282d1d?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1504257432389-52343af06ae3?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1507152832244-10d45c7eda57?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1528892952291-009c663ce843?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1530268729831-4b0b9e170218?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=400&q=80'
+  'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1624561172888-ac93c696e10c?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1583864697784-a0efc8379f70?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1562004760-aceed7bb0fe3?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1561677843-39dee7a319ca?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1558898479-33c0057a5d12?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=400&q=80'
 ];
 
 const FEMALE_AVATARS = [
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
   'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
   'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
   'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=400&q=80',
@@ -42,9 +36,7 @@ const FEMALE_AVATARS = [
   'https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=400&q=80',
   'https://images.unsplash.com/photo-1554151228-14d9def656e4?auto=format&fit=crop&w=400&q=80',
   'https://images.unsplash.com/photo-1557053910-d9eadeed1c58?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1557296387-5358ad7997bb?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1563237023-b1e970526dcb?auto=format&fit=crop&w=400&q=80',
-  'https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=400&q=80'
+  'https://images.unsplash.com/photo-1557296387-5358ad7997bb?auto=format&fit=crop&w=400&q=80'
 ];
 
 function isFemaleCommenter(name) {
@@ -741,10 +733,14 @@ let commenterMaleIdx = 0;
 let commenterFemaleIdx = 0;
 
 export const CURATED_COMMENTER_PERSONAS = RAW_COMMENTER_DATA.map((c, index) => {
-  const isFem = isFemaleCommenter(c.fullName);
-  const avatarUrl = isFem
-    ? `${FEMALE_AVATARS[(commenterFemaleIdx++) % FEMALE_AVATARS.length]}&gender=female&uid=commenter_${index + 1}`
-    : `${MALE_AVATARS[(commenterMaleIdx++) % MALE_AVATARS.length]}&gender=male&uid=commenter_${index + 1}`;
+  const hasNoPhoto = (index % 5 === 0 || index % 5 === 2); // 40% default initial badge
+  let avatarUrl = null;
+  if (!hasNoPhoto) {
+    const isFem = isFemaleCommenter(c.fullName);
+    avatarUrl = isFem
+      ? `${FEMALE_AVATARS[(commenterFemaleIdx++) % FEMALE_AVATARS.length]}&gender=female&uid=commenter_${index + 1}`
+      : `${MALE_AVATARS[(commenterMaleIdx++) % MALE_AVATARS.length]}&gender=male&uid=commenter_${index + 1}`;
+  }
 
   return {
     id: 'bot_commenter_' + String(index + 1).padStart(3, '0'),

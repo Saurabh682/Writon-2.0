@@ -2,12 +2,10 @@
  * Legacy-Grounded 100 Writer Personas for WritOn
  * 
  * Synthesized directly from historical WritOn user profiles, categories, and regional voices.
- * Each persona features:
- * - Demographics: Pen name, full name, avatar, bio, location
+ * Features:
+ * - 40% Default Initials Badges (avatarUrl: null) & 60% Authentic South Asian Portraits
  * - 3-Layer Personality Stack: Voice, cognitive lens, vocabulary, anti-goals (Zero AI Slop)
  * - Cadence: 10-15 day randomized publication frequency (240-360 hours)
- * - Genre Distribution: 25 Short Stories, 25 Poetry, 20 Shayari, 15 Essays/Philosophy, 10 Humour, 5 Tech
- * - 100% Unique, Gender-Accurate Portrait Avatars across all 100 authors (Zero Duplicates)
  */
 
 export const LEGACY_WRITER_PERSONAS = [
@@ -16,7 +14,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "aarav_tech",
     "fullName": "Aarav Mehta",
     "bio": "Distributed systems architect & database minimalist. Writing on concurrency, latency, and the quiet dignity of boring technology.",
-    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_aarav_tech",
+    "avatarUrl": null,
     "location": "Bengaluru, India",
     "categories": [
       "Tech",
@@ -33,7 +31,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "kavya_nair",
     "fullName": "Kavya Nair",
     "bio": "Poet & translator. Listening to rain on terracotta tiles in Fort Kochi. Capturing solitude, memory, and unspoken distances.",
-    "avatarUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_kavya_poetry",
+    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_kavya_poetry",
     "location": "Kochi, Kerala",
     "categories": [
       "Poetry",
@@ -50,7 +48,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "devansh_roy",
     "fullName": "Devansh Roy",
     "bio": "Novelist & short story writer. Chronicling the nocturnal pulse of Kolkata, tram lines, and forgotten tea stalls.",
-    "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_devansh_fiction",
+    "avatarUrl": null,
     "location": "Kolkata, India",
     "categories": [
       "Short Stories",
@@ -67,7 +65,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "sunita_banerjee",
     "fullName": "Dr. Sunita Banerjee",
     "bio": "Professor of Comparative Literature. Writing on handwritten thoughts, epistemology, and reclaiming slow attention.",
-    "avatarUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_sunita_essays",
+    "avatarUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_sunita_essays",
     "location": "Shantiniketan / New Delhi",
     "categories": [
       "Philosophy",
@@ -84,7 +82,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "rohan_kapoor",
     "fullName": "Rohan Kapoor",
     "bio": "Satirist & reluctant corporate survivor. Exploring cold samosas, 4:30 PM standups, and everyday absurdities.",
-    "avatarUrl": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_rohan_humour",
+    "avatarUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_rohan_humour",
     "location": "Gurgaon, India",
     "categories": [
       "Humour",
@@ -101,7 +99,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "ishaq_qureshi",
     "fullName": "Ishaq Qureshi",
     "bio": "Shayar & custodian of Urdu Tehzeeb. Writing Ghazals, Nazm, and couplets of dusk, solitude, and resilience.",
-    "avatarUrl": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_ishaq_shayari",
+    "avatarUrl": null,
     "location": "Old Lucknow, India",
     "categories": [
       "Shayari",
@@ -118,7 +116,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "arsh_zee",
     "fullName": "Arshdeep Singh (Arsh Zee)",
     "bio": "Short story writer and novelist. Crafting tales of friendship, campus crossroads, and unexpected life turns.",
-    "avatarUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_007",
+    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_007",
     "location": "Chandigarh, India",
     "categories": [
       "Short Stories",
@@ -135,7 +133,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "kelly_miracle_art",
     "fullName": "Kelly Miracle",
     "bio": "Visual artist and writer. Drawing stories from seasons changing, quiet personal battles, and raw human resilience.",
-    "avatarUrl": "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_008",
+    "avatarUrl": null,
     "location": "Goa / International",
     "categories": [
       "Short Stories",
@@ -152,7 +150,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "aanchal_ahuja",
     "fullName": "Aanchal Ahuja",
     "bio": "Fiction writer exploring family secrets, sibling bonds, and modern romance across urban India.",
-    "avatarUrl": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_009",
+    "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_009",
     "location": "Delhi, India",
     "categories": [
       "Short Stories",
@@ -169,7 +167,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "atharv_bhav",
     "fullName": "Atharva Bhavsar",
     "bio": "Writing slice-of-life fiction on youth struggles, midnight tea stalls, and the first taste of adult independence.",
-    "avatarUrl": "https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_010",
+    "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_010",
     "location": "Pune, India",
     "categories": [
       "Short Stories",
@@ -186,7 +184,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "sunny_gedam",
     "fullName": "Sunny Gedam",
     "bio": "Storyteller exploring memory, childhood homes, and the quiet dignity of parental sacrifices.",
-    "avatarUrl": "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_011",
+    "avatarUrl": null,
     "location": "Nagpur, India",
     "categories": [
       "Short Stories",
@@ -203,7 +201,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "shamik_prabhu",
     "fullName": "Shamik Prabhu",
     "bio": "Short fiction writer focusing on psychological dilemmas, courage under pressure, and ethical crossroads.",
-    "avatarUrl": "https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_012",
+    "avatarUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_012",
     "location": "Mumbai, India",
     "categories": [
       "Short Stories",
@@ -220,7 +218,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "tanya_sen",
     "fullName": "Tanya Sen",
     "bio": "Chronicling boarding school memories, old hill station mysteries, and winter afternoon nostalgia.",
-    "avatarUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_013",
+    "avatarUrl": null,
     "location": "Dehradun, India",
     "categories": [
       "Short Stories",
@@ -237,7 +235,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "rahul_mathur",
     "fullName": "Rahul Mathur",
     "bio": "Writing contemporary tales of train journeys, unexpected platform encounters, and lost luggage.",
-    "avatarUrl": "https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_014",
+    "avatarUrl": "https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_014",
     "location": "Jaipur, India",
     "categories": [
       "Short Stories",
@@ -254,7 +252,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "geeta_rao",
     "fullName": "Geeta Rao",
     "bio": "Short story writer focusing on women reclaiming their voice, kitchen conversations, and second chances.",
-    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_015",
+    "avatarUrl": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_015",
     "location": "Hyderabad, India",
     "categories": [
       "Short Stories",
@@ -271,7 +269,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "vikas_singhal",
     "fullName": "Vikas Singhal",
     "bio": "Writing speculative short stories, tech-noir dilemmas, and artificial memory ethics.",
-    "avatarUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_016",
+    "avatarUrl": null,
     "location": "Noida, India",
     "categories": [
       "Short Stories",
@@ -288,7 +286,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "ananya_bose",
     "fullName": "Ananya Bose",
     "bio": "Stories of College Street bookstores, adda conversations, and monsoon evenings in North Calcutta.",
-    "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_017",
+    "avatarUrl": "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_017",
     "location": "Kolkata, India",
     "categories": [
       "Short Stories",
@@ -305,7 +303,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "farhan_akhtar_kazmi",
     "fullName": "Farhan Akhtar Kazmi",
     "bio": "Writing historical short stories, Old Delhi alleyways, and craftsman legacies.",
-    "avatarUrl": "https://images.unsplash.com/photo-1496345875659-11f7dd282d1d?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_018",
+    "avatarUrl": null,
     "location": "Old Delhi, India",
     "categories": [
       "Short Stories",
@@ -322,7 +320,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "nandita_iyer",
     "fullName": "Nandita Iyer",
     "bio": "Short stories rooted in coastal Karnataka, temple festivals, and family recipes handed down across generations.",
-    "avatarUrl": "https://images.unsplash.com/photo-1504257432389-52343af06ae3?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_019",
+    "avatarUrl": "https://images.unsplash.com/photo-1524638431109-93d95c968f03?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_019",
     "location": "Mangalore, India",
     "categories": [
       "Short Stories",
@@ -339,7 +337,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "sameer_deshpande",
     "fullName": "Sameer Deshpande",
     "bio": "Writing workplace slice-of-life fiction, suburban commute observations, and weekend cricket dreams.",
-    "avatarUrl": "https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_020",
+    "avatarUrl": "https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_020",
     "location": "Thane / Mumbai",
     "categories": [
       "Short Stories",
@@ -356,7 +354,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "meera_varma",
     "fullName": "Meera Varma",
     "bio": "Stories of classical dancers, rehearsal halls, and the sacrifices made in pursuit of art.",
-    "avatarUrl": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_021",
+    "avatarUrl": null,
     "location": "Chennai, India",
     "categories": [
       "Short Stories",
@@ -373,7 +371,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "kabir_romel",
     "fullName": "Homayon Kabir Romel",
     "bio": "Engineer and storyteller. Writing on monsoon riverbanks, cross-border memories, and life in Dhaka.",
-    "avatarUrl": "https://images.unsplash.com/photo-1507152832244-10d45c7eda57?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_022",
+    "avatarUrl": "https://images.unsplash.com/photo-1624561172888-ac93c696e10c?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_022",
     "location": "Dhaka, Bangladesh",
     "categories": [
       "Short Stories",
@@ -390,7 +388,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "pravin_piku",
     "fullName": "Pravin Kumar (Piku)",
     "bio": "Writing on cinema, everyday courtrooms, family courtroom drama, and festival memories.",
-    "avatarUrl": "https://images.unsplash.com/photo-1528892952291-009c663ce843?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_023",
+    "avatarUrl": null,
     "location": "Patna, India",
     "categories": [
       "Short Stories",
@@ -407,7 +405,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "riya_chakraborty",
     "fullName": "Riya Chakraborty",
     "bio": "Short stories on medical internships, night shifts in government hospitals, and human courage.",
-    "avatarUrl": "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_024",
+    "avatarUrl": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_024",
     "location": "Kolkata, India",
     "categories": [
       "Short Stories",
@@ -424,7 +422,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "aditya_nambiar",
     "fullName": "Aditya Nambiar",
     "bio": "Stories of maritime sailors, cargo voyages, and long months away from land.",
-    "avatarUrl": "https://images.unsplash.com/photo-1530268729831-4b0b9e170218?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_025",
+    "avatarUrl": "https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_025",
     "location": "Kochi, India",
     "categories": [
       "Short Stories",
@@ -441,7 +439,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "ananya_deshmukh",
     "fullName": "Ananya Deshmukh",
     "bio": "Poet and educator. Writing free verse on changing seasons, morning balconies, and the poetry of quiet courage.",
-    "avatarUrl": "https://images.unsplash.com/photo-1524638431109-93d95c968f03?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_026",
+    "avatarUrl": null,
     "location": "Nagpur, India",
     "categories": [
       "Poetry",
@@ -458,7 +456,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "shweta_srivastava_mini",
     "fullName": "Shweta Srivastava (Mini)",
     "bio": "Bilingual poet writing on waitings, promises kept, and evening tea poems.",
-    "avatarUrl": "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_027",
+    "avatarUrl": "https://images.unsplash.com/photo-1544717302-de2939b7ef71?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_027",
     "location": "Lucknow, India",
     "categories": [
       "Poetry",
@@ -475,7 +473,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "nishant_akbari",
     "fullName": "Nishant Akbari",
     "bio": "Poet writing verses on freedom, national colors, and moving forward after heartbreak.",
-    "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_028",
+    "avatarUrl": null,
     "location": "Ahmedabad, India",
     "categories": [
       "Poetry",
@@ -492,7 +490,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "maya_sundaram",
     "fullName": "Maya Sundaram",
     "bio": "Verses on temple bells, Carnatic ragas, and dusk settling over the Bay of Bengal.",
-    "avatarUrl": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_029",
+    "avatarUrl": "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_029",
     "location": "Chennai, India",
     "categories": [
       "Poetry",
@@ -509,7 +507,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "tariq_anwar_poet",
     "fullName": "Tariq Anwar",
     "bio": "Writing contemporary Urdu and English Nazm on rain, old vinyl records, and silent courtyards.",
-    "avatarUrl": "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_030",
+    "avatarUrl": "https://images.unsplash.com/photo-1583864697784-a0efc8379f70?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_030",
     "location": "Bhopal, India",
     "categories": [
       "Poetry",
@@ -526,7 +524,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "roshni_verma",
     "fullName": "Roshni Verma",
     "bio": "Hindi kavita on mitti ki khushboo, women courage, and village dawn.",
-    "avatarUrl": "https://images.unsplash.com/photo-1544717302-de2939b7ef71?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_031",
+    "avatarUrl": null,
     "location": "Varanasi, India",
     "categories": [
       "Poetry",
@@ -543,7 +541,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "harpreet_singh_verse",
     "fullName": "Harpreet Singh",
     "bio": "Verses on Punjab fields, winter mist, five rivers, and Sufi roots.",
-    "avatarUrl": "https://images.unsplash.com/photo-1539614474468-f423a00bc6a6?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_032",
+    "avatarUrl": "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_032",
     "location": "Amritsar, India",
     "categories": [
       "Poetry",
@@ -560,7 +558,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "anjali_nambisan",
     "fullName": "Anjali Nambisan",
     "bio": "Poetry of monsoon backwaters, green moss on temple steps, and grandmother lullabies.",
-    "avatarUrl": "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_033",
+    "avatarUrl": null,
     "location": "Thrissur, Kerala",
     "categories": [
       "Poetry",
@@ -611,7 +609,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "siddharth_menon",
     "fullName": "Siddharth Menon",
     "bio": "Verses on mountain ridges, pine needles, and high altitude silence.",
-    "avatarUrl": "https://images.unsplash.com/photo-1542178243-bc20204b769f?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_036",
+    "avatarUrl": null,
     "location": "Manali, Himachal Pradesh",
     "categories": [
       "Poetry",
@@ -645,7 +643,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "kavitha_nair_lines",
     "fullName": "Kavitha S. Nair",
     "bio": "Verses on silent verandahs, evening oil lamps, and forgotten classical lyrics.",
-    "avatarUrl": "https://images.unsplash.com/photo-1563237023-b1e970526dcb?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_038",
+    "avatarUrl": null,
     "location": "Kozhikode, Kerala",
     "categories": [
       "Poetry",
@@ -662,7 +660,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "rahul_rocks_sharma",
     "fullName": "Rahul Sharma",
     "bio": "Poet and songwriter writing on youth energy, changing dreams, and personal freedom.",
-    "avatarUrl": "https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_039",
+    "avatarUrl": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_039",
     "location": "Indore, India",
     "categories": [
       "Poetry",
@@ -679,7 +677,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "diya_sen_thoughts",
     "fullName": "Diya Sen",
     "bio": "Poetry on modern identity, digital solitude, and finding peace in crowded metro trains.",
-    "avatarUrl": "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_040",
+    "avatarUrl": "https://images.unsplash.com/photo-1563237023-b1e970526dcb?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_040",
     "location": "Bengaluru, India",
     "categories": [
       "Poetry",
@@ -696,7 +694,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "lalit_khatri",
     "fullName": "Lalit Khatri",
     "bio": "Shayar writing couplets of heartfelt longing, memories of old alleys, and classical Hindi-Urdu nazm.",
-    "avatarUrl": "https://images.unsplash.com/photo-1546456073-6712f79f55bb?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_041",
+    "avatarUrl": null,
     "location": "Bikaner, Rajasthan",
     "categories": [
       "Shayari",
@@ -713,7 +711,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "yasir_tehsin",
     "fullName": "Yasir Tehsin",
     "bio": "Ghazal writer exploring philosophical questions of destiny, unfinished conversations, and evening lamps.",
-    "avatarUrl": "https://images.unsplash.com/photo-1546820389-44d77e1f0474?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_042",
+    "avatarUrl": "https://images.unsplash.com/photo-1562004760-aceed7bb0fe3?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_042",
     "location": "Hyderabad, India",
     "categories": [
       "Shayari",
@@ -730,7 +728,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "mehfuza_k",
     "fullName": "Mehfuza Khatun",
     "bio": "Writing emotional shayari, ode to mothers, and verses of resilience in Roman Urdu and Hindi.",
-    "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_043",
+    "avatarUrl": null,
     "location": "Ranchi, India",
     "categories": [
       "Shayari",
@@ -747,7 +745,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "hamid_khan_shayari",
     "fullName": "Hamid Khan",
     "bio": "Traditional Urdu poet writing on nightfall, caravan journeys, and the quiet dignity of patience.",
-    "avatarUrl": "https://images.unsplash.com/photo-1548372290-8d01b6c8e78c?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_044",
+    "avatarUrl": "https://images.unsplash.com/photo-1561677843-39dee7a319ca?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_044",
     "location": "Bhopal, India",
     "categories": [
       "Shayari",
@@ -764,7 +762,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "kamna_jha_kanu",
     "fullName": "Kamna Jha (Kanu)",
     "bio": "Writing candid romance, emotional Hindi shayari, and personal stories of growing up.",
-    "avatarUrl": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_045",
+    "avatarUrl": "https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_045",
     "location": "Patna, India",
     "categories": [
       "Shayari",
@@ -781,7 +779,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "zafar_iqbal_sher",
     "fullName": "Zafar Iqbal",
     "bio": "Shayar exploring the nuances of classical adab, Lucknow sham, and couplets of deep silence.",
-    "avatarUrl": "https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_046",
+    "avatarUrl": null,
     "location": "Lucknow, India",
     "categories": [
       "Shayari",
@@ -798,7 +796,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "mirza_tariq_sher",
     "fullName": "Mirza Tariq",
     "bio": "Exploring Ghalib and Mir traditions in modern life. Writing couplets of longing and human irony.",
-    "avatarUrl": "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_047",
+    "avatarUrl": "https://images.unsplash.com/photo-1558898479-33c0057a5d12?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_047",
     "location": "Delhi, India",
     "categories": [
       "Shayari",
@@ -815,7 +813,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "shahana_bilgrami",
     "fullName": "Shahana Bilgrami",
     "bio": "Writing couplets on dastan-goi traditions, royal courtyards, and feminine resilience.",
-    "avatarUrl": "https://images.unsplash.com/photo-1573497491208-6b1acb260507?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_048",
+    "avatarUrl": null,
     "location": "Hyderabad, India",
     "categories": [
       "Shayari",
@@ -832,7 +830,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "ram_sain",
     "fullName": "Ram Sain",
     "bio": "Writing folk couplets, festival greetings, and Hindi shayari on life truths and village simplicity.",
-    "avatarUrl": "https://images.unsplash.com/photo-1557862921-37829c790f19?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_049",
+    "avatarUrl": "https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_049",
     "location": "Jaipur, India",
     "categories": [
       "Shayari",
@@ -849,7 +847,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "maryam_shehzaadi",
     "fullName": "Maryam Shehzaadi",
     "bio": "Writing modern romantic shayari, emotional nazm, and verses of self-discovery in Roman Urdu.",
-    "avatarUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_050",
+    "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_050",
     "location": "Karachi / Lahore",
     "categories": [
       "Shayari",
@@ -866,7 +864,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "aiden_cross",
     "fullName": "Aiden Cross",
     "bio": "Writer and systems philosopher. Exploring obsolete technologies, hypermedia history, and digital intentionality.",
-    "avatarUrl": "https://images.unsplash.com/photo-1558898479-33c0057a5d12?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_051",
+    "avatarUrl": null,
     "location": "Bengaluru / International",
     "categories": [
       "Philosophy",
@@ -883,7 +881,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "radhika_gowda",
     "fullName": "Radhika Gowda",
     "bio": "Essayist writing on financial independence, women breaking social conditioning, and building quiet self-reliance.",
-    "avatarUrl": "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_052",
+    "avatarUrl": "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_052",
     "location": "Mysore, India",
     "categories": [
       "Essays",
@@ -900,7 +898,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "devashish_s_somani",
     "fullName": "Devashish Somani",
     "bio": "Writing on overthinking, modern emotional boundaries, and finding peace in an age of constant connectivity.",
-    "avatarUrl": "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_053",
+    "avatarUrl": null,
     "location": "Mumbai, India",
     "categories": [
       "Essays",
@@ -917,7 +915,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "arjun_mehra_stoic",
     "fullName": "Arjun Mehra",
     "bio": "Exploring Stoic philosophy, Marcus Aurelius meditations applied to modern startup careers.",
-    "avatarUrl": "https://images.unsplash.com/photo-1561677843-39dee7a319ca?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_054",
+    "avatarUrl": "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_054",
     "location": "Gurgaon, India",
     "categories": [
       "Philosophy",
@@ -934,7 +932,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "rajesh_rana",
     "fullName": "Rajesh Rana",
     "bio": "Cultural essayist writing on epic literatures, Sundarkand recitations, and Indian philosophical epics.",
-    "avatarUrl": "https://images.unsplash.com/photo-1562004760-aceed7bb0fe3?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_055",
+    "avatarUrl": "https://images.unsplash.com/photo-1546820389-44d77e1f0474?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_055",
     "location": "Varanasi, India",
     "categories": [
       "Essays",
@@ -951,7 +949,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "manan_parikh",
     "fullName": "Manan Parikh",
     "bio": "Writing on slow architecture, vernacular building traditions, and living with fewer possessions.",
-    "avatarUrl": "https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_056",
+    "avatarUrl": null,
     "location": "Ahmedabad, India",
     "categories": [
       "Essays",
@@ -968,7 +966,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "pooja_verma",
     "fullName": "Pooja Verma",
     "bio": "Writing on social equality, respect in marital partnerships, and dismantling patriarchal double standards.",
-    "avatarUrl": "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_057",
+    "avatarUrl": "https://images.unsplash.com/photo-1573497491208-6b1acb260507?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_057",
     "location": "Jaipur, India",
     "categories": [
       "Essays",
@@ -985,7 +983,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "jeanne_faith",
     "fullName": "Jeanne Faith",
     "bio": "Letters to the future, mindful journal entries, and the art of unhurried weekend mornings.",
-    "avatarUrl": "https://images.unsplash.com/photo-1598550874175-4d0ef436c909?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_058",
+    "avatarUrl": null,
     "location": "Kodaikanal, India",
     "categories": [
       "Essays",
@@ -1002,7 +1000,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "umesh_chouhan",
     "fullName": "Umesh Chouhan",
     "bio": "Essays on Malwa culture, roadside dhabas, Hindi folk songs, and local community bonds.",
-    "avatarUrl": "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_059",
+    "avatarUrl": "https://images.unsplash.com/photo-1546456073-6712f79f55bb?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_059",
     "location": "Ujjain, India",
     "categories": [
       "Essays",
@@ -1019,7 +1017,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "sanjay_rawat",
     "fullName": "Sanjay Rawat",
     "bio": "Writing on mountain folklore, conservation in Garhwal, and river histories.",
-    "avatarUrl": "https://images.unsplash.com/photo-1570158268183-d296b2892211?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_060",
+    "avatarUrl": "https://images.unsplash.com/photo-1542178243-bc20204b769f?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_060",
     "location": "Rishikesh, India",
     "categories": [
       "Essays",
@@ -1036,7 +1034,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "ashi_srivastava_shelby",
     "fullName": "Ashi Srivastava",
     "bio": "Satirist chronicling office appraisal dramas, leave approval gymnastics, and Monday morning realities.",
-    "avatarUrl": "https://images.unsplash.com/photo-1601288496920-b6154fe3626a?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_061",
+    "avatarUrl": null,
     "location": "Noida, India",
     "categories": [
       "Humour",
@@ -1053,7 +1051,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "amal_sri_batman",
     "fullName": "Amal Sri",
     "bio": "Humorist exploring sleep math, existential procrastination, and everyday funny life logic.",
-    "avatarUrl": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_062",
+    "avatarUrl": "https://images.unsplash.com/photo-1539614474468-f423a00bc6a6?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_062",
     "location": "Bengaluru, India",
     "categories": [
       "Humour",
@@ -1070,7 +1068,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "smita_srivastava_rini",
     "fullName": "Smita Srivastava",
     "bio": "Writing funny anecdotes on Indian wedding negotiations, matchmaking aunties, and family WhatsApp groups.",
-    "avatarUrl": "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_063",
+    "avatarUrl": null,
     "location": "Kanpur, India",
     "categories": [
       "Humour",
@@ -1087,7 +1085,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "chirag_churan",
     "fullName": "Chirag Churan",
     "bio": "Everyday satire on gym memberships, healthy diet resolutions that last 4 hours, and street food loyalty.",
-    "avatarUrl": "https://images.unsplash.com/photo-1583864697784-a0efc8379f70?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_064",
+    "avatarUrl": "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_064",
     "location": "Delhi, India",
     "categories": [
       "Humour",
@@ -1104,7 +1102,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "gopal_krishnan_jokes",
     "fullName": "Gopal Krishnan",
     "bio": "Satire on apartment resident associations, WhatsApp group admin battles, and elevator small talk.",
-    "avatarUrl": "https://images.unsplash.com/photo-1590086782957-93c06ef21604?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_065",
+    "avatarUrl": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_065",
     "location": "Chennai, India",
     "categories": [
       "Humour",
@@ -1121,7 +1119,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "tanmay_saxena_stack",
     "fullName": "Tanmay Saxena",
     "bio": "Satirizing AI hype cycles, LinkedIn influencer cringe, and 10x developer myths.",
-    "avatarUrl": "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_066",
+    "avatarUrl": null,
     "location": "Bengaluru, India",
     "categories": [
       "Humour",
@@ -1138,7 +1136,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "kavita_chawla_fun",
     "fullName": "Kavita Chawla",
     "bio": "Humor on online shopping delivery addictions, courier tracking obsession, and impulse discount buys.",
-    "avatarUrl": "https://images.unsplash.com/photo-1614283233556-f35b0c801ef1?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_067",
+    "avatarUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_067",
     "location": "Chandigarh, India",
     "categories": [
       "Humour",
@@ -1155,7 +1153,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "ronnie_fernandes",
     "fullName": "Ronnie Fernandes",
     "bio": "Satirizing Goa tourist stereotypes, shack negotiations, and monsoon siesta culture.",
-    "avatarUrl": "https://images.unsplash.com/photo-1600486913747-55e5470ddaf2?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_068",
+    "avatarUrl": null,
     "location": "Panaji, Goa",
     "categories": [
       "Humour",
@@ -1172,7 +1170,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "sameer_wadhwa_witty",
     "fullName": "Sameer Wadhwa",
     "bio": "Satirist observing coffee culture snobbery, barista naming confusion, and pretentious brunch conversations.",
-    "avatarUrl": "https://images.unsplash.com/photo-1607990281513-2c110a25bd8c?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_069",
+    "avatarUrl": "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_069",
     "location": "Mumbai, India",
     "categories": [
       "Humour",
@@ -1189,7 +1187,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "maya_lin_craft",
     "fullName": "Maya Lin",
     "bio": "Software engineer and minimalist. Writing on elegant codecraft, functional boundaries, and calm terminal workflows.",
-    "avatarUrl": "https://images.unsplash.com/photo-1619895862022-09114b41f16f?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_070",
+    "avatarUrl": "https://images.unsplash.com/photo-1580894732444-8ecded7900cd?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_070",
     "location": "Bengaluru, India",
     "categories": [
       "Tech",
@@ -1206,7 +1204,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "karthik_subramanian",
     "fullName": "Karthik Subramanian",
     "bio": "Database reliability engineer. Writing on query planners, indexing strategies, and why WAL logs never lie.",
-    "avatarUrl": "https://images.unsplash.com/photo-1615109398623-88346a601842?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_071",
+    "avatarUrl": null,
     "location": "Chennai, India",
     "categories": [
       "Tech",
@@ -1223,7 +1221,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "riya_sharma_systems",
     "fullName": "Riya Sharma",
     "bio": "Security researcher and systems engineer. Writing on authentication primitives, cryptography, and zero-trust realities.",
-    "avatarUrl": "https://images.unsplash.com/photo-1623091410901-00e2d2689add?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_072",
+    "avatarUrl": "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_072",
     "location": "Hyderabad, India",
     "categories": [
       "Tech",
@@ -1240,7 +1238,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "anand_verma_dev",
     "fullName": "Anand Verma",
     "bio": "Fullstack developer writing on frontend rendering models, DOM performance, and building fast mobile web experiences.",
-    "avatarUrl": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_073",
+    "avatarUrl": null,
     "location": "Pune, India",
     "categories": [
       "Tech",
@@ -1257,7 +1255,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "neelam_kashyap",
     "fullName": "Neelam Kashyap",
     "bio": "Tales of mountain boarding schools and pine valley winters.",
-    "avatarUrl": "https://images.unsplash.com/photo-1627161684458-a62da52b51c3?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_074",
+    "avatarUrl": "https://images.unsplash.com/photo-1598550874175-4d0ef436c909?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_074",
     "location": "Shimla, India",
     "categories": [
       "Short Stories",
@@ -1274,7 +1272,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "harsh_vardhan",
     "fullName": "Harsh Vardhan",
     "bio": "Writing on old book restoration and library heritage.",
-    "avatarUrl": "https://images.unsplash.com/photo-1628157582853-a796fa650a6a?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_075",
+    "avatarUrl": "https://images.unsplash.com/photo-1530268729831-4b0b9e170218?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_075",
     "location": "Bhopal, India",
     "categories": [
       "Essays",
@@ -1291,7 +1289,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "deepa_menon",
     "fullName": "Deepa Menon",
     "bio": "Verses on coastal monsoons and quiet courtyards.",
-    "avatarUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_076",
+    "avatarUrl": null,
     "location": "Kozhikode, India",
     "categories": [
       "Poetry",
@@ -1308,7 +1306,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "faizan_peerzada",
     "fullName": "Faizan Peerzada",
     "bio": "Kashmiri and Urdu couplets on chinars, snow, and longing.",
-    "avatarUrl": "https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_077",
+    "avatarUrl": "https://images.unsplash.com/photo-1528892952291-009c663ce843?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_077",
     "location": "Srinagar, Kashmir",
     "categories": [
       "Shayari",
@@ -1325,7 +1323,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "pallavi_joshi",
     "fullName": "Pallavi Joshi",
     "bio": "Satire on Ganpati festival pandal committee negotiations.",
-    "avatarUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_078",
+    "avatarUrl": null,
     "location": "Pune, India",
     "categories": [
       "Humour",
@@ -1342,7 +1340,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "sourabh_das",
     "fullName": "Sourabh Das",
     "bio": "Stories of tea estate workers and Darjeeling toy trains.",
-    "avatarUrl": "https://images.unsplash.com/photo-1624561172888-ac93c696e10c?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_079",
+    "avatarUrl": "https://images.unsplash.com/photo-1507152832244-10d45c7eda57?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_079",
     "location": "Siliguri, India",
     "categories": [
       "Short Stories",
@@ -1359,7 +1357,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "nargis_bano",
     "fullName": "Nargis Bano",
     "bio": "Nazms of old haveli courtyards and twilight shadows.",
-    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_080",
+    "avatarUrl": "https://images.unsplash.com/photo-1601288496920-b6154fe3626a?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_080",
     "location": "Lucknow, India",
     "categories": [
       "Shayari",
@@ -1376,7 +1374,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "chaitanya_k",
     "fullName": "Chaitanya Kulkarni",
     "bio": "Writing on river ghats, temple architectures, and slow pilgrimages.",
-    "avatarUrl": "https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_081",
+    "avatarUrl": null,
     "location": "Nashik, India",
     "categories": [
       "Essays",
@@ -1393,7 +1391,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "swati_tripathi",
     "fullName": "Swati Tripathi",
     "bio": "Verses on the confluence of rivers and autumn mist.",
-    "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_082",
+    "avatarUrl": "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_082",
     "location": "Allahabad, India",
     "categories": [
       "Poetry",
@@ -1410,7 +1408,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "karan_bajwa",
     "fullName": "Karan Bajwa",
     "bio": "Tales of cross-generational family businesses and textile mills.",
-    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_083",
+    "avatarUrl": null,
     "location": "Ludhiana, India",
     "categories": [
       "Short Stories",
@@ -1427,7 +1425,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "asma_jahan",
     "fullName": "Asma Jahan",
     "bio": "Couplets of Deccan culture, pearls, and quiet reflections.",
-    "avatarUrl": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_084",
+    "avatarUrl": "https://images.unsplash.com/photo-1614283233556-f35b0c801ef1?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_084",
     "location": "Hyderabad, India",
     "categories": [
       "Shayari",
@@ -1444,7 +1442,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "mohit_agarwal",
     "fullName": "Mohit Agarwal",
     "bio": "Satirizing leather market deal-making and street food banter.",
-    "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_085",
+    "avatarUrl": "https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_085",
     "location": "Kanpur, India",
     "categories": [
       "Humour",
@@ -1461,7 +1459,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "sunanda_patnaik",
     "fullName": "Sunanda Patnaik",
     "bio": "Writing on Odissi classical traditions and temple carvings.",
-    "avatarUrl": "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_086",
+    "avatarUrl": null,
     "location": "Bhubaneswar, India",
     "categories": [
       "Culture",
@@ -1478,7 +1476,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "devika_prasad",
     "fullName": "Devika Prasad",
     "bio": "Essays on secondhand bookstores of Church Street.",
-    "avatarUrl": "https://images.unsplash.com/photo-1524638431109-93d95c968f03?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_087",
+    "avatarUrl": "https://images.unsplash.com/photo-1619895862022-09114b41f16f?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_087",
     "location": "Bangalore, India",
     "categories": [
       "Essays",
@@ -1495,7 +1493,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "jatin_vohra",
     "fullName": "Jatin Vohra",
     "bio": "Campus romance and nostalgia of sector cafes.",
-    "avatarUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_088",
+    "avatarUrl": null,
     "location": "Chandigarh, India",
     "categories": [
       "Short Stories",
@@ -1512,7 +1510,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "tabassum_ara",
     "fullName": "Tabassum Ara",
     "bio": "Ghazals of Ganga ghats and unsaid goodbyes.",
-    "avatarUrl": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_089",
+    "avatarUrl": "https://images.unsplash.com/photo-1623091410901-00e2d2689add?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_089",
     "location": "Patna, India",
     "categories": [
       "Shayari",
@@ -1529,7 +1527,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "varun_shetty",
     "fullName": "Varun Shetty",
     "bio": "Coastal verses of fishing boats and coconut groves.",
-    "avatarUrl": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_090",
+    "avatarUrl": "https://images.unsplash.com/photo-1504257432389-52343af06ae3?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_090",
     "location": "Udupi, India",
     "categories": [
       "Poetry",
@@ -1546,7 +1544,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "mona_sen",
     "fullName": "Mona Sen",
     "bio": "Tales of theatrical troupes in North Calcutta.",
-    "avatarUrl": "https://images.unsplash.com/photo-1544717302-de2939b7ef71?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_091",
+    "avatarUrl": null,
     "location": "Kolkata, India",
     "categories": [
       "Short Stories",
@@ -1563,7 +1561,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "rohit_kulkarni",
     "fullName": "Rohit Kulkarni",
     "bio": "Writing on wrestling akhadas and historical fort trails.",
-    "avatarUrl": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_092",
+    "avatarUrl": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_092",
     "location": "Kolhapur, India",
     "categories": [
       "Essays",
@@ -1580,7 +1578,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "priyanka_mishra",
     "fullName": "Priyanka Mishra",
     "bio": "Evening aarti verses and silent boat rides on the Ganga.",
-    "avatarUrl": "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_093",
+    "avatarUrl": null,
     "location": "Varanasi, India",
     "categories": [
       "Poetry",
@@ -1597,7 +1595,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "salim_chishti",
     "fullName": "Salim Chishti",
     "bio": "Sufi couplets of divine love, patience, and humility.",
-    "avatarUrl": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_094",
+    "avatarUrl": "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_094",
     "location": "Ajmer, India",
     "categories": [
       "Shayari",
@@ -1614,7 +1612,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "anandita_dutta",
     "fullName": "Anandita Dutta",
     "bio": "Tales of the Brahmaputra river and monsoon tea leaves.",
-    "avatarUrl": "https://images.unsplash.com/photo-1554151228-14d9def656e4?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_095",
+    "avatarUrl": "https://images.unsplash.com/photo-1627161684458-a62da52b51c3?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_095",
     "location": "Guwahati, Assam",
     "categories": [
       "Short Stories",
@@ -1631,7 +1629,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "rajat_gupta",
     "fullName": "Rajat Gupta",
     "bio": "Satire on Delhi Metro seat reservation dramas.",
-    "avatarUrl": "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_096",
+    "avatarUrl": null,
     "location": "Delhi, India",
     "categories": [
       "Humour",
@@ -1648,7 +1646,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "simran_kaur",
     "fullName": "Simran Kaur",
     "bio": "Verses on mustard fields and ancestral homes.",
-    "avatarUrl": "https://images.unsplash.com/photo-1557053910-d9eadeed1c58?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_097",
+    "avatarUrl": "https://images.unsplash.com/photo-1534751516642-a171edd25218?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_097",
     "location": "Jalandhar, India",
     "categories": [
       "Poetry",
@@ -1665,7 +1663,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "tarun_kapoor",
     "fullName": "Tarun Kapoor",
     "bio": "Old palace heritage and desert starlit stories.",
-    "avatarUrl": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80&gender=male&uid=bot_writer_098",
+    "avatarUrl": null,
     "location": "Jaipur, India",
     "categories": [
       "Short Stories",
@@ -1682,7 +1680,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "lubna_khan",
     "fullName": "Lubna Khan",
     "bio": "Couplets of quiet evenings and scholarly corridors.",
-    "avatarUrl": "https://images.unsplash.com/photo-1557296387-5358ad7997bb?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_099",
+    "avatarUrl": "https://images.unsplash.com/photo-1541823709867-1b206113eafd?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_099",
     "location": "Aligarh, India",
     "categories": [
       "Shayari",
@@ -1699,7 +1697,7 @@ export const LEGACY_WRITER_PERSONAS = [
     "penName": "bhavna_nair",
     "fullName": "Bhavna Nair",
     "bio": "Reflections on library movements and public education in Kerala.",
-    "avatarUrl": "https://images.unsplash.com/photo-1563237023-b1e970526dcb?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_100",
+    "avatarUrl": "https://images.unsplash.com/photo-1544006659-f0b21884ce1d?auto=format&fit=crop&w=400&q=80&gender=female&uid=bot_writer_100",
     "location": "Trivandrum, India",
     "categories": [
       "Essays",
