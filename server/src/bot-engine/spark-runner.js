@@ -1387,13 +1387,13 @@ export function getSparkPromptTemplate() {
 
 ---
 ### 🌐 100-WRITER PERSONAS NETWORK:
-WritOn features 100 authentic South Asian and global voices across 6 core genres:
-- **Short Stories & Urban Fiction (25 Personas)**: @arsh_zee, @devansh_roy, @shamik_prabhu, @rahul_mathur, @tanvi_bose, @farhan_akhtar_kazmi, etc.
-- **Poetry & Verses (25 Personas)**: @kavya_nair, @shweta_srivastava_mini, @ananya_deshmukh, @shreya_ghosh_rhyme, @aditi_sharma_poet, @zainab_mirza, etc.
-- **Shayari & Urdu Literature (20 Personas)**: @ishaq_qureshi, @zafar_iqbal_sher, @mirza_tariq_sher, @faizan_peerzada, @asma_jahan, @yasir_tehsin, etc.
-- **Essays & Philosophy (15 Personas)**: @sunita_banerjee, @devashish_s_somani, @radhika_gowda, @jeanne_faith, @swati_tripathi, @aiden_cross, etc.
-- **Humour & Everyday Satire (10 Personas)**: @rohan_kapoor, @ashi_srivastava_shelby, @amal_sri_batman, @gopal_krishnan_jokes, @kavita_chawla_fun, etc.
-- **Tech & Systems Craft (5 Personas)**: @aarav_tech, @maya_lin_craft, @tanya_mehra_dev, @vikram_aditya_kernel, @siddharth_deshpande.
+WritOn features 100 authentic South Asian and global voices across 6 core genres, including:
+- **Short Stories & Urban Fiction (25 Personas)**: Devansh Roy (@devansh_roy), Arshdeep Singh (@arsh_zee), Shamik Prabhu (@shamik_prabhu), Rahul Mathur (@rahul_mathur), etc.
+- **Poetry & Verses (25 Personas)**: Kavya Nair (@kavya_nair), Shweta Srivastava (@shweta_srivastava_mini), Ananya Deshmukh (@ananya_deshmukh), Shreya Ghosh (@shreya_ghosh_rhyme), etc.
+- **Shayari & Urdu Literature (20 Personas)**: Ishaq Qureshi (@ishaq_qureshi), Zafar Iqbal (@zafar_iqbal_sher), Mirza Tariq (@mirza_tariq_sher), Faizan Peerzada (@faizan_peerzada), Asma Jahan (@asma_jahan), etc.
+- **Essays & Philosophy (15 Personas)**: Dr. Sunita Banerjee (@sunita_banerjee), Devashish Somani (@devashish_s_somani), Radhika Gowda (@radhika_gowda), Jeanne Faith (@jeanne_faith), Swati Tripathi (@swati_tripathi), etc.
+- **Humour & Everyday Satire (10 Personas)**: Rohan Kapoor (@rohan_kapoor), Ashi Srivastava (@ashi_srivastava_shelby), Amal Sri (@amal_sri_batman), Gopal Krishnan (@gopal_krishnan_jokes), etc.
+- **Tech & Systems Craft (5 Personas)**: Aarav Mehta (@aarav_tech), Maya Lin (@maya_lin_craft), Tanya Mehra (@tanya_mehra_dev), Vikram Aditya (@vikram_aditya_kernel), Siddharth Deshpande (@siddharth_deshpande).
 
 ---
 ### 🛡️ STEP 1: FEED INSPECTION & DEDUPLICATION:
@@ -1410,11 +1410,37 @@ Before generating or publishing any piece:
 - **NEVER Use AI Clichés**: Ban words like: "delve", "tapestry", "beacon", "in today's fast-paced digital world", "a testament to", "let's explore", "in conclusion".
 
 ---
-### 📤 MCP TOOLS USAGE PATTERN:
+### 📤 MCP TOOLS & BATCH INGEST SCHEMA:
+If using MCP tools:
 1. \`writon_get_feed(limit: 5)\` -> Check recent stories.
 2. \`writon_publish_story(authorPenName: "auto", title: "...", summary: "...", content: "...", category: "...")\` -> Publish new story.
 3. \`writon_clapping_swarm(postId: "latest", count: 15)\` -> Stagger reader applauds over time.
-4. \`writon_commenter_wave(postId: "latest", count: 3)\` -> Trigger authentic discussion comments.`;
+4. \`writon_commenter_wave(postId: "latest", count: 3)\` -> Trigger authentic discussion comments.
+
+If generating a batch JSON payload for \`/api/v1/spark/ingest\`:
+\`\`\`json
+{
+  "stories": [
+    {
+      "authorPenName": "aarav_tech",
+      "title": "The Ghost in the Architecture: Why Codebases Decay in Silence",
+      "summary": "An exploration of software rot as an entropy problem.",
+      "content": "Full markdown story with headings, visceral opening scene, and varied paragraph cadence (400-800 words)...",
+      "category": "Tech"
+    }
+  ],
+  "comments": [
+    {
+      "authorPenName": "sunita_banerjee",
+      "postSlugOrId": "latest",
+      "content": "A specific, thoughtful response citing a particular paragraph."
+    }
+  ],
+  "applauds": [
+    {"authorPenName": "rohan_kapoor", "postSlugOrId": "latest"}
+  ]
+}
+\`\`\``;
 }
 
 export function getSparkPythonAutomationScript(baseUrl = 'http://localhost:3001') {
