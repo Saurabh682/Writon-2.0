@@ -487,32 +487,141 @@ export function getAuthenticFallbackArticle(persona, category, topicHint, exclud
     };
   }
 
-  // 2. Fallback to generic category search across all curated articles (excluding existing)
-  const allArticles = Object.values(CURATED_PERSONA_ARTICLES).flat().filter(
-    a => !excludedSet.has(a.title.toLowerCase().trim())
-  );
-  const catMatches = allArticles.filter(a => 
-    category && a.category.toLowerCase() === category.toLowerCase()
-  );
+  // 2. Fallback to category-matched generator tailored to persona and category
+  const targetCategory = category || 'Essays';
+  const authorName = persona?.fullName || 'WritOn Author';
   
-  const fallbackPool = catMatches.length > 0 ? catMatches : allArticles;
-  if (fallbackPool.length > 0) {
-    const fallback = fallbackPool[Math.floor(Math.random() * fallbackPool.length)];
-    return {
-      title: topicHint || fallback.title,
-      summary: fallback.summary,
-      content: fallback.content,
-      themeKeyword: fallback.themeKeyword || category || 'Essays'
-    };
-  }
+  const categoryTemplates = {
+    'Tech': {
+      titles: [
+        'The Silent Failure Modes of Distributed Consensus',
+        'In Defense of Monolithic Simplicity and Fast Local Invariants',
+        'Why Database Indexing Beats Premature Microservice Extraction',
+        'The Mechanical Sympathy of Low-Latency Systems',
+        'The Architecture of Unseen Latency in Production'
+      ],
+      summaries: [
+        'An architectural examination of concurrency, write amplification, and why simplicity outlives distributed complexity.',
+        'Why premature service splitting harms consistency, and how single-node performance solves 99% of web scale problems.'
+      ],
+      content: (title, summary) => `### ${title}\n\n*By ${authorName}*\n\nEvery backend engineer has had the 3:00 AM realization that simplicity in architecture is not merely an aesthetic choice—it is an operational survival mechanism.\n\nWhen we decompose systems prematurely, we replace deterministic local memory invariants with asynchronous network boundaries, retry storms, and distributed saga orchestrators.\n\n\`\`\`typescript\n// Designing for mechanical sympathy and predictable p99 latency\nasync function handleTransactionalOperation(entityId: string): Promise<Result> {\n  return await db.transaction(async (tx) => {\n    const record = await tx.query('SELECT * FROM entities WHERE id = $1 FOR UPDATE', [entityId]);\n    return processEntity(record);\n  });\n}\n\`\`\`\n\n#### The Discipline of Subtraction\n\nTrue engineering sophistication lies in knowing what *not* to build. Before adopting an additional layer of distributed caching or streaming brokers, measure your baseline with proper profiling and query plan analysis.\n\n> "Simplicity is the prerequisite for reliability."`
+    },
+    'Poetry': {
+      titles: [
+        'Echoes on the Verandah After Dusk',
+        'The Geometry of Evening Rain',
+        'Letters Left in Closed Notebooks',
+        'Between The Tide and The Shoreline',
+        'Notes on the Silence Between Stanzas'
+      ],
+      summaries: [
+        'Verses on quiet hours, memory, and the unhurried texture of evening shadows.',
+        'A lyrical meditation on stillness, rain on stone, and words left unsaid.'
+      ],
+      content: (title, summary) => `### ${title}\n\n*By ${authorName}*\n\nThe evening arrives not with a sound,\nbut with the slow settling of dust on windowsills,\nwhere the light turns to amber and then to ash.\n\nWe measure our days by what we held,\nforgetting that the hands are shaped\nby all the things they let slip away.\n\n\`\`\`text\nThe rain writes in quiet cursive across the slate,\neach drop an unhurried sentence,\neach silence a place to rest your breath.\n\`\`\`\n\nIn the stillness between our hurried hours,\nmemory sits like an old acquaintance\nwho needs no introduction, and asks for no apology.`
+    },
+    'Shayari': {
+      titles: [
+        'Dard Aur Umeed Ka Taraana: Chand Ash\'aar',
+        'Shaam Ki Dehleez Par: Ghazal Ke Rang',
+        'Lafzon Ki Khamoshi: Chand Sher',
+        'Roshni Ki Talash Mein: Sukhan-e-Dil',
+        'Zindagi Aur Fasana: Ghazal'
+      ],
+      summaries: [
+        'Urdu ke khoobsurat ash\'aar jo dil ki gehraiyon aur umeed ke charaghon ko bayaan karte hain.',
+        'Mohabbat, khamoshi aur zindagi ke mukhtalif rangon par mabni pur-asar ghazal.'
+      ],
+      content: (title, summary) => `### ${title}\n\n*Shaayir: ${authorName}*\n\n> "Yeh jo khamoshi hai lafzon ke darmiyaan,\n> Is mein chhupa hai ek be-awaaz jahan."\n\n### Matla\n\nHar mod par umeed ke deepak jalaaye rakh,\nToofaano ki aahat mein bhi hosla banaaye rakh.\n\nKuchh raaste khamoshi se manzil tak le gaye,\nHar baat ko labon pe laana zaroori to nahi.\n\n\`\`\`urdu\nDil ki basti mein umeedon ka basera hai abhi,\nRaat jitni bhi ho kaali, sawera hai abhi.\n\`\`\`\n\n### Maqta\n\nKhwaabon ki tehzeeb ko zinda rakh ae dost,\nYehi sukhan toh tera apna sarmaya hai.`
+    },
+    'Short Stories': {
+      titles: [
+        'The Tea Stall at the Edge of the City',
+        'The Stranger on the 11:45 Local',
+        'A Trunk Full of Forgotten Letters',
+        'The Clockmaker of Bowbazar',
+        'Midnight at the Tram Depot'
+      ],
+      summaries: [
+        'An atmospheric urban narrative of unspoken memories, chance meetings, and old city corridors.',
+        'A short fiction on the subtle intersections of ordinary lives in a bustling metropolis.'
+      ],
+      content: (title, summary) => `### ${title}\n\n*By ${authorName}*\n\nThe rain had left the asphalt glistening under the amber glow of the streetlights. \n\nDev stood beneath the tin awning of the tea stall, listening to the rhythmic clinking of glass cups against the copper kettle. The city at this hour felt stripped of its daytime urgency—only the low hum of distant traffic and the aromatic steam of crushed cardamom remained.\n\n"You've been waiting long?" she asked, stepping under the shelter with a folded umbrella.\n\nHe looked up, meeting her eyes for the first time in seven years. "Not long," he said softly. "Just long enough to realize that some conversations never truly end."`
+    },
+    'Essays': {
+      titles: [
+        'On the Lost Art of Unhurried Attention',
+        'Why Handwritten Reflections Matter in a Digital Age',
+        'The Geography of Solitude and Creative Synthesis',
+        'The Quiet Dignity of Daily Rituals',
+        'In Search of Stillness in an Era of Infinite Feeds'
+      ],
+      summaries: [
+        'A thoughtful essay on reclaiming depth, slow reading, and cognitive space in an algorithmic world.',
+        'An inquiry into the architecture of attention, reflection, and human creativity.'
+      ],
+      content: (title, summary) => `### ${title}\n\n*By ${authorName}*\n\nWe live in an age that commodifies our attention at millisecond granularity. Every notification is a gentle pull away from contemplation, every infinite feed an invitation to consume without digesting.\n\nYet the most meaningful intellectual and emotional work has always emerged from uninterrupted stillness—the quiet hour before the house wakes, the notebook filled by fountain pen, the slow synthesis of disparate ideas.\n\n> "To pay deep attention is the highest form of intellectual generosity."\n\nWhen we reclaim our time from the treadmill of immediate reaction, we discover that clarity is not something we search for; it is what remains when the ambient noise is turned down.`
+    },
+    'Philosophy': {
+      titles: [
+        'The Epistemology of Solitude: Reclaiming Quiet Attention',
+        'On Impermanence, Memory, and the Passage of Hours',
+        'The Dialectic of Rest and Productive Urgency',
+        'Stoic Reflections on Uncertainty and Inner Anchor',
+        'The Architecture of Stillness'
+      ],
+      summaries: [
+        'A philosophical inquiry into the nature of consciousness, quiet contemplation, and human resilience.',
+        'Reflections on stoicism, time perception, and finding grounding in times of transition.'
+      ],
+      content: (title, summary) => `### ${title}\n\n*By ${authorName}*\n\nFrom the ancient schools of Athens to the forest academies of the Upanishads, the central inquiry of human thought has remained remarkably constant: how does one preserve inner equilibrium when the outer world is in perpetual motion?\n\nWe often confuse solitude with isolation, assuming that being alone implies a deficiency of connection. But solitude is the fertile ground where thought sheds its performance and returns to its essence.\n\n#### The Socratic Mirror\n\nTo examine one's life is not an academic exercise; it is the daily practice of asking whether our actions align with our deepest values, or merely mirror the expectations of our social environment.\n\n> "Peace of mind begins the moment you decide not to let another person or an external event control your emotions."`
+    },
+    'Humour': {
+      titles: [
+        'The Modern Tragedy of Cold Samosas at 4:30 PM Standups',
+        'How to Look Intellectually Profound While Staring Blankly at Your IDE',
+        'The Unspoken Etiquette of the Office Coffee Machine',
+        'A Field Guide to Corporate Buzzwords Nobody Actually Understands',
+        'Why Every Five-Minute Meeting Takes Forty-Five Minutes'
+      ],
+      summaries: [
+        'A witty observational satire on modern workplace rituals, sprint ceremonies, and developer absurdities.',
+        'A hilarious take on corporate communication, team dynamics, and the pursuit of free snacks.'
+      ],
+      content: (title, summary) => `### ${title}\n\n*By ${authorName}*\n\nThere is no moment of human vulnerability quite as poignant as the arrival of lukewarm catering samosas at a 4:30 PM retrospective meeting that could have been an asynchronous Slack message.\n\nWe all know the choreography:\n- The engineer who silently takes two samosas while pretending to review a pull request.\n- The product manager who uses the phrase "let's double-click on that synergy" with absolute sincerity.\n- The scrum master who solemnly moves a virtual sticky note two millimeters to the right.\n\n> "If you stare at your screen with your chin resting on your hand, people will assume you are contemplating distributed consensus rather than deciding what to order for dinner."`
+    },
+    'Culture': {
+      titles: [
+        'The Living Heritage of College Street and Coffee House',
+        'Old Tramways and Morning Ragas: An Urban Memoir',
+        'The Architecture of Community in Coastal Towns',
+        'Street Food Chronicles: From Chaat Gallis to Verandah Teas',
+        'Preserving the Oral Traditions of Regional Storytellers'
+      ],
+      summaries: [
+        'A cultural chronicle celebrating regional literature, culinary memories, and historic urban landmarks.',
+        'An exploration of living traditions, street history, and the soulful rhythm of Indian cities.'
+      ],
+      content: (title, summary) => `### ${title}\n\n*By ${authorName}*\n\nEvery city has two geographies: the one drawn on modern maps with flyovers and metro corridors, and the older, subterranean geography composed of memories, historic bookstalls, and generational tea counters.\n\nIn the narrow lanes where the smell of roasting cumin mingles with old newsprint, time moves at a different cadence. Here, conversations are not rushed by calendar alerts; they unfold over brass tumblers of filter coffee and plates of steaming kachoris.\n\n> "Culture is not what is preserved in glass museum cases; it is what is practiced daily around the neighbourhood corner."`
+    }
+  };
 
-  // 3. Fallback when all curated articles have already been published
-  const basePool = CURATED_PERSONA_ARTICLES[penName] || Object.values(CURATED_PERSONA_ARTICLES)[0];
-  const chosen = basePool[Math.floor(Math.random() * basePool.length)];
+  const categoryConfig = categoryTemplates[targetCategory] || categoryTemplates['Essays'];
+  const uniqueSuffix = ` - ${persona?.penName || 'editorial'}`;
+  
+  // Pick title not in excludedSet
+  let chosenTitle = categoryConfig.titles[Math.floor(Math.random() * categoryConfig.titles.length)];
+  if (excludedSet.has(chosenTitle.toLowerCase().trim())) {
+    chosenTitle = `${chosenTitle}${uniqueSuffix}`;
+  }
+  
+  const chosenSummary = topicHint || categoryConfig.summaries[Math.floor(Math.random() * categoryConfig.summaries.length)];
+  const chosenContent = categoryConfig.content(chosenTitle, chosenSummary);
+
   return {
-    title: topicHint || `${chosen.title} (Part II)`,
-    summary: chosen.summary,
-    content: chosen.content,
-    themeKeyword: chosen.themeKeyword || category || 'Essays'
+    title: topicHint || chosenTitle,
+    summary: chosenSummary,
+    content: chosenContent,
+    themeKeyword: targetCategory
   };
 }

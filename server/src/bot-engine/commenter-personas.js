@@ -6,58 +6,56 @@
  * - 10% In-Depth Observations (2-4 sentences)
  */
 
-const COMMENTER_AVATARS = [
-  "https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=400&q=80&role=commenter_1",
-  "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=400&q=80&role=commenter_2",
-  "https://images.unsplash.com/photo-1557053910-d9eadeed1c58?auto=format&fit=crop&w=400&q=80&role=commenter_3",
-  "https://images.unsplash.com/photo-1558898479-33c0057a5d12?auto=format&fit=crop&w=400&q=80&role=commenter_4",
-  "https://images.unsplash.com/photo-1561677843-39dee7a319ca?auto=format&fit=crop&w=400&q=80&role=commenter_5",
-  "https://images.unsplash.com/photo-1563237023-b1e970526dcb?auto=format&fit=crop&w=400&q=80&role=commenter_6",
-  "https://images.unsplash.com/photo-1570158268183-d296b2892211?auto=format&fit=crop&w=400&q=80&role=commenter_7",
-  "https://images.unsplash.com/photo-1573497491208-6b1acb260507?auto=format&fit=crop&w=400&q=80&role=commenter_8",
-  "https://images.unsplash.com/photo-1576764402988-7143f9cca90a?auto=format&fit=crop&w=400&q=80&role=commenter_9",
-  "https://images.unsplash.com/photo-1546961329-78bef0414d7c?auto=format&fit=crop&w=400&q=80&role=commenter_10",
-  "https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=400&q=80&role=commenter_11",
-  "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80&role=commenter_12",
-  "https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=400&q=80&role=commenter_13",
-  "https://images.unsplash.com/photo-1544717302-de2939b7ef71?auto=format&fit=crop&w=400&q=80&role=commenter_14",
-  "https://images.unsplash.com/photo-1506863530036-1efeddceb993?auto=format&fit=crop&w=400&q=80&role=commenter_15",
-  "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=400&q=80&role=commenter_16",
-  "https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?auto=format&fit=crop&w=400&q=80&role=commenter_17",
-  "https://images.unsplash.com/photo-1524638431109-93d95c968f03?auto=format&fit=crop&w=400&q=80&role=commenter_18",
-  "https://images.unsplash.com/photo-1531891437562-4301cf0931ee?auto=format&fit=crop&w=400&q=80&role=commenter_19",
-  "https://images.unsplash.com/photo-1534308983496-4fabb1a015ee?auto=format&fit=crop&w=400&q=80&role=commenter_20",
-  "https://images.unsplash.com/photo-1535704882196-765e5fc62a53?auto=format&fit=crop&w=400&q=80&role=commenter_21",
-  "https://images.unsplash.com/photo-1537151625747-768eb6cf92b2?auto=format&fit=crop&w=400&q=80&role=commenter_22",
-  "https://images.unsplash.com/photo-1539614474468-f423a00bc6a6?auto=format&fit=crop&w=400&q=80&role=commenter_23",
-  "https://images.unsplash.com/photo-1541271696563-3be2f555fc4e?auto=format&fit=crop&w=400&q=80&role=commenter_24",
-  "https://images.unsplash.com/photo-1542178243-bc20204b769f?auto=format&fit=crop&w=400&q=80&role=commenter_25",
-  "https://images.unsplash.com/photo-1543610892-0b1f7e6d8ac1?auto=format&fit=crop&w=400&q=80&role=commenter_26",
-  "https://images.unsplash.com/photo-1544006659-f0b21884ce1d?auto=format&fit=crop&w=400&q=80&role=commenter_27",
-  "https://images.unsplash.com/photo-1545912452-8aea7e25a3d3?auto=format&fit=crop&w=400&q=80&role=commenter_28",
-  "https://images.unsplash.com/photo-1546456073-6712f79f55bb?auto=format&fit=crop&w=400&q=80&role=commenter_29",
-  "https://images.unsplash.com/photo-1546820389-44d77e1f0474?auto=format&fit=crop&w=400&q=80&role=commenter_30",
-  "https://images.unsplash.com/photo-1546967191-fdfb13ed6b1e?auto=format&fit=crop&w=400&q=80&role=commenter_31",
-  "https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=400&q=80&role=commenter_32",
-  "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?auto=format&fit=crop&w=400&q=80&role=commenter_33",
-  "https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=400&q=80&role=commenter_34",
-  "https://images.unsplash.com/photo-1553514029-1318c9127859?auto=format&fit=crop&w=400&q=80&role=commenter_35",
-  "https://images.unsplash.com/photo-1554727242-741c14fa561c?auto=format&fit=crop&w=400&q=80&role=commenter_36",
-  "https://images.unsplash.com/photo-1557296387-5358ad7997bb?auto=format&fit=crop&w=400&q=80&role=commenter_37",
-  "https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80&role=commenter_38",
-  "https://images.unsplash.com/photo-1560787313-5dff3307e257?auto=format&fit=crop&w=400&q=80&role=commenter_39",
-  "https://images.unsplash.com/photo-1562004760-aceed7bb0fe3?auto=format&fit=crop&w=400&q=80&role=commenter_40",
-  "https://images.unsplash.com/photo-1563240619-44ec0047592c?auto=format&fit=crop&w=400&q=80&role=commenter_41",
-  "https://images.unsplash.com/photo-1566492031773-4f4e44671857?auto=format&fit=crop&w=400&q=80&role=commenter_42",
-  "https://images.unsplash.com/photo-1567186937675-a5131c8a89ea?auto=format&fit=crop&w=400&q=80&role=commenter_43",
-  "https://images.unsplash.com/photo-1567336273898-ebbf9eb3c3bf?auto=format&fit=crop&w=400&q=80&role=commenter_44",
-  "https://images.unsplash.com/photo-1568602471122-7832951cc4c5?auto=format&fit=crop&w=400&q=80&role=commenter_45",
-  "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=400&q=80&role=commenter_46",
-  "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?auto=format&fit=crop&w=400&q=80&role=commenter_47",
-  "https://images.unsplash.com/photo-1583864697784-a0efc8379f70?auto=format&fit=crop&w=400&q=80&role=commenter_48",
-  "https://images.unsplash.com/photo-1590086782957-93c06ef21604?auto=format&fit=crop&w=400&q=80&role=commenter_49",
-  "https://images.unsplash.com/photo-1599566150163-29194dcaad36?auto=format&fit=crop&w=400&q=80&role=commenter_50"
+const MALE_AVATARS = [
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1496345875659-11f7dd282d1d?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1504257432389-52343af06ae3?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1507152832244-10d45c7eda57?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1528892952291-009c663ce843?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1530268729831-4b0b9e170218?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=400&q=80'
 ];
+
+const FEMALE_AVATARS = [
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1524638431109-93d95c968f03?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1544717302-de2939b7ef71?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1554151228-14d9def656e4?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1557053910-d9eadeed1c58?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1557296387-5358ad7997bb?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1563237023-b1e970526dcb?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=400&q=80'
+];
+
+function isFemaleCommenter(name) {
+  const firstName = (name || '').trim().split(' ')[0].toLowerCase();
+  const femaleSet = new Set([
+    'sanya', 'riya', 'pooja', 'roshni', 'ananya', 'shreya', 'kavitha', 'maya', 'kripa',
+    'tanya', 'pallavi', 'geeta', 'diya', 'bhavna', 'neha', 'zoya', 'puja', 'kavita',
+    'shahana', 'anjali'
+  ]);
+  return femaleSet.has(firstName);
+}
 
 export const RAW_COMMENTER_DATA = [
   // --- TECH & SYSTEMS (10 Bots) ---
@@ -739,24 +737,34 @@ export const RAW_COMMENTER_DATA = [
   }
 ];
 
-export const CURATED_COMMENTER_PERSONAS = RAW_COMMENTER_DATA.map((c, index) => ({
-  id: 'bot_commenter_' + String(index + 1).padStart(3, '0'),
-  penName: c.penName,
-  fullName: c.fullName,
-  bio: c.bio,
-  avatarUrl: COMMENTER_AVATARS[index % COMMENTER_AVATARS.length],
-  categories: c.categories,
-  botType: 'commenter',
-  tone: c.tone,
-  quickReactions: c.quickReactions,
-  mediumTemplates: c.mediumTemplates,
-  deepPromptHint: c.deepPromptHint,
-  isActive: true,
-  likeProbability: 0.90,
-  commentProbability: 0.85,
-  postFrequencyHours: 9999, // Commenters never author posts
-  commentStyle: c.tone
-}));
+let commenterMaleIdx = 0;
+let commenterFemaleIdx = 0;
+
+export const CURATED_COMMENTER_PERSONAS = RAW_COMMENTER_DATA.map((c, index) => {
+  const isFem = isFemaleCommenter(c.fullName);
+  const avatarUrl = isFem
+    ? `${FEMALE_AVATARS[(commenterFemaleIdx++) % FEMALE_AVATARS.length]}&gender=female&uid=commenter_${index + 1}`
+    : `${MALE_AVATARS[(commenterMaleIdx++) % MALE_AVATARS.length]}&gender=male&uid=commenter_${index + 1}`;
+
+  return {
+    id: 'bot_commenter_' + String(index + 1).padStart(3, '0'),
+    penName: c.penName,
+    fullName: c.fullName,
+    bio: c.bio,
+    avatarUrl,
+    categories: c.categories,
+    botType: 'commenter',
+    tone: c.tone,
+    quickReactions: c.quickReactions,
+    mediumTemplates: c.mediumTemplates,
+    deepPromptHint: c.deepPromptHint,
+    isActive: true,
+    likeProbability: 0.90,
+    commentProbability: 0.85,
+    postFrequencyHours: 9999, // Commenters never author posts
+    commentStyle: c.tone
+  };
+});
 
 /**
  * Multi-Tier Authentic Comment Generator:

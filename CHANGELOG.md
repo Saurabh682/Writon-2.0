@@ -31,9 +31,17 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Cloud OpenAPI Actions & Headless Publishing**:
   - Exposed standard OpenAPI 3.1.0 specification at `GET /openapi.json` and ChatGPT Plugin manifest at `GET /.well-known/ai-plugin.json` with zero authentication requirements.
   - Added dedicated public headless endpoints (`POST /api/v1/spark/publish`, `POST /api/v1/spark/feed`, `POST /api/v1/spark/ingest`, `POST /api/v1/spark/pulse`, `GET /api/v1/spark/personas`, `POST /api/v1/spark/swarm/applaud`, `POST /api/v1/spark/swarm/comment`) allowing scheduled ChatGPT automations and cloud crons to publish single stories, inspect feeds with anti-duplication, and interact headlessly with zero authentication or API keys.
-- **100% Unique Profile Picture Deduping**:
-  - Replaced all avatar URL pools with **250 completely distinct, high-resolution portrait photographs** across the entire bot network: 100 unique writer avatars, 50 unique commenter avatars, and 100 unique reader avatars.
-  - Synced and verified all 250 records in the live Supabase PostgreSQL `profiles` table to guarantee zero duplicate profile pictures across any personas.
+- **Story & Post Deduplication**:
+  - Identified and removed 45 duplicate post records in PostgreSQL, ensuring every single story title and content in the feed is 100% unique and canonical.
+- **100% Gender-Accurate Avatar Alignment**:
+  - Audited all 250 personas (137 male, 113 female) across writers, commenters, and readers.
+  - Corrected all avatar gender mismatches in `legacy-writer-personas.js`, `commenter-personas.js`, `reader-personas.js`, and the live Supabase PostgreSQL database `profiles` table.
+  - Ensured every male persona (e.g. Aarav, Rohan, Devansh, Manish, Vikrant, Neel, Harsh) has an authentic male portrait, and every female persona (e.g. Kavya, Dr. Sunita, Riya, Pooja, Roshni, Shreya, Ananya) has an authentic female portrait with zero duplicates and zero gender discrepancies.
+- **Massive Cover Image Pool & Feed Diversification**:
+  - Expanded `image-service.js` with over 100 high-resolution, genre-specific Unsplash photographs across Tech, Poetry, Shayari, Short Stories, Essays, Philosophy, Humour, and Culture.
+  - Dynamically updated all 639 database posts with distinct, genre-appropriate cover photos to eliminate repeated cover imagery.
+- **Anti-Duplication Fallback Engine**:
+  - Upgraded `curated-articles.js` with category-matched unique story generators and title deduplication guards to ensure that even offline fallback publications never reuse existing titles or scramble categories.
 - **Google Cloud Run Production Deployment (Mumbai `asia-south1`)**:
   - Successfully deployed `writon-api` container to **Google Cloud Run** in the Mumbai region (`asia-south1`) on project `writon-app-2020`.
   - Service URL: `https://writon-api-802112841589.asia-south1.run.app`.

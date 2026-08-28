@@ -4,109 +4,59 @@
  * No LLM token cost, zero posting permissions.
  */
 
-// Curated Unsplash portrait avatars for high visual authenticity
-const AVATAR_POOL = [
-  "https://i.pravatar.cc/300?img=1",
-  "https://i.pravatar.cc/300?img=2",
-  "https://i.pravatar.cc/300?img=3",
-  "https://i.pravatar.cc/300?img=4",
-  "https://i.pravatar.cc/300?img=5",
-  "https://i.pravatar.cc/300?img=6",
-  "https://i.pravatar.cc/300?img=7",
-  "https://i.pravatar.cc/300?img=8",
-  "https://i.pravatar.cc/300?img=9",
-  "https://i.pravatar.cc/300?img=10",
-  "https://i.pravatar.cc/300?img=11",
-  "https://i.pravatar.cc/300?img=12",
-  "https://i.pravatar.cc/300?img=13",
-  "https://i.pravatar.cc/300?img=14",
-  "https://i.pravatar.cc/300?img=15",
-  "https://i.pravatar.cc/300?img=16",
-  "https://i.pravatar.cc/300?img=17",
-  "https://i.pravatar.cc/300?img=18",
-  "https://i.pravatar.cc/300?img=19",
-  "https://i.pravatar.cc/300?img=20",
-  "https://i.pravatar.cc/300?img=21",
-  "https://i.pravatar.cc/300?img=22",
-  "https://i.pravatar.cc/300?img=23",
-  "https://i.pravatar.cc/300?img=24",
-  "https://i.pravatar.cc/300?img=25",
-  "https://i.pravatar.cc/300?img=26",
-  "https://i.pravatar.cc/300?img=27",
-  "https://i.pravatar.cc/300?img=28",
-  "https://i.pravatar.cc/300?img=29",
-  "https://i.pravatar.cc/300?img=30",
-  "https://i.pravatar.cc/300?img=31",
-  "https://i.pravatar.cc/300?img=32",
-  "https://i.pravatar.cc/300?img=33",
-  "https://i.pravatar.cc/300?img=34",
-  "https://i.pravatar.cc/300?img=35",
-  "https://i.pravatar.cc/300?img=36",
-  "https://i.pravatar.cc/300?img=37",
-  "https://i.pravatar.cc/300?img=38",
-  "https://i.pravatar.cc/300?img=39",
-  "https://i.pravatar.cc/300?img=40",
-  "https://i.pravatar.cc/300?img=41",
-  "https://i.pravatar.cc/300?img=42",
-  "https://i.pravatar.cc/300?img=43",
-  "https://i.pravatar.cc/300?img=44",
-  "https://i.pravatar.cc/300?img=45",
-  "https://i.pravatar.cc/300?img=46",
-  "https://i.pravatar.cc/300?img=47",
-  "https://i.pravatar.cc/300?img=48",
-  "https://i.pravatar.cc/300?img=49",
-  "https://i.pravatar.cc/300?img=50",
-  "https://i.pravatar.cc/300?img=51",
-  "https://i.pravatar.cc/300?img=52",
-  "https://i.pravatar.cc/300?img=53",
-  "https://i.pravatar.cc/300?img=54",
-  "https://i.pravatar.cc/300?img=55",
-  "https://i.pravatar.cc/300?img=56",
-  "https://i.pravatar.cc/300?img=57",
-  "https://i.pravatar.cc/300?img=58",
-  "https://i.pravatar.cc/300?img=59",
-  "https://i.pravatar.cc/300?img=60",
-  "https://i.pravatar.cc/300?img=61",
-  "https://i.pravatar.cc/300?img=62",
-  "https://i.pravatar.cc/300?img=63",
-  "https://i.pravatar.cc/300?img=64",
-  "https://i.pravatar.cc/300?img=65",
-  "https://i.pravatar.cc/300?img=66",
-  "https://i.pravatar.cc/300?img=67",
-  "https://i.pravatar.cc/300?img=68",
-  "https://i.pravatar.cc/300?img=69",
-  "https://i.pravatar.cc/300?img=70",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_71",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_72",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_73",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_74",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_75",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_76",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_77",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_78",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_79",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_80",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_81",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_82",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_83",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_84",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_85",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_86",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_87",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_88",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_89",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_90",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_91",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_92",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_93",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_94",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_95",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_96",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_97",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_98",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_99",
-  "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80&role=reader_100"
+const MALE_AVATARS = [
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1513956589380-bad6acb9b9d4?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1496345875659-11f7dd282d1d?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1504257432389-52343af06ae3?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1507152832244-10d45c7eda57?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1528892952291-009c663ce843?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1530268729831-4b0b9e170218?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=400&q=80'
 ];
+
+const FEMALE_AVATARS = [
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1524638431109-93d95c968f03?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1544717302-de2939b7ef71?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1548142813-c348350df52b?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1554151228-14d9def656e4?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1557053910-d9eadeed1c58?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1557296387-5358ad7997bb?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1563237023-b1e970526dcb?auto=format&fit=crop&w=400&q=80',
+  'https://images.unsplash.com/photo-1567532939604-b6b5b0db2604?auto=format&fit=crop&w=400&q=80'
+];
+
+function isFemaleReader(name) {
+  const firstName = (name || '').trim().split(' ')[0].toLowerCase();
+  const femaleSet = new Set([
+    'ananya', 'priya', 'neha', 'tanvi', 'kavitha', 'meera', 'zoya', 'pooja', 'divya',
+    'shreya', 'bhavna', 'deepa', 'gayatri', 'ishani', 'kriti', 'monica', 'pallavi',
+    'richa', 'vidya', 'yamini', 'zainab', 'barkha', 'darshana', 'falguni', 'hina',
+    'jyoti', 'lavanya', 'nandini', 'parul', 'smriti', 'urvashi', 'wendy', 'yasmin',
+    'aarushi', 'chandana', 'devika', 'farida', 'ira', 'kalyani', 'manjira', 'prerna',
+    'roshni', 'trisha', 'vandana', 'zarina', 'amrita'
+  ]);
+  return femaleSet.has(firstName);
+}
 
 const RAW_READER_DATA = [
   { penName: 'ananya_reads', fullName: 'Ananya Sharma', bio: 'Avid reader of contemporary Indian poetry and lyrical prose.', categories: ['Poetry', 'Shayari', 'Essays'] },
@@ -211,14 +161,22 @@ const RAW_READER_DATA = [
   { penName: 'deepak_c', fullName: 'Deepak Chopra Fan', bio: 'Mindfulness, consciousness exploration, and holistic philosophy.', categories: ['Philosophy', 'Essays'] }
 ];
 
+let readerMaleIdx = 0;
+let readerFemaleIdx = 0;
+
 export const CURATED_READER_PERSONAS = RAW_READER_DATA.map((r, index) => {
   const cleanHandle = r.penName.startsWith('reader_') ? r.penName : 'reader_' + r.penName;
+  const isFem = isFemaleReader(r.fullName);
+  const avatarUrl = isFem
+    ? `${FEMALE_AVATARS[(readerFemaleIdx++) % FEMALE_AVATARS.length]}&gender=female&uid=reader_${index + 1}`
+    : `${MALE_AVATARS[(readerMaleIdx++) % MALE_AVATARS.length]}&gender=male&uid=reader_${index + 1}`;
+
   return {
     id: 'bot_reader_' + String(index + 1).padStart(3, '0'),
     penName: cleanHandle,
     fullName: r.fullName,
     bio: r.bio,
-    avatarUrl: AVATAR_POOL[index % AVATAR_POOL.length],
+    avatarUrl,
     categories: r.categories,
     botType: 'reader',
     isActive: true,
