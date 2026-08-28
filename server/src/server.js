@@ -142,7 +142,8 @@ await fastify.register(multipart, {
       version: '2.0.0'
     },
     servers: [
-      { url: 'https://writon-powerup.onrender.com', description: 'Production Cloud Server' },
+      { url: 'https://writon-ab.onrender.com', description: 'Production Cloud Server (writon-AB)' },
+      { url: 'https://writon-powerup.onrender.com', description: 'Alternative Server' },
       { url: 'http://localhost:3001', description: 'Local Server' }
     ],
     paths: {
