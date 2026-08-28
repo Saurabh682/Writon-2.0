@@ -5,9 +5,12 @@ import { resolve } from 'node:path';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
+import multipart from '@fastify/multipart';
 import pg from 'pg';
+import sharp from 'sharp';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
+import { getMessaging } from 'firebase-admin/messaging';
 import { z } from 'zod';
 import { loadFirebaseServiceAccount, loadRuntimeConfig } from './config.js';
 import { adminBotsRoutes } from './routes/admin-bots.js';
@@ -42,10 +45,23 @@ const postInputSchema = z.object({
   category: z.string().trim().min(2).max(80),
   coverImage: z.string().url().max(2_000).nullable().optional(),
   isPublished: z.boolean().default(true),
+  clientDraftId: z.string().uuid().optional(),
 });
+
+const postPatchSchema = postInputSchema.partial().refine(
+  (value) => Object.keys(value).length > 0,
+  'At least one story field is required.'
+);
 
 const commentInputSchema = z.object({
   content: z.string().trim().min(1).max(5_000),
+  parentId: z.string().uuid().nullable().optional(),
+});
+
+const interestsInputSchema = z.object({
+  topicIds: z.array(
+    z.string().trim().min(1).max(64).regex(/^[a-z0-9_]+$/, 'Invalid topic identifier.')
+  ).max(12),
 });
 
 const collectionQuerySchema = z.object({
@@ -57,6 +73,20 @@ const notificationQuerySchema = collectionQuerySchema.extend({
   kind: z.enum(['applaud', 'comment', 'follow', 'bookmark']).optional(),
 });
 
+const pushTokenInputSchema = z.object({
+  token: z.string().trim().min(20).max(8192),
+  platform: z.enum(['android', 'ios', 'web']).default('android'),
+  appVersionCode: z.coerce.number().int().positive().optional(),
+  notificationPermission: z.enum(['granted', 'denied', 'unknown']).default('unknown'),
+});
+
+const notificationPreferencesSchema = z.object({
+  interactionsEnabled: z.boolean().optional(),
+  followsEnabled: z.boolean().optional(),
+  editorialEnabled: z.boolean().optional(),
+  publishingEnabled: z.boolean().optional(),
+}).refine((value) => Object.keys(value).length > 0, 'At least one notification preference is required.');
+
 const readingProgressInputSchema = z.object({
   progress: z.coerce.number().min(0).max(1).default(0.05),
   readSeconds: z.coerce.number().int().min(0).max(86_400).default(0),
@@ -64,8 +94,9 @@ const readingProgressInputSchema = z.object({
 
 const postIdSchema = z.string().uuid();
 const profileIdentifierSchema = z.string().trim().min(1).max(200);
+const allowedImageMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
-export async function buildServer({ runtimeConfig, pool, auth } = {}) {
+export async function buildServer({ runtimeConfig, pool, auth, messaging } = {}) {
 const fastify = Fastify({ logger: true });
 const config = runtimeConfig ?? loadRuntimeConfig();
 const serviceAccount = auth ? null : await loadFirebaseServiceAccount(config);
@@ -77,6 +108,7 @@ const firebaseApp = auth
       ? initializeApp({ credential: cert(serviceAccount) })
       : initializeApp({ projectId: 'writon-app-2020' })));
 const firebaseAuth = auth ?? (firebaseApp ? getAuth(firebaseApp) : null);
+const firebaseMessaging = messaging ?? (serviceAccount && firebaseApp ? getMessaging(firebaseApp) : null);
 
 const database = pool ?? new Pool({
   connectionString: config.databaseUrl,
@@ -95,6 +127,55 @@ await fastify.register(cors, {
 await fastify.register(helmet, {
   crossOriginResourcePolicy: false,
 });
+
+await fastify.register(multipart, {
+  limits: { files: 1, fileSize: 10 * 1024 * 1024 },
+});
+
+fastify.get('/api/v1/app/version', async () => ({
+  latestVersionCode: config.latestAppVersionCode ?? 102,
+  minSupportedVersionCode: config.minSupportedAppVersionCode ?? 101,
+  updateUrl: config.playStoreAppUrl ?? 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+}));
+
+function mediaObjectPath(key) {
+  return key.split('/').map((segment) => encodeURIComponent(segment)).join('/');
+}
+
+function publicMediaUrl(request, key) {
+  const forwardedProto = request.headers['x-forwarded-proto'];
+  const protocol = typeof forwardedProto === 'string' ? forwardedProto.split(',')[0] : request.protocol;
+  const baseUrl = config.publicApiBaseUrl || `${protocol}://${request.headers.host}`;
+  return `${baseUrl}/api/v1/media/${encodeURIComponent(key)}`;
+}
+
+function assertStorageConfigured(reply) {
+  if (!config.supabaseUrl || !config.supabaseServiceRoleKey) {
+    reply.code(503).send({ error: 'Media uploads are not configured yet.' });
+    return false;
+  }
+  return true;
+}
+
+async function createSignedMediaUrl(key) {
+  const response = await fetch(
+    `${config.supabaseUrl}/storage/v1/object/sign/${encodeURIComponent(config.supabaseStorageBucket)}/${mediaObjectPath(key)}`,
+    {
+      method: 'POST',
+      headers: {
+        apikey: config.supabaseServiceRoleKey,
+        Authorization: `Bearer ${config.supabaseServiceRoleKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ expiresIn: 3600 }),
+    }
+  );
+  if (!response.ok) throw new Error(`Supabase Storage signing failed (${response.status})`);
+  const payload = await response.json();
+  const signedPath = payload.signedURL || payload.signedUrl;
+  if (!signedPath) throw new Error('Supabase Storage did not return a signed URL.');
+  return new URL(signedPath, config.supabaseUrl).toString();
+}
 
 async function requireUser(request, reply) {
   const authorization = request.headers.authorization;
@@ -150,13 +231,13 @@ async function optionalUser(request) {
 }
 
 
-function postSelectSql(whereClause, extraColumns = '') {
+function postSelectSql(whereClause, extraColumns = '', includeContent = true) {
   return `select
     p.id::text as id,
     p.title,
     p.slug,
     p.summary,
-    p.content,
+    ${includeContent ? 'p.content' : "''::text"} as content,
     p.category,
     p.cover_image_url as "coverImage",
     p.reading_time_min as "readingTimeMin",
@@ -312,11 +393,166 @@ async function togglePostRelation({ postId, userId, table, counterColumn }) {
 async function createNotification(client, { recipientId, actorId, postId = null, commentId = null, kind, message }) {
   if (!recipientId || recipientId === actorId) return;
 
-  await client.query(
+  const inserted = await client.query(
     `insert into public.notifications (recipient_id, actor_id, post_id, comment_id, kind, message)
-     values ($1, $2, $3, $4, $5, $6)`,
+     values ($1, $2, $3, $4, $5, $6)
+     returning id::text as id`,
     [recipientId, actorId, postId, commentId, kind, message]
   );
+
+  try {
+    const preferenceColumn = kind === 'follow' ? 'follows_enabled'
+      : kind === 'editorial' ? 'editorial_enabled'
+        : kind === 'publishing' ? 'publishing_enabled'
+          : 'interactions_enabled';
+    const preference = await client.query(
+      `select ${preferenceColumn} as enabled
+         from public.notification_preferences
+        where profile_id = $1`,
+      [recipientId]
+    );
+    if (preference.rowCount > 0 && preference.rows[0].enabled === false) return;
+
+    await client.query(
+      `insert into public.notification_delivery_outbox (notification_id, recipient_id)
+       values ($1, $2)
+       on conflict (notification_id) do nothing`,
+      [inserted.rows[0].id, recipientId]
+    );
+  } catch (error) {
+    // A deployment may reach the API a few seconds before its SQL migration.
+    // The in-app notification already exists, so never roll back the social action.
+    if (error?.code === '42P01') {
+      console.warn('Push delivery migration has not been applied; retained in-app notification only.');
+      return;
+    }
+    throw error;
+  }
+}
+
+function retryDelayMs(attempts) {
+  return Math.min(15 * 60 * 1000, 30 * 1000 * (2 ** Math.max(0, attempts - 1)));
+}
+
+function isInvalidPushToken(error) {
+  return error?.code === 'messaging/registration-token-not-registered'
+    || error?.code === 'messaging/invalid-registration-token';
+}
+
+async function deliverPendingPushNotifications() {
+  if (!firebaseMessaging) return { processed: 0, reason: 'Firebase Messaging is not configured.' };
+
+  const claimed = await database.query(
+    `with candidates as (
+       select id
+         from public.notification_delivery_outbox
+        where status = 'pending' and next_attempt_at <= now()
+        order by created_at asc
+        limit 20
+        for update skip locked
+     )
+     update public.notification_delivery_outbox delivery
+        set status = 'sending', attempts = attempts + 1, updated_at = now()
+       from candidates
+      where delivery.id = candidates.id
+     returning delivery.id::text as id, delivery.notification_id::text as "notificationId",
+               delivery.recipient_id as "recipientId", delivery.attempts`
+  );
+
+  for (const delivery of claimed.rows) {
+    try {
+      const notification = await database.query(
+        `select notification.kind, notification.message, notification.post_id::text as "postId",
+                post.title as "postTitle", actor.full_name as "actorName"
+           from public.notifications notification
+           left join public.posts post on post.id = notification.post_id
+           left join public.profiles actor on actor.id = notification.actor_id
+          where notification.id = $1`,
+        [delivery.notificationId]
+      );
+      const tokens = await database.query(
+        `select id::text as id, token
+           from public.device_push_tokens
+          where profile_id = $1
+            and revoked_at is null
+            and notification_permission = 'granted'`,
+        [delivery.recipientId]
+      );
+      if (notification.rowCount === 0 || tokens.rowCount === 0) {
+        await database.query(
+          `update public.notification_delivery_outbox
+              set status = 'skipped', updated_at = now(), last_error = null
+            where id = $1`,
+          [delivery.id]
+        );
+        continue;
+      }
+
+      const item = notification.rows[0];
+      const title = item.actorName
+        ? `${item.actorName} ${item.message}`
+        : 'New activity on WritOn';
+      const body = item.postTitle || 'Open WritOn to see the latest activity.';
+      const outcomes = await Promise.all(tokens.rows.map(async (tokenRow) => {
+        try {
+          await firebaseMessaging.send({
+            token: tokenRow.token,
+            notification: { title, body },
+            data: {
+              notificationId: delivery.notificationId,
+              kind: String(item.kind),
+              storyId: item.postId || '',
+              targetRoute: item.postId ? `reader/${item.postId}` : 'notifications',
+            },
+            android: { priority: 'high', notification: { channelId: 'writon_interactions_channel' } },
+          });
+          return { delivered: true, tokenRow };
+        } catch (error) {
+          return { delivered: false, tokenRow, error };
+        }
+      }));
+
+      const invalidTokens = outcomes.filter((outcome) => !outcome.delivered && isInvalidPushToken(outcome.error));
+      await Promise.all(invalidTokens.map((outcome) => database.query(
+        `update public.device_push_tokens set revoked_at = now(), updated_at = now() where id = $1`,
+        [outcome.tokenRow.id]
+      )));
+      if (outcomes.some((outcome) => outcome.delivered)) {
+        await database.query(
+          `update public.notification_delivery_outbox
+              set status = 'sent', delivered_at = now(), updated_at = now(), last_error = null
+            where id = $1`,
+          [delivery.id]
+        );
+      } else if (invalidTokens.length === outcomes.length) {
+        await database.query(
+          `update public.notification_delivery_outbox
+              set status = 'skipped', updated_at = now(), last_error = 'All registered tokens are invalid.'
+            where id = $1`,
+          [delivery.id]
+        );
+      } else {
+        const delay = retryDelayMs(delivery.attempts);
+        await database.query(
+          `update public.notification_delivery_outbox
+              set status = 'pending', next_attempt_at = now() + ($2 * interval '1 millisecond'),
+                  updated_at = now(), last_error = 'FCM delivery failed and will retry.'
+            where id = $1`,
+          [delivery.id, delay]
+        );
+      }
+    } catch (error) {
+      const delay = retryDelayMs(delivery.attempts);
+      await database.query(
+        `update public.notification_delivery_outbox
+            set status = 'pending', next_attempt_at = now() + ($2 * interval '1 millisecond'),
+                updated_at = now(), last_error = left($3, 500)
+          where id = $1`,
+        [delivery.id, delay, error instanceof Error ? error.message : 'Unknown push delivery error']
+      );
+    }
+  }
+  return { processed: claimed.rowCount };
 }
 
 function parseCollectionQuery(request, reply, schema = collectionQuerySchema) {
@@ -380,32 +616,159 @@ function legacyGmailAliasPattern(verifiedEmail) {
   return `${local}+legacy-%@${domain}`;
 }
 
-async function findReclaimableLegacyProfile(firebaseUid, verifiedEmail) {
+/**
+ * Claims a single, email-proven legacy Gmail profile for a Firebase account.
+ *
+ * Returning readers may have already created a temporary Firebase-ID profile
+ * and performed low-risk interactions before the next profile sync.  Those
+ * interactions belong to the same verified email identity and are moved to
+ * the canonical legacy profile.  We deliberately refuse to merge accounts
+ * that have authored content, comments, or bot configuration: those need an
+ * explicit support-assisted merge rather than an automatic claim.
+ */
+async function reclaimLegacyGmailProfile(firebaseUid, verifiedEmail) {
   const aliasPattern = legacyGmailAliasPattern(verifiedEmail);
   if (!aliasPattern) return null;
 
-  const [legacyMatches, currentProfile] = await Promise.all([
-    database.query(
+  const client = await database.connect();
+  let transactionOpen = false;
+  try {
+    await client.query('begin');
+    transactionOpen = true;
+
+    const legacyMatches = await client.query(
       `select id from public.profiles
        where id like 'legacy:%' and lower(btrim(email)) like $1
-       limit 2`,
+       limit 2
+       for update`,
       [aliasPattern]
-    ),
-    database.query(
-      `select not exists (select 1 from public.posts where author_id = $1)
-                and not exists (select 1 from public.comments where author_id = $1)
-                and not exists (select 1 from public.bookmarks where user_id = $1)
-                and not exists (select 1 from public.post_applauds where user_id = $1)
-                and not exists (select 1 from public.follows where follower_id = $1 or following_id = $1)
-                and not exists (select 1 from public.reading_history where user_id = $1)
-                as "isEmpty"`,
-      [firebaseUid]
-    ),
-  ]);
+    );
+    if (legacyMatches.rowCount !== 1) {
+      await client.query('rollback');
+      transactionOpen = false;
+      return null;
+    }
 
-  return legacyMatches.rowCount === 1 && currentProfile.rows[0]?.isEmpty
-    ? legacyMatches.rows[0].id
-    : null;
+    const legacyProfileId = legacyMatches.rows[0].id;
+    const targetIdentity = await client.query(
+      `select firebase_uid from public.profile_auth_identities
+       where profile_id = $1
+       for update`,
+      [legacyProfileId]
+    );
+    if (targetIdentity.rowCount > 0 && targetIdentity.rows[0].firebase_uid !== firebaseUid) {
+      throw createIdentityConflictError();
+    }
+
+    const sourceProfile = await client.query(
+      `select id from public.profiles where id = $1 for update`,
+      [firebaseUid]
+    );
+
+    if (sourceProfile.rowCount > 0) {
+      const sourceHasAuthoredContent = await client.query(
+        `select exists (select 1 from public.posts where author_id = $1)
+                  or exists (select 1 from public.comments where author_id = $1)
+                  or exists (select 1 from public.bot_configs where id = $1)
+                  as "hasAuthoredContent"`,
+        [firebaseUid]
+      );
+      if (sourceHasAuthoredContent.rows[0]?.hasAuthoredContent) {
+        await client.query('rollback');
+        transactionOpen = false;
+        return null;
+      }
+
+      await client.query(
+        `insert into public.post_applauds (post_id, user_id, created_at)
+         select post_id, $2, created_at from public.post_applauds where user_id = $1
+         on conflict (post_id, user_id) do nothing`,
+        [firebaseUid, legacyProfileId]
+      );
+      await client.query('delete from public.post_applauds where user_id = $1', [firebaseUid]);
+
+      await client.query(
+        `insert into public.bookmarks (post_id, user_id, created_at)
+         select post_id, $2, created_at from public.bookmarks where user_id = $1
+         on conflict (post_id, user_id) do nothing`,
+        [firebaseUid, legacyProfileId]
+      );
+      await client.query('delete from public.bookmarks where user_id = $1', [firebaseUid]);
+
+      await client.query(
+        `insert into public.reading_history (
+           user_id, post_id, progress, read_seconds, first_read_at, last_read_at, created_at, updated_at
+         )
+         select $2, post_id, progress, read_seconds, first_read_at, last_read_at, created_at, updated_at
+         from public.reading_history where user_id = $1
+         on conflict (user_id, post_id) do update
+           set progress = greatest(public.reading_history.progress, excluded.progress),
+               read_seconds = public.reading_history.read_seconds + excluded.read_seconds,
+               first_read_at = least(public.reading_history.first_read_at, excluded.first_read_at),
+               last_read_at = greatest(public.reading_history.last_read_at, excluded.last_read_at),
+               updated_at = now()`,
+        [firebaseUid, legacyProfileId]
+      );
+      await client.query('delete from public.reading_history where user_id = $1', [firebaseUid]);
+
+      await client.query(
+        `insert into public.follows (follower_id, following_id, created_at)
+         select $2, following_id, created_at from public.follows
+         where follower_id = $1 and following_id <> $2
+         on conflict (follower_id, following_id) do nothing`,
+        [firebaseUid, legacyProfileId]
+      );
+      await client.query(
+        `insert into public.follows (follower_id, following_id, created_at)
+         select follower_id, $2, created_at from public.follows
+         where following_id = $1 and follower_id <> $2
+         on conflict (follower_id, following_id) do nothing`,
+        [firebaseUid, legacyProfileId]
+      );
+      await client.query('delete from public.follows where follower_id = $1 or following_id = $1', [firebaseUid]);
+
+      await client.query(
+        `update public.notifications
+         set recipient_id = case when recipient_id = $1 then $2 else recipient_id end,
+             actor_id = case when actor_id = $1 then $2 else actor_id end
+         where recipient_id = $1 or actor_id = $1`,
+        [firebaseUid, legacyProfileId]
+      );
+      await client.query('update public.bot_activity_logs set target_user_id = $2 where target_user_id = $1', [firebaseUid, legacyProfileId]);
+      await client.query('update public.bot_delayed_actions set target_user_id = $2 where target_user_id = $1', [firebaseUid, legacyProfileId]);
+    }
+
+    await client.query(
+      `insert into public.profile_auth_identities (firebase_uid, profile_id)
+       values ($1, $2)
+       on conflict (firebase_uid) do update
+         set profile_id = excluded.profile_id, updated_at = now()`,
+      [firebaseUid, legacyProfileId]
+    );
+
+    if (sourceProfile.rowCount > 0) {
+      await client.query('delete from public.profiles where id = $1', [firebaseUid]);
+    }
+
+    await client.query(
+      `update public.profiles
+       set email = $2,
+           followers_count = (select count(*)::int from public.follows where following_id = $1),
+           following_count = (select count(*)::int from public.follows where follower_id = $1),
+           updated_at = now()
+       where id = $1`,
+      [legacyProfileId, verifiedEmail]
+    );
+
+    await client.query('commit');
+    transactionOpen = false;
+    return legacyProfileId;
+  } catch (error) {
+    if (transactionOpen) await client.query('rollback');
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 function createIdentityConflictError() {
@@ -424,17 +787,10 @@ async function resolveProfileId(decodedToken) {
   if (linkedIdentity.rowCount > 0) {
     const linkedProfileId = linkedIdentity.rows[0].profile_id;
     const legacyProfileId = linkedProfileId === firebaseUid && verifiedEmail
-      ? await findReclaimableLegacyProfile(firebaseUid, verifiedEmail)
+      ? await reclaimLegacyGmailProfile(firebaseUid, verifiedEmail)
       : null;
 
     if (!legacyProfileId) return linkedProfileId;
-
-    await database.query(
-      `update public.profile_auth_identities
-       set profile_id = $2, updated_at = now()
-       where firebase_uid = $1`,
-      [firebaseUid, legacyProfileId]
-    );
     return legacyProfileId;
   }
 
@@ -455,10 +811,12 @@ async function resolveProfileId(decodedToken) {
       profileId = emailMatches.rows[0].id;
     }
 
-    // A failed first sync may already have created a blank Firebase-ID profile.
-    // Reclaim the single matching Gmail legacy alias before persisting its identity map.
+    // A legacy import can hold Gmail duplicates under a +legacy suffix. Claiming
+    // requires Firebase's verified email and preserves low-risk activity that a
+    // returning reader may have performed before their second profile sync.
     if (profileId === firebaseUid) {
-      profileId = (await findReclaimableLegacyProfile(firebaseUid, verifiedEmail)) || profileId;
+      const reclaimedProfileId = await reclaimLegacyGmailProfile(firebaseUid, verifiedEmail);
+      if (reclaimedProfileId) return reclaimedProfileId;
     }
   }
 
@@ -551,7 +909,7 @@ fastify.get('/api/v1/posts', async (request, reply) => {
         or author.full_name ilike '%' || $5 || '%'
         or author.pen_name ilike '%' || $5 || '%'
         or p.content ilike '%' || $5 || '%'
-      )`)}
+      )`, '', false)}
     order by
       case when $6 = 'popular' then p.likes_count end desc nulls last,
       p.published_at desc nulls last,
@@ -584,6 +942,26 @@ fastify.get('/api/v1/tags', async (request) => {
   );
   return { tags: result.rows };
 });
+
+fastify.get(
+  '/api/v1/me/drafts',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const query = parseCollectionQuery(request, reply);
+    if (!query) return;
+    const { page, limit } = query;
+    const result = await database.query(
+      `${postSelectSql(`where p.author_id = $2 and p.status = 'draft'`)}
+       order by p.updated_at desc, p.created_at desc
+       limit $3 offset $4`,
+      [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
+    );
+    return {
+      posts: result.rows.slice(0, limit),
+      pagination: { page, limit, hasMore: result.rows.length > limit },
+    };
+  }
+);
 
 
 fastify.get('/api/v1/posts/:idOrSlug', async (request, reply) => {
@@ -624,9 +1002,22 @@ fastify.post(
     const result = await database.query(
       `insert into public.posts (
         slug, author_id, title, summary, content, category, cover_image_url,
-        status, is_public, reading_time_min, published_at
-      ) values ($1, $2, $3, $4, $5, $6, $7, $8, true, $9, case when $8 = 'published' then now() else null end)
-      returning id`,
+        status, is_public, reading_time_min, published_at, client_draft_id
+      ) values ($1, $2, $3, $4, $5, $6, $7, $8, true, $9, case when $8 = 'published' then now() else null end, $10)
+      on conflict (author_id, client_draft_id) do update
+        set title = excluded.title,
+            summary = excluded.summary,
+            content = excluded.content,
+            category = excluded.category,
+            cover_image_url = excluded.cover_image_url,
+            reading_time_min = excluded.reading_time_min,
+            status = case when excluded.status = 'published' then 'published' else public.posts.status end,
+            published_at = case
+              when excluded.status = 'published' then coalesce(public.posts.published_at, now())
+              else public.posts.published_at
+            end,
+            updated_at = now()
+      returning id, status`,
       [
         createSlug(story.title),
         request.profileId,
@@ -637,6 +1028,7 @@ fastify.post(
         story.coverImage ?? null,
         story.isPublished ? 'published' : 'draft',
         calculateReadingTime(story.content),
+        story.clientDraftId ?? null,
       ]
     );
 
@@ -658,6 +1050,148 @@ fastify.post(
     return reply.code(201).send({ post: postResult.rows[0] });
   }
 );
+
+fastify.put(
+  '/api/v1/posts/:id',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const postId = parsePostId(request, reply);
+    if (!postId) return;
+    const patch = postPatchSchema.safeParse(request.body);
+    if (!patch.success) {
+      return reply.code(400).send({ error: 'Invalid story update', details: patch.error.flatten().fieldErrors });
+    }
+
+    const existing = await database.query(
+      `select id::text as id, title, summary, content, category, cover_image_url,
+              status, client_draft_id, published_at
+       from public.posts where id = $1 and author_id = $2`,
+      [postId, request.profileId]
+    );
+    if (existing.rowCount === 0) return reply.code(404).send({ error: 'Story not found' });
+
+    const prior = existing.rows[0];
+    const merged = postInputSchema.safeParse({
+      title: prior.title,
+      summary: prior.summary,
+      content: prior.content,
+      category: prior.category,
+      coverImage: prior.cover_image_url,
+      isPublished: prior.status === 'published',
+      clientDraftId: prior.client_draft_id,
+      ...patch.data,
+    });
+    if (!merged.success) {
+      return reply.code(400).send({ error: 'Invalid story update', details: merged.error.flatten().fieldErrors });
+    }
+    const story = merged.data;
+    const result = await database.query(
+      `update public.posts
+       set title = $3, summary = $4, content = $5, category = $6, cover_image_url = $7,
+           client_draft_id = coalesce($8, client_draft_id),
+           reading_time_min = $9,
+           status = case when $10 then 'published' else status end,
+           published_at = case when $10 then coalesce(published_at, now()) else published_at end,
+           updated_at = now()
+       where id = $1 and author_id = $2
+       returning id`,
+      [postId, request.profileId, story.title, story.summary ?? null, story.content, story.category,
+        story.coverImage ?? null, story.clientDraftId ?? null, calculateReadingTime(story.content), story.isPublished]
+    );
+    const postResult = await database.query(`${postSelectSql('where p.id = $2')}`, [request.profileId, result.rows[0].id]);
+    return { post: postResult.rows[0] };
+  }
+);
+
+fastify.post(
+  '/api/v1/posts/:id/publish',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const postId = parsePostId(request, reply);
+    if (!postId) return;
+    const result = await database.query(
+      `update public.posts
+       set status = 'published', is_public = true, published_at = coalesce(published_at, now()), updated_at = now()
+       where id = $1 and author_id = $2
+       returning id, title, category, summary`,
+      [postId, request.profileId]
+    );
+    if (result.rowCount === 0) return reply.code(404).send({ error: 'Story not found' });
+    const post = result.rows[0];
+    triggerSparkReaction(database, { postId: post.id, authorId: request.profileId, category: post.category, title: post.title, summary: post.summary })
+      .catch((error) => fastify.log.warn(`[Spark Trigger Exception] ${error.message}`));
+    const postResult = await database.query(`${postSelectSql('where p.id = $2')}`, [request.profileId, post.id]);
+    return { post: postResult.rows[0] };
+  }
+);
+
+fastify.delete(
+  '/api/v1/posts/:id',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const postId = parsePostId(request, reply);
+    if (!postId) return;
+    const result = await database.query(
+      `delete from public.posts where id = $1 and author_id = $2 returning id`,
+      [postId, request.profileId]
+    );
+    if (result.rowCount === 0) return reply.code(404).send({ error: 'Story not found' });
+    return reply.code(204).send();
+  }
+);
+
+fastify.post(
+  '/api/v1/media/upload',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    if (!assertStorageConfigured(reply)) return;
+    const file = await request.file();
+    if (!file) return reply.code(400).send({ error: 'Select an image to upload.' });
+    if (!allowedImageMimeTypes.has(file.mimetype)) {
+      return reply.code(415).send({ error: 'Only JPEG, PNG, and WebP images are supported.' });
+    }
+    const buffer = await file.toBuffer();
+    let webp;
+    try {
+      webp = await sharp(buffer).rotate().resize({ width: 2400, height: 2400, fit: 'inside', withoutEnlargement: true }).webp({ quality: 85 }).toBuffer();
+    } catch {
+      return reply.code(400).send({ error: 'The selected image could not be processed.' });
+    }
+    const key = `profiles/${request.profileId}/${randomUUID()}.webp`;
+    const upload = await fetch(
+      `${config.supabaseUrl}/storage/v1/object/${encodeURIComponent(config.supabaseStorageBucket)}/${mediaObjectPath(key)}`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: config.supabaseServiceRoleKey,
+          Authorization: `Bearer ${config.supabaseServiceRoleKey}`,
+          'Content-Type': 'image/webp',
+          'x-upsert': 'false',
+        },
+        body: webp,
+      }
+    );
+    if (!upload.ok) {
+      request.log.error({ statusCode: upload.status }, 'Supabase Storage rejected image upload');
+      return reply.code(502).send({ error: 'Image upload failed. Please try again.' });
+    }
+    return reply.code(201).send({ key, url: publicMediaUrl(request, key) });
+  }
+);
+
+fastify.get('/api/v1/media/:key', async (request, reply) => {
+  if (!assertStorageConfigured(reply)) return;
+  const key = String(request.params.key ?? '');
+  if (!/^profiles\/[A-Za-z0-9:_-]+\/[a-f0-9-]+\.webp$/i.test(key)) {
+    return reply.code(404).send({ error: 'Media not found' });
+  }
+  try {
+    return reply.redirect(302, await createSignedMediaUrl(key));
+  } catch (error) {
+    request.log.error({ err: error }, 'Could not sign media URL');
+    return reply.code(502).send({ error: 'Media is temporarily unavailable.' });
+  }
+});
 
 fastify.post(
   '/api/v1/posts/:id/like',
@@ -736,6 +1270,133 @@ fastify.get(
 );
 
 fastify.get(
+  '/api/v1/me/stories',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const query = parseCollectionQuery(request, reply);
+    if (!query) return;
+    const { page, limit } = query;
+    const result = await database.query(
+      `${postSelectSql(`where p.author_id = $2 and p.status = 'published'`) }
+       order by p.published_at desc nulls last, p.created_at desc
+       limit $3 offset $4`,
+      [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
+    );
+    return { posts: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
+  }
+);
+
+fastify.get(
+  '/api/v1/me/applause-received',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const query = parseCollectionQuery(request, reply);
+    if (!query) return;
+    const { page, limit } = query;
+    const result = await database.query(
+      `${postSelectSql(`where p.author_id = $2 and p.status = 'published' and p.likes_count > 0`) }
+       order by p.likes_count desc, p.published_at desc nulls last, p.created_at desc
+       limit $3 offset $4`,
+      [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
+    );
+    return { posts: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
+  }
+);
+
+fastify.get(
+  '/api/v1/me/followers',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const query = parseCollectionQuery(request, reply);
+    if (!query) return;
+    const { page, limit } = query;
+    const result = await database.query(
+      `select p.id, p.pen_name, p.full_name, p.avatar_url, p.bio,
+              p.followers_count, p.following_count, alias.quote_of_day
+       from public.follows f
+       inner join public.profiles p on p.id = f.follower_id
+       left join public.legacy_import_profile_attributes alias on alias.profile_id = p.id
+       where f.following_id = $1
+       order by f.created_at desc
+       limit $2 offset $3`,
+      [request.profileId, limit + 1, (page - 1) * limit]
+    );
+    return { users: result.rows.slice(0, limit).map(toAuthor), pagination: { page, limit, hasMore: result.rows.length > limit } };
+  }
+);
+
+fastify.get(
+  '/api/v1/me/following',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const query = parseCollectionQuery(request, reply);
+    if (!query) return;
+    const { page, limit } = query;
+    const result = await database.query(
+      `select p.id, p.pen_name, p.full_name, p.avatar_url, p.bio,
+              p.followers_count, p.following_count, alias.quote_of_day
+       from public.follows f
+       inner join public.profiles p on p.id = f.following_id
+       left join public.legacy_import_profile_attributes alias on alias.profile_id = p.id
+       where f.follower_id = $1
+       order by f.created_at desc
+       limit $2 offset $3`,
+      [request.profileId, limit + 1, (page - 1) * limit]
+    );
+    return { users: result.rows.slice(0, limit).map(toAuthor), pagination: { page, limit, hasMore: result.rows.length > limit } };
+  }
+);
+
+fastify.get(
+  '/api/v1/me/interests',
+  { preHandler: requireUser },
+  async (request) => {
+    await ensureProfileForId(request.user, request.profileId);
+    const result = await database.query(
+      `select topic_id as "topicId" from public.profile_interests
+       where profile_id = $1 order by created_at asc, topic_id asc`,
+      [request.profileId]
+    );
+    return { topicIds: result.rows.map((row) => row.topicId) };
+  }
+);
+
+fastify.put(
+  '/api/v1/me/interests',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const parsed = interestsInputSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({
+        error: 'Invalid interests',
+        details: parsed.error.flatten().fieldErrors,
+      });
+    }
+    await ensureProfileForId(request.user, request.profileId);
+    const topicIds = [...new Set(parsed.data.topicIds)];
+    const client = await database.connect();
+    try {
+      await client.query('begin');
+      await client.query('delete from public.profile_interests where profile_id = $1', [request.profileId]);
+      if (topicIds.length > 0) {
+        await client.query(
+          `insert into public.profile_interests (profile_id, topic_id)
+           select $1, unnest($2::text[])`,
+          [request.profileId, topicIds]
+        );
+      }
+      await client.query('commit');
+      return { topicIds };
+    } catch (error) {
+      await client.query('rollback');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+);
+
+fastify.get(
   '/api/v1/me/reading-history',
   { preHandler: requireUser },
   async (request, reply) => {
@@ -803,7 +1464,7 @@ fastify.get('/api/v1/comments/:postId', async (request, reply) => {
       comment.id::text as id,
       comment.post_id::text as "postId",
       comment.author_id as "authorId",
-      link.legacy_parent_id as "parentId",
+      coalesce(comment.parent_comment_id::text, link.legacy_parent_id) as "parentId",
       comment.content,
       comment.created_at as "createdAt",
       json_build_object(
@@ -855,11 +1516,25 @@ fastify.post(
         return reply.code(404).send({ error: 'Story not found' });
       }
 
+      let parent = null;
+      if (parsed.data.parentId) {
+        const parentResult = await client.query(
+          `select id, author_id from public.comments
+           where id = $1 and post_id = $2 for key share`,
+          [parsed.data.parentId, postId]
+        );
+        if (parentResult.rowCount === 0) {
+          await client.query('rollback');
+          return reply.code(400).send({ error: 'Reply target is no longer available for this story.' });
+        }
+        parent = parentResult.rows[0];
+      }
+
       const inserted = await client.query(
-        `insert into public.comments (post_id, author_id, content)
-         values ($1, $2, $3)
-         returning id, post_id, author_id, content, created_at`,
-        [postId, request.profileId, parsed.data.content]
+        `insert into public.comments (post_id, author_id, parent_comment_id, content)
+         values ($1, $2, $3, $4)
+         returning id, post_id, author_id, parent_comment_id, content, created_at`,
+        [postId, request.profileId, parent?.id ?? null, parsed.data.content]
       );
       await client.query(
         `update public.posts set comments_count = comments_count + 1, updated_at = now() where id = $1`,
@@ -871,12 +1546,12 @@ fastify.post(
         [request.profileId]
       );
       await createNotification(client, {
-        recipientId: post.author_id,
+        recipientId: parent?.author_id ?? post.author_id,
         actorId: request.profileId,
         postId,
         commentId: inserted.rows[0].id,
         kind: 'comment',
-        message: 'commented on your story',
+        message: parent ? 'replied to your comment' : 'commented on your story',
       });
       await client.query('commit');
 
@@ -895,7 +1570,7 @@ fastify.post(
           id: comment.id,
           postId: comment.post_id,
           authorId: comment.author_id,
-          parentId: null,
+          parentId: comment.parent_comment_id,
           content: comment.content,
           createdAt: comment.created_at,
           author: toAuthor(author.rows[0]),
@@ -1006,18 +1681,32 @@ fastify.post(
         );
       }
 
+      // `follows` is the source of truth. Counters imported from the legacy
+      // database (and bot seed data) may already be stale, so arithmetic here
+      // can preserve or amplify an incorrect number. Reconcile to the actual
+      // relationship rows after every toggle instead.
       const targetProfile = await client.query(
         `update public.profiles
-         set followers_count = greatest(followers_count + $2, 0), updated_at = now()
+         set followers_count = (
+               select count(*)::int
+               from public.follows
+               where following_id = $1
+             ),
+             updated_at = now()
          where id = $1
          returning followers_count`,
-        [profileId, following ? 1 : -1]
+        [profileId]
       );
       await client.query(
         `update public.profiles
-         set following_count = greatest(following_count + $2, 0), updated_at = now()
+         set following_count = (
+               select count(*)::int
+               from public.follows
+               where follower_id = $1
+             ),
+             updated_at = now()
          where id = $1`,
-        [request.profileId, following ? 1 : -1]
+        [request.profileId]
       );
       await client.query('commit');
 
@@ -1059,6 +1748,109 @@ fastify.get(
       [request.profileId, kind ?? null, limit + 1, (page - 1) * limit]
     );
     return { notifications: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
+  }
+);
+
+fastify.put(
+  '/api/v1/me/devices/push-token',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const parsed = pushTokenInputSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Invalid push token registration', details: parsed.error.flatten().fieldErrors });
+    }
+    const device = parsed.data;
+    await database.query(
+      `insert into public.device_push_tokens (
+         profile_id, token, platform, app_version_code, notification_permission, revoked_at, last_seen_at, updated_at
+       ) values ($1, $2, $3, $4, $5, null, now(), now())
+       on conflict (token) do update
+         set profile_id = excluded.profile_id,
+             platform = excluded.platform,
+             app_version_code = excluded.app_version_code,
+             notification_permission = excluded.notification_permission,
+             revoked_at = null,
+             last_seen_at = now(), updated_at = now()`,
+      [request.profileId, device.token, device.platform, device.appVersionCode ?? null, device.notificationPermission]
+    );
+    return { registered: true };
+  }
+);
+
+fastify.delete(
+  '/api/v1/me/devices/push-token',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const parsed = pushTokenInputSchema.pick({ token: true }).safeParse(request.body);
+    if (!parsed.success) return reply.code(400).send({ error: 'Invalid push token registration' });
+    await database.query(
+      `update public.device_push_tokens
+          set revoked_at = now(), updated_at = now()
+        where profile_id = $1 and token = $2`,
+      [request.profileId, parsed.data.token]
+    );
+    return { revoked: true };
+  }
+);
+
+fastify.get(
+  '/api/v1/me/notification-preferences',
+  { preHandler: requireUser },
+  async (request) => {
+    const result = await database.query(
+      `select interactions_enabled as "interactionsEnabled", follows_enabled as "followsEnabled",
+              editorial_enabled as "editorialEnabled", publishing_enabled as "publishingEnabled"
+         from public.notification_preferences where profile_id = $1`,
+      [request.profileId]
+    );
+    return result.rows[0] ?? {
+      interactionsEnabled: true, followsEnabled: true, editorialEnabled: true, publishingEnabled: true,
+    };
+  }
+);
+
+fastify.put(
+  '/api/v1/me/notification-preferences',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const parsed = notificationPreferencesSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Invalid notification preferences', details: parsed.error.flatten().fieldErrors });
+    }
+    const value = parsed.data;
+    const result = await database.query(
+      `insert into public.notification_preferences (
+         profile_id, interactions_enabled, follows_enabled, editorial_enabled, publishing_enabled, updated_at
+       ) values ($1, coalesce($2, true), coalesce($3, true), coalesce($4, true), coalesce($5, true), now())
+       on conflict (profile_id) do update
+         set interactions_enabled = coalesce($2, public.notification_preferences.interactions_enabled),
+             follows_enabled = coalesce($3, public.notification_preferences.follows_enabled),
+             editorial_enabled = coalesce($4, public.notification_preferences.editorial_enabled),
+             publishing_enabled = coalesce($5, public.notification_preferences.publishing_enabled),
+             updated_at = now()
+       returning interactions_enabled as "interactionsEnabled", follows_enabled as "followsEnabled",
+                 editorial_enabled as "editorialEnabled", publishing_enabled as "publishingEnabled"`,
+      [request.profileId, value.interactionsEnabled ?? null, value.followsEnabled ?? null,
+        value.editorialEnabled ?? null, value.publishingEnabled ?? null]
+    );
+    return result.rows[0];
+  }
+);
+
+fastify.patch(
+  '/api/v1/me/notifications/:id/read',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const notificationId = postIdSchema.safeParse(request.params.id);
+    if (!notificationId.success) return reply.code(400).send({ error: 'Invalid notification id' });
+    const result = await database.query(
+      `update public.notifications set read_at = coalesce(read_at, now())
+        where id = $1 and recipient_id = $2
+        returning id::text as id, read_at as "readAt"`,
+      [notificationId.data, request.profileId]
+    );
+    if (result.rowCount === 0) return reply.code(404).send({ error: 'Notification not found' });
+    return result.rows[0];
   }
 );
 
@@ -1412,8 +2204,143 @@ fastify.put(
     }
   );
 
+  // OpenAPI 3.1.0 Specification for ChatGPT Custom GPT Actions & External Integrations
+  const openApiSpec = {
+    openapi: '3.1.0',
+    info: {
+      title: 'WritOn Autonomous Publishing Platform API',
+      description: 'API for publishing editorial stories, querying platform feeds, applauding posts, commenting, and triggering autonomous editorial pulses with 100 writer personas.',
+      version: '2.0.0'
+    },
+    servers: [
+      { url: 'https://writon-powerup.onrender.com', description: 'Production Server' },
+      { url: 'http://localhost:3001', description: 'Local Server' }
+    ],
+    paths: {
+      '/api/v1/posts': {
+        get: {
+          operationId: 'getFeed',
+          summary: 'Get latest published stories from the platform feed',
+          parameters: [
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 }, description: 'Number of posts to return (1-30)' },
+            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter (e.g. Short Stories, Poetry, Shayari, Essays, Tech)' },
+            { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Search keywords' }
+          ],
+          responses: {
+            '200': {
+              description: 'List of published stories with author metadata',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      posts: { type: 'array', items: { type: 'object' } }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/posts/{idOrSlug}': {
+        get: {
+          operationId: 'getStory',
+          summary: 'Get full story content, author details, and comments',
+          parameters: [
+            { name: 'idOrSlug', in: 'path', required: true, schema: { type: 'string' }, description: 'Post UUID or URL slug' }
+          ],
+          responses: {
+            '200': {
+              description: 'Story details including author profile and comments'
+            }
+          }
+        }
+      },
+      '/api/v1/spark/ingest': {
+        post: {
+          operationId: 'batchPublishOrIngest',
+          summary: 'Publish new stories, comments, applauds, or follows in an atomic batch',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    stories: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          authorPenName: { type: 'string', description: 'Pen name of the persona (or "auto" for most overdue writer)' },
+                          title: { type: 'string', description: 'Story title (under 120 chars)' },
+                          summary: { type: 'string', description: 'Short summary or synopsis' },
+                          content: { type: 'string', description: 'Full story in Markdown format' },
+                          category: { type: 'string', description: 'Category (Short Stories, Poetry, Shayari, Essays, Humour, Tech)' },
+                          coverImage: { type: 'string', description: 'Optional image URL' }
+                        },
+                        required: ['title', 'content']
+                      }
+                    },
+                    comments: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          authorPenName: { type: 'string' },
+                          postSlugOrId: { type: 'string' },
+                          content: { type: 'string' }
+                        },
+                        required: ['postSlugOrId', 'content']
+                      }
+                    },
+                    applauds: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          authorPenName: { type: 'string' },
+                          postSlugOrId: { type: 'string' }
+                        },
+                        required: ['postSlugOrId']
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '201': { description: 'Batch published successfully' }
+          }
+        }
+      },
+      '/api/v1/admin/bots/trigger-pulse': {
+        post: {
+          operationId: 'triggerEditorialPulse',
+          summary: 'Trigger an immediate autonomous editorial cycle (auto-picks overdue persona and publishes)',
+          responses: {
+            '200': { description: 'Pulse execution outcome' }
+          }
+        }
+      }
+    }
+  };
+
+  fastify.get('/openapi.json', async (req, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    return openApiSpec;
+  });
+  fastify.get('/api/v1/openapi.json', async (req, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    return openApiSpec;
+  });
+
   await fastify.register(adminBotsRoutes, { pool: database, requireUser });
   await fastify.register(mcpRoutes, { pool: database });
+
+  fastify.decorate('deliverPushNotifications', deliverPendingPushNotifications);
 
   return fastify;
 }
@@ -1434,6 +2361,16 @@ if (isEntrypoint) {
     if (runtimeConfig.sparkAutomationEnabled) {
       startSparkScheduler(database, 15);
     }
+    const runPushDelivery = async () => {
+      try {
+        const outcome = await fastify.deliverPushNotifications();
+        if (outcome.processed > 0) fastify.log.info(outcome, 'Processed push notification delivery work');
+      } catch (error) {
+        fastify.log.error({ err: error }, 'Push notification delivery pass failed');
+      }
+    };
+    void runPushDelivery();
+    setInterval(() => { void runPushDelivery(); }, runtimeConfig.pushDeliveryPollIntervalMs).unref();
   } catch (error) {
     fastify.log.error(error);
     process.exit(1);
