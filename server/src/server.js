@@ -132,6 +132,189 @@ await fastify.register(multipart, {
   limits: { files: 1, fileSize: 10 * 1024 * 1024 },
 });
 
+
+  // OpenAPI 3.1.0 Specification for ChatGPT Custom GPT Actions & External Cloud Integrations
+  const openApiSpec = {
+    openapi: '3.1.0',
+    info: {
+      title: 'WritOn Autonomous Publishing Platform API',
+      description: 'Public API for publishing literary stories, reading platform feeds, triggering reader applauds, and leaving authentic comments across 100 diverse author personas. Zero authentication or API keys required.',
+      version: '2.0.0'
+    },
+    servers: [
+      { url: 'https://writon-powerup.onrender.com', description: 'Production Cloud Server' },
+      { url: 'http://localhost:3001', description: 'Local Server' }
+    ],
+    paths: {
+      '/api/v1/spark/feed': {
+        get: {
+          operationId: 'getFeed',
+          summary: 'Retrieve recent published stories to inspect topics, categories, and author pen names for deduplication',
+          parameters: [
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 8 }, description: 'Number of recent stories to inspect (1-30)' },
+            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter (e.g. Short Stories, Poetry, Shayari, Essays, Humour, Tech)' }
+          ],
+          responses: {
+            '200': {
+              description: 'List of recently published stories with author metadata'
+            }
+          }
+        }
+      },
+      '/api/v1/spark/publish': {
+        post: {
+          operationId: 'publishStory',
+          summary: 'Publish a single literary story, poem, essay, or ghazal under an author persona',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    authorPenName: { type: 'string', description: 'Author pen name (e.g. "aarav_tech", "kavya_nair", "devansh_roy", or "auto" for most overdue writer)' },
+                    title: { type: 'string', description: 'Compelling, human title under 120 chars' },
+                    summary: { type: 'string', description: '1-2 sentence synopsis or hook' },
+                    content: { type: 'string', description: 'Full literary text in Markdown format (400-800 words)' },
+                    category: { type: 'string', description: 'Genre category: Short Stories, Poetry, Shayari, Essays, Philosophy, Humour, or Tech' },
+                    coverImage: { type: 'string', description: 'Optional cover image URL' }
+                  },
+                  required: ['title', 'content']
+                }
+              }
+            }
+          },
+          responses: {
+            '201': {
+              description: 'Story published successfully'
+            }
+          }
+        }
+      },
+      '/api/v1/spark/personas': {
+        get: {
+          operationId: 'listPersonas',
+          summary: 'List active writer personas with their due status, cognitive lenses, categories, and bio',
+          parameters: [
+            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter' },
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 }, description: 'Max personas to return' }
+          ],
+          responses: {
+            '200': {
+              description: 'List of personas'
+            }
+          }
+        }
+      },
+      '/api/v1/spark/swarm/applaud': {
+        post: {
+          operationId: 'applaudStory',
+          summary: 'Trigger an organic wave of 15-30 reader applauds on a story',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    postId: { type: 'string', description: 'Target post UUID or "latest"' },
+                    count: { type: 'integer', description: 'Number of applauds (default 15-25)' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Reader applauds applied successfully' }
+          }
+        }
+      },
+      '/api/v1/spark/swarm/comment': {
+        post: {
+          operationId: 'commentStory',
+          summary: 'Trigger authentic literary reflections and discussion from commenter personas',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    postId: { type: 'string', description: 'Target post UUID or "latest"' },
+                    count: { type: 'integer', description: 'Number of comments (default 2-4)' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Comments posted successfully' }
+          }
+        }
+      },
+      '/api/v1/spark/ingest': {
+        post: {
+          operationId: 'batchIngest',
+          summary: 'Atomic batch publishing of stories, comments, and applauds in a single call',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    stories: { type: 'array', items: { type: 'object' } },
+                    comments: { type: 'array', items: { type: 'object' } },
+                    applauds: { type: 'array', items: { type: 'object' } }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '201': { description: 'Batch published successfully' }
+          }
+        }
+      },
+      '/api/v1/spark/pulse': {
+        post: {
+          operationId: 'triggerPulse',
+          summary: 'Trigger an autonomous background editorial pulse cycle',
+          responses: {
+            '200': { description: 'Pulse outcome' }
+          }
+        }
+      }
+    }
+  };
+
+  const aiPluginManifest = {
+    schema_version: 'v1',
+    name_for_human: 'WritOn Publishing & Personas',
+    name_for_model: 'writon_publishing',
+    description_for_human: 'Autonomous editorial publishing, story discovery, and community interactions across 100 writer personas.',
+    description_for_model: 'Publish stories, inspect feeds with anti-duplication, trigger 15-30 reader applauds, and leave thoughtful comments across 100 authentic writer personas.',
+    auth: { type: 'none' },
+    api: {
+      type: 'openapi',
+      url: 'https://writon-powerup.onrender.com/openapi.json'
+    },
+    logo_url: 'https://writon-powerup.onrender.com/logo.png',
+    contact_email: 'saurabh.682@gmail.com',
+    legal_info_url: 'https://writon-powerup.onrender.com/privacy-policy'
+  };
+
+  fastify.get('/.well-known/ai-plugin.json', async (req, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    return aiPluginManifest;
+  });
+  fastify.get('/openapi.json', async (req, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    return openApiSpec;
+  });
+  fastify.get('/api/v1/openapi.json', async (req, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    return openApiSpec;
+  });
+
 fastify.get('/api/v1/app/version', async () => ({
   latestVersionCode: config.latestAppVersionCode ?? 102,
   minSupportedVersionCode: config.minSupportedAppVersionCode ?? 101,
@@ -2203,187 +2386,6 @@ fastify.put(
       return { success: true, message: 'Account and associated data deleted successfully.' };
     }
   );
-  // OpenAPI 3.1.0 Specification for ChatGPT Custom GPT Actions & External Cloud Integrations
-  const openApiSpec = {
-    openapi: '3.1.0',
-    info: {
-      title: 'WritOn Autonomous Publishing Platform API',
-      description: 'Public API for publishing literary stories, reading platform feeds, triggering reader applauds, and leaving authentic comments across 100 diverse author personas. Zero authentication or API keys required.',
-      version: '2.0.0'
-    },
-    servers: [
-      { url: 'https://writon-powerup.onrender.com', description: 'Production Cloud Server' },
-      { url: 'http://localhost:3001', description: 'Local Server' }
-    ],
-    paths: {
-      '/api/v1/spark/feed': {
-        get: {
-          operationId: 'getFeed',
-          summary: 'Retrieve recent published stories to inspect topics, categories, and author pen names for deduplication',
-          parameters: [
-            { name: 'limit', in: 'query', schema: { type: 'integer', default: 8 }, description: 'Number of recent stories to inspect (1-30)' },
-            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter (e.g. Short Stories, Poetry, Shayari, Essays, Humour, Tech)' }
-          ],
-          responses: {
-            '200': {
-              description: 'List of recently published stories with author metadata'
-            }
-          }
-        }
-      },
-      '/api/v1/spark/publish': {
-        post: {
-          operationId: 'publishStory',
-          summary: 'Publish a single literary story, poem, essay, or ghazal under an author persona',
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    authorPenName: { type: 'string', description: 'Author pen name (e.g. "aarav_tech", "kavya_nair", "devansh_roy", or "auto" for most overdue writer)' },
-                    title: { type: 'string', description: 'Compelling, human title under 120 chars' },
-                    summary: { type: 'string', description: '1-2 sentence synopsis or hook' },
-                    content: { type: 'string', description: 'Full literary text in Markdown format (400-800 words)' },
-                    category: { type: 'string', description: 'Genre category: Short Stories, Poetry, Shayari, Essays, Philosophy, Humour, or Tech' },
-                    coverImage: { type: 'string', description: 'Optional cover image URL' }
-                  },
-                  required: ['title', 'content']
-                }
-              }
-            }
-          },
-          responses: {
-            '201': {
-              description: 'Story published successfully'
-            }
-          }
-        }
-      },
-      '/api/v1/spark/personas': {
-        get: {
-          operationId: 'listPersonas',
-          summary: 'List active writer personas with their due status, cognitive lenses, categories, and bio',
-          parameters: [
-            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter' },
-            { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 }, description: 'Max personas to return' }
-          ],
-          responses: {
-            '200': {
-              description: 'List of personas'
-            }
-          }
-        }
-      },
-      '/api/v1/spark/swarm/applaud': {
-        post: {
-          operationId: 'applaudStory',
-          summary: 'Trigger an organic wave of 15-30 reader applauds on a story',
-          requestBody: {
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    postId: { type: 'string', description: 'Target post UUID or "latest"' },
-                    count: { type: 'integer', description: 'Number of applauds (default 15-25)' }
-                  }
-                }
-              }
-            }
-          },
-          responses: {
-            '200': { description: 'Reader applauds applied successfully' }
-          }
-        }
-      },
-      '/api/v1/spark/swarm/comment': {
-        post: {
-          operationId: 'commentStory',
-          summary: 'Trigger authentic literary reflections and discussion from commenter personas',
-          requestBody: {
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    postId: { type: 'string', description: 'Target post UUID or "latest"' },
-                    count: { type: 'integer', description: 'Number of comments (default 2-4)' }
-                  }
-                }
-              }
-            }
-          },
-          responses: {
-            '200': { description: 'Comments posted successfully' }
-          }
-        }
-      },
-      '/api/v1/spark/ingest': {
-        post: {
-          operationId: 'batchIngest',
-          summary: 'Atomic batch publishing of stories, comments, and applauds in a single call',
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    stories: { type: 'array', items: { type: 'object' } },
-                    comments: { type: 'array', items: { type: 'object' } },
-                    applauds: { type: 'array', items: { type: 'object' } }
-                  }
-                }
-              }
-            }
-          },
-          responses: {
-            '201': { description: 'Batch published successfully' }
-          }
-        }
-      },
-      '/api/v1/spark/pulse': {
-        post: {
-          operationId: 'triggerPulse',
-          summary: 'Trigger an autonomous background editorial pulse cycle',
-          responses: {
-            '200': { description: 'Pulse outcome' }
-          }
-        }
-      }
-    }
-  };
-
-  const aiPluginManifest = {
-    schema_version: 'v1',
-    name_for_human: 'WritOn Publishing & Personas',
-    name_for_model: 'writon_publishing',
-    description_for_human: 'Autonomous editorial publishing, story discovery, and community interactions across 100 writer personas.',
-    description_for_model: 'Publish stories, inspect feeds with anti-duplication, trigger 15-30 reader applauds, and leave thoughtful comments across 100 authentic writer personas.',
-    auth: { type: 'none' },
-    api: {
-      type: 'openapi',
-      url: 'https://writon-powerup.onrender.com/openapi.json'
-    },
-    logo_url: 'https://writon-powerup.onrender.com/logo.png',
-    contact_email: 'saurabh.682@gmail.com',
-    legal_info_url: 'https://writon-powerup.onrender.com/privacy-policy'
-  };
-
-  fastify.get('/.well-known/ai-plugin.json', async (req, reply) => {
-    reply.header('Access-Control-Allow-Origin', '*');
-    return aiPluginManifest;
-  });
-  fastify.get('/openapi.json', async (req, reply) => {
-    reply.header('Access-Control-Allow-Origin', '*');
-    return openApiSpec;
-  });
-  fastify.get('/api/v1/openapi.json', async (req, reply) => {
-    reply.header('Access-Control-Allow-Origin', '*');
-    return openApiSpec;
-  });
 
   await fastify.register(adminBotsRoutes, { pool: database, requireUser });
   await fastify.register(mcpRoutes, { pool: database });
