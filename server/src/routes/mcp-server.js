@@ -11,8 +11,14 @@ import {
   scheduleDelayedAction,
   getPendingDelayedActions,
   triggerReaderSwarm,
-  triggerCommenterWave
+  triggerCommenterWave,
+  runReflectionBatch
 } from '../bot-engine/spark-runner.js';
+import {
+  getBotMemories,
+  getBotAffinityNetwork,
+  runBotReflectionCycle
+} from '../bot-engine/learning-service.js';
 
 export const MCP_PROTOCOL_VERSION = '2024-11-05';
 export const SERVER_INFO = {
@@ -347,6 +353,38 @@ export const WRITON_TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {}
+    }
+  },
+  {
+    name: 'writon_get_bot_memories',
+    description: 'Retrieve the active episodic memories, past story arcs, reader feedback, and social affinity network of a writer persona.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        authorPenName: {
+          type: 'string',
+          description: 'The pen name of the bot (e.g. "aarav_tech", "kavya_nair", "sunita_banerjee").'
+        },
+        limit: {
+          type: 'number',
+          default: 5,
+          description: 'Number of memories to return (1-20).'
+        }
+      },
+      required: ['authorPenName']
+    }
+  },
+  {
+    name: 'writon_reflect_cycle',
+    description: 'Trigger an autonomous reflection cycle that evaluates recent story performance and reader discussions, consolidating them into long-term bot memories.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        authorPenName: {
+          type: 'string',
+          description: 'Optional pen name to reflect on a specific persona, or omit to run across the entire network.'
+        }
+      }
     }
   }
 ];
@@ -958,6 +996,36 @@ export async function executeMcpTool(pool, toolName, args) {
         sampleQuickReactions: c.quickReactions?.slice(0, 4)
       }))
     };
+  }
+
+  if (toolName === 'writon_get_bot_memories') {
+    const { authorPenName, limit } = args;
+    const bots = await getBotsList(pool);
+    const bot = bots.find(b => b.penName.toLowerCase() === authorPenName?.toLowerCase());
+    if (!bot) throw new Error(`Bot persona not found for pen name: "${authorPenName}"`);
+
+    const memories = await getBotMemories(pool, bot.id, { limit: Number(limit) || 5 });
+    const affinity = await getBotAffinityNetwork(pool, bot.id, { limit: 6 });
+
+    return {
+      author: { penName: bot.penName, fullName: bot.fullName },
+      memoriesCount: memories.length,
+      memories,
+      affinityNetwork: affinity
+    };
+  }
+
+  if (toolName === 'writon_reflect_cycle') {
+    const { authorPenName } = args;
+    if (authorPenName) {
+      const bots = await getBotsList(pool);
+      const bot = bots.find(b => b.penName.toLowerCase() === authorPenName?.toLowerCase());
+      if (!bot) throw new Error(`Bot persona not found for pen name: "${authorPenName}"`);
+      const result = await runBotReflectionCycle(pool, bot.id);
+      return { success: true, result };
+    }
+    const result = await runReflectionBatch(pool);
+    return { success: true, ...result };
   }
 
   throw new Error(`Unknown tool name: ${toolName}`);

@@ -1,4 +1,5 @@
 import { getAuthenticFallbackArticle } from './curated-articles.js';
+import { formatMemoriesForPrompt } from './learning-service.js';
 
 /**
  * Gemini Spark Client
@@ -62,11 +63,13 @@ export async function callGeminiApi({ apiKey, model = 'gemini-2.0-flash', prompt
   return text;
 }
 
-export async function generateSparkArticle({ apiKey, model, persona, category, topicHint, excludeTitles = [] }) {
+export async function generateSparkArticle({ apiKey, model, persona, category, topicHint, excludeTitles = [], memories = [] }) {
   const activeApiKey = apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!activeApiKey) {
     return generateFallbackArticle(persona, category, topicHint, excludeTitles);
   }
+
+  const memoryBlock = formatMemoriesForPrompt(memories);
 
   const prompt = `You are writing a new editorial piece for the publishing app 'WritOn'.
 Your Persona Details:
@@ -75,7 +78,7 @@ Bio: ${persona.bio}
 Writing Style & Cognitive Lens:
 ${persona.personaPrompt}
 
-Target Category: ${category}
+${memoryBlock ? `${memoryBlock}\n` : ''}Target Category: ${category}
 ${topicHint ? `Topic/Theme guidance: ${topicHint}` : 'Choose a timely, evocative, and compelling topic suited to your persona and category.'}
 ${excludeTitles?.length ? `Do NOT write about or use any of the following already published titles:\n${excludeTitles.map(t => `- "${t}"`).join('\n')}` : ''}
 

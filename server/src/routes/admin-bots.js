@@ -20,8 +20,16 @@ import {
   getPendingDelayedActions,
   cancelDelayedAction,
   scheduleDelayedAction,
-  processDueDelayedActions
+  processDueDelayedActions,
+  runReflectionBatch
 } from '../bot-engine/spark-runner.js';
+import {
+  getBotMemories,
+  recordStoryMemory,
+  recordFeedbackMemory,
+  getBotAffinityNetwork,
+  runBotReflectionCycle
+} from '../bot-engine/learning-service.js';
 import { CURATED_BOT_PERSONAS } from '../bot-engine/curated-personas.js';
 import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from '../bot-engine/commenter-personas.js';
 
@@ -806,6 +814,60 @@ export async function adminBotsRoutes(fastify, options) {
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ error: 'Commenter wave failed', message: error.message });
+    }
+  });
+
+  // --- MEMORY & LEARNING ENDPOINTS ---
+
+  fastify.get('/api/v1/spark/bots/:id/memories', async (request, reply) => {
+    const { id } = request.params;
+    const { limit, minImportance, type } = request.query || {};
+    try {
+      const memories = await getBotMemories(pool, id, {
+        limit: Number(limit) || 10,
+        minImportance: Number(minImportance) || 0.0,
+        memoryType: type || null
+      });
+      const affinity = await getBotAffinityNetwork(pool, id, { limit: 8 });
+      return { botId: id, count: memories.length, memories, affinityNetwork: affinity };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to retrieve bot memories', message: error.message });
+    }
+  });
+
+  fastify.post('/api/v1/spark/bots/:id/memories', async (request, reply) => {
+    const { id } = request.params;
+    const { memoryType, subject, content, importanceScore, targetPostId } = request.body || {};
+    try {
+      if (!subject || !content) {
+        return reply.code(400).send({ error: 'subject and content are required' });
+      }
+      const res = await pool.query(`
+        insert into public.bot_memories (
+          bot_id, memory_type, subject, content, importance_score, target_post_id, created_at, updated_at
+        ) values ($1, coalesce($2, 'philosophical_reflection'), $3, $4, coalesce($5, 0.90), $6, now(), now())
+        returning *
+      `, [id, memoryType, subject, content, importanceScore, targetPostId || null]);
+      return reply.code(201).send({ success: true, memory: res.rows[0] });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to record bot memory', message: error.message });
+    }
+  });
+
+  fastify.post('/api/v1/spark/reflect', async (request, reply) => {
+    const { botId } = request.body || {};
+    try {
+      if (botId) {
+        const result = await runBotReflectionCycle(pool, botId);
+        return { success: true, result };
+      }
+      const batchResult = await runReflectionBatch(pool);
+      return { success: true, ...batchResult };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Reflection cycle failed', message: error.message });
     }
   });
 }

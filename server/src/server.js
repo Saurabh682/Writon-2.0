@@ -268,6 +268,40 @@ await fastify.register(multipart, {
             '200': { description: 'Pulse outcome' }
           }
         }
+      },
+      '/api/v1/spark/bots/{id}/memories': {
+        get: {
+          operationId: 'getBotMemories',
+          summary: 'Retrieve active episodic memories, past story continuity, reader feedback, and social affinity network for a bot persona',
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'Bot profile ID (e.g. "bot_aarav_tech", "bot_kavya_nair")' },
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 5 }, description: 'Number of memories to return' }
+          ],
+          responses: {
+            '200': { description: 'Bot episodic memories and affinity network' }
+          }
+        }
+      },
+      '/api/v1/spark/reflect': {
+        post: {
+          operationId: 'triggerReflection',
+          summary: 'Trigger an autonomous reflection cycle that analyzes engagement and consolidates new learnings into long-term memories',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    botId: { type: 'string', description: 'Optional specific bot ID to reflect upon' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Reflection results' }
+          }
+        }
       }
     }
   };

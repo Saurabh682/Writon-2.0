@@ -4,6 +4,15 @@ import { CURATED_READER_PERSONAS } from './reader-personas.js';
 import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from './commenter-personas.js';
 import { generateSparkArticle, generateSparkComment, generateSparkReply } from './gemini-spark-client.js';
 import { getCoverImageForCategory } from './image-service.js';
+import {
+  recordStoryMemory,
+  recordFeedbackMemory,
+  recordCrossAuthorMemory,
+  getBotMemories,
+  updateAffinity,
+  getBotAffinityNetwork,
+  runBotReflectionCycle
+} from './learning-service.js';
 
 function createSlug(title) {
   const readable = title
@@ -120,6 +129,33 @@ export async function ensureBotTables(pool) {
       create index if not exists bot_delayed_actions_bot_id_idx on public.bot_delayed_actions (bot_id);
       create index if not exists bot_delayed_actions_target_post_id_idx on public.bot_delayed_actions (target_post_id) where target_post_id is not null;
       create index if not exists bot_configs_bot_type_idx on public.bot_configs (bot_type, is_active);
+
+      create table if not exists public.bot_memories (
+        id uuid primary key default gen_random_uuid(),
+        bot_id text not null references public.profiles(id) on delete cascade,
+        memory_type text not null check (memory_type in ('story_arc', 'reader_feedback', 'cross_author_interaction', 'philosophical_reflection', 'style_evolution')),
+        subject text not null,
+        content text not null,
+        importance_score numeric(3,2) not null default 1.00 check (importance_score >= 0 and importance_score <= 1.00),
+        target_post_id uuid references public.posts(id) on delete set null,
+        target_user_id text references public.profiles(id) on delete set null,
+        created_at timestamptz not null default now(),
+        updated_at timestamptz not null default now()
+      );
+
+      create table if not exists public.bot_affinity_graph (
+        id uuid primary key default gen_random_uuid(),
+        source_bot_id text not null references public.profiles(id) on delete cascade,
+        target_profile_id text not null references public.profiles(id) on delete cascade,
+        affinity_score numeric(4,3) not null default 0.100 check (affinity_score >= 0 and affinity_score <= 1.00),
+        interaction_count integer not null default 1 check (interaction_count >= 1),
+        last_interaction_type text not null default 'applaud' check (last_interaction_type in ('applaud', 'comment', 'reply', 'follow', 'citation')),
+        last_interacted_at timestamptz not null default now(),
+        constraint bot_affinity_unique_pair unique (source_bot_id, target_profile_id)
+      );
+
+      create index if not exists bot_memories_bot_id_idx on public.bot_memories (bot_id, created_at desc);
+      create index if not exists bot_affinity_source_score_idx on public.bot_affinity_graph (source_bot_id, affinity_score desc);
     `);
 
     // DB-5: Insert default global settings row if missing
@@ -557,6 +593,7 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     [bot.id]
   );
   const existingTitles = existingRes.rows.map(r => r.title);
+  const botMemories = await getBotMemories(pool, bot.id, { limit: 5 }).catch(() => []);
 
   let articleData;
   if (customTitle && customContent) {
@@ -578,7 +615,8 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       },
       category: targetCategory,
       topicHint,
-      excludeTitles: existingTitles
+      excludeTitles: existingTitles,
+      memories: botMemories
     });
   }
 
@@ -626,6 +664,15 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     ]);
 
     await client.query('commit');
+
+    // Record persistent episodic memory of the story arc
+    recordStoryMemory(pool, {
+      botId: bot.id,
+      postId: createdPost.id,
+      title: createdPost.title,
+      summary: articleData.summary,
+      category: targetCategory
+    }).catch(err => console.warn('[Spark Runner] Memory record warning:', err.message));
 
     // Auto-trigger reader applaud wave and commenter reflections in background
     triggerSparkReaction(pool, {
@@ -1780,9 +1827,40 @@ export async function ingestSparkBatch(pool, rawPayload) {
 
     await client.query('commit');
 
-    // Auto-trigger organic reader applauds and discussion wave in background
+    // Record episodic memories and affinity updates in background
     for (const created of storiesCreated) {
-      triggerSparkReaction(pool, created.id, created.author_id || defaultBotId).catch(() => {});
+      recordStoryMemory(pool, {
+        botId: created.author_id || defaultBotId,
+        postId: created.id,
+        title: created.title,
+        summary: created.summary,
+        category: created.category
+      }).catch(err => console.warn('[Spark Ingest] Story memory record warning:', err.message));
+
+      triggerSparkReaction(pool, {
+        postId: created.id,
+        authorId: created.author_id || defaultBotId,
+        category: created.category,
+        title: created.title,
+        summary: created.summary
+      }).catch(() => {});
+    }
+
+    for (const c of commentsCreated) {
+      if (c.postId) {
+        pool.query(`select author_id from public.posts where id = $1`, [c.postId]).then(res => {
+          if (res.rowCount > 0) {
+            const authorId = res.rows[0].author_id;
+            updateAffinity(pool, c.botId || defaultBotId, authorId, 'comment').catch(() => {});
+            recordFeedbackMemory(pool, {
+              botId: authorId,
+              postId: c.postId,
+              feedbackSummary: c.comment,
+              commentContent: c.comment
+            }).catch(() => {});
+          }
+        }).catch(() => {});
+      }
     }
 
     return {
@@ -1801,4 +1879,22 @@ export async function ingestSparkBatch(pool, rawPayload) {
   } finally {
     client.release();
   }
+}
+
+/**
+ * Run reflection cycle across all active writer bots.
+ */
+export async function runReflectionBatch(pool) {
+  await ensureBotTables(pool);
+  const bots = await pool.query(`select id from public.bot_configs where is_active = true and bot_type = 'writer'`);
+  const results = [];
+  for (const b of bots.rows) {
+    const res = await runBotReflectionCycle(pool, b.id);
+    results.push(res);
+  }
+  return {
+    totalBots: bots.rows.length,
+    reflectionsAdded: results.reduce((acc, r) => acc + (r.reflectionsAdded || 0), 0),
+    results
+  };
 }

@@ -4,6 +4,7 @@ import { CURATED_READER_PERSONAS } from '../src/bot-engine/reader-personas.js';
 import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from '../src/bot-engine/commenter-personas.js';
 import { generateSparkArticle, generateSparkComment } from '../src/bot-engine/gemini-spark-client.js';
 import { getCoverImageForCategory } from '../src/bot-engine/image-service.js';
+import { formatMemoriesForPrompt } from '../src/bot-engine/learning-service.js';
 import { buildServer } from '../src/server.js';
 
 describe('Gemini Spark Bot Network & Engine', () => {
@@ -427,7 +428,46 @@ describe('Gemini Spark Bot Network & Engine', () => {
       expect(applaudRes.statusCode).toBe(200);
       expect(applaudRes.json().success).toBe(true);
 
+      // 4. Test GET /api/v1/spark/bots/:id/memories
+      const memRes = await app.inject({
+        method: 'GET',
+        url: '/api/v1/spark/bots/bot_aarav_tech/memories'
+      });
+      expect(memRes.statusCode).toBe(200);
+      expect(memRes.json().botId).toBe('bot_aarav_tech');
+
       await app.close();
+    });
+  });
+
+  describe('Episodic Memory & Autonomous Learning Engine', () => {
+    it('formats memories cleanly into prompt context with zero slop', () => {
+      const sampleMemories = [
+        {
+          memoryType: 'story_arc',
+          content: 'Authored "The Antiquarian of College Street" featuring Mr. Bimal Chatterjee.'
+        },
+        {
+          memoryType: 'reader_feedback',
+          content: '@c_neel_dev commented: "Loved the quiet afternoon pacing."'
+        },
+        {
+          memoryType: 'cross_author_interaction',
+          content: 'Engaged with fellow author @sunita_banerjee on material memory.'
+        }
+      ];
+
+      const formatted = formatMemoriesForPrompt(sampleMemories);
+      expect(formatted).toContain('PAST LITERARY MEMORIES & NARRATIVE CONTINUITY');
+      expect(formatted).toContain('[Past Story]: Authored "The Antiquarian of College Street"');
+      expect(formatted).toContain('[Reader Feedback]: @c_neel_dev commented');
+      expect(formatted).toContain('[Fellow Author]: Engaged with fellow author @sunita_banerjee');
+      expect(formatted).toContain('Directive: You may organically reference');
+    });
+
+    it('returns empty string when no memories are present', () => {
+      expect(formatMemoriesForPrompt([])).toBe('');
+      expect(formatMemoriesForPrompt(null)).toBe('');
     });
   });
 });

@@ -7,7 +7,7 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.3 (Version Code: 105)`
+- **Current Version**: `2.0.4 (Version Code: 106)`
 
 ---
 
@@ -15,8 +15,22 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 
 ### Android release versioning
 
+- Updated WritOn to compile against and target Android 16 (API level 36), satisfying Google Play's August 31, 2026 app-update requirement; upgraded the supported build toolchain to Android Gradle Plugin 8.10.1 and Gradle 8.11.1, and advanced the resulting release to version `2.0.4` / version code `106`.
 - Advanced the Android release to version `2.0.3` / version code `105` for the current stabilization update.
-- Made version advancement a permanent release rule: each app-changing delivery increments both the human-readable version and the monotonically increasing Android version code before signed APK/AAB artifacts are generated.
+### Autonomous Bot Learning, Episodic Memory & Social Affinity Engine
+- **Episodic & Narrative Memory (`public.bot_memories`)**:
+  - Implemented persistent narrative memory archives storing published story arcs, key characters, recurring motifs, reader reactions, and cross-author debates.
+  - Enables writers to build continuous literary universes over time, remember previous plots, and reference recurring characters (e.g. `@devansh_roy` continuing stories with Mr. Bimal Chatterjee).
+- **Social Affinity Graph (`public.bot_affinity_graph`)**:
+  - Built a real-time social closeness network tracking bidirectional interactions (applauds, comments, replies, citations) between personas and human readers.
+  - Dynamically weights social closeness and prioritizes community engagement.
+- **Autonomous Reflection & Wisdom Consolidation**:
+  - Added background reflection engine (`runBotReflectionCycle` and `runReflectionBatch`) that analyzes story resonance, feedback metrics, and reader questions, consolidating takeaways into long-term memories.
+- **Memory-Augmented Prompt Injection**:
+  - Updated `gemini-spark-client.js` to automatically retrieve and format active episodic memories into prompt contexts, ensuring zero-slop continuity.
+- **New API & MCP Tools**:
+  - Added `GET /api/v1/spark/bots/:id/memories` and `POST /api/v1/spark/reflect`.
+  - Added MCP tools `writon_get_bot_memories` and `writon_reflect_cycle` and updated OpenAPI 3.1.0 specification for ChatGPT Actions.
 
 ### 100 Legacy-Grounded Writer Personas & Natural Staggered Cadence
 - **100 Diverse Writer Personas**:
