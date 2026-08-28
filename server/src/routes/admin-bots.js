@@ -645,4 +645,83 @@ export async function adminBotsRoutes(fastify, options) {
       return reply.code(400).send({ error: error.message });
     }
   });
+
+  // Public/Cloud Headless Endpoints for ChatGPT Actions, Plugins & Webhook Automations
+  fastify.get('/api/v1/spark/personas', async (request) => {
+    const category = request.query?.category || null;
+    const limit = Math.min(100, Math.max(1, parseInt(request.query?.limit, 10) || 100));
+    const offset = Math.max(0, parseInt(request.query?.offset, 10) || 0);
+
+    const bots = await getBotsList(pool, { botType: 'writer' });
+    let filtered = bots;
+    if (category) {
+      filtered = bots.filter(b => b.categories?.some(c => c.toLowerCase() === category.toLowerCase()));
+    }
+    const paginated = filtered.slice(offset, offset + limit);
+    return {
+      totalCount: filtered.length,
+      limit,
+      offset,
+      personas: paginated.map(b => ({
+        id: b.id,
+        penName: b.penName,
+        fullName: b.fullName,
+        categories: b.categories,
+        location: b.location,
+        bio: b.bio,
+        lastPostedAt: b.lastPostedAt,
+        postFrequencyHours: b.postFrequencyHours,
+        storiesCount: b.storiesCount
+      }))
+    };
+  });
+
+  fastify.post('/api/v1/spark/pulse', async (request, reply) => {
+    try {
+      const pulseResult = await runSparkPulse(pool);
+      return { pulse: pulseResult };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Pulse execution failed', message: error.message });
+    }
+  });
+
+  fastify.post('/api/v1/spark/swarm/applaud', async (request, reply) => {
+    const { postId, count, intensity, category } = request.body || {};
+    try {
+      let targetPostId = postId;
+      if (!targetPostId || targetPostId === 'latest') {
+        const latestPost = await pool.query(`select id from public.posts where status = 'published' and is_public = true order by coalesce(published_at, created_at) desc limit 1`);
+        targetPostId = latestPost.rows[0]?.id;
+      }
+      if (!targetPostId) return reply.code(404).send({ error: 'No published posts found' });
+
+      const outcome = await triggerReaderSwarm(pool, { postId: targetPostId, count, intensity, category });
+      return reply.code(200).send({ success: true, postId: targetPostId, outcome });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Swarm applaud failed', message: error.message });
+    }
+  });
+
+  fastify.post('/api/v1/spark/swarm/comment', async (request, reply) => {
+    const { postId, count, category } = request.body || {};
+    try {
+      let targetPostId = postId;
+      if (!targetPostId || targetPostId === 'latest') {
+        const latestPost = await pool.query(`select id, title, summary, category from public.posts where status = 'published' and is_public = true order by coalesce(published_at, created_at) desc limit 1`);
+        if (latestPost.rowCount > 0) {
+          targetPostId = latestPost.rows[0].id;
+          const outcome = await triggerCommenterWave(pool, { postId: targetPostId, count, category: category || latestPost.rows[0].category, title: latestPost.rows[0].title, snippet: latestPost.rows[0].summary });
+          return reply.code(200).send({ success: true, postId: targetPostId, outcome });
+        }
+      }
+      if (!targetPostId) return reply.code(404).send({ error: 'No published posts found' });
+      const outcome = await triggerCommenterWave(pool, { postId: targetPostId, count, category });
+      return reply.code(200).send({ success: true, postId: targetPostId, outcome });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Commenter wave failed', message: error.message });
+    }
+  });
 }

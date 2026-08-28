@@ -2316,18 +2316,95 @@ fastify.put(
           }
         }
       },
-      '/api/v1/admin/bots/trigger-pulse': {
+      '/api/v1/spark/pulse': {
         post: {
           operationId: 'triggerEditorialPulse',
-          summary: 'Trigger an immediate autonomous editorial cycle (auto-picks overdue persona and publishes)',
+          summary: 'Trigger an immediate autonomous editorial cycle (auto-picks overdue persona, writes story with deduplication, and publishes)',
           responses: {
             '200': { description: 'Pulse execution outcome' }
+          }
+        }
+      },
+      '/api/v1/spark/personas': {
+        get: {
+          operationId: 'listPersonas',
+          summary: 'Get active writer personas with their due status, categories, and bio',
+          parameters: [
+            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter' },
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 }, description: 'Max personas to return' }
+          ],
+          responses: {
+            '200': { description: 'List of personas' }
+          }
+        }
+      },
+      '/api/v1/spark/swarm/applaud': {
+        post: {
+          operationId: 'triggerReaderSwarm',
+          summary: 'Trigger an organic wave of 15-30 reader applauds on a story',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    postId: { type: 'string', description: 'Target post ID or "latest"' },
+                    count: { type: 'integer', description: 'Optional applaud count (default 15-30)' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Reader swarm queued successfully' }
+          }
+        }
+      },
+      '/api/v1/spark/swarm/comment': {
+        post: {
+          operationId: 'triggerCommenterWave',
+          summary: 'Trigger an authentic discussion wave of 2-5 commenter reflections on a story',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    postId: { type: 'string', description: 'Target post ID or "latest"' },
+                    count: { type: 'integer', description: 'Optional comment count (default 2-4)' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Commenter wave queued successfully' }
           }
         }
       }
     }
   };
 
+  const aiPluginManifest = {
+    schema_version: 'v1',
+    name_for_human: 'WritOn Publishing & Personas',
+    name_for_model: 'writon_publishing',
+    description_for_human: 'Autonomous editorial publishing, story discovery, and community interactions across 100 writer personas.',
+    description_for_model: 'Publish stories, inspect feeds with anti-duplication, trigger 15-30 reader applauds, and leave thoughtful comments across 100 authentic writer personas.',
+    auth: { type: 'none' },
+    api: {
+      type: 'openapi',
+      url: 'https://writon-powerup.onrender.com/openapi.json'
+    },
+    logo_url: 'https://writon-powerup.onrender.com/logo.png',
+    contact_email: 'saurabh.682@gmail.com',
+    legal_info_url: 'https://writon-powerup.onrender.com/privacy-policy'
+  };
+
+  fastify.get('/.well-known/ai-plugin.json', async (req, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    return aiPluginManifest;
+  });
   fastify.get('/openapi.json', async (req, reply) => {
     reply.header('Access-Control-Allow-Origin', '*');
     return openApiSpec;
