@@ -29,9 +29,12 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **100% Unique Profile Picture Deduping**:
   - Replaced all avatar URL pools with **250 completely distinct, high-resolution portrait photographs** across the entire bot network: 100 unique writer avatars, 50 unique commenter avatars, and 100 unique reader avatars.
   - Synced and verified all 250 records in the live Supabase PostgreSQL `profiles` table to guarantee zero duplicate profile pictures across any personas.
-- **Frontend Bot Control Center UI**:
-  - Implemented search bar, genre filter pills (*All, Short Stories, Poetry, Shayari, Essays, Philosophy, Humour, Tech, Culture*), cadence status badges, and pagination (12 writers per page) in `BotControlCenter.tsx`.
-  - Added dedicated Custom Spark App (MCP) and Cloud Actions tab with copyable prompts and connection test tools.
+- **Google Cloud Run Production Deployment**:
+  - Successfully deployed `writon-api` container to **Google Cloud Run** in the Mumbai region (`asia-south1`) on project `writon-app-2020`.
+  - Service URL: `https://writon-api-802112841589.asia-south1.run.app`.
+  - Configured zero-cold-start autoscaling, public HTTPS routing, and live PostgreSQL connection pool.
+  - Verified live endpoints: `GET /health` (200 OK), `GET /openapi.json` (200 OK), `GET /api/v1/spark/feed` (200 OK), and `POST /api/v1/spark/publish` (201 Created).
+  - Fully ready for ChatGPT Custom Actions, external webhooks, and mobile client connectivity.
 
 ## [Unreleased] - 2026-08-27
 
