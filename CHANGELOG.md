@@ -29,17 +29,20 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **100% Unique Profile Picture Deduping**:
   - Replaced all avatar URL pools with **250 completely distinct, high-resolution portrait photographs** across the entire bot network: 100 unique writer avatars, 50 unique commenter avatars, and 100 unique reader avatars.
   - Synced and verified all 250 records in the live Supabase PostgreSQL `profiles` table to guarantee zero duplicate profile pictures across any personas.
-- **Google Cloud Run Production Deployment**:
+- **Google Cloud Run Production Deployment (Mumbai `asia-south1`)**:
   - Successfully deployed `writon-api` container to **Google Cloud Run** in the Mumbai region (`asia-south1`) on project `writon-app-2020`.
   - Service URL: `https://writon-api-802112841589.asia-south1.run.app`.
   - Configured zero-cold-start autoscaling, public HTTPS routing, and live PostgreSQL connection pool.
-  - Verified live endpoints: `GET /health` (200 OK), `GET /openapi.json` (200 OK), `GET /api/v1/spark/feed` (200 OK), and `POST /api/v1/spark/publish` (201 Created).
+  - Added dedicated root welcome landing endpoint (`GET /`) and endpoint directory.
+  - Added public, SEO-compliant HTML legal routes (`GET /privacy-policy`, `GET /terms`) satisfying Google OAuth 2.0 verification requirements.
+  - Verified live endpoints: `GET /` (200 OK), `GET /privacy-policy` (200 OK), `GET /terms` (200 OK), `GET /health` (200 OK), `GET /openapi.json` (200 OK), `GET /api/v1/spark/feed` (200 OK), and `POST /api/v1/spark/publish` (201 Created).
   - Fully ready for ChatGPT Custom Actions, external webhooks, and mobile client connectivity.
 
 ## [Unreleased] - 2026-08-27
 
 ### Non-bot stabilization and release verification
 
+- Fixed noisy notification-registration non-fatals caused by Firebase authentication transitions or temporary ID-token unavailability. Registration remains deferred/retryable, while only unexpected failures are sent to Crashlytics; added focused regression coverage for both classifications.
 - Bumped the next Android release to version `2.0.2` / version code `104`, preserving the rule that every successful Play upload is followed by a monotonically increasing build number.
 - Removed direct `NetworkClient` construction/access from feature and UI packages by routing API access through the application container and explicit screen dependencies.
 - Added focused Android unit coverage for notification deep-link resolution, normalized reader preferences, editor publish validation, authentication/profile error mapping, launch-network failure handling, and comment timestamps.
@@ -49,6 +52,7 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - Added an Android instrumentation migration test that upgrades the actual version-1 cache shape to version 2, verifies cached stories survive, and validates every draft column; Room schemas are now exported for future migration review.
 - Made offline draft retries replace the prior pending mutation for the same draft operation, preventing repeated saves from accumulating duplicate local outbox work; verified against the real Room DAO on an Android 17 emulator.
 - Migrated the legacy sample instrumentation test from the removed `android.support.test` APIs to AndroidX.
+- Began the non-bot Fastify decomposition by moving health/mobile version-manifest endpoints into `app-meta` and notification, push-token, read-state, and notification-preference endpoints into a focused `notifications` route module; the complete 28-test server suite still passes.
 - Applied the additive `drafts_media` and `notification_delivery` migrations to production Supabase. Draft idempotency, the private `writon-media` bucket, device registrations, notification preferences, and the delivery outbox are now present and server-only.
 - Reconciled notification indexes after the live advisor check: added the missing delivery-recipient foreign-key index and removed the duplicate unread-notification index.
 - Fixed the Android API 23 lint failure by replacing the API-24-only ISO timestamp pattern with a compatible strict parser; added UTC, fractional-second, offset, and invalid-value unit coverage.
