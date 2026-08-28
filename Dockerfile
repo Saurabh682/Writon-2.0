@@ -4,7 +4,7 @@ ENV NODE_ENV=production
 
 # Copy server package definitions
 COPY server/package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 # Copy server source code
 COPY server/src ./src
