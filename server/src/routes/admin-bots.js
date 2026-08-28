@@ -30,6 +30,13 @@ import {
   getBotAffinityNetwork,
   runBotReflectionCycle
 } from '../bot-engine/learning-service.js';
+import {
+  getEditorialBriefing,
+  recordLedgerEntry,
+  getLedgerEntries,
+  addIdeaToBacklog,
+  addAntiRepetitionPattern
+} from '../bot-engine/editorial-ledger-service.js';
 import { CURATED_BOT_PERSONAS } from '../bot-engine/curated-personas.js';
 import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from '../bot-engine/commenter-personas.js';
 
@@ -868,6 +875,67 @@ export async function adminBotsRoutes(fastify, options) {
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ error: 'Reflection cycle failed', message: error.message });
+    }
+  });
+
+  // --- EDITORIAL LEDGER & BRIEFING ENDPOINTS ---
+
+  fastify.get('/api/v1/spark/ledger/briefing', async (request, reply) => {
+    try {
+      const briefing = await getEditorialBriefing(pool);
+      return briefing;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to generate editorial briefing', message: error.message });
+    }
+  });
+
+  fastify.get('/api/v1/spark/ledger', async (request, reply) => {
+    const { date, status, limit, offset } = request.query || {};
+    try {
+      const history = await getLedgerEntries(pool, {
+        date: date || null,
+        status: status || null,
+        limit: Number(limit) || 50,
+        offset: Number(offset) || 0
+      });
+      return history;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to query editorial ledger', message: error.message });
+    }
+  });
+
+  fastify.post('/api/v1/spark/ledger/entries', async (request, reply) => {
+    const entryData = request.body || {};
+    try {
+      const entry = await recordLedgerEntry(pool, entryData);
+      return reply.code(201).send({ success: true, entry });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to record ledger entry', message: error.message });
+    }
+  });
+
+  fastify.post('/api/v1/spark/ledger/ideas', async (request, reply) => {
+    const ideaData = request.body || {};
+    try {
+      const idea = await addIdeaToBacklog(pool, ideaData);
+      return reply.code(201).send({ success: true, idea });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to add idea to backlog', message: error.message });
+    }
+  });
+
+  fastify.post('/api/v1/spark/ledger/avoid', async (request, reply) => {
+    const avoidData = request.body || {};
+    try {
+      const rule = await addAntiRepetitionPattern(pool, avoidData);
+      return reply.code(201).send({ success: true, rule });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to add anti-repetition rule', message: error.message });
     }
   });
 }

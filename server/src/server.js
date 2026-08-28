@@ -302,6 +302,46 @@ await fastify.register(multipart, {
             '200': { description: 'Reflection results' }
           }
         }
+      },
+      '/api/v1/spark/ledger/briefing': {
+        get: {
+          operationId: 'getEditorialBriefing',
+          summary: 'Retrieve real-time editorial briefing for today’s edition: author cooldowns, recent titles, anti-repetition avoid list, ideas backlog, and community balance',
+          responses: {
+            '200': { description: 'Current editorial briefing for AI runner / ChatGPT' }
+          }
+        }
+      },
+      '/api/v1/spark/ledger/entries': {
+        post: {
+          operationId: 'recordLedgerEntry',
+          summary: 'Record an entry in the persistent WritOn Editorial Ledger (planned, executed, deferred, or avoid)',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', enum: ['planned', 'executed', 'deferred', 'avoid'] },
+                    entryType: { type: 'string', enum: ['publication', 'comment_wave', 'applaud_swarm', 'reflection', 'anti_repetition_rule', 'future_idea'] },
+                    authorPenName: { type: 'string' },
+                    genre: { type: 'string' },
+                    languageStyle: { type: 'string' },
+                    title: { type: 'string' },
+                    theme: { type: 'string' },
+                    details: { type: 'object' },
+                    avoidReason: { type: 'string' }
+                  },
+                  required: ['status', 'entryType']
+                }
+              }
+            }
+          },
+          responses: {
+            '201': { description: 'Ledger entry recorded' }
+          }
+        }
       }
     }
   };

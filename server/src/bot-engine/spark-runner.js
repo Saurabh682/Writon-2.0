@@ -154,8 +154,49 @@ export async function ensureBotTables(pool) {
         constraint bot_affinity_unique_pair unique (source_bot_id, target_profile_id)
       );
 
+      create table if not exists public.editorial_ledger_entries (
+        id uuid primary key default gen_random_uuid(),
+        edition_date date not null default current_date,
+        status text not null check (status in ('planned', 'executed', 'deferred', 'avoid')),
+        entry_type text not null check (entry_type in ('publication', 'comment_wave', 'applaud_swarm', 'reflection', 'anti_repetition_rule', 'future_idea')),
+        author_id text references public.profiles(id) on delete set null,
+        author_pen_name text,
+        genre text,
+        language_style text default 'English',
+        title text,
+        theme text,
+        approx_word_count integer,
+        details jsonb not null default '{}'::jsonb,
+        avoid_reason text,
+        target_post_id uuid references public.posts(id) on delete set null,
+        created_at timestamptz not null default now(),
+        updated_at timestamptz not null default now()
+      );
+
+      create table if not exists public.editorial_anti_repetition (
+        id uuid primary key default gen_random_uuid(),
+        pattern_type text not null check (pattern_type in ('title_formula', 'opening_phrase', 'overused_theme', 'cliche_phrase', 'interaction_formula')),
+        pattern text not null unique,
+        reason text,
+        status text not null default 'active' check (status in ('active', 'archived')),
+        created_at timestamptz not null default now()
+      );
+
+      create table if not exists public.editorial_ideas_backlog (
+        id uuid primary key default gen_random_uuid(),
+        target_author_pen_name text,
+        genre text,
+        proposed_title text not null,
+        premise text not null,
+        language_style text default 'English',
+        status text not null default 'backlog' check (status in ('backlog', 'planned', 'executed', 'discarded')),
+        created_at timestamptz not null default now(),
+        updated_at timestamptz not null default now()
+      );
+
       create index if not exists bot_memories_bot_id_idx on public.bot_memories (bot_id, created_at desc);
       create index if not exists bot_affinity_source_score_idx on public.bot_affinity_graph (source_bot_id, affinity_score desc);
+      create index if not exists editorial_ledger_date_status_idx on public.editorial_ledger_entries (edition_date desc, status);
     `);
 
     // DB-5: Insert default global settings row if missing

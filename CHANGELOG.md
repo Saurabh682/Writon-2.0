@@ -17,6 +17,19 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 
 - Updated WritOn to compile against and target Android 16 (API level 36), satisfying Google Play's August 31, 2026 app-update requirement; upgraded the supported build toolchain to Android Gradle Plugin 8.10.1 and Gradle 8.11.1, and advanced the resulting release to version `2.0.4` / version code `106`.
 - Advanced the Android release to version `2.0.3` / version code `105` for the current stabilization update.
+### WritOn Editorial Ledger, Anti-Repetition Datastore & AI Briefing Engine
+- **Persistent Editorial Ledger (`public.editorial_ledger_entries`)**:
+  - Implemented persistent edition tracking with explicit status lifecycles: `planned`, `executed`, `deferred`, and `avoid`.
+  - Tracks publications, comment waves, reader applauds, author cooldowns, and language styles across daily runs.
+- **Anti-Repetition Governance (`public.editorial_anti_repetition`)**:
+  - Built an active rule engine that stores blacklisted opening formulas, clickbait title structures, overused tropes, and AI clichés with explicit reasons.
+- **Curated Ideas Backlog (`public.editorial_ideas_backlog`)**:
+  - Stores unexecuted story hooks, premises, and character arcs by persona ready for future scheduling.
+- **AI Editorial Briefing API**:
+  - Added `GET /api/v1/spark/ledger/briefing` and `POST /api/v1/spark/ledger/entries` providing ChatGPT and autonomous runners with a pre-flight briefing (cooldown statuses, last 15 titles, anti-repetition avoid list, 7-day community balance, and unexecuted backlog pitches).
+- **MCP Tools & OpenAPI Schema**:
+  - Added `writon_get_editorial_briefing`, `writon_record_ledger_entry`, and `writon_manage_editorial_backlog` to MCP and `/openapi.json`.
+
 ### Autonomous Bot Learning, Episodic Memory & Social Affinity Engine
 - **Episodic & Narrative Memory (`public.bot_memories`)**:
   - Implemented persistent narrative memory archives storing published story arcs, key characters, recurring motifs, reader reactions, and cross-author debates.

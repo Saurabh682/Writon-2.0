@@ -19,6 +19,12 @@ import {
   getBotAffinityNetwork,
   runBotReflectionCycle
 } from '../bot-engine/learning-service.js';
+import {
+  getEditorialBriefing,
+  recordLedgerEntry,
+  addIdeaToBacklog,
+  addAntiRepetitionPattern
+} from '../bot-engine/editorial-ledger-service.js';
 
 export const MCP_PROTOCOL_VERSION = '2024-11-05';
 export const SERVER_INFO = {
@@ -385,6 +391,56 @@ export const WRITON_TOOLS = [
           description: 'Optional pen name to reflect on a specific persona, or omit to run across the entire network.'
         }
       }
+    }
+  },
+  {
+    name: 'writon_get_editorial_briefing',
+    description: 'Fetch the real-time WritOn Editorial Briefing before drafting today\'s run: lists due writers, cooldown statuses, recent 15 titles, active anti-repetition avoid rules, 7-day community balance, and unexecuted backlog ideas.',
+    inputSchema: {
+      type: 'object',
+      properties: {}
+    }
+  },
+  {
+    name: 'writon_record_ledger_entry',
+    description: 'Record an entry in the persistent WritOn Editorial Ledger to track planned, executed, deferred, or avoid items across daily runs.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        status: {
+          type: 'string',
+          enum: ['planned', 'executed', 'deferred', 'avoid'],
+          description: 'Entry lifecycle status.'
+        },
+        entryType: {
+          type: 'string',
+          enum: ['publication', 'comment_wave', 'applaud_swarm', 'reflection', 'anti_repetition_rule', 'future_idea'],
+          description: 'Type of editorial action or record.'
+        },
+        authorPenName: { type: 'string' },
+        genre: { type: 'string' },
+        languageStyle: { type: 'string', default: 'English' },
+        title: { type: 'string' },
+        theme: { type: 'string' },
+        avoidReason: { type: 'string' },
+        details: { type: 'object' }
+      },
+      required: ['status', 'entryType']
+    }
+  },
+  {
+    name: 'writon_manage_editorial_backlog',
+    description: 'Add a new story premise or future idea into the WritOn ideas backlog for a specific persona.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        targetAuthorPenName: { type: 'string' },
+        genre: { type: 'string' },
+        proposedTitle: { type: 'string' },
+        premise: { type: 'string' },
+        languageStyle: { type: 'string', default: 'English' }
+      },
+      required: ['proposedTitle', 'premise']
     }
   }
 ];
@@ -1026,6 +1082,29 @@ export async function executeMcpTool(pool, toolName, args) {
     }
     const result = await runReflectionBatch(pool);
     return { success: true, ...result };
+  }
+
+  if (toolName === 'writon_get_editorial_briefing') {
+    const briefing = await getEditorialBriefing(pool);
+    return briefing;
+  }
+
+  if (toolName === 'writon_record_ledger_entry') {
+    const entry = await recordLedgerEntry(pool, args);
+    return {
+      success: true,
+      message: `Editorial ledger entry recorded (${args.status}: ${args.entryType})`,
+      entry
+    };
+  }
+
+  if (toolName === 'writon_manage_editorial_backlog') {
+    const idea = await addIdeaToBacklog(pool, args);
+    return {
+      success: true,
+      message: `New story idea added to backlog for @${args.targetAuthorPenName || 'writers'}`,
+      idea
+    };
   }
 
   throw new Error(`Unknown tool name: ${toolName}`);

@@ -436,6 +436,14 @@ describe('Gemini Spark Bot Network & Engine', () => {
       expect(memRes.statusCode).toBe(200);
       expect(memRes.json().botId).toBe('bot_aarav_tech');
 
+      // 5. Test GET /api/v1/spark/ledger/briefing
+      const briefRes = await app.inject({
+        method: 'GET',
+        url: '/api/v1/spark/ledger/briefing'
+      });
+      expect(briefRes.statusCode).toBe(200);
+      expect(briefRes.json().editionDate).toBeTruthy();
+
       await app.close();
     });
   });
