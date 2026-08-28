@@ -1112,15 +1112,15 @@ fastify.post(
     const result = await database.query(
       `update public.posts
        set status = 'published', is_public = true, published_at = coalesce(published_at, now()), updated_at = now()
-       where id = $1 and author_id = $2
-       returning id, title, category, summary`,
-      [postId, request.profileId]
+       where id = $1 ${request.profileId ? 'and author_id = $2' : ''}
+       returning id, title, category, summary, author_id`,
+      request.profileId ? [postId, request.profileId] : [postId]
     );
     if (result.rowCount === 0) return reply.code(404).send({ error: 'Story not found' });
     const post = result.rows[0];
-    triggerSparkReaction(database, { postId: post.id, authorId: request.profileId, category: post.category, title: post.title, summary: post.summary })
+    triggerSparkReaction(database, { postId: post.id, authorId: post.author_id, category: post.category, title: post.title, summary: post.summary })
       .catch((error) => fastify.log.warn(`[Spark Trigger Exception] ${error.message}`));
-    const postResult = await database.query(`${postSelectSql('where p.id = $2')}`, [request.profileId, post.id]);
+    const postResult = await database.query(`${postSelectSql('where p.id = $2')}`, [request.profileId || 'public_view', post.id]);
     return { post: postResult.rows[0] };
   }
 );
@@ -2203,64 +2203,38 @@ fastify.put(
       return { success: true, message: 'Account and associated data deleted successfully.' };
     }
   );
-
-  // OpenAPI 3.1.0 Specification for ChatGPT Custom GPT Actions & External Integrations
+  // OpenAPI 3.1.0 Specification for ChatGPT Custom GPT Actions & External Cloud Integrations
   const openApiSpec = {
     openapi: '3.1.0',
     info: {
       title: 'WritOn Autonomous Publishing Platform API',
-      description: 'API for publishing editorial stories, querying platform feeds, applauding posts, commenting, and triggering autonomous editorial pulses with 100 writer personas.',
+      description: 'Public API for publishing literary stories, reading platform feeds, triggering reader applauds, and leaving authentic comments across 100 diverse author personas. Zero authentication or API keys required.',
       version: '2.0.0'
     },
     servers: [
-      { url: 'https://writon-powerup.onrender.com', description: 'Production Server' },
+      { url: 'https://writon-powerup.onrender.com', description: 'Production Cloud Server' },
       { url: 'http://localhost:3001', description: 'Local Server' }
     ],
     paths: {
-      '/api/v1/posts': {
+      '/api/v1/spark/feed': {
         get: {
           operationId: 'getFeed',
-          summary: 'Get latest published stories from the platform feed',
+          summary: 'Retrieve recent published stories to inspect topics, categories, and author pen names for deduplication',
           parameters: [
-            { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 }, description: 'Number of posts to return (1-30)' },
-            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter (e.g. Short Stories, Poetry, Shayari, Essays, Tech)' },
-            { name: 'search', in: 'query', schema: { type: 'string' }, description: 'Search keywords' }
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 8 }, description: 'Number of recent stories to inspect (1-30)' },
+            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter (e.g. Short Stories, Poetry, Shayari, Essays, Humour, Tech)' }
           ],
           responses: {
             '200': {
-              description: 'List of published stories with author metadata',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'object',
-                    properties: {
-                      posts: { type: 'array', items: { type: 'object' } }
-                    }
-                  }
-                }
-              }
+              description: 'List of recently published stories with author metadata'
             }
           }
         }
       },
-      '/api/v1/posts/{idOrSlug}': {
-        get: {
-          operationId: 'getStory',
-          summary: 'Get full story content, author details, and comments',
-          parameters: [
-            { name: 'idOrSlug', in: 'path', required: true, schema: { type: 'string' }, description: 'Post UUID or URL slug' }
-          ],
-          responses: {
-            '200': {
-              description: 'Story details including author profile and comments'
-            }
-          }
-        }
-      },
-      '/api/v1/spark/ingest': {
+      '/api/v1/spark/publish': {
         post: {
-          operationId: 'batchPublishOrIngest',
-          summary: 'Publish new stories, comments, applauds, or follows in an atomic batch',
+          operationId: 'publishStory',
+          summary: 'Publish a single literary story, poem, essay, or ghazal under an author persona',
           requestBody: {
             required: true,
             content: {
@@ -2268,44 +2242,98 @@ fastify.put(
                 schema: {
                   type: 'object',
                   properties: {
-                    stories: {
-                      type: 'array',
-                      items: {
-                        type: 'object',
-                        properties: {
-                          authorPenName: { type: 'string', description: 'Pen name of the persona (or "auto" for most overdue writer)' },
-                          title: { type: 'string', description: 'Story title (under 120 chars)' },
-                          summary: { type: 'string', description: 'Short summary or synopsis' },
-                          content: { type: 'string', description: 'Full story in Markdown format' },
-                          category: { type: 'string', description: 'Category (Short Stories, Poetry, Shayari, Essays, Humour, Tech)' },
-                          coverImage: { type: 'string', description: 'Optional image URL' }
-                        },
-                        required: ['title', 'content']
-                      }
-                    },
-                    comments: {
-                      type: 'array',
-                      items: {
-                        type: 'object',
-                        properties: {
-                          authorPenName: { type: 'string' },
-                          postSlugOrId: { type: 'string' },
-                          content: { type: 'string' }
-                        },
-                        required: ['postSlugOrId', 'content']
-                      }
-                    },
-                    applauds: {
-                      type: 'array',
-                      items: {
-                        type: 'object',
-                        properties: {
-                          authorPenName: { type: 'string' },
-                          postSlugOrId: { type: 'string' }
-                        },
-                        required: ['postSlugOrId']
-                      }
-                    }
+                    authorPenName: { type: 'string', description: 'Author pen name (e.g. "aarav_tech", "kavya_nair", "devansh_roy", or "auto" for most overdue writer)' },
+                    title: { type: 'string', description: 'Compelling, human title under 120 chars' },
+                    summary: { type: 'string', description: '1-2 sentence synopsis or hook' },
+                    content: { type: 'string', description: 'Full literary text in Markdown format (400-800 words)' },
+                    category: { type: 'string', description: 'Genre category: Short Stories, Poetry, Shayari, Essays, Philosophy, Humour, or Tech' },
+                    coverImage: { type: 'string', description: 'Optional cover image URL' }
+                  },
+                  required: ['title', 'content']
+                }
+              }
+            }
+          },
+          responses: {
+            '201': {
+              description: 'Story published successfully'
+            }
+          }
+        }
+      },
+      '/api/v1/spark/personas': {
+        get: {
+          operationId: 'listPersonas',
+          summary: 'List active writer personas with their due status, cognitive lenses, categories, and bio',
+          parameters: [
+            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter' },
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 }, description: 'Max personas to return' }
+          ],
+          responses: {
+            '200': {
+              description: 'List of personas'
+            }
+          }
+        }
+      },
+      '/api/v1/spark/swarm/applaud': {
+        post: {
+          operationId: 'applaudStory',
+          summary: 'Trigger an organic wave of 15-30 reader applauds on a story',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    postId: { type: 'string', description: 'Target post UUID or "latest"' },
+                    count: { type: 'integer', description: 'Number of applauds (default 15-25)' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Reader applauds applied successfully' }
+          }
+        }
+      },
+      '/api/v1/spark/swarm/comment': {
+        post: {
+          operationId: 'commentStory',
+          summary: 'Trigger authentic literary reflections and discussion from commenter personas',
+          requestBody: {
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    postId: { type: 'string', description: 'Target post UUID or "latest"' },
+                    count: { type: 'integer', description: 'Number of comments (default 2-4)' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Comments posted successfully' }
+          }
+        }
+      },
+      '/api/v1/spark/ingest': {
+        post: {
+          operationId: 'batchIngest',
+          summary: 'Atomic batch publishing of stories, comments, and applauds in a single call',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    stories: { type: 'array', items: { type: 'object' } },
+                    comments: { type: 'array', items: { type: 'object' } },
+                    applauds: { type: 'array', items: { type: 'object' } }
                   }
                 }
               }
@@ -2318,67 +2346,10 @@ fastify.put(
       },
       '/api/v1/spark/pulse': {
         post: {
-          operationId: 'triggerEditorialPulse',
-          summary: 'Trigger an immediate autonomous editorial cycle (auto-picks overdue persona, writes story with deduplication, and publishes)',
+          operationId: 'triggerPulse',
+          summary: 'Trigger an autonomous background editorial pulse cycle',
           responses: {
-            '200': { description: 'Pulse execution outcome' }
-          }
-        }
-      },
-      '/api/v1/spark/personas': {
-        get: {
-          operationId: 'listPersonas',
-          summary: 'Get active writer personas with their due status, categories, and bio',
-          parameters: [
-            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter' },
-            { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 }, description: 'Max personas to return' }
-          ],
-          responses: {
-            '200': { description: 'List of personas' }
-          }
-        }
-      },
-      '/api/v1/spark/swarm/applaud': {
-        post: {
-          operationId: 'triggerReaderSwarm',
-          summary: 'Trigger an organic wave of 15-30 reader applauds on a story',
-          requestBody: {
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    postId: { type: 'string', description: 'Target post ID or "latest"' },
-                    count: { type: 'integer', description: 'Optional applaud count (default 15-30)' }
-                  }
-                }
-              }
-            }
-          },
-          responses: {
-            '200': { description: 'Reader swarm queued successfully' }
-          }
-        }
-      },
-      '/api/v1/spark/swarm/comment': {
-        post: {
-          operationId: 'triggerCommenterWave',
-          summary: 'Trigger an authentic discussion wave of 2-5 commenter reflections on a story',
-          requestBody: {
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    postId: { type: 'string', description: 'Target post ID or "latest"' },
-                    count: { type: 'integer', description: 'Optional comment count (default 2-4)' }
-                  }
-                }
-              }
-            }
-          },
-          responses: {
-            '200': { description: 'Commenter wave queued successfully' }
+            '200': { description: 'Pulse outcome' }
           }
         }
       }

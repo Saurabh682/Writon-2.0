@@ -371,5 +371,58 @@ describe('Gemini Spark Bot Network & Engine', () => {
 
       await app.close();
     });
+
+    it('serves OpenAPI 3.1.0 specification and supports public unauthenticated spark endpoints', async () => {
+      const app = await buildServer({
+        runtimeConfig: {
+          environment: 'test',
+          port: 3001,
+          databaseUrl: 'postgresql://unused:unused@localhost:5432/test',
+          databasePoolMax: 1,
+          databaseSslRejectUnauthorized: false,
+          corsOrigins: [],
+        },
+        pool: createMockPool(),
+        auth: { verifyIdToken: async () => ({ uid: 'test-admin' }) }
+      });
+
+      // 1. Test GET /openapi.json
+      const openApiRes = await app.inject({ method: 'GET', url: '/openapi.json' });
+      expect(openApiRes.statusCode).toBe(200);
+      const spec = openApiRes.json();
+      expect(spec.openapi).toBe('3.1.0');
+      expect(spec.paths['/api/v1/spark/publish']?.post?.operationId).toBe('publishStory');
+      expect(spec.paths['/api/v1/spark/feed']?.get?.operationId).toBe('getFeed');
+
+      // 2. Test POST /api/v1/spark/publish without auth token
+      const pubRes = await app.inject({
+        method: 'POST',
+        url: '/api/v1/spark/publish',
+        payload: {
+          authorPenName: 'aarav_tech',
+          title: 'The Architecture of Cloud Personas',
+          summary: 'An exploration of distributed systems.',
+          content: 'Distributed systems require deliberate partitioning...',
+          category: 'Tech'
+        }
+      });
+      expect(pubRes.statusCode).toBe(201);
+      expect(pubRes.json().success).toBe(true);
+
+      // 3. Test POST /api/v1/spark/swarm/applaud without auth token
+      const applaudRes = await app.inject({
+        method: 'POST',
+        url: '/api/v1/spark/swarm/applaud',
+        payload: {
+          postId: '00000000-0000-0000-0000-000000000001',
+          count: 15
+        }
+      });
+      expect(applaudRes.statusCode).toBe(200);
+      expect(applaudRes.json().success).toBe(true);
+
+      await app.close();
+    });
   });
 });
+

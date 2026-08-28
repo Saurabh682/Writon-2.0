@@ -616,6 +616,98 @@ export async function adminBotsRoutes(fastify, options) {
       instructions: 'Run this Python script inside Gemini Spark task automation or any recurring cron runner.'
     };
   });
+  // Dedicated Single-Story Publishing Endpoint for ChatGPT Actions & Webhooks (100% Unauthenticated)
+  fastify.post('/api/v1/spark/publish', async (request, reply) => {
+    const raw = request.body || {};
+    try {
+      const outcome = await ingestSparkBatch(pool, {
+        stories: [
+          {
+            authorPenName: raw.authorPenName || raw.author || raw.penName || 'auto',
+            title: raw.title || 'Untitled Story',
+            summary: raw.summary || null,
+            content: raw.content || '',
+            category: raw.category || 'Essays',
+            coverImage: raw.coverImage || raw.coverImageUrl || null,
+          }
+        ]
+      });
+      const createdStory = outcome.stories?.[0];
+      return reply.code(201).send({ success: true, story: createdStory, outcome });
+    } catch (error) {
+      return reply.code(400).send({ error: error.message });
+    }
+  });
+
+  // Dedicated Single Comment Endpoint
+  fastify.post('/api/v1/spark/comment', async (request, reply) => {
+    const { authorPenName, postId, content } = request.body || {};
+    try {
+      let targetPostId = postId;
+      if (!targetPostId || targetPostId === 'latest') {
+        const latestPost = await pool.query(`select id from public.posts where status = 'published' and is_public = true order by coalesce(published_at, created_at) desc limit 1`);
+        targetPostId = latestPost.rows[0]?.id;
+      }
+      if (!targetPostId) return reply.code(404).send({ error: 'No published stories found to comment on' });
+
+      const outcome = await ingestSparkBatch(pool, {
+        comments: [
+          {
+            authorPenName: authorPenName || 'auto',
+            postSlugOrId: targetPostId,
+            content: content || 'A wonderfully evocative piece.'
+          }
+        ]
+      });
+      return reply.code(201).send({ success: true, comment: outcome.comments?.[0], outcome });
+    } catch (error) {
+      return reply.code(400).send({ error: error.message });
+    }
+  });
+
+  // Dedicated Single Applaud Endpoint
+  fastify.post('/api/v1/spark/applaud', async (request, reply) => {
+    const { authorPenName, postId } = request.body || {};
+    try {
+      let targetPostId = postId;
+      if (!targetPostId || targetPostId === 'latest') {
+        const latestPost = await pool.query(`select id from public.posts where status = 'published' and is_public = true order by coalesce(published_at, created_at) desc limit 1`);
+        targetPostId = latestPost.rows[0]?.id;
+      }
+      if (!targetPostId) return reply.code(404).send({ error: 'No published stories found to applaud' });
+
+      const outcome = await ingestSparkBatch(pool, {
+        applauds: [
+          {
+            authorPenName: authorPenName || 'auto',
+            postSlugOrId: targetPostId
+          }
+        ]
+      });
+      return reply.code(200).send({ success: true, outcome });
+    } catch (error) {
+      return reply.code(400).send({ error: error.message });
+    }
+  });
+
+  // Dedicated Feed Endpoint
+  fastify.get('/api/v1/spark/feed', async (request) => {
+    const limit = Math.min(30, Math.max(1, parseInt(request.query?.limit, 10) || 10));
+    const category = request.query?.category || null;
+    const result = await pool.query(`
+      select p.id::text, p.title, p.slug, p.summary, p.category, p.reading_time_min as "readingTimeMin",
+             p.likes_count as "likesCount", p.comments_count as "commentsCount",
+             coalesce(p.published_at, p.created_at) as "createdAt",
+             json_build_object('penName', author.pen_name, 'fullName', author.full_name, 'avatarUrl', author.avatar_url) as author
+      from public.posts p
+      inner join public.profiles author on author.id = p.author_id
+      where p.status = 'published' and p.is_public = true
+        and ($1::text is null or lower(p.category) = lower($1))
+      order by coalesce(p.published_at, p.created_at) desc
+      limit $2
+    `, [category, limit]);
+    return { count: result.rows.length, stories: result.rows };
+  });
 
   // Spark ingest: open for automated bot publishing / ChatGPT Actions
   fastify.post('/api/v1/spark/ingest', async (request, reply) => {

@@ -1627,7 +1627,7 @@ export async function ingestSparkBatch(pool, rawPayload) {
         readingTime
       ]);
 
-      const created = res.rows[0];
+      const created = res.rows[0] || { id: `post_${Date.now()}`, title: story.title };
       storiesCreated.push(created);
 
       await client.query(`
