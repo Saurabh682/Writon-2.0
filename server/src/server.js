@@ -2372,11 +2372,24 @@ fastify.put(
     async (request, reply) => {
       const profileId = request.profileId;
       const firebaseUid = request.user.uid;
-      await database.query('delete from public.comments where user_id = $1', [profileId]);
-      await database.query('delete from public.likes where user_id = $1', [profileId]);
-      await database.query('delete from public.bookmarks where user_id = $1', [profileId]);
-      await database.query('delete from public.posts where author_id = $1', [profileId]);
-      await database.query('delete from public.profiles where id = $1', [profileId]);
+      const client = await database.connect();
+      try {
+        await client.query('begin');
+        const deleted = await client.query(
+          'delete from public.profiles where id = $1 returning id',
+          [profileId]
+        );
+        if (deleted.rowCount === 0) {
+          await client.query('rollback');
+          return reply.code(404).send({ error: 'Profile not found' });
+        }
+        await client.query('commit');
+      } catch (error) {
+        await client.query('rollback');
+        throw error;
+      } finally {
+        client.release();
+      }
 
       if (firebaseAuth) {
         try {

@@ -376,6 +376,7 @@ describe('Fastify API contract', () => {
 
   it('deletes only the authenticated user account data', async () => {
     const queries = [];
+    const transactionQueries = [];
     const deletedFirebaseUsers = [];
     const pool = {
       query: async (sql, params) => {
@@ -383,8 +384,21 @@ describe('Fastify API contract', () => {
         if (sql.includes('select profile_id from public.profile_auth_identities')) {
           return { rows: [{ profile_id: 'legacy-profile' }], rowCount: 1 };
         }
-        return { rows: [] };
+        throw new Error(`Unexpected non-transactional account-deletion query: ${sql}`);
       },
+      connect: async () => ({
+        query: async (sql, params) => {
+          transactionQueries.push({ sql, params });
+          if (sql === 'begin' || sql === 'commit' || sql === 'rollback') {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql === 'delete from public.profiles where id = $1 returning id') {
+            return { rows: [{ id: 'legacy-profile' }], rowCount: 1 };
+          }
+          throw new Error(`Unexpected account-deletion transaction query: ${sql}`);
+        },
+        release: () => {},
+      }),
     };
     const deletionAuth = {
       verifyIdToken: async () => ({ uid: 'account-owner', email: 'owner@example.com', email_verified: true }),
@@ -404,15 +418,56 @@ describe('Fastify API contract', () => {
       success: true,
       message: 'Account and associated data deleted successfully.',
     });
-    expect(queries.map((entry) => entry.params)).toEqual([
-      ['account-owner'],
-      ['legacy-profile'],
-      ['legacy-profile'],
-      ['legacy-profile'],
-      ['legacy-profile'],
-      ['legacy-profile'],
+    expect(queries.map((entry) => entry.params)).toEqual([['account-owner']]);
+    expect(transactionQueries).toEqual([
+      { sql: 'begin', params: undefined },
+      { sql: 'delete from public.profiles where id = $1 returning id', params: ['legacy-profile'] },
+      { sql: 'commit', params: undefined },
     ]);
     expect(deletedFirebaseUsers).toEqual(['account-owner']);
+  });
+
+  it('rolls back account deletion and preserves Firebase access when the database delete fails', async () => {
+    const transactionQueries = [];
+    const deletedFirebaseUsers = [];
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'legacy-profile' }], rowCount: 1 };
+        }
+        throw new Error(`Unexpected non-transactional account-deletion query: ${sql}`);
+      },
+      connect: async () => ({
+        query: async (sql) => {
+          transactionQueries.push(sql);
+          if (sql === 'delete from public.profiles where id = $1 returning id') {
+            throw new Error('simulated database failure');
+          }
+          return { rows: [], rowCount: 0 };
+        },
+        release: () => {},
+      }),
+    };
+    const deletionAuth = {
+      verifyIdToken: async () => ({ uid: 'account-owner', email: 'owner@example.com', email_verified: true }),
+      deleteUser: async (userId) => { deletedFirebaseUsers.push(userId); },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth: deletionAuth });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'DELETE',
+      url: '/api/v1/me',
+      headers: { authorization: 'Bearer test-token' },
+    });
+
+    expect(response.statusCode).toBe(500);
+    expect(transactionQueries).toEqual([
+      'begin',
+      'delete from public.profiles where id = $1 returning id',
+      'rollback',
+    ]);
+    expect(deletedFirebaseUsers).toEqual([]);
   });
 
   it('validates story identifiers before recording reading progress', async () => {
