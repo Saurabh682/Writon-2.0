@@ -1,5 +1,7 @@
 package com.ibitvalley.writon.modern.feature.profile
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ibitvalley.writon.modern.core.database.dao.UserDao
@@ -7,6 +9,7 @@ import com.ibitvalley.writon.modern.core.network.WritOnApiService
 import com.ibitvalley.writon.modern.core.network.model.MyProfileDto
 import com.ibitvalley.writon.modern.core.network.model.PostDto
 import com.ibitvalley.writon.modern.core.network.model.UpsertMyProfileRequestDto
+import com.ibitvalley.writon.modern.data.repository.MediaRepository
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +17,8 @@ import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val apiService: WritOnApiService,
-    @Suppress("unused") private val userDao: UserDao
+    @Suppress("unused") private val userDao: UserDao,
+    private val mediaRepository: MediaRepository
 ) : ViewModel() {
 
     private val _userProfile = MutableStateFlow<MyProfileDto?>(null)
@@ -70,6 +74,8 @@ class ProfileViewModel(
         penName: String,
         bio: String,
         location: String,
+        avatarContext: Context? = null,
+        avatarUri: Uri? = null,
         onSuccess: () -> Unit = {},
         onError: (String) -> Unit = {}
     ) {
@@ -77,12 +83,17 @@ class ProfileViewModel(
             isLoading.value = true
             try {
                 val current = _userProfile.value
+                val avatarUrl = if (avatarContext != null && avatarUri != null) {
+                    mediaRepository.uploadImage(avatarContext, avatarUri).getOrElse { throw it }
+                } else {
+                    current?.avatarUrl
+                }
                 val request = UpsertMyProfileRequestDto(
                     penName = penName.trim(),
                     fullName = fullName.trim(),
                     bio = bio.trim().ifBlank { null },
                     location = location.trim().ifBlank { null },
-                    avatarUrl = current?.avatarUrl
+                    avatarUrl = avatarUrl
                 )
                 val response = apiService.upsertMyProfile(request)
                 if (response.isSuccessful && response.body() != null) {

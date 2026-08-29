@@ -223,6 +223,7 @@
     <string name="profile_bio_hint">Bio (À propos de vos écrits)</string>
     <string name="profile_location_hint">Lieu (ex. Paris, France)</string>
     <string name="profile_pen_name_hint">Nom de plume / Utilisateur</string>
+    <string name="profile_change_photo">Choisir une photo de profil</string>
     <string name="notif_title">Notifications</string>
     <string name="notif_empty_title">Aucune notification pour le moment</string>
     <string name="notif_empty_desc">L\'activité des histoires apparaîtra ici.</string>

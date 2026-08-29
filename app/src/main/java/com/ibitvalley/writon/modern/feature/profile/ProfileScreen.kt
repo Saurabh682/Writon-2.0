@@ -1,9 +1,15 @@
 package com.ibitvalley.writon.modern.feature.profile
 import androidx.compose.ui.res.stringResource
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -17,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -36,6 +43,7 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.designsystem.components.UserAvatar
 
 private val ProfileEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
@@ -71,7 +79,6 @@ fun ProfileScreen(
     // A missing legacy bio must remain missing. Fabricated copy makes imported
     // writer profiles look incorrect and prevents the owner from spotting it.
     val bio = user?.bio?.trim()?.takeIf { it.isNotBlank() }
-    val initials = initialsOf(name)
 
     Scaffold(
         topBar = {
@@ -122,7 +129,7 @@ fun ProfileScreen(
             verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
         ) {
             item {
-                ProfileIdentity(name, penName, bio, initials, user?.location, user?.joinedAt, onEditClick = {
+                ProfileIdentity(name, penName, bio, user?.avatarUrl, user?.location, user?.joinedAt, onEditClick = {
                     profileSaveError = null
                     showEditDialog = true
                 })
@@ -175,19 +182,22 @@ fun ProfileScreen(
             initialPenName = user?.penName ?: "",
             initialBio = user?.bio ?: "",
             initialLocation = user?.location ?: "",
+            initialAvatarUrl = user?.avatarUrl,
             isLoading = isUpdating,
             errorMessage = profileSaveError,
             onDismiss = {
                 profileSaveError = null
                 showEditDialog = false
             },
-            onSave = { newName, newPenName, newBio, newLocation ->
+            onSave = { newName, newPenName, newBio, newLocation, avatarContext, avatarUri ->
                 profileSaveError = null
                 viewModel.updateProfile(
                     newName,
                     newPenName,
                     newBio,
                     newLocation,
+                    avatarContext,
+                    avatarUri,
                     onSuccess = {
                         showEditDialog = false
                     },
@@ -205,7 +215,7 @@ private fun ProfileIdentity(
     name: String,
     penName: String,
     bio: String?,
-    initials: String,
+    avatarUrl: String?,
     location: String?,
     joinedAt: String?,
     onEditClick: () -> Unit
@@ -213,11 +223,7 @@ private fun ProfileIdentity(
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.Top) {
             Box {
-                Surface(shape = CircleShape, color = Color(0xFFF2ECE4), modifier = Modifier.size(88.dp)) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Text(initials, style = MaterialTheme.typography.displayMedium.copy(fontSize = 31.sp, fontFamily = ProfileEditorialFamily))
-                    }
-                }
+                UserAvatar(url = avatarUrl, name = name, size = 88.dp)
                 Surface(
                     color = BrandRed,
                     shape = CircleShape,
@@ -627,15 +633,21 @@ private fun EditProfileDialog(
     initialPenName: String,
     initialBio: String,
     initialLocation: String,
+    initialAvatarUrl: String?,
     isLoading: Boolean,
     errorMessage: String?,
     onDismiss: () -> Unit,
-    onSave: (fullName: String, penName: String, bio: String, location: String) -> Unit
+    onSave: (fullName: String, penName: String, bio: String, location: String, avatarContext: android.content.Context?, avatarUri: Uri?) -> Unit
 ) {
     var fullName by remember { mutableStateOf(initialName) }
     var penName by remember { mutableStateOf(initialPenName) }
     var bio by remember { mutableStateOf(initialBio) }
     var location by remember { mutableStateOf(initialLocation) }
+    var selectedAvatarUri by remember { mutableStateOf<Uri?>(null) }
+    val context = LocalContext.current
+    val avatarPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        selectedAvatarUri = uri
+    }
 
     Dialog(onDismissRequest = onDismiss) {
         val dialogView = LocalView.current
@@ -656,6 +668,7 @@ private fun EditProfileDialog(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
                     .padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -704,6 +717,26 @@ private fun EditProfileDialog(
                     )
                 }
 
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    UserAvatar(
+                        url = selectedAvatarUri?.toString() ?: initialAvatarUrl,
+                        name = fullName.ifBlank { initialName },
+                        size = 72.dp
+                    )
+                    OutlinedButton(
+                        onClick = {
+                            avatarPicker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        },
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text(stringResource(R.string.profile_change_photo))
+                    }
+                }
+
                 OutlinedTextField(
                     value = bio,
                     onValueChange = { bio = it },
@@ -737,7 +770,14 @@ private fun EditProfileDialog(
                     Button(
                         onClick = {
                             if (fullName.isNotBlank() && penName.isNotBlank()) {
-                                onSave(fullName, penName.removePrefix("@").lowercase(), bio, location)
+                                onSave(
+                                    fullName,
+                                    penName.removePrefix("@").lowercase(),
+                                    bio,
+                                    location,
+                                    context,
+                                    selectedAvatarUri
+                                )
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = BrandRed),

@@ -9,7 +9,7 @@ const runtimeConfig = {
   databasePoolMax: 1,
   databaseSslRejectUnauthorized: false,
   corsOrigins: [],
-  latestAppVersionCode: 111,
+  latestAppVersionCode: 112,
   minSupportedAppVersionCode: 101,
   playStoreAppUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
   publicApiBaseUrl: 'https://api.writon.test',
@@ -208,7 +208,7 @@ describe('Fastify API contract', () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
-      latestVersionCode: 111,
+      latestVersionCode: 112,
       minSupportedVersionCode: 101,
       updateUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
     });

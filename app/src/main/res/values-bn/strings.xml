@@ -223,6 +223,7 @@
     <string name="profile_bio_hint">বায়ো (আপনার লেখালেখি সম্পর্কে)</string>
     <string name="profile_location_hint">অবস্থান (যেমন ঢাকা, বাংলাদেশ)</string>
     <string name="profile_pen_name_hint">ছদ্মনাম / ব্যবহারকারীর নাম</string>
+    <string name="profile_change_photo">প্রোফাইল ছবি বেছে নিন</string>
     <string name="notif_title">বিজ্ঞপ্তি</string>
     <string name="notif_empty_title">এখনও কোনো বিজ্ঞপ্তি নেই</string>
     <string name="notif_empty_desc">গল্পের কার্যকলাপ এখানে দেখা যাবে।</string>

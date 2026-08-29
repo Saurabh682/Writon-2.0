@@ -223,6 +223,7 @@
     <string name="profile_bio_hint">बायो (तुमच्या लेखनाबद्दल)</string>
     <string name="profile_location_hint">स्थान (उदा. पुणे, महाराष्ट्र)</string>
     <string name="profile_pen_name_hint">टोपणनाव / वापरकर्ता नाव</string>
+    <string name="profile_change_photo">प्रोफाइल फोटो निवडा</string>
     <string name="notif_title">सूचना</string>
     <string name="notif_empty_title">अद्याप कोणत्याही सूचना नाहीत</string>
     <string name="notif_empty_desc">कथेचा क्रियाकलाप येथे दिसेल।</string>

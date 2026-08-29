@@ -223,6 +223,7 @@
     <string name="profile_bio_hint">Biografía (Sobre tu escritura)</string>
     <string name="profile_location_hint">Ubicación (ej. Madrid, España)</string>
     <string name="profile_pen_name_hint">Seudónimo / Usuario</string>
+    <string name="profile_change_photo">Elegir foto de perfil</string>
     <string name="notif_title">Notificaciones</string>
     <string name="notif_empty_title">Aún no hay notificaciones</string>
     <string name="notif_empty_desc">La actividad de las historias aparecerá aquí.</string>

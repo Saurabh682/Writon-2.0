@@ -239,6 +239,7 @@
     <string name="profile_bio_hint">Bio (About your writing)</string>
     <string name="profile_location_hint">Location (e.g. San Francisco, CA)</string>
     <string name="profile_pen_name_hint">Pen Name / Username</string>
+    <string name="profile_change_photo">Choose profile photo</string>
     <string name="notif_title">Notifications</string>
     <string name="notif_empty_title">No notifications yet</string>
     <string name="notif_empty_desc">Story activity will appear here.</string>

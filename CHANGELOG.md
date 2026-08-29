@@ -7,7 +7,13 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.9 (Version Code: 111)`
+- **Current Version**: `2.0.10 (Version Code: 112)`
+
+### Profile Photo Upload
+
+- Added profile-photo selection and upload to the Edit Writer Profile dialog.
+- Displayed saved profile photos in the writer profile header instead of always showing initials.
+- Kept the existing avatar unchanged when a profile is edited without selecting a new photo.
 
 ---
 

@@ -427,7 +427,7 @@ fun WritOnNavigation(
             composable(WritOnRoute.Profile.route) {
                 if (signedIn) {
                     val profileViewModel = remember {
-                        ProfileViewModel(apiService, database.userDao())
+                        ProfileViewModel(apiService, database.userDao(), mediaRepository)
                     }
                     ProfileScreen(
                         viewModel = profileViewModel,
