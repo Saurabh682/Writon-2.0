@@ -17,7 +17,7 @@ const runtimeEnvironmentSchema = z.object({
   GEMINI_API_KEY: z.string().trim().optional(),
   ADMIN_SECRET_KEY: z.string().trim().optional(),
   SPARK_AUTOMATION_ENABLED: z.enum(['true', 'false']).default('true'),
-  LATEST_APP_VERSION_CODE: z.coerce.number().int().min(1).default(102),
+  LATEST_APP_VERSION_CODE: z.coerce.number().int().min(1).default(108),
   MIN_SUPPORTED_APP_VERSION_CODE: z.coerce.number().int().min(1).default(101),
   PLAY_STORE_APP_URL: z.string().url().default('https://play.google.com/store/apps/details?id=com.ibitvalley.writon'),
   PUSH_DELIVERY_POLL_INTERVAL_MS: z.coerce.number().int().min(5_000).max(300_000).default(30_000),

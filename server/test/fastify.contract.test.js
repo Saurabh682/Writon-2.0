@@ -8,9 +8,10 @@ const runtimeConfig = {
   databasePoolMax: 1,
   databaseSslRejectUnauthorized: false,
   corsOrigins: [],
-  latestAppVersionCode: 102,
+  latestAppVersionCode: 108,
   minSupportedAppVersionCode: 101,
   playStoreAppUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+  publicApiBaseUrl: 'https://api.writon.test',
 };
 
 function profileRow(id = 'test-user') {
@@ -60,6 +61,19 @@ function feedPostRow() {
   };
 }
 
+function sharedStoryRow() {
+  return {
+    title: 'Monsoon <Letters>',
+    slug: 'monsoon-letters',
+    summary: 'A thoughtful story about rain & memory.',
+    content: 'The full story body.',
+    category: 'Poetry',
+    coverImage: 'https://images.example.com/cover.jpg',
+    authorName: 'Kavya Nair',
+    authorAvatarUrl: 'https://images.example.com/kavya.jpg',
+  };
+}
+
 function createPool() {
   return {
     query: async (sql) => {
@@ -77,6 +91,9 @@ function createPool() {
       }
       if (sql.includes('insert into public.profile_auth_identities')) {
         return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+      }
+      if (sql.includes('where p.slug = $1') && sql.includes('author.full_name as "authorName"')) {
+        return { rows: [sharedStoryRow()], rowCount: 1 };
       }
       if (sql.includes('from public.posts p')) {
         if (!sql.includes("''::text as content")) {
@@ -154,13 +171,28 @@ describe('Fastify API contract', () => {
     expect(response.json()).toEqual({ error: 'Authentication required' });
   });
 
+  it('renders a WritOn story preview with escaped metadata and the author photo', async () => {
+    const app = await createApp();
+
+    const response = await app.inject({ method: 'GET', url: '/stories/monsoon-letters' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toContain('text/html');
+    expect(response.body).toContain('<meta property="og:site_name" content="WritOn">');
+    expect(response.body).toContain('Monsoon &lt;Letters&gt; — WritOn');
+    expect(response.body).toContain('https://images.example.com/kavya.jpg');
+    expect(response.body).toContain('Written by');
+    expect(response.body).toContain('Kavya Nair');
+    expect(response.body).not.toContain('<h1>Monsoon <Letters></h1>');
+  });
+
   it('publishes an unauthenticated, compact app-update manifest', async () => {
     const app = await createApp();
     const response = await app.inject({ method: 'GET', url: '/api/v1/app/version' });
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
-      latestVersionCode: 102,
+      latestVersionCode: 108,
       minSupportedVersionCode: 101,
       updateUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
     });
@@ -211,6 +243,39 @@ describe('Fastify API contract', () => {
     expect(response.json().posts[0].content).toBe('');
   });
 
+  it('requires authentication for the following feed and filters it by followed authors', async () => {
+    const queries = [];
+    const pool = {
+      query: async (sql, params) => {
+        queries.push({ sql, params });
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        if (sql.includes('from public.posts p')) {
+          if (!sql.includes('from public.follows')) {
+            throw new Error('The following feed must filter by the authenticated reader follows.');
+          }
+          return { rows: [feedPostRow()], rowCount: 1 };
+        }
+        throw new Error(`Unexpected following-feed query: ${sql}`);
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const visitor = await app.inject({ method: 'GET', url: '/api/v1/posts?tab=following' });
+    const reader = await app.inject({
+      method: 'GET',
+      url: '/api/v1/posts?tab=following',
+      headers: { authorization: 'Bearer test-token' },
+    });
+
+    expect(visitor.statusCode).toBe(401);
+    expect(reader.statusCode).toBe(200);
+    expect(reader.json().posts).toHaveLength(1);
+    expect(queries.find(({ sql }) => sql.includes('from public.posts p')).params[0]).toBe('test-user');
+  });
+
   it('protects draft lifecycle and media upload routes before accessing storage or data', async () => {
     const app = await createApp();
 
@@ -226,6 +291,247 @@ describe('Fastify API contract', () => {
       expect(response.statusCode).toBe(401);
       expect(response.json()).toEqual({ error: 'Authentication required' });
     }
+  });
+
+  it('keeps desired applause and bookmark state stable when a retry repeats the same request', async () => {
+    const postId = '11111111-1111-1111-1111-111111111111';
+    const relations = { post_applauds: false, bookmarks: false };
+    const counts = { likes_count: 0, bookmarks_count: 0 };
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        if (sql.includes('insert into public.profiles')) {
+          return { rows: [profileRow()], rowCount: 1 };
+        }
+        throw new Error(`Unexpected desired-state query outside transaction: ${sql}`);
+      },
+      connect: async () => ({
+        query: async (sql) => {
+          if (sql === 'begin' || sql === 'commit' || sql === 'rollback') {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql.includes('from public.posts') && sql.includes('for update')) {
+            return {
+              rows: [{
+                id: postId,
+                author_id: 'test-user',
+                likes_count: counts.likes_count,
+                bookmarks_count: counts.bookmarks_count,
+                comments_count: 0,
+              }],
+              rowCount: 1,
+            };
+          }
+          for (const [table, counterColumn] of [
+            ['post_applauds', 'likes_count'],
+            ['bookmarks', 'bookmarks_count'],
+          ]) {
+            if (sql.includes(`insert into public.${table}`)) {
+              const inserted = !relations[table];
+              relations[table] = true;
+              counts[counterColumn] = 1;
+              return { rows: inserted ? [{ inserted: true }] : [], rowCount: inserted ? 1 : 0 };
+            }
+            if (sql.includes(`delete from public.${table}`)) {
+              const removed = relations[table];
+              relations[table] = false;
+              counts[counterColumn] = 0;
+              return { rows: removed ? [{ removed: true }] : [], rowCount: removed ? 1 : 0 };
+            }
+            if (sql.includes(`returning ${counterColumn} as count`)) {
+              return { rows: [{ count: counts[counterColumn] }], rowCount: 1 };
+            }
+          }
+          throw new Error(`Unexpected desired-state transaction query: ${sql}`);
+        },
+        release: () => {},
+      }),
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    for (const interaction of [
+      { path: 'like', responseKey: 'liked', countKey: 'likesCount' },
+      { path: 'bookmark', responseKey: 'bookmarked', countKey: 'bookmarksCount' },
+    ]) {
+      const first = await app.inject({
+        method: 'PUT',
+        url: `/api/v1/posts/${postId}/${interaction.path}`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: { enabled: true },
+      });
+      const retry = await app.inject({
+        method: 'PUT',
+        url: `/api/v1/posts/${postId}/${interaction.path}`,
+        headers: { authorization: 'Bearer test-token' },
+        payload: { enabled: true },
+      });
+
+      expect(first.statusCode).toBe(200);
+      expect(retry.statusCode).toBe(200);
+      expect(first.json()).toMatchObject({ [interaction.responseKey]: true, [interaction.countKey]: 1 });
+      expect(retry.json()).toEqual(first.json());
+    }
+  });
+
+  it('returns the original comment and increments the counter once when an idempotent comment is retried', async () => {
+    const postId = '11111111-1111-1111-1111-111111111111';
+    const mutationId = '22222222-2222-4222-8222-222222222222';
+    const commentId = '33333333-3333-4333-8333-333333333333';
+    let storedComment = null;
+    let counterUpdates = 0;
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        if (sql.includes('insert into public.profiles')) {
+          return { rows: [profileRow()], rowCount: 1 };
+        }
+        throw new Error(`Unexpected idempotent-comment query outside transaction: ${sql}`);
+      },
+      connect: async () => ({
+        query: async (sql, params) => {
+          if (sql === 'begin' || sql === 'commit' || sql === 'rollback') {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql.includes('from public.posts') && sql.includes('for update')) {
+            return {
+              rows: [{ id: postId, author_id: 'test-user', likes_count: 0, bookmarks_count: 0, comments_count: 0 }],
+              rowCount: 1,
+            };
+          }
+          if (sql.includes('insert into public.comments')) {
+            const inserted = storedComment === null;
+            storedComment ??= {
+              id: commentId,
+              post_id: postId,
+              author_id: 'test-user',
+              parent_comment_id: null,
+              content: 'Retry-safe response',
+              created_at: '2026-08-29T00:00:00.000Z',
+            };
+            expect(params.at(-1)).toBe(mutationId);
+            return { rows: [{ ...storedComment, inserted }], rowCount: 1 };
+          }
+          if (sql.includes('update public.posts set comments_count')) {
+            counterUpdates += 1;
+            return { rows: [], rowCount: 1 };
+          }
+          if (sql.includes('from public.profiles where id = $1')) {
+            return { rows: [profileRow()], rowCount: 1 };
+          }
+          throw new Error(`Unexpected idempotent-comment transaction query: ${sql}`);
+        },
+        release: () => {},
+      }),
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const request = {
+      method: 'POST',
+      url: `/api/v1/comments/${postId}`,
+      headers: { authorization: 'Bearer test-token' },
+      payload: { content: 'Retry-safe response', clientMutationId: mutationId },
+    };
+    const first = await app.inject(request);
+    const retry = await app.inject(request);
+
+    expect(first.statusCode).toBe(201);
+    expect(retry.statusCode).toBe(200);
+    expect(retry.json()).toEqual(first.json());
+    expect(counterUpdates).toBe(1);
+  });
+
+  it('targets the partial draft-id uniqueness rule when creating a retry-safe post', async () => {
+    const clientDraftId = '44444444-4444-4444-8444-444444444444';
+    const queries = [];
+    const pool = {
+      query: async (sql, params) => {
+        queries.push({ sql, params });
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        if (sql.includes('insert into public.profiles')) {
+          return { rows: [profileRow()], rowCount: 1 };
+        }
+        if (sql.includes('insert into public.posts')) {
+          if (!sql.includes('where client_draft_id is not null')) {
+            throw Object.assign(new Error('no unique or exclusion constraint matching the ON CONFLICT specification'), { code: '42P10' });
+          }
+          return { rows: [{ id: '11111111-1111-1111-1111-111111111111', status: 'draft' }], rowCount: 1 };
+        }
+        if (sql.includes('from public.posts p')) {
+          return { rows: [feedPostRow()], rowCount: 1 };
+        }
+        throw new Error(`Unexpected retry-safe post query: ${sql}`);
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/posts',
+      headers: { authorization: 'Bearer test-token' },
+      payload: {
+        title: 'A retry-safe draft',
+        content: 'This draft should upsert instead of duplicating.',
+        category: 'Essays',
+        isPublished: false,
+        clientDraftId,
+      },
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(queries.find(({ sql }) => sql.includes('insert into public.posts')).params.at(-1)).toBe(clientDraftId);
+  });
+
+  it('patches the authenticated profile without requiring unchanged registration fields', async () => {
+    const transactionQueries = [];
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        throw new Error(`Unexpected profile-patch query outside transaction: ${sql}`);
+      },
+      connect: async () => ({
+        query: async (sql, params) => {
+          transactionQueries.push({ sql, params });
+          if (sql === 'begin' || sql === 'commit' || sql === 'rollback') {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql.includes('update public.profiles')) {
+            return { rows: [profileRow()], rowCount: 1 };
+          }
+          if (sql.includes('insert into public.legacy_import_profile_attributes')) {
+            return { rows: [], rowCount: 1 };
+          }
+          throw new Error(`Unexpected profile-patch transaction query: ${sql}`);
+        },
+        release: () => {},
+      }),
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: '/api/v1/me',
+      headers: { authorization: 'Bearer test-token' },
+      payload: { fullName: 'Updated Writer', bio: 'Updated bio', quoteOfDay: 'Write what matters.' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().profile).toMatchObject({
+      id: 'test-user',
+      quoteOfDay: 'Write what matters.',
+    });
+    expect(transactionQueries.at(-1).sql).toBe('commit');
   });
 
   it('links a verified Firebase email to its existing canonical WritOn profile', async () => {
@@ -468,6 +774,48 @@ describe('Fastify API contract', () => {
       'rollback',
     ]);
     expect(deletedFirebaseUsers).toEqual([]);
+  });
+
+  it('rolls back profile deletion when Firebase refuses to delete the authentication account', async () => {
+    const transactionQueries = [];
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'legacy-profile' }], rowCount: 1 };
+        }
+        throw new Error(`Unexpected non-transactional account-deletion query: ${sql}`);
+      },
+      connect: async () => ({
+        query: async (sql) => {
+          transactionQueries.push(sql);
+          if (sql === 'delete from public.profiles where id = $1 returning id') {
+            return { rows: [{ id: 'legacy-profile' }], rowCount: 1 };
+          }
+          return { rows: [], rowCount: 0 };
+        },
+        release: () => {},
+      }),
+    };
+    const deletionAuth = {
+      verifyIdToken: async () => ({ uid: 'account-owner', email: 'owner@example.com', email_verified: true }),
+      deleteUser: async () => { throw new Error('Firebase unavailable'); },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth: deletionAuth });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'DELETE',
+      url: '/api/v1/me',
+      headers: { authorization: 'Bearer test-token' },
+    });
+
+    expect(response.statusCode).toBe(502);
+    expect(response.json()).toEqual({ error: 'Could not delete the authentication account' });
+    expect(transactionQueries).toEqual([
+      'begin',
+      'delete from public.profiles where id = $1 returning id',
+      'rollback',
+    ]);
   });
 
   it('validates story identifiers before recording reading progress', async () => {

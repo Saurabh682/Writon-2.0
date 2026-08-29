@@ -7,11 +7,56 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.4 (Version Code: 106)`
+- **Current Version**: `2.0.6 (Version Code: 108)`
 
 ---
 
+## [Unreleased] - 2026-08-29
+
+### Story Sharing & Conversation Threading
+
+- Advanced the Android release candidate to version `2.0.6` / version code `108`.
+- Replaced the third-party `writon.co` story-share URL and promotional copy with a concise WritOn title, author byline, and environment-aware WritOn API link.
+- Added a server-rendered public story preview with WritOn metadata, canonical URLs, safe text escaping, author-profile imagery, story-cover fallback, and a Play Store call to action.
+- Configured the Render application API with bot scheduling and event reactions disabled so Google Cloud Run remains the sole bot-automation owner.
+- Refined responses into visually nested threads with a connector line, smaller reply avatars, explicit parent attribution, localized reply controls, and accessible 48dp interaction targets.
+- Added backend metadata contract coverage and an Android emulator journey proving that replies expand beneath their parent and submit with the correct parent comment ID.
+
+### Editorial Ledger Hardening, Server-Side Governance & Lifecycle State Management
+- **Server-Side Anti-Repetition & Zero-Slop Governance**:
+  - Implemented `validateAntiRepetition()` in `editorial-ledger-service.js` which automatically tests proposed titles, summaries, and contents against active rules in `public.editorial_anti_repetition`.
+  - Integrated zero-slop checks directly inside `executePostAction()` in `spark-runner.js` to prevent prohibited clichés (e.g. *"In today's fast-paced digital world"*, *"delve into"*, *"tapestry of life"*) or artificial rhetorical openings from being published.
+  - Linked post publication directly to `public.editorial_ledger_entries` so every published post records an atomic `executed` ledger entry.
+- **Dynamic Persona Cooldown Calculation**:
+  - Replaced the static 48-hour calculation with per-writer dynamic calculation based on each persona's configured `post_frequency_hours` (`bc.last_posted_at + (bc.post_frequency_hours * interval '1 hour') > now()`).
+  - Added `cooldownHoursRemaining` to the AI Editorial Briefing API.
+- **Lifecycle State Transitions & Backlog Management**:
+  - Added `updateLedgerEntryStatus()` to support state progression (`planned` -> `executed`, `deferred`, `avoid`).
+  - Added `updateBacklogIdeaStatus()` to track idea progression (`backlog` -> `planned`, `executed`, `discarded`).
+  - Exposed transition endpoints `PATCH /api/v1/spark/ledger/entries/:id/status` and `PATCH /api/v1/spark/ledger/ideas/:id/status`.
+- **Authentication Guards & Runtime Zod Validation on Ledger Endpoints**:
+  - Protected all ledger mutation endpoints (`POST /entries`, `PATCH /entries/:id/status`, `POST /ideas`, `PATCH /ideas/:id/status`, `POST /avoid`) with `requireAdminOrBotSecret` enforcing `X-Admin-Key`, `X-Bot-Secret`, or authenticated Bearer tokens.
+  - Added strict Zod schemas (`ledgerEntryInputSchema`, `ledgerStatusUpdateSchema`, `ideaBacklogInputSchema`, `ideaStatusUpdateSchema`, `antiRepetitionRuleSchema`).
+- **Backlog Seed Idempotency & Unique Constraints**:
+  - Added unique index `editorial_backlog_proposed_title_idx` on `public.editorial_ideas_backlog(proposed_title)` in both the migration and `ensureBotTables`, ensuring re-migrations never insert duplicate ideas.
+- **OpenAPI 3.1.0 Specification Complete Coverage**:
+  - Added all editorial ledger routes, lifecycle transitions, backlog ideas, and anti-repetition rules to the embedded OpenAPI specification.
+- **Expanded Test Coverage**:
+  - Added test suites for dynamic cooldowns, anti-repetition validation, lifecycle state transitions, auth rejection/allowance, and schema validation (50/50 server tests passing).
+
 ## [Unreleased] - 2026-08-28
+
+### Critical application API stabilization (bot behavior unchanged)
+
+- Advanced the Android release candidate to version `2.0.5` / version code `107`.
+- Replaced retry-unsafe Android applaud/bookmark toggles with explicit desired-state PUT operations and retained compatibility for old queued mutations by reading their optimistic Room state.
+- Added stable mutation UUIDs to offline comments and direct story publishing; applied the production partial unique index that prevents duplicate comments after ambiguous retries.
+- Made account deletion transactional against the production `profiles` schema and verified rollback prevents premature Firebase-account deletion.
+- Aligned web Firebase identity, feed tabs, author stories, owner bookmarks, and profile updates with the Fastify contract; added repeatable web API/auth contract tests.
+- Added Android MockWebServer and repository retry coverage plus Compose journeys for Google-login launcher safety, visible interest selection, and nested comment replies.
+- Upgraded AndroidX Test/Espresso to the stable Android 17-compatible line and added a CI emulator job; web tests now run before every web build.
+- Recorded three additional read-only bot findings in the API register without changing any bot implementation or behavior.
+- Revalidated the bot register against the current source and added an implementation-ready Antigravity remediation handoff; this documentation-only audit made no bot or application behavior changes.
 
 ### Android release versioning
 

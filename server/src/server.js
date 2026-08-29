@@ -30,9 +30,17 @@ const profileInputSchema = z.object({
   location: z.string().trim().max(120).nullable().optional(),
 });
 
+const profilePatchSchema = z.object({
+  fullName: z.string().trim().min(2).max(80).optional(),
+  bio: z.string().trim().max(500).nullable().optional(),
+  avatarUrl: z.string().url().max(2_000).nullable().optional(),
+  location: z.string().trim().max(120).nullable().optional(),
+  quoteOfDay: z.string().trim().max(280).nullable().optional(),
+}).refine((value) => Object.keys(value).length > 0, 'At least one profile field is required.');
+
 const postsQuerySchema = z.object({
   category: z.string().trim().min(1).max(80).optional(),
-  tab: z.enum(['latest', 'popular']).default('latest'),
+  tab: z.enum(['latest', 'popular', 'following']).default('latest'),
   authorId: z.string().trim().optional(),
   authorPenName: z.string().trim().optional(),
   q: z.string().trim().max(100).optional(),
@@ -58,6 +66,11 @@ const postPatchSchema = postInputSchema.partial().refine(
 const commentInputSchema = z.object({
   content: z.string().trim().min(1).max(5_000),
   parentId: z.string().uuid().nullable().optional(),
+  clientMutationId: z.string().uuid().nullable().optional(),
+});
+
+const relationStateInputSchema = z.object({
+  enabled: z.boolean(),
 });
 
 const interestsInputSchema = z.object({
@@ -78,7 +91,87 @@ const readingProgressInputSchema = z.object({
 
 const postIdSchema = z.string().uuid();
 const profileIdentifierSchema = z.string().trim().min(1).max(200);
+const storyShareSlugSchema = z.string().trim().min(1).max(200).regex(/^[a-z0-9-]+$/);
 const allowedImageMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+const storyShareCss = `
+:root{color-scheme:light;--paper:#f8f2e9;--ink:#26211d;--muted:#756b61;--rust:#c94724;--line:#ded4c8}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{min-height:100vh;display:grid;place-items:center;padding:32px 20px}.story{width:min(680px,100%);border-top:4px solid var(--rust);padding:36px 0}
+.brand{font:600 18px Georgia,serif;letter-spacing:.02em}.eyebrow{margin:42px 0 14px;color:var(--rust);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+h1{margin:0;font:600 clamp(38px,7vw,68px)/1.04 Georgia,"Times New Roman",serif;letter-spacing:-.025em}.summary{margin:24px 0 30px;font:400 20px/1.65 Georgia,"Times New Roman",serif;color:#4f4740}
+.author{display:flex;align-items:center;gap:14px;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.author img,.avatar-fallback{width:64px;height:64px;border-radius:50%;object-fit:cover;background:#eee3d6}
+.avatar-fallback{display:grid;place-items:center;color:var(--rust);font:600 23px Georgia,serif}.byline{margin:0 0 3px;color:var(--muted);font-size:13px}.author-name{margin:0;font-weight:700}
+.cta{display:inline-flex;min-height:48px;align-items:center;justify-content:center;margin-top:30px;padding:0 24px;border-radius:999px;background:var(--rust);color:#fff;text-decoration:none;font-weight:700}.tagline{margin-top:42px;color:var(--muted);font:italic 16px Georgia,serif}
+@media(max-width:520px){main{place-items:start;padding:22px}.story{padding-top:26px}.eyebrow{margin-top:34px}.summary{font-size:18px}}
+`;
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function shareDescription(story) {
+  const source = story.summary || story.content || `A story by ${story.authorName}.`;
+  const plain = String(source)
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[*_~`>#\[\]()]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return plain.length > 220 ? `${plain.slice(0, 217).trimEnd()}...` : plain;
+}
+
+function safePublicImageUrl(...candidates) {
+  for (const candidate of candidates) {
+    try {
+      const url = new URL(candidate);
+      if (url.protocol === 'https:' || url.protocol === 'http:') return url.toString();
+    } catch {
+      // Ignore missing, relative, or unsafe image URLs.
+    }
+  }
+  return null;
+}
+
+function requestOrigin(request, configuredBaseUrl) {
+  try {
+    if (configuredBaseUrl) return new URL(configuredBaseUrl).origin;
+  } catch {
+    // Fall back to the request host when configuration contains an invalid URL.
+  }
+  const forwardedProtocol = String(request.headers['x-forwarded-proto'] ?? '').split(',')[0].trim();
+  const forwardedHost = String(request.headers['x-forwarded-host'] ?? '').split(',')[0].trim();
+  const protocol = forwardedProtocol || request.protocol || 'https';
+  const host = forwardedHost || request.headers.host;
+  return `${protocol}://${host}`;
+}
+
+function renderStorySharePage({ story, canonicalUrl, playStoreUrl }) {
+  const title = `${story.title} — WritOn`;
+  const description = shareDescription(story);
+  const imageUrl = safePublicImageUrl(story.authorAvatarUrl, story.coverImage);
+  const authorInitials = String(story.authorName || 'WritOn')
+    .trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('');
+  const imageMetadata = imageUrl
+    ? `<meta property="og:image" content="${escapeHtml(imageUrl)}"><meta property="og:image:alt" content="Portrait of ${escapeHtml(story.authorName)}"><meta name="twitter:image" content="${escapeHtml(imageUrl)}">`
+    : '';
+  const authorVisual = imageUrl
+    ? `<img src="${escapeHtml(imageUrl)}" alt="Portrait of ${escapeHtml(story.authorName)}">`
+    : `<div class="avatar-fallback" aria-hidden="true">${escapeHtml(authorInitials || 'W')}</div>`;
+
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${escapeHtml(title)}</title><meta name="description" content="${escapeHtml(description)}"><link rel="canonical" href="${escapeHtml(canonicalUrl)}"><link rel="stylesheet" href="/stories/share.css">
+<meta property="og:type" content="article"><meta property="og:site_name" content="WritOn"><meta property="og:url" content="${escapeHtml(canonicalUrl)}"><meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(description)}">${imageMetadata}
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escapeHtml(title)}"><meta name="twitter:description" content="${escapeHtml(description)}"></head>
+<body><main><article class="story"><div class="brand">WritOn</div><p class="eyebrow">${escapeHtml(story.category || 'Story')}</p><h1>${escapeHtml(story.title)}</h1><p class="summary">${escapeHtml(description)}</p>
+<div class="author">${authorVisual}<div><p class="byline">Written by</p><p class="author-name">${escapeHtml(story.authorName)}</p></div></div>
+<a class="cta" href="${escapeHtml(playStoreUrl)}">Read with WritOn</a><p class="tagline">Words worth remembering.</p></article></main></body></html>`;
+}
 
 export async function buildServer({ runtimeConfig, pool, auth, messaging } = {}) {
 const fastify = Fastify({ logger: true });
@@ -312,6 +405,21 @@ await fastify.register(multipart, {
           }
         }
       },
+      '/api/v1/spark/ledger': {
+        get: {
+          operationId: 'getLedgerHistory',
+          summary: 'Query historical editorial ledger entries by date or lifecycle status',
+          parameters: [
+            { name: 'date', in: 'query', schema: { type: 'string', format: 'date' }, description: 'Edition date filter (YYYY-MM-DD)' },
+            { name: 'status', in: 'query', schema: { type: 'string', enum: ['planned', 'executed', 'deferred', 'avoid'] }, description: 'Lifecycle status filter' },
+            { name: 'limit', in: 'query', schema: { type: 'integer', default: 50 }, description: 'Page limit' },
+            { name: 'offset', in: 'query', schema: { type: 'integer', default: 0 }, description: 'Page offset' }
+          ],
+          responses: {
+            '200': { description: 'Historical ledger entries' }
+          }
+        }
+      },
       '/api/v1/spark/ledger/entries': {
         post: {
           operationId: 'recordLedgerEntry',
@@ -323,6 +431,7 @@ await fastify.register(multipart, {
                 schema: {
                   type: 'object',
                   properties: {
+                    editionDate: { type: 'string', format: 'date' },
                     status: { type: 'string', enum: ['planned', 'executed', 'deferred', 'avoid'] },
                     entryType: { type: 'string', enum: ['publication', 'comment_wave', 'applaud_swarm', 'reflection', 'anti_repetition_rule', 'future_idea'] },
                     authorPenName: { type: 'string' },
@@ -330,8 +439,10 @@ await fastify.register(multipart, {
                     languageStyle: { type: 'string' },
                     title: { type: 'string' },
                     theme: { type: 'string' },
+                    approxWordCount: { type: 'integer' },
                     details: { type: 'object' },
-                    avoidReason: { type: 'string' }
+                    avoidReason: { type: 'string' },
+                    targetPostId: { type: 'string', format: 'uuid' }
                   },
                   required: ['status', 'entryType']
                 }
@@ -339,7 +450,119 @@ await fastify.register(multipart, {
             }
           },
           responses: {
-            '201': { description: 'Ledger entry recorded' }
+            '201': { description: 'Ledger entry recorded' },
+            '401': { description: 'Authentication required' }
+          }
+        }
+      },
+      '/api/v1/spark/ledger/entries/{id}/status': {
+        patch: {
+          operationId: 'updateLedgerEntryStatus',
+          summary: 'Transition the lifecycle status of an existing editorial ledger entry',
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Ledger entry UUID' }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', enum: ['planned', 'executed', 'deferred', 'avoid'] },
+                    targetPostId: { type: 'string', format: 'uuid' },
+                    details: { type: 'object' },
+                    avoidReason: { type: 'string' }
+                  },
+                  required: ['status']
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Ledger entry status updated' },
+            '401': { description: 'Authentication required' }
+          }
+        }
+      },
+      '/api/v1/spark/ledger/ideas': {
+        post: {
+          operationId: 'addIdeaToBacklog',
+          summary: 'Add a new story premise or pitch to the editorial ideas backlog',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    targetAuthorPenName: { type: 'string' },
+                    genre: { type: 'string' },
+                    proposedTitle: { type: 'string' },
+                    premise: { type: 'string' },
+                    languageStyle: { type: 'string', default: 'English' }
+                  },
+                  required: ['proposedTitle', 'premise']
+                }
+              }
+            }
+          },
+          responses: {
+            '201': { description: 'Idea added to backlog' },
+            '401': { description: 'Authentication required' }
+          }
+        }
+      },
+      '/api/v1/spark/ledger/ideas/{id}/status': {
+        patch: {
+          operationId: 'updateBacklogIdeaStatus',
+          summary: 'Transition a backlog idea status (backlog -> planned -> executed -> discarded)',
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' }, description: 'Backlog idea UUID' }
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    status: { type: 'string', enum: ['backlog', 'planned', 'executed', 'discarded'] }
+                  },
+                  required: ['status']
+                }
+              }
+            }
+          },
+          responses: {
+            '200': { description: 'Backlog idea status updated' },
+            '401': { description: 'Authentication required' }
+          }
+        }
+      },
+      '/api/v1/spark/ledger/avoid': {
+        post: {
+          operationId: 'addAntiRepetitionRule',
+          summary: 'Add an anti-repetition rule or banned cliché pattern to editorial governance',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    patternType: { type: 'string', enum: ['title_formula', 'opening_phrase', 'overused_theme', 'cliche_phrase', 'interaction_formula'] },
+                    pattern: { type: 'string' },
+                    reason: { type: 'string' }
+                  },
+                  required: ['pattern']
+                }
+              }
+            }
+          },
+          responses: {
+            '201': { description: 'Anti-repetition rule registered' },
+            '401': { description: 'Authentication required' }
           }
         }
       }
@@ -717,6 +940,63 @@ async function togglePostRelation({ postId, userId, table, counterColumn }) {
   }
 }
 
+async function setPostRelation({ postId, userId, table, counterColumn, enabled }) {
+  const client = await database.connect();
+
+  try {
+    await client.query('begin');
+    const post = await fetchInteractionPost(client, postId, userId);
+    if (!post) {
+      await client.query('rollback');
+      return null;
+    }
+
+    const changed = enabled
+      ? await client.query(
+        `insert into public.${table} (post_id, user_id)
+         values ($1, $2)
+         on conflict (post_id, user_id) do nothing
+         returning true as inserted`,
+        [postId, userId]
+      )
+      : await client.query(
+        `delete from public.${table}
+         where post_id = $1 and user_id = $2
+         returning true as removed`,
+        [postId, userId]
+      );
+
+    const updated = await client.query(
+      `update public.posts
+       set ${counterColumn} = (
+             select count(*)::int from public.${table} relation where relation.post_id = $1
+           ),
+           updated_at = now()
+       where id = $1
+       returning ${counterColumn} as count`,
+      [postId]
+    );
+
+    if (enabled && changed.rowCount > 0 && (table === 'post_applauds' || table === 'bookmarks')) {
+      await createNotification(client, {
+        recipientId: post.author_id,
+        actorId: userId,
+        postId,
+        kind: table === 'post_applauds' ? 'applaud' : 'bookmark',
+        message: table === 'post_applauds' ? 'applauded your story' : 'bookmarked your story',
+      });
+    }
+    await client.query('commit');
+
+    return { enabled, count: updated.rows[0].count };
+  } catch (error) {
+    await client.query('rollback');
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 async function createNotification(client, { recipientId, actorId, postId = null, commentId = null, kind, message }) {
   if (!recipientId || recipientId === actorId) return;
 
@@ -903,6 +1183,7 @@ function toProfile(row) {
     bio: row.bio,
     avatarUrl: row.avatar_url,
     location: row.location,
+    quoteOfDay: row.quote_of_day ?? null,
     joinedAt: row.joined_at,
     followersCount: row.followers_count,
     followingCount: row.following_count,
@@ -914,6 +1195,9 @@ function toProfile(row) {
 const profileReturningColumns = `
   id, email, pen_name, full_name, bio, avatar_url, location, joined_at,
   followers_count, following_count,
+  (select attributes.quote_of_day
+   from public.legacy_import_profile_attributes attributes
+   where attributes.profile_id = public.profiles.id) as quote_of_day,
   coalesce((
     select count(*) from public.posts post
     where post.author_id = public.profiles.id and post.status = 'published'
@@ -1213,6 +1497,9 @@ fastify.get('/api/v1/posts', async (request, reply) => {
 
   const { category, tab, authorId, authorPenName, q, page, limit } = parsed.data;
   const viewer = await optionalUser(request);
+  if (tab === 'following' && !viewer) {
+    return reply.code(401).send({ error: 'Authentication required' });
+  }
   const result = await database.query(
     `${postSelectSql(`where p.status = 'published'
       and p.is_public = true
@@ -1227,6 +1514,13 @@ fastify.get('/api/v1/posts', async (request, reply) => {
         or author.pen_name ilike '%' || $5 || '%'
         or p.content ilike '%' || $5 || '%'
       )`, '', false)}
+      and (
+        $6::text <> 'following'
+        or exists (
+          select 1 from public.follows followed
+          where followed.follower_id = $1 and followed.following_id = p.author_id
+        )
+      )
     order by
       case when $6 = 'popular' then p.likes_count end desc nulls last,
       p.published_at desc nulls last,
@@ -1280,6 +1574,53 @@ fastify.get(
   }
 );
 
+fastify.get('/stories/share.css', async (_request, reply) => {
+  return reply
+    .header('Cache-Control', 'public, max-age=86400')
+    .type('text/css; charset=utf-8')
+    .send(storyShareCss);
+});
+
+fastify.get('/stories/:slug', async (request, reply) => {
+  const parsedSlug = storyShareSlugSchema.safeParse(request.params.slug);
+  if (!parsedSlug.success) {
+    return reply.code(400).send({ error: 'Invalid story link' });
+  }
+
+  const result = await database.query(
+    `select
+       p.title,
+       p.slug,
+       p.summary,
+       left(p.content, 500) as content,
+       p.category,
+       p.cover_image_url as "coverImage",
+       author.full_name as "authorName",
+       author.avatar_url as "authorAvatarUrl"
+     from public.posts p
+     inner join public.profiles author on author.id = p.author_id
+     where p.slug = $1 and p.status = 'published' and p.is_public = true
+     limit 1`,
+    [parsedSlug.data]
+  );
+  if (result.rowCount === 0) {
+    return reply.code(404).type('text/html; charset=utf-8').send(
+      '<!doctype html><html><head><title>Story not found — WritOn</title></head><body><main><h1>Story not found</h1><p>This story may no longer be available.</p></main></body></html>'
+    );
+  }
+
+  const origin = requestOrigin(request, config.publicApiBaseUrl);
+  const canonicalUrl = `${origin}/stories/${encodeURIComponent(parsedSlug.data)}`;
+  const playStoreUrl = config.playStoreAppUrl || 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon';
+  const html = renderStorySharePage({ story: result.rows[0], canonicalUrl, playStoreUrl });
+
+  return reply
+    .header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600')
+    .header('Content-Security-Policy', "default-src 'self'; img-src 'self' https: data:; style-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'")
+    .type('text/html; charset=utf-8')
+    .send(html);
+});
+
 
 fastify.get('/api/v1/posts/:idOrSlug', async (request, reply) => {
   const idOrSlug = String(request.params.idOrSlug ?? '').trim();
@@ -1321,7 +1662,7 @@ fastify.post(
         slug, author_id, title, summary, content, category, cover_image_url,
         status, is_public, reading_time_min, published_at, client_draft_id
       ) values ($1, $2, $3, $4, $5, $6, $7, $8, true, $9, case when $8 = 'published' then now() else null end, $10)
-      on conflict (author_id, client_draft_id) do update
+      on conflict (author_id, client_draft_id) where client_draft_id is not null do update
         set title = excluded.title,
             summary = excluded.summary,
             content = excluded.content,
@@ -1354,7 +1695,7 @@ fastify.post(
       [request.profileId, result.rows[0].id]
     );
 
-    if (story.isPublished) {
+    if (story.isPublished && config.sparkAutomationEnabled) {
       triggerSparkReaction(database, {
         postId: result.rows[0].id,
         authorId: request.profileId,
@@ -1435,8 +1776,10 @@ fastify.post(
     );
     if (result.rowCount === 0) return reply.code(404).send({ error: 'Story not found' });
     const post = result.rows[0];
-    triggerSparkReaction(database, { postId: post.id, authorId: post.author_id, category: post.category, title: post.title, summary: post.summary })
-      .catch((error) => fastify.log.warn(`[Spark Trigger Exception] ${error.message}`));
+    if (config.sparkAutomationEnabled) {
+      triggerSparkReaction(database, { postId: post.id, authorId: post.author_id, category: post.category, title: post.title, summary: post.summary })
+        .catch((error) => fastify.log.warn(`[Spark Trigger Exception] ${error.message}`));
+    }
     const postResult = await database.query(`${postSelectSql('where p.id = $2')}`, [request.profileId || 'public_view', post.id]);
     return { post: postResult.rows[0] };
   }
@@ -1530,6 +1873,31 @@ fastify.post(
   }
 );
 
+fastify.put(
+  '/api/v1/posts/:id/like',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const postId = parsePostId(request, reply);
+    if (!postId) return;
+    const desired = relationStateInputSchema.safeParse(request.body);
+    if (!desired.success) {
+      return reply.code(400).send({ error: 'Invalid applause state' });
+    }
+
+    await ensureProfileForId(request.user, request.profileId);
+    const interaction = await setPostRelation({
+      postId,
+      userId: request.profileId,
+      table: 'post_applauds',
+      counterColumn: 'likes_count',
+      enabled: desired.data.enabled,
+    });
+    if (!interaction) return reply.code(404).send({ error: 'Story not found' });
+
+    return { liked: interaction.enabled, likesCount: interaction.count };
+  }
+);
+
 fastify.post(
   '/api/v1/posts/:id/bookmark',
   { preHandler: requireUser },
@@ -1543,6 +1911,31 @@ fastify.post(
       userId: request.profileId,
       table: 'bookmarks',
       counterColumn: 'bookmarks_count',
+    });
+    if (!interaction) return reply.code(404).send({ error: 'Story not found' });
+
+    return { bookmarked: interaction.enabled, bookmarksCount: interaction.count };
+  }
+);
+
+fastify.put(
+  '/api/v1/posts/:id/bookmark',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const postId = parsePostId(request, reply);
+    if (!postId) return;
+    const desired = relationStateInputSchema.safeParse(request.body);
+    if (!desired.success) {
+      return reply.code(400).send({ error: 'Invalid bookmark state' });
+    }
+
+    await ensureProfileForId(request.user, request.profileId);
+    const interaction = await setPostRelation({
+      postId,
+      userId: request.profileId,
+      table: 'bookmarks',
+      counterColumn: 'bookmarks_count',
+      enabled: desired.data.enabled,
     });
     if (!interaction) return reply.code(404).send({ error: 'Story not found' });
 
@@ -1848,41 +2241,67 @@ fastify.post(
       }
 
       const inserted = await client.query(
-        `insert into public.comments (post_id, author_id, parent_comment_id, content)
-         values ($1, $2, $3, $4)
-         returning id, post_id, author_id, parent_comment_id, content, created_at`,
-        [postId, request.profileId, parent?.id ?? null, parsed.data.content]
+        `with attempted as (
+           insert into public.comments (
+             post_id, author_id, parent_comment_id, content, client_mutation_id
+           ) values ($1, $2, $3, $4, $5)
+           on conflict (author_id, client_mutation_id)
+             where client_mutation_id is not null
+             do nothing
+           returning id, post_id, author_id, parent_comment_id, content, created_at
+         )
+         select attempted.*, true as inserted from attempted
+         union all
+         select comment.id, comment.post_id, comment.author_id, comment.parent_comment_id,
+                comment.content, comment.created_at, false as inserted
+         from public.comments comment
+         where comment.author_id = $2 and comment.client_mutation_id = $5
+         limit 1`,
+        [
+          postId,
+          request.profileId,
+          parent?.id ?? null,
+          parsed.data.content,
+          parsed.data.clientMutationId ?? null,
+        ]
       );
-      await client.query(
-        `update public.posts set comments_count = comments_count + 1, updated_at = now() where id = $1`,
-        [postId]
-      );
+      const wasInserted = inserted.rows[0]?.inserted !== false;
+      if (wasInserted) {
+        await client.query(
+          `update public.posts set comments_count = comments_count + 1, updated_at = now() where id = $1`,
+          [postId]
+        );
+      }
       const author = await client.query(
         `select id, pen_name, full_name, avatar_url, bio, followers_count, following_count
          from public.profiles where id = $1`,
         [request.profileId]
       );
-      await createNotification(client, {
-        recipientId: parent?.author_id ?? post.author_id,
-        actorId: request.profileId,
-        postId,
-        commentId: inserted.rows[0].id,
-        kind: 'comment',
-        message: parent ? 'replied to your comment' : 'commented on your story',
-      });
+      if (wasInserted) {
+        await createNotification(client, {
+          recipientId: parent?.author_id ?? post.author_id,
+          actorId: request.profileId,
+          postId,
+          commentId: inserted.rows[0].id,
+          kind: 'comment',
+          message: parent ? 'replied to your comment' : 'commented on your story',
+        });
+      }
       await client.query('commit');
 
       // Trigger asynchronous in-character bot reply with realistic human cadence
-      triggerSparkCommentReaction(database, {
-        postId,
-        commentId: inserted.rows[0].id,
-        postAuthorId: post.author_id,
-        commentAuthorId: request.profileId,
-        content: parsed.data.content
-      }).catch((err) => fastify.log.warn(`[Spark Comment Trigger Exception] ${err.message}`));
+      if (wasInserted && config.sparkAutomationEnabled) {
+        triggerSparkCommentReaction(database, {
+          postId,
+          commentId: inserted.rows[0].id,
+          postAuthorId: post.author_id,
+          commentAuthorId: request.profileId,
+          content: parsed.data.content
+        }).catch((err) => fastify.log.warn(`[Spark Comment Trigger Exception] ${err.message}`));
+      }
 
       const comment = inserted.rows[0];
-      return reply.code(201).send({
+      return reply.code(wasInserted ? 201 : 200).send({
         comment: {
           id: comment.id,
           postId: comment.post_id,
@@ -2083,6 +2502,76 @@ fastify.put(
         return reply.code(409).send({ error: 'That username is already taken.' });
       }
       throw error;
+    }
+  }
+);
+
+fastify.patch(
+  '/api/v1/me',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const parsed = profilePatchSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({
+        error: 'Invalid profile update',
+        details: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const patch = parsed.data;
+    const client = await database.connect();
+    try {
+      await client.query('begin');
+      const result = await client.query(
+        `update public.profiles
+         set full_name = coalesce($2, full_name),
+             bio = case when $3 then $4 else bio end,
+             avatar_url = case when $5 then $6 else avatar_url end,
+             location = case when $7 then $8 else location end,
+             updated_at = now()
+         where id = $1
+         returning ${profileReturningColumns}`,
+        [
+          request.profileId,
+          patch.fullName ?? null,
+          Object.hasOwn(patch, 'bio'),
+          patch.bio ?? null,
+          Object.hasOwn(patch, 'avatarUrl'),
+          patch.avatarUrl ?? null,
+          Object.hasOwn(patch, 'location'),
+          patch.location ?? null,
+        ]
+      );
+      if (result.rowCount === 0) {
+        await client.query('rollback');
+        return reply.code(404).send({ error: 'Profile not found' });
+      }
+
+      if (Object.hasOwn(patch, 'quoteOfDay')) {
+        await client.query(
+          `insert into public.legacy_import_profile_attributes (
+             profile_id, legacy_user_id, quote_of_day
+           ) values ($1, $1, $2)
+           on conflict (profile_id) do update
+             set quote_of_day = excluded.quote_of_day`,
+          [request.profileId, patch.quoteOfDay ?? null]
+        );
+      }
+      await client.query('commit');
+
+      return {
+        profile: {
+          ...toProfile(result.rows[0]),
+          quoteOfDay: Object.hasOwn(patch, 'quoteOfDay')
+            ? (patch.quoteOfDay ?? null)
+            : (result.rows[0].quote_of_day ?? null),
+        },
+      };
+    } catch (error) {
+      await client.query('rollback');
+      throw error;
+    } finally {
+      client.release();
     }
   }
 );
@@ -2373,6 +2862,7 @@ fastify.put(
       const profileId = request.profileId;
       const firebaseUid = request.user.uid;
       const client = await database.connect();
+      let authDeletionFailed = false;
       try {
         await client.query('begin');
         const deleted = await client.query(
@@ -2383,20 +2873,24 @@ fastify.put(
           await client.query('rollback');
           return reply.code(404).send({ error: 'Profile not found' });
         }
+        if (firebaseAuth) {
+          try {
+            await firebaseAuth.deleteUser(firebaseUid);
+          } catch (error) {
+            authDeletionFailed = true;
+            throw error;
+          }
+        }
         await client.query('commit');
       } catch (error) {
         await client.query('rollback');
+        if (authDeletionFailed) {
+          request.log.warn({ err: error }, 'Authentication deletion failed; profile deletion was rolled back');
+          return reply.code(502).send({ error: 'Could not delete the authentication account' });
+        }
         throw error;
       } finally {
         client.release();
-      }
-
-      if (firebaseAuth) {
-        try {
-          await firebaseAuth.deleteUser(firebaseUid);
-        } catch (e) {
-          request.log.warn({ err: e }, 'Could not delete user from Firebase Auth directly');
-        }
       }
 
       return { success: true, message: 'Account and associated data deleted successfully.' };
