@@ -16,7 +16,8 @@ const runtimeEnvironmentSchema = z.object({
   CORS_ORIGINS: z.string().trim().optional(),
   GEMINI_API_KEY: z.string().trim().optional(),
   ADMIN_SECRET_KEY: z.string().trim().optional(),
-  SPARK_AUTOMATION_ENABLED: z.enum(['true', 'false']).default('true'),
+  RENDER: z.enum(['true', 'false']).optional(),
+  SPARK_AUTOMATION_ENABLED: z.enum(['true', 'false']).optional(),
   LATEST_APP_VERSION_CODE: z.coerce.number().int().min(1).default(108),
   MIN_SUPPORTED_APP_VERSION_CODE: z.coerce.number().int().min(1).default(101),
   PLAY_STORE_APP_URL: z.string().url().default('https://play.google.com/store/apps/details?id=com.ibitvalley.writon'),
@@ -61,7 +62,9 @@ export function loadRuntimeConfig(environment = process.env) {
     corsOrigins,
     geminiApiKey: values.GEMINI_API_KEY || null,
     adminSecretKey: values.ADMIN_SECRET_KEY || null,
-    sparkAutomationEnabled: values.SPARK_AUTOMATION_ENABLED !== 'false',
+    sparkAutomationEnabled: values.SPARK_AUTOMATION_ENABLED
+      ? values.SPARK_AUTOMATION_ENABLED === 'true'
+      : values.RENDER !== 'true',
     latestAppVersionCode: values.LATEST_APP_VERSION_CODE,
     minSupportedAppVersionCode: values.MIN_SUPPORTED_APP_VERSION_CODE,
     playStoreAppUrl: values.PLAY_STORE_APP_URL,

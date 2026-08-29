@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildServer } from '../src/server.js';
+import { loadRuntimeConfig } from '../src/config.js';
 
 const runtimeConfig = {
   environment: 'test',
@@ -169,6 +170,18 @@ describe('Fastify API contract', () => {
 
     expect(response.statusCode).toBe(401);
     expect(response.json()).toEqual({ error: 'Authentication required' });
+  });
+
+  it('keeps bot automation off by default on Render and on elsewhere', () => {
+    const baseEnvironment = { DATABASE_URL: runtimeConfig.databaseUrl };
+
+    expect(loadRuntimeConfig({ ...baseEnvironment, RENDER: 'true' }).sparkAutomationEnabled).toBe(false);
+    expect(loadRuntimeConfig(baseEnvironment).sparkAutomationEnabled).toBe(true);
+    expect(loadRuntimeConfig({
+      ...baseEnvironment,
+      RENDER: 'true',
+      SPARK_AUTOMATION_ENABLED: 'true',
+    }).sparkAutomationEnabled).toBe(true);
   });
 
   it('renders a WritOn story preview with escaped metadata and the author photo', async () => {
