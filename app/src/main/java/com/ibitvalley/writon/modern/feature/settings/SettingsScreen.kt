@@ -209,6 +209,11 @@ fun SettingsScreen(
                     Text(stringResource(R.string.settings_about_android), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(stringResource(R.string.settings_about_offline), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(stringResource(R.string.settings_about_security), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.height(6.dp))
+                    Text(stringResource(R.string.settings_about_whats_new, BuildConfig.VERSION_NAME), fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.settings_about_new_links), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.settings_about_new_reader), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.settings_about_new_dark_logo), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             confirmButton = {
@@ -481,7 +486,7 @@ fun SettingsScreen(
                 )
                 SettingsRow(
                     title = stringResource(R.string.settings_about_title),
-                    subtitle = stringResource(R.string.settings_about_desc, "2.0.0", 101),
+                    subtitle = stringResource(R.string.settings_about_desc, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
                     icon = R.drawable.ic_info_orange,
                     onClick = { showAboutDialog = true }
                 )

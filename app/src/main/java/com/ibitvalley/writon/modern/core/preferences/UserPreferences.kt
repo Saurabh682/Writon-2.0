@@ -66,6 +66,13 @@ class UserPreferences(context: Context) {
         get() = sharedPreferences.getString("reader_font_family", "serif") ?: "serif"
         set(value) = sharedPreferences.edit().putString("reader_font_family", value).apply()
 
+    /** Reader-only color theme: "paper", "sepia", or "dark". */
+    var readerThemeMode: String
+        get() = sharedPreferences.getString("reader_theme_mode", "paper") ?: "paper"
+        set(value) = sharedPreferences.edit()
+            .putString("reader_theme_mode", value.takeIf { it in setOf("paper", "sepia", "dark") } ?: "paper")
+            .apply()
+
     val readerPreferences: ReaderPreferences
         get() = ReaderPreferences(
             fontSizeSp = readerFontSizeSp,

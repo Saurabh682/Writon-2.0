@@ -22,7 +22,7 @@ services:
       - key: PUBLIC_API_BASE_URL
         value: "https://writon-powerup.onrender.com"
       - key: LATEST_APP_VERSION_CODE
-        value: "110"
+        value: "111"
       - key: DATABASE_URL
         sync: false
       - key: FIREBASE_SERVICE_ACCOUNT_JSON

@@ -200,6 +200,10 @@
     <string name="settings_about_android">• Kotlin और Jetpack Compose से निर्मित</string>
     <string name="settings_about_offline">• ऑफ़लाइन ड्राफ़्ट और पठन कैश</string>
     <string name="settings_about_security">• Firebase प्रमाणीकरण और वैकल्पिक बायोमेट्रिक लॉक</string>
+    <string name="settings_about_whats_new">%1$s में नया क्या है</string>
+    <string name="settings_about_new_links">• साझा लिंक WritOn में सही कहानी खोलते हैं</string>
+    <string name="settings_about_new_reader">• पेपर, सेपिया और ऑब्सिडियन रीडर रंग</string>
+    <string name="settings_about_new_dark_logo">• हल्की और गहरी थीम में स्पष्ट WritOn ब्रांडिंग</string>
     <string name="settings_logout_title">लॉग आउट करें</string>
     <string name="appearance_title">दिखावट और पठन</string>
     <string name="appearance_preview">लाइव पूर्वावलोकन</string>

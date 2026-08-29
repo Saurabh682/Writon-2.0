@@ -200,6 +200,10 @@
     <string name="settings_about_android">• Built with Kotlin and Jetpack Compose</string>
     <string name="settings_about_offline">• Offline-first drafts and reading cache</string>
     <string name="settings_about_security">• Firebase authentication and optional biometric lock</string>
+    <string name="settings_about_whats_new">What’s new in %1$s</string>
+    <string name="settings_about_new_links">• Shared links open the exact story in WritOn</string>
+    <string name="settings_about_new_reader">• Paper, Sepia, and Obsidian reader colors</string>
+    <string name="settings_about_new_dark_logo">• Clear WritOn branding in light and dark themes</string>
     <string name="settings_logout_title">Log out</string>
     <string name="appearance_title">Appearance &amp; Reading</string>
     <string name="appearance_preview">Live Preview</string>

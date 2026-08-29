@@ -230,6 +230,10 @@
     <string name="settings_about_android">• Kotlin ও Jetpack Compose দিয়ে নির্মিত</string>
     <string name="settings_about_offline">• অফলাইন ড্রাফ্ট ও পাঠের ক্যাশ</string>
     <string name="settings_about_security">• Firebase প্রমাণীকরণ ও ঐচ্ছিক বায়োমেট্রিক লক</string>
+    <string name="settings_about_whats_new">%1$s-এ নতুন কী</string>
+    <string name="settings_about_new_links">• শেয়ার করা লিঙ্ক WritOn-এ সঠিক গল্পটি খোলে</string>
+    <string name="settings_about_new_reader">• পেপার, সেপিয়া ও অবসিডিয়ান রিডার রং</string>
+    <string name="settings_about_new_dark_logo">• হালকা ও গাঢ় থিমে স্পষ্ট WritOn ব্র্যান্ডিং</string>
     <string name="reader_share_subject">%1$s — WritOn</string>
     <string name="reader_share_message">%1$s\n%2$s-এর লেখা\n\nWritOn-এ পড়ুন:\n%3$s</string>
     <string name="comments_replying_to">@%1$s-কে উত্তর দিন</string>

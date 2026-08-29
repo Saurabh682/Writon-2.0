@@ -50,6 +50,7 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.designsystem.theme.getThemeColorScheme
 import kotlinx.coroutines.launch
 
 private val ReaderEditorialFamily = FontFamily(
@@ -78,6 +79,7 @@ fun ReaderScreen(
     var readerFontSizeSp by remember(savedReaderPreferences) { mutableFloatStateOf(savedReaderPreferences?.fontSizeSp ?: 20f) }
     var readerLineMultiplier by remember(savedReaderPreferences) { mutableFloatStateOf(savedReaderPreferences?.lineHeightMultiplier ?: 1.6f) }
     var readerFontFamilyChoice by remember(savedReaderPreferences) { mutableStateOf(savedReaderPreferences?.fontFamily ?: "serif") }
+    var readerThemeChoice by remember(userPreferences) { mutableStateOf(userPreferences?.readerThemeMode ?: "paper") }
     fun saveReaderOptions() {
         userPreferences?.saveReaderPreferences(
             com.ibitvalley.writon.modern.core.preferences.ReaderPreferences(
@@ -86,8 +88,11 @@ fun ReaderScreen(
                 fontFamily = readerFontFamilyChoice
             )
         )
+        userPreferences?.readerThemeMode = readerThemeChoice
     }
 
+    val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
+    MaterialTheme(colorScheme = getThemeColorScheme(readerThemeChoice, isSystemDark)) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -265,12 +270,39 @@ fun ReaderScreen(
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 Text(
-                    "Reader Typography",
+                    stringResource(R.string.reader_typography),
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontFamily = ReaderEditorialFamily,
                         fontWeight = FontWeight.Bold
                     )
                 )
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    listOf(
+                        "paper" to R.string.reader_theme_paper,
+                        "sepia" to R.string.reader_theme_sepia,
+                        "dark" to R.string.reader_theme_dark
+                    ).forEach { (theme, labelRes) ->
+                        val selected = readerThemeChoice == theme
+                        Button(
+                            onClick = {
+                                readerThemeChoice = theme
+                                userPreferences?.readerThemeMode = theme
+                            },
+                            modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            ),
+                            shape = RoundedCornerShape(10.dp)
+                        ) {
+                            Text(stringResource(labelRes), fontSize = 12.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal)
+                        }
+                    }
+                }
 
                 // Font Size Stepper
                 Row(
@@ -355,6 +387,7 @@ fun ReaderScreen(
         }
     }
 
+    }
 }
 
 

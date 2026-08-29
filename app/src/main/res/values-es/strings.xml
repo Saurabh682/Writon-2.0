@@ -230,6 +230,10 @@
     <string name="settings_about_android">• Creada con Kotlin y Jetpack Compose</string>
     <string name="settings_about_offline">• Borradores sin conexión y caché de lectura</string>
     <string name="settings_about_security">• Autenticación de Firebase y bloqueo biométrico opcional</string>
+    <string name="settings_about_whats_new">Novedades de %1$s</string>
+    <string name="settings_about_new_links">• Los enlaces compartidos abren la historia exacta en WritOn</string>
+    <string name="settings_about_new_reader">• Colores de lectura Papel, Sepia y Obsidiana</string>
+    <string name="settings_about_new_dark_logo">• Marca WritOn clara en temas claros y oscuros</string>
     <string name="reader_share_subject">%1$s — WritOn</string>
     <string name="reader_share_message">%1$s\nPor %2$s\n\nLee en WritOn:\n%3$s</string>
     <string name="comments_replying_to">Responder a @%1$s</string>

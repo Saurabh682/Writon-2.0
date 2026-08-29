@@ -7,11 +7,18 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.8 (Version Code: 110)`
+- **Current Version**: `2.0.9 (Version Code: 111)`
 
 ---
 
 ## [Unreleased] - 2026-08-29
+
+### Reader Personalization & Release Transparency
+
+- Advanced the Android release candidate to version `2.0.9` / version code `111`.
+- Made the WritOn brand mark adapt to dark surfaces so it remains legible in Obsidian mode.
+- Added persistent Paper, Sepia, and Obsidian color choices to the reader appearance sheet.
+- Replaced the stale About-row version with live build metadata and added concise release highlights inside the About dialog.
 
 ### Verified Story App Links
 

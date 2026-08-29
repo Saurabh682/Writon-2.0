@@ -230,6 +230,10 @@
     <string name="settings_about_android">• Kotlin आणि Jetpack Compose वापरून तयार केलेले</string>
     <string name="settings_about_offline">• ऑफलाइन मसुदे आणि वाचन कॅशे</string>
     <string name="settings_about_security">• Firebase प्रमाणीकरण आणि ऐच्छिक बायोमेट्रिक लॉक</string>
+    <string name="settings_about_whats_new">%1$s मध्ये नवीन काय आहे</string>
+    <string name="settings_about_new_links">• शेअर केलेली लिंक WritOn मध्ये नेमकी कथा उघडते</string>
+    <string name="settings_about_new_reader">• पेपर, सेपिया आणि ऑब्सिडियन वाचन रंग</string>
+    <string name="settings_about_new_dark_logo">• फिकट आणि गडद थीममध्ये स्पष्ट WritOn ब्रँडिंग</string>
     <string name="reader_share_subject">%1$s — WritOn</string>
     <string name="reader_share_message">%1$s\n%2$s यांचे लेखन\n\nWritOn वर वाचा:\n%3$s</string>
     <string name="comments_replying_to">@%1$s यांना उत्तर द्या</string>

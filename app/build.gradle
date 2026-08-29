@@ -62,8 +62,8 @@ android {
         minSdk 23
         targetSdk 36
         // Each Google Play upload needs a unique, monotonically increasing code.
-        versionCode 110
-        versionName '2.0.8'
+        versionCode 111
+        versionName '2.0.9'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary = true
 
