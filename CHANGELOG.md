@@ -18,6 +18,7 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - Advanced the Android release candidate to version `2.0.8` / version code `110`.
 - Registered Render story-share URLs as verified Android App Links and safely route both current `/stories/` and legacy `/posts/` URLs to the exact in-app reader.
 - Added Render-hosted Digital Asset Links ownership metadata for WritOn's signed Android package.
+- Replaced the preview page's store-only action with an explicit "Open in WritOn" intent and a Play Store fallback for devices without the app.
 
 ### Android 15/16 Edge-to-Edge Compatibility
 

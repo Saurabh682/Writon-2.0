@@ -102,7 +102,7 @@ main{min-height:100vh;display:grid;place-items:center;padding:32px 20px}.story{w
 h1{margin:0;font:600 clamp(38px,7vw,68px)/1.04 Georgia,"Times New Roman",serif;letter-spacing:-.025em}.summary{margin:24px 0 30px;font:400 20px/1.65 Georgia,"Times New Roman",serif;color:#4f4740}
 .author{display:flex;align-items:center;gap:14px;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.author img,.avatar-fallback{width:64px;height:64px;border-radius:50%;object-fit:cover;background:#eee3d6}
 .avatar-fallback{display:grid;place-items:center;color:var(--rust);font:600 23px Georgia,serif}.byline{margin:0 0 3px;color:var(--muted);font-size:13px}.author-name{margin:0;font-weight:700}
-.cta{display:inline-flex;min-height:48px;align-items:center;justify-content:center;margin-top:30px;padding:0 24px;border-radius:999px;background:var(--rust);color:#fff;text-decoration:none;font-weight:700}.tagline{margin-top:42px;color:var(--muted);font:italic 16px Georgia,serif}
+.cta{display:inline-flex;min-height:48px;align-items:center;justify-content:center;margin-top:30px;padding:0 24px;border-radius:999px;background:var(--rust);color:#fff;text-decoration:none;font-weight:700}.store-link{display:inline-block;margin-left:16px;color:var(--muted);font-size:14px}.tagline{margin-top:42px;color:var(--muted);font:italic 16px Georgia,serif}
 @media(max-width:520px){main{place-items:start;padding:22px}.story{padding-top:26px}.eyebrow{margin-top:34px}.summary{font-size:18px}}
 `;
 
@@ -162,6 +162,8 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl }) {
   const authorVisual = imageUrl
     ? `<img src="${escapeHtml(imageUrl)}" alt="Portrait of ${escapeHtml(story.authorName)}">`
     : `<div class="avatar-fallback" aria-hidden="true">${escapeHtml(authorInitials || 'W')}</div>`;
+  const canonical = new URL(canonicalUrl);
+  const appIntentUrl = `intent://${canonical.host}${canonical.pathname}#Intent;scheme=https;package=com.ibitvalley.writon;S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
 
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -170,7 +172,7 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl }) {
 <meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escapeHtml(title)}"><meta name="twitter:description" content="${escapeHtml(description)}"></head>
 <body><main><article class="story"><div class="brand">WritOn</div><p class="eyebrow">${escapeHtml(story.category || 'Story')}</p><h1>${escapeHtml(story.title)}</h1><p class="summary">${escapeHtml(description)}</p>
 <div class="author">${authorVisual}<div><p class="byline">Written by</p><p class="author-name">${escapeHtml(story.authorName)}</p></div></div>
-<a class="cta" href="${escapeHtml(playStoreUrl)}">Read with WritOn</a><p class="tagline">Words worth remembering.</p></article></main></body></html>`;
+<a class="cta" href="${escapeHtml(appIntentUrl)}">Open in WritOn</a><a class="store-link" href="${escapeHtml(playStoreUrl)}">Get the app</a><p class="tagline">Words worth remembering.</p></article></main></body></html>`;
 }
 
 export async function buildServer({ runtimeConfig, pool, auth, messaging } = {}) {
@@ -562,6 +564,44 @@ await fastify.register(multipart, {
           },
           responses: {
             '201': { description: 'Anti-repetition rule registered' },
+            '401': { description: 'Authentication required' }
+          }
+        }
+      },
+      '/api/v1/editorial/state': {
+        get: {
+          operationId: 'getEditorialState',
+          summary: 'Retrieve complete unified daily editorial state (today\'s stories, comments, applauds, writer cooldowns, avoid lists, and tomorrow\'s forecast)',
+          parameters: [
+            { name: 'date', in: 'query', required: false, schema: { type: 'string', format: 'date' }, description: 'Optional edition date filter (YYYY-MM-DD)' }
+          ],
+          responses: {
+            '200': { description: 'Full daily editorial state payload' }
+          }
+        },
+        post: {
+          operationId: 'submitEditorialState',
+          summary: 'Submit an editorial batch, entry, idea, or avoid rule to update platform state',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    date: { type: 'string', format: 'date' },
+                    entry: { type: 'object' },
+                    entries: { type: 'array', items: { type: 'object' } },
+                    ideas: { type: 'array', items: { type: 'object' } },
+                    avoidRules: { type: 'array', items: { type: 'object' } },
+                    statusUpdate: { type: 'object' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            '201': { description: 'Editorial state updated successfully' },
             '401': { description: 'Authentication required' }
           }
         }

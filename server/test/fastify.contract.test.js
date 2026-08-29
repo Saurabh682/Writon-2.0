@@ -196,6 +196,9 @@ describe('Fastify API contract', () => {
     expect(response.body).toContain('https://images.example.com/kavya.jpg');
     expect(response.body).toContain('Written by');
     expect(response.body).toContain('Kavya Nair');
+    expect(response.body).toContain('Open in WritOn');
+    expect(response.body).toContain('intent://api.writon.test/stories/monsoon-letters#Intent;scheme=https;package=com.ibitvalley.writon;');
+    expect(response.body).toContain('Get the app');
     expect(response.body).not.toContain('<h1>Monsoon <Letters></h1>');
   });
 
