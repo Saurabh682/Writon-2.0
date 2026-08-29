@@ -16,7 +16,38 @@ function cleanJsonText(rawText) {
   return cleaned.trim();
 }
 
-export async function callGeminiApi({ apiKey, model = 'gemini-2.0-flash', prompt, systemInstruction = '', temperature = 0.7, maxTokens = 2048 }) {
+export function validateContentSafety(content, title = '') {
+  if (!content || typeof content !== 'string') {
+    return { isValid: false, reason: 'Content must be a non-empty string' };
+  }
+  const cleanTitle = (title || '').replace(/<[^>]*>?/gm, '').trim();
+  let cleanContent = content.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  cleanContent = cleanContent.replace(/javascript:[^\s"']+/gi, '');
+
+  const dangerousPatterns = [
+    /<iframe/i,
+    /data:text\/html/i,
+    /document\.cookie/i,
+    /window\.localStorage/i
+  ];
+  for (const pattern of dangerousPatterns) {
+    if (pattern.test(cleanContent)) {
+      return { isValid: false, reason: 'Content contains potentially malicious HTML or script patterns' };
+    }
+  }
+
+  return {
+    isValid: true,
+    sanitizedTitle: cleanTitle,
+    sanitizedContent: cleanContent.trim(),
+    provenance: {
+      source: 'writon_spark_engine',
+      validatedAt: new Date().toISOString()
+    }
+  };
+}
+
+export async function callGeminiApi({ apiKey, model = 'gemini-2.0-flash', prompt, systemInstruction = '', temperature = 0.7, maxTokens = 2048, timeoutMs = 15000 }) {
   if (!apiKey) {
     throw new Error('Gemini API key is not configured.');
   }
@@ -43,24 +74,32 @@ export async function callGeminiApi({ apiKey, model = 'gemini-2.0-flash', prompt
     };
   }
 
-  const response = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(new Error(`Gemini API request timed out after ${timeoutMs}ms`)), timeoutMs);
 
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${errorBody}`);
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`Gemini API error (${response.status}): ${errorBody}`);
+    }
+
+    const data = await response.json();
+    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      throw new Error('Empty response from Gemini API.');
+    }
+
+    return text;
+  } finally {
+    clearTimeout(timeoutId);
   }
-
-  const data = await response.json();
-  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!text) {
-    throw new Error('Empty response from Gemini API.');
-  }
-
-  return text;
 }
 
 export async function generateSparkArticle({ apiKey, model, persona, category, topicHint, excludeTitles = [], memories = [] }) {

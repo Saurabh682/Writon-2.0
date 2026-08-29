@@ -197,6 +197,17 @@ export async function ensureBotTables(pool) {
       create index if not exists bot_memories_bot_id_idx on public.bot_memories (bot_id, created_at desc);
       create index if not exists bot_affinity_source_score_idx on public.bot_affinity_graph (source_bot_id, affinity_score desc);
       create index if not exists editorial_ledger_date_status_idx on public.editorial_ledger_entries (edition_date desc, status);
+
+      -- Enable Row Level Security (RLS) on all bot tables
+      alter table public.bot_global_settings enable row level security;
+      alter table public.bot_configs enable row level security;
+      alter table public.bot_activity_logs enable row level security;
+      alter table public.bot_delayed_actions enable row level security;
+      alter table public.bot_memories enable row level security;
+      alter table public.bot_affinity_graph enable row level security;
+      alter table public.editorial_ledger_entries enable row level security;
+      alter table public.editorial_anti_repetition enable row level security;
+      alter table public.editorial_ideas_backlog enable row level security;
     `);
 
     // DB-5: Insert default global settings row if missing
@@ -419,21 +430,49 @@ export async function seedCommenterBotNetwork(pool) {
   }
 }
 
-export async function getGlobalSettings(pool) {
+export function maskApiKey(key) {
+  if (!key || typeof key !== 'string') return null;
+  const trimmed = key.trim();
+  if (trimmed.length <= 8) return '****';
+  return `${trimmed.substring(0, 6)}...${trimmed.substring(trimmed.length - 4)}`;
+}
+
+export async function getGlobalSettings(pool, { maskSecrets = false } = {}) {
   await ensureBotTables(pool);
   const result = await pool.query(`select * from public.bot_global_settings where id = 'global' limit 1`);
+  let row = null;
   if (result.rowCount === 0) {
     await seedInitialBotNetwork(pool);
     const retry = await pool.query(`select * from public.bot_global_settings where id = 'global' limit 1`);
-    return retry.rows[0];
+    row = retry.rows[0];
+  } else {
+    row = result.rows[0];
   }
-  return result.rows[0];
+
+  if (row && maskSecrets && row.gemini_api_key) {
+    return {
+      ...row,
+      gemini_api_key: maskApiKey(row.gemini_api_key)
+    };
+  }
+  return row;
 }
 
 export async function updateGlobalSettings(pool, updates) {
   await ensureBotTables(pool);
-  const current = await getGlobalSettings(pool);
-  const updated = { ...current, ...updates, updated_at: new Date() };
+  const current = await getGlobalSettings(pool, { maskSecrets: false });
+
+  // If incoming API key is masked (contains *), preserve existing stored key
+  let targetApiKey = current.gemini_api_key;
+  if (updates.gemini_api_key !== undefined) {
+    if (updates.gemini_api_key === null || updates.gemini_api_key === '') {
+      targetApiKey = null;
+    } else if (!updates.gemini_api_key.includes('*')) {
+      targetApiKey = updates.gemini_api_key;
+    }
+  }
+
+  const updated = { ...current, ...updates, gemini_api_key: targetApiKey, updated_at: new Date() };
 
   const result = await pool.query(`
     update public.bot_global_settings
@@ -441,7 +480,7 @@ export async function updateGlobalSettings(pool, updates) {
         spark_automation_mode = $3,
         llm_provider = $4,
         llm_model = $5,
-        gemini_api_key = coalesce($6, gemini_api_key),
+        gemini_api_key = $6,
         posts_per_day_target = $7,
         spark_pulse_interval_minutes = $8,
         human_post_reaction_rate = $9,
@@ -461,7 +500,7 @@ export async function updateGlobalSettings(pool, updates) {
     updated.spark_automation_mode,
     updated.llm_provider,
     updated.llm_model,
-    updates.gemini_api_key !== undefined ? updates.gemini_api_key : current.gemini_api_key,
+    targetApiKey,
     updated.posts_per_day_target,
     updated.spark_pulse_interval_minutes,
     updated.human_post_reaction_rate,
@@ -1056,27 +1095,40 @@ export async function cancelDelayedAction(pool, actionId) {
 
 /**
  * Process all due delayed actions (called automatically every 60s)
+ * Uses atomic row locking (SKIP LOCKED) to prevent race conditions across multiple server replicas.
  */
 export async function processDueDelayedActions(pool) {
   await ensureBotTables(pool);
   const executed = [];
 
   try {
-    const dueActions = await pool.query(`
-      select a.*
-      from public.bot_delayed_actions a
-      where a.status = 'pending' and a.execute_at <= now()
-      order by a.execute_at asc
-      limit 5
+    // 1. Recover stale actions stuck in 'processing' for > 10 minutes (e.g. server crash recovery)
+    await pool.query(`
+      update public.bot_delayed_actions
+      set status = case when attempts >= 3 then 'failed' else 'pending' end,
+          last_error = case when attempts >= 3 then 'Exceeded max processing retry attempts' else 'Recovered from uncompleted processing state' end,
+          updated_at = now()
+      where status = 'processing' and updated_at < now() - interval '10 minutes'
     `);
 
-    for (const action of dueActions.rows) {
-      await pool.query(`
-        update public.bot_delayed_actions
-        set status = 'processing', attempts = attempts + 1, updated_at = now()
-        where id = $1
-      `, [action.id]);
+    // 2. Atomically claim up to 5 due actions using FOR UPDATE SKIP LOCKED
+    const claimResult = await pool.query(`
+      with claimed as (
+        select id
+        from public.bot_delayed_actions
+        where status = 'pending' and execute_at <= now()
+        order by execute_at asc
+        limit 5
+        for update skip locked
+      )
+      update public.bot_delayed_actions a
+      set status = 'processing', attempts = attempts + 1, updated_at = now()
+      from claimed c
+      where a.id = c.id
+      returning a.*
+    `);
 
+    for (const action of claimResult.rows) {
       try {
         let outcome = null;
         if (action.action_type === 'story') {
@@ -1125,7 +1177,9 @@ export async function processDueDelayedActions(pool) {
         console.error(`[Spark Delayed Action Error] action ${action.id} (${action.action_type}):`, actionErr.message);
         await pool.query(`
           update public.bot_delayed_actions
-          set status = 'failed', last_error = $2, updated_at = now()
+          set status = case when attempts >= 3 then 'failed' else 'pending' end,
+              last_error = $2,
+              updated_at = now()
           where id = $1
         `, [action.id, actionErr.message]);
       }
@@ -1417,18 +1471,47 @@ export async function triggerSparkCommentReaction(pool, { postId, commentId, pos
 
 /**
  * Pulse Heartbeat Execution
+ * Uses PostgreSQL advisory transaction lock to ensure only one replica runs a pulse at any given moment.
  */
 export async function runSparkPulse(pool) {
+  const client = await pool.connect();
   try {
-    const settings = await getGlobalSettings(pool);
-    if (!settings.is_engine_enabled) return { skipped: 'Engine disabled' };
-    if (settings.spark_automation_mode === 'event_reactive') return { skipped: 'Pulse disabled in event-only mode' };
+    await client.query('begin');
 
-    // 1. First process any due delayed actions (applauds, comments, replies)
+    // Advisory transaction lock prevents duplicate pulse runs across replicas
+    const lockRes = await client.query(`select pg_try_advisory_xact_lock(hashtext('writon_spark_pulse_lock')) as acquired`);
+    if (!lockRes.rows[0]?.acquired) {
+      await client.query('rollback');
+      return { skipped: 'Pulse already running on another instance' };
+    }
+
+    const settings = await getGlobalSettings(pool, { maskSecrets: false });
+    if (!settings.is_engine_enabled) {
+      await client.query('rollback');
+      return { skipped: 'Engine disabled' };
+    }
+    if (settings.spark_automation_mode === 'event_reactive') {
+      await client.query('rollback');
+      return { skipped: 'Pulse disabled in event-only mode' };
+    }
+
+    // 1. Process due delayed actions
     const executedDelayed = await processDueDelayedActions(pool);
 
-    // 2. Check if any active writer bot is due to publish a story
-    const candidateBots = await pool.query(`
+    // 2. Check daily posting target limit
+    const maxDaily = Number(settings.posts_per_day_target) || 20;
+    const dailyCountRes = await client.query(`
+      select count(*)::int as count
+      from public.posts
+      where status = 'published' and coalesce(published_at, created_at) >= current_date
+    `);
+    if ((dailyCountRes.rows[0]?.count || 0) >= maxDaily) {
+      await client.query('commit');
+      return { skipped: `Daily post limit (${maxDaily}) reached`, executedDelayedCount: executedDelayed.length };
+    }
+
+    // 3. Check if any active writer bot is due to publish a story
+    const candidateBots = await client.query(`
       select id, categories from public.bot_configs
       where is_active = true and bot_type = 'writer'
         and (last_posted_at is null or last_posted_at < now() - (post_frequency_hours || ' hours')::interval)
@@ -1440,13 +1523,18 @@ export async function runSparkPulse(pool) {
       const bot = candidateBots.rows[0];
       const category = bot.categories[Math.floor(Math.random() * bot.categories.length)] || 'Essays';
       const createdPost = await executePostAction(pool, { botId: bot.id, category });
+      await client.query('commit');
       return { action: 'published_story', botId: bot.id, postId: createdPost.id, title: createdPost.title, executedDelayedCount: executedDelayed.length };
     }
 
+    await client.query('commit');
     return { action: 'pulse_idle', message: 'No bots due for publishing', executedDelayedCount: executedDelayed.length };
   } catch (error) {
+    try { await client.query('rollback'); } catch (_) {}
     console.error('[Spark Pulse Error]', error);
     return { error: error.message };
+  } finally {
+    client.release();
   }
 }
 

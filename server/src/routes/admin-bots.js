@@ -170,7 +170,7 @@ export async function adminBotsRoutes(fastify, options) {
     // Overview stats & status
     adminScope.get('/api/v1/admin/bots/overview', async (request, reply) => {
     try {
-      const settings = await getGlobalSettings(pool);
+      const settings = await getGlobalSettings(pool, { maskSecrets: true });
       const bots = await getBotsList(pool);
       const logsResult = await pool.query(`
         select log.id, log.bot_id as "botId", log.action_type as "actionType",
@@ -202,7 +202,7 @@ export async function adminBotsRoutes(fastify, options) {
       };
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+      return reply.code(500).send({ error: 'Bot operation failed. Please check server logs.' });
     }
   });
 
@@ -463,7 +463,7 @@ export async function adminBotsRoutes(fastify, options) {
 
     // Get global settings
     adminScope.get('/api/v1/admin/bots/settings', async () => {
-      const settings = await getGlobalSettings(pool);
+      const settings = await getGlobalSettings(pool, { maskSecrets: true });
       return { settings };
     });
 
@@ -475,7 +475,7 @@ export async function adminBotsRoutes(fastify, options) {
       }
 
       const d = parsed.data;
-      const updated = await updateGlobalSettings(pool, {
+      await updateGlobalSettings(pool, {
         is_engine_enabled: d.isEngineEnabled,
         spark_automation_mode: d.sparkAutomationMode,
         llm_provider: d.llmProvider,
@@ -489,7 +489,8 @@ export async function adminBotsRoutes(fastify, options) {
         bot_to_bot_interaction_rate: d.botToBotInteractionRate,
       });
 
-      return { settings: updated };
+      const maskedSettings = await getGlobalSettings(pool, { maskSecrets: true });
+      return { settings: maskedSettings };
     });
 
     // 1-Click seed starter bots
@@ -500,7 +501,7 @@ export async function adminBotsRoutes(fastify, options) {
         return { success: true, count: result.count, bots };
       } catch (error) {
         fastify.log.error(error);
-        return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+        return reply.code(500).send({ error: 'Bot seeding failed. Please check server logs.' });
       }
     });
 
@@ -516,7 +517,7 @@ export async function adminBotsRoutes(fastify, options) {
         return reply.code(201).send({ post: createdPost });
       } catch (error) {
         fastify.log.error(error);
-        return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+        return reply.code(500).send({ error: 'Bot post generation failed. Please check server logs.' });
       }
     });
 
@@ -532,7 +533,7 @@ export async function adminBotsRoutes(fastify, options) {
         return { outcome };
       } catch (error) {
         fastify.log.error(error);
-        return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+        return reply.code(500).send({ error: 'Bot interaction failed. Please check server logs.' });
       }
     });
 
@@ -543,7 +544,7 @@ export async function adminBotsRoutes(fastify, options) {
         return { pulse: pulseResult };
       } catch (error) {
         fastify.log.error(error);
-        return reply.code(500).send({ error: 'Bot operation failed', message: error.message });
+        return reply.code(500).send({ error: 'Pulse execution failed. Please check server logs.' });
       }
     });
 
@@ -555,7 +556,7 @@ export async function adminBotsRoutes(fastify, options) {
         return { actions };
       } catch (error) {
         fastify.log.error(error);
-        return reply.code(500).send({ error: 'Failed to fetch delayed actions', message: error.message });
+        return reply.code(500).send({ error: 'Failed to fetch delayed actions.' });
       }
     });
 
@@ -567,7 +568,7 @@ export async function adminBotsRoutes(fastify, options) {
         return { success: cancelled };
       } catch (error) {
         fastify.log.error(error);
-        return reply.code(500).send({ error: 'Failed to cancel action', message: error.message });
+        return reply.code(500).send({ error: 'Failed to cancel action.' });
       }
     });
 
@@ -578,7 +579,7 @@ export async function adminBotsRoutes(fastify, options) {
         return { success: true, count: executed.length, executed };
       } catch (error) {
         fastify.log.error(error);
-        return reply.code(500).send({ error: 'Failed to process actions', message: error.message });
+        return reply.code(500).send({ error: 'Failed to process actions.' });
       }
     });
 
@@ -781,7 +782,7 @@ export async function adminBotsRoutes(fastify, options) {
       return { pulse: pulseResult };
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Pulse execution failed', message: error.message });
+      return reply.code(500).send({ error: 'Pulse execution failed. Please check server logs.' });
     }
   });
 
@@ -799,7 +800,7 @@ export async function adminBotsRoutes(fastify, options) {
       return reply.code(200).send({ success: true, postId: targetPostId, outcome });
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Swarm applaud failed', message: error.message });
+      return reply.code(500).send({ error: 'Swarm applaud failed. Please check server logs.' });
     }
   });
 
@@ -820,7 +821,7 @@ export async function adminBotsRoutes(fastify, options) {
       return reply.code(200).send({ success: true, postId: targetPostId, outcome });
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Commenter wave failed', message: error.message });
+      return reply.code(500).send({ error: 'Commenter wave failed. Please check server logs.' });
     }
   });
 
@@ -839,7 +840,7 @@ export async function adminBotsRoutes(fastify, options) {
       return { botId: id, count: memories.length, memories, affinityNetwork: affinity };
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to retrieve bot memories', message: error.message });
+      return reply.code(500).send({ error: 'Failed to retrieve bot memories.' });
     }
   });
 
@@ -859,7 +860,7 @@ export async function adminBotsRoutes(fastify, options) {
       return reply.code(201).send({ success: true, memory: res.rows[0] });
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to record bot memory', message: error.message });
+      return reply.code(500).send({ error: 'Failed to record bot memory.' });
     }
   });
 
@@ -874,7 +875,7 @@ export async function adminBotsRoutes(fastify, options) {
       return { success: true, ...batchResult };
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Reflection cycle failed', message: error.message });
+      return reply.code(500).send({ error: 'Reflection cycle failed.' });
     }
   });
 
@@ -886,7 +887,7 @@ export async function adminBotsRoutes(fastify, options) {
       return briefing;
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to generate editorial briefing', message: error.message });
+      return reply.code(500).send({ error: 'Failed to generate editorial briefing.' });
     }
   });
 
@@ -902,7 +903,7 @@ export async function adminBotsRoutes(fastify, options) {
       return history;
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to query editorial ledger', message: error.message });
+      return reply.code(500).send({ error: 'Failed to query editorial ledger.' });
     }
   });
 
@@ -913,7 +914,7 @@ export async function adminBotsRoutes(fastify, options) {
       return reply.code(201).send({ success: true, entry });
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to record ledger entry', message: error.message });
+      return reply.code(500).send({ error: 'Failed to record ledger entry.' });
     }
   });
 
@@ -924,7 +925,7 @@ export async function adminBotsRoutes(fastify, options) {
       return reply.code(201).send({ success: true, idea });
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to add idea to backlog', message: error.message });
+      return reply.code(500).send({ error: 'Failed to add idea to backlog.' });
     }
   });
 
@@ -935,7 +936,7 @@ export async function adminBotsRoutes(fastify, options) {
       return reply.code(201).send({ success: true, rule });
     } catch (error) {
       fastify.log.error(error);
-      return reply.code(500).send({ error: 'Failed to add anti-repetition rule', message: error.message });
+      return reply.code(500).send({ error: 'Failed to add anti-repetition rule.' });
     }
   });
 }

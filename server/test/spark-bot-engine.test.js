@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { CURATED_BOT_PERSONAS } from '../src/bot-engine/curated-personas.js';
 import { CURATED_READER_PERSONAS } from '../src/bot-engine/reader-personas.js';
 import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from '../src/bot-engine/commenter-personas.js';
-import { generateSparkArticle, generateSparkComment } from '../src/bot-engine/gemini-spark-client.js';
+import { generateSparkArticle, generateSparkComment, validateContentSafety } from '../src/bot-engine/gemini-spark-client.js';
 import { getCoverImageForCategory } from '../src/bot-engine/image-service.js';
 import { formatMemoriesForPrompt } from '../src/bot-engine/learning-service.js';
+import { maskApiKey } from '../src/bot-engine/spark-runner.js';
 import { buildServer } from '../src/server.js';
 
 describe('Gemini Spark Bot Network & Engine', () => {
@@ -476,6 +477,31 @@ describe('Gemini Spark Bot Network & Engine', () => {
     it('returns empty string when no memories are present', () => {
       expect(formatMemoriesForPrompt([])).toBe('');
       expect(formatMemoriesForPrompt(null)).toBe('');
+    });
+  });
+
+  describe('Security, Secret Masking & Content Safety Gate', () => {
+    it('masks sensitive API keys cleanly', () => {
+      expect(maskApiKey('AIzaSyD-1234567890abcdef-xyz')).toBe('AIzaSy...-xyz');
+      expect(maskApiKey('shortkey')).toBe('****');
+      expect(maskApiKey('')).toBeNull();
+      expect(maskApiKey(null)).toBeNull();
+    });
+
+    it('validates content safety and strips harmful scripts', () => {
+      const cleanResult = validateContentSafety('An authentic essay on distributed architecture.', 'The Architecture of Systems');
+      expect(cleanResult.isValid).toBe(true);
+      expect(cleanResult.sanitizedTitle).toBe('The Architecture of Systems');
+      expect(cleanResult.provenance.source).toBe('writon_spark_engine');
+
+      const injectionAttempt = validateContentSafety('<script>alert("hack")</script>Hello world', 'Title with <b>HTML</b>');
+      expect(injectionAttempt.isValid).toBe(true);
+      expect(injectionAttempt.sanitizedContent).toBe('Hello world');
+      expect(injectionAttempt.sanitizedTitle).toBe('Title with HTML');
+
+      const dangerousIframe = validateContentSafety('<iframe src="http://evil.com"></iframe>malicious content');
+      expect(dangerousIframe.isValid).toBe(false);
+      expect(dangerousIframe.reason).toContain('potentially malicious');
     });
   });
 });

@@ -17,6 +17,23 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 
 - Updated WritOn to compile against and target Android 16 (API level 36), satisfying Google Play's August 31, 2026 app-update requirement; upgraded the supported build toolchain to Android Gradle Plugin 8.10.1 and Gradle 8.11.1, and advanced the resulting release to version `2.0.4` / version code `106`.
 - Advanced the Android release to version `2.0.3` / version code `105` for the current stabilization update.
+### Bot Engine Hardening, Concurrency & Security Resilience
+- **API Key & Secret Redaction**:
+  - Implemented automatic key masking (`maskApiKey`) so Gemini/SerpAPI keys are never exposed in plaintext over administrative GET endpoints or settings payloads.
+  - Added secret preservation logic ensuring that masked incoming settings cannot overwrite valid database keys.
+- **Atomic Action Claiming (`SKIP LOCKED`)**:
+  - Upgraded delayed action queue runner to use `FOR UPDATE SKIP LOCKED`, completely eliminating race conditions and double-executions across multi-replica server environments.
+- **Zombie Processing Recovery**:
+  - Added auto-recovery mechanism in `processDueDelayedActions` that detects actions stuck in `'processing'` state for more than 10 minutes due to unexpected server crashes, safely resetting them to `'pending'` (with a 3-attempt retry ceiling).
+- **PostgreSQL Advisory Locks for Schedulers**:
+  - Wrapped scheduler pulses in `pg_try_advisory_xact_lock` to guarantee single-instance pulse execution across clustered replicas.
+- **Upstream Timeouts & Content Safety Gate**:
+  - Added 15-second `AbortSignal.timeout` on all Gemini API calls to prevent worker hanging.
+  - Implemented `validateContentSafety` to strip malformed HTML/scripts and attach provenance metadata (`writon_spark_engine`).
+- **Database Error Sanitization & Automatic RLS**:
+  - Sanitized all 500 error responses to prevent internal Postgres table/query details from leaking to clients.
+  - Enabled Row Level Security (`ENABLE ROW LEVEL SECURITY`) across all runtime bot tables.
+
 ### WritOn Editorial Ledger, Anti-Repetition Datastore & AI Briefing Engine
 - **Persistent Editorial Ledger (`public.editorial_ledger_entries`)**:
   - Implemented persistent edition tracking with explicit status lifecycles: `planned`, `executed`, `deferred`, and `avoid`.
