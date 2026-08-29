@@ -73,7 +73,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             {isLoginMode
-              ? 'Enter your pen name or email to continue reading and writing.'
+              ? 'Enter your email to continue reading and writing.'
               : 'Claim your author pen name and publish with timeless typography.'}
           </p>
         </div>
@@ -92,14 +92,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <>
               <div>
                 <label className="block text-xs font-mono font-medium text-gray-500 uppercase tracking-wider mb-1">
-                  Email or Pen Name
+                  Email
                 </label>
                 <input
-                  type="text"
+                  type="email"
                   required
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
-                  placeholder="e.g. mayalin or author@writon.dev"
+                  placeholder="author@example.com"
                   className="w-full px-4 py-2.5 rounded-xl border border-editorial-border dark:border-darkEditorial-border bg-gray-50 dark:bg-white/5 text-sm focus:outline-none focus:ring-2 focus:ring-editorial-accent/30 dark:focus:ring-darkEditorial-accent/30 transition-all"
                 />
               </div>

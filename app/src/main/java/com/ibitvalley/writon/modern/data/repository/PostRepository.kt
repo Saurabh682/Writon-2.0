@@ -10,6 +10,7 @@ import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.core.network.WritOnApiService
 import com.ibitvalley.writon.modern.core.network.model.CreatePostRequestDto
 import com.ibitvalley.writon.modern.core.network.model.AddCommentRequestDto
+import com.ibitvalley.writon.modern.core.network.model.RelationStateRequestDto
 import com.ibitvalley.writon.modern.core.network.model.ReadingProgressRequestDto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -19,6 +20,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+import java.util.UUID
 
 /** Result returned after a single server page has been merged into the Room cache. */
 data class PostPageResult(
@@ -186,7 +188,13 @@ class PostRepository(
         authorName: String,
         parentId: String? = null,
     ) = withContext(Dispatchers.IO) {
-        val tempId = "temp_${System.currentTimeMillis()}"
+        val clientMutationId = UUID.randomUUID().toString()
+        val tempId = "temp_$clientMutationId"
+        val request = AddCommentRequestDto(
+            content = content,
+            parentId = parentId,
+            clientMutationId = clientMutationId,
+        )
         val tempComment = CommentEntity(
             id = tempId,
             postId = postId,
@@ -205,15 +213,15 @@ class PostRepository(
         } catch (_: Exception) {}
 
         try {
-            val response = apiService.addComment(postId, AddCommentRequestDto(content = content, parentId = parentId))
+            val response = apiService.addComment(postId, request)
             if (response.isSuccessful) {
                 refreshComments(postId)
             } else {
-                queueComment(postId, content, parentId)
+                queueComment(postId, request)
             }
             Unit
         } catch (e: Exception) {
-            queueComment(postId, content, parentId)
+            queueComment(postId, request)
         }
     }
 
@@ -318,12 +326,12 @@ class PostRepository(
         postDao.updateLikeStatus(postId, newLiked, newCount)
 
         try {
-            val response = apiService.toggleLike(postId)
+            val response = apiService.setLike(postId, RelationStateRequestDto(enabled = newLiked))
             if (!response.isSuccessful) {
-                queueMutation("LIKE", postId)
+                queueRelationMutation("LIKE", postId, newLiked)
             }
         } catch (e: Exception) {
-            queueMutation("LIKE", postId)
+            queueRelationMutation("LIKE", postId, newLiked)
         }
     }
 
@@ -335,12 +343,12 @@ class PostRepository(
         postDao.updateBookmarkStatus(postId, newBookmarked, newCount)
 
         try {
-            val response = apiService.toggleBookmark(postId)
+            val response = apiService.setBookmark(postId, RelationStateRequestDto(enabled = newBookmarked))
             if (!response.isSuccessful) {
-                queueMutation("BOOKMARK", postId)
+                queueRelationMutation("BOOKMARK", postId, newBookmarked)
             }
         } catch (e: Exception) {
-            queueMutation("BOOKMARK", postId)
+            queueRelationMutation("BOOKMARK", postId, newBookmarked)
         }
     }
 
@@ -352,7 +360,8 @@ class PostRepository(
                 summary = summary,
                 category = category,
                 coverImage = null,
-                isPublished = true
+                isPublished = true,
+                clientDraftId = UUID.randomUUID().toString(),
             )
 
             try {
@@ -380,22 +389,22 @@ class PostRepository(
         }
     }
 
-    private suspend fun queueComment(postId: String, content: String, parentId: String?) {
+    private suspend fun queueComment(postId: String, request: AddCommentRequestDto) {
         outboxDao.enqueueMutation(
             OutboxMutationEntity(
                 mutationType = "ADD_COMMENT",
                 targetId = postId,
-                payloadJson = gson.toJson(mapOf("content" to content, "parentId" to parentId))
+                payloadJson = gson.toJson(request),
             )
         )
     }
 
-    private suspend fun queueMutation(type: String, postId: String) {
-        outboxDao.enqueueMutation(
+    private suspend fun queueRelationMutation(type: String, postId: String, enabled: Boolean) {
+        outboxDao.enqueueLatestMutation(
             OutboxMutationEntity(
                 mutationType = type,
                 targetId = postId,
-                payloadJson = "{}"
+                payloadJson = gson.toJson(RelationStateRequestDto(enabled = enabled)),
             )
         )
     }

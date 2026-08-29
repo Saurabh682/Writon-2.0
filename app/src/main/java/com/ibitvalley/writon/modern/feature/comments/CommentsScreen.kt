@@ -2,7 +2,6 @@ package com.ibitvalley.writon.modern.feature.comments
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -38,9 +39,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -54,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.database.model.CommentEntity
+import com.ibitvalley.writon.modern.core.designsystem.components.UserAvatar
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
@@ -78,6 +83,7 @@ data class DisplayComment(
     val authorAvatarUrl: String?,
     val content: String,
     val timeAgo: String,
+    val replyingToName: String? = null,
     val replies: List<DisplayComment> = emptyList(),
 )
 
@@ -262,7 +268,15 @@ private fun CommentComposer(
                     ),
                     maxLines = 4,
                 )
-                IconButton(onClick = onSubmit, enabled = input.isNotBlank(), modifier = Modifier.size(48.dp)) {
+                IconButton(
+                    onClick = onSubmit,
+                    enabled = input.isNotBlank(),
+                    modifier = Modifier
+                        .size(48.dp)
+                        .semantics {
+                            contentDescription = if (replyingTo == null) "Submit comment" else "Submit reply"
+                        },
+                ) {
                     Surface(
                         shape = CircleShape,
                         color = if (input.isNotBlank()) BrandRed else MaterialTheme.colorScheme.outlineVariant,
@@ -303,28 +317,45 @@ private fun EmptyCommentsState(modifier: Modifier = Modifier) {
 @Composable
 private fun CommentThread(comment: DisplayComment, onReplyClick: (DisplayComment) -> Unit, depth: Int = 0) {
     var repliesExpanded by remember(comment.id) { mutableStateOf(depth > 0) }
+    val threadLineColor = MaterialTheme.colorScheme.outlineVariant
     Column(
         modifier = if (depth == 0) Modifier.fillMaxWidth() else Modifier
             .fillMaxWidth()
-            .padding(start = 22.dp)
-            .background(MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.45f), RoundedCornerShape(1.dp))
-            .padding(start = 12.dp),
+            .padding(start = 20.dp)
+            .drawBehind {
+                drawLine(
+                    color = threadLineColor,
+                    start = Offset(0f, 0f),
+                    end = Offset(0f, size.height),
+                    strokeWidth = 1.dp.toPx(),
+                )
+            }
+            .padding(start = 14.dp),
     ) {
-        CommentItemRow(comment = comment, onReplyClick = { onReplyClick(comment) })
+        CommentItemRow(comment = comment, depth = depth, onReplyClick = { onReplyClick(comment) })
         if (comment.replies.isNotEmpty()) {
-            Spacer(Modifier.height(8.dp))
+            val replyCount = comment.replies.size
             Text(
-                text = if (repliesExpanded) "Hide replies" else "View ${comment.replies.size} ${if (comment.replies.size == 1) "reply" else "replies"}",
+                text = if (repliesExpanded) {
+                    stringResource(R.string.comments_hide_replies)
+                } else {
+                    pluralStringResource(R.plurals.comments_view_replies, replyCount, replyCount)
+                },
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
                 color = BrandRed,
                 modifier = Modifier
+                    .heightIn(min = 48.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .clickable { repliesExpanded = !repliesExpanded }
                     .semantics {
                         role = Role.Button
-                        contentDescription = if (repliesExpanded) "Hide replies" else "Show ${comment.replies.size} replies"
+                        contentDescription = if (repliesExpanded) {
+                            "Hide replies"
+                        } else {
+                            "Show $replyCount replies"
+                        }
                     }
-                    .padding(vertical = 10.dp),
+                    .padding(vertical = 14.dp),
             )
         }
         if (repliesExpanded) {
@@ -337,21 +368,23 @@ private fun CommentThread(comment: DisplayComment, onReplyClick: (DisplayComment
 }
 
 @Composable
-private fun CommentItemRow(comment: DisplayComment, onReplyClick: () -> Unit) {
+private fun CommentItemRow(comment: DisplayComment, depth: Int, onReplyClick: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
-        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(42.dp)) {
-            Box(contentAlignment = Alignment.Center) {
+        UserAvatar(
+            url = comment.authorAvatarUrl,
+            name = comment.authorName,
+            size = if (depth == 0) 42.dp else 36.dp,
+        )
+        Spacer(Modifier.width(if (depth == 0) 14.dp else 12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            if (comment.replyingToName != null) {
                 Text(
-                    initialsOf(comment.authorName),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontFamily = CommentsEditorialFamily,
+                    text = stringResource(R.string.comments_replying_to, comment.replyingToName),
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = BrandRed,
+                    modifier = Modifier.padding(bottom = 4.dp),
                 )
             }
-        }
-        Spacer(Modifier.width(14.dp))
-        Column(modifier = Modifier.weight(1f)) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     comment.authorName,
@@ -367,15 +400,16 @@ private fun CommentItemRow(comment: DisplayComment, onReplyClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                "Reply",
+                stringResource(R.string.comments_reply),
                 style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier
-                    .padding(top = 6.dp, bottom = 8.dp)
+                    .padding(top = 2.dp)
+                    .minimumInteractiveComponentSize()
                     .clip(RoundedCornerShape(8.dp))
                     .clickable(onClick = onReplyClick)
                     .semantics { role = Role.Button; contentDescription = "Reply to ${comment.authorName}" }
-                    .padding(vertical = 8.dp),
+                    .padding(vertical = 12.dp),
             )
         }
     }
@@ -388,14 +422,16 @@ private fun List<CommentEntity>.toCommentThreads(sort: CommentSortOrder): List<D
         CommentSortOrder.Oldest -> items.sortedBy { it.createdAt }
         CommentSortOrder.Applauds, CommentSortOrder.Recent -> items.sortedByDescending { it.createdAt }
     }
-    fun build(parentId: String?): List<DisplayComment> = sorted(byParent[parentId].orEmpty()).map { entity ->
+    fun build(parentId: String?, parentAuthorName: String? = null): List<DisplayComment> =
+        sorted(byParent[parentId].orEmpty()).map { entity ->
         DisplayComment(
             id = entity.id,
             authorName = entity.authorName,
             authorAvatarUrl = entity.authorAvatarUrl,
             content = entity.content,
             timeAgo = formatTimeAgo(entity.createdAt),
-            replies = build(entity.id),
+            replyingToName = parentAuthorName,
+            replies = build(entity.id, entity.authorName),
         )
     }
     return build(null)

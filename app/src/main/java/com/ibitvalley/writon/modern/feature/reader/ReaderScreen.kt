@@ -3,6 +3,7 @@ import androidx.compose.ui.res.stringResource
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -39,6 +40,7 @@ import androidx.compose.foundation.lazy.items
 import coil.compose.AsyncImage
 
 
+import com.ibitvalley.writon.BuildConfig
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.feature.launch.startActivitySafely
@@ -640,8 +642,13 @@ private fun ReaderComment(name: String, avatarUrl: String?, content: String, tim
 }
 
 private fun shareStory(context: Context, post: PostEntity) {
+    val shareUrl = "${BuildConfig.API_BASE_URL.trimEnd('/')}/stories/${Uri.encode(post.slug)}"
     val intent = Intent(Intent.ACTION_SEND).apply {
-        putExtra(Intent.EXTRA_TEXT, "Check out this story: ${post.title}\n\nhttps://writon.co/posts/${post.slug}")
+        putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.reader_share_subject, post.title))
+        putExtra(
+            Intent.EXTRA_TEXT,
+            context.getString(R.string.reader_share_message, post.title, post.authorName, shareUrl),
+        )
         type = "text/plain"
     }
     context.startActivitySafely(Intent.createChooser(intent, null))

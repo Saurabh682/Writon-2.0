@@ -84,6 +84,8 @@
     <string name="reader_bookmark_save">Bookmark Story</string>
     <string name="reader_bookmark_saved">Saved to Library</string>
     <string name="reader_share_action">Share Story</string>
+    <string name="reader_share_subject">%1$s — WritOn</string>
+    <string name="reader_share_message">%1$s\nBy %2$s\n\nRead on WritOn:\n%3$s</string>
     <string name="reader_no_text">This story has no text yet.</string>
     <string name="reader_respond">Respond</string>
     <string name="editor_save_draft">Save draft</string>
@@ -108,6 +110,12 @@
     <string name="comments_sort_applauds">Top Applauded</string>
     <string name="comments_sort_oldest">Oldest</string>
     <string name="comments_reply">Reply</string>
+    <string name="comments_replying_to">Reply to @%1$s</string>
+    <string name="comments_hide_replies">Hide replies</string>
+    <plurals name="comments_view_replies">
+        <item quantity="one">View %d reply</item>
+        <item quantity="other">View %d replies</item>
+    </plurals>
     <string name="comments_send">Publish</string>
     <string name="comments_report">Report comment</string>
     <string name="library_title">Your Library</string>

@@ -82,9 +82,21 @@ interface WritOnApiService {
         @Path("id") postId: String
     ): Response<LikeResponseDto>
 
+    @PUT("api/v1/posts/{id}/like")
+    suspend fun setLike(
+        @Path("id") postId: String,
+        @Body request: RelationStateRequestDto,
+    ): Response<LikeResponseDto>
+
     @POST("api/v1/posts/{id}/bookmark")
     suspend fun toggleBookmark(
         @Path("id") postId: String
+    ): Response<BookmarkResponseDto>
+
+    @PUT("api/v1/posts/{id}/bookmark")
+    suspend fun setBookmark(
+        @Path("id") postId: String,
+        @Body request: RelationStateRequestDto,
     ): Response<BookmarkResponseDto>
 
     @GET("api/v1/me/bookmarks")

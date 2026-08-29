@@ -7,6 +7,20 @@ function getAuthHeader(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+export function mapProfileToUser(profile: any): User {
+  return {
+    id: String(profile.id),
+    penName: String(profile.penName ?? ''),
+    fullName: String(profile.fullName ?? ''),
+    email: String(profile.email ?? ''),
+    avatarUrl: profile.avatarUrl ?? undefined,
+    bio: profile.bio ?? undefined,
+    quoteOfDay: profile.quoteOfDay ?? undefined,
+    followersCnt: Number(profile.followersCnt ?? profile.followersCount ?? 0),
+    followingCnt: Number(profile.followingCnt ?? profile.followingCount ?? 0),
+  };
+}
+
 export async function fetchStories(params: {
   category?: Category;
   tab?: 'latest' | 'trending' | 'following';
@@ -17,7 +31,7 @@ export async function fetchStories(params: {
 } = {}): Promise<{ posts: Story[]; pagination: { page: number; limit: number; hasMore: boolean } }> {
   const query = new URLSearchParams();
   if (params.category && params.category !== 'All') query.set('category', params.category);
-  if (params.tab) query.set('tab', params.tab);
+  if (params.tab) query.set('tab', params.tab === 'trending' ? 'popular' : params.tab);
   if (params.q) query.set('q', params.q);
   if (params.authorId) query.set('authorId', params.authorId);
   if (params.page) query.set('page', params.page.toString());
@@ -46,6 +60,7 @@ export async function createStory(data: {
   category: string;
   coverImage?: string;
   isPublished?: boolean;
+  clientDraftId?: string;
 }): Promise<Story> {
   const res = await fetch(`${API_BASE}/posts`, {
     method: 'POST',
@@ -53,7 +68,10 @@ export async function createStory(data: {
       'Content-Type': 'application/json',
       ...getAuthHeader()
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify({
+      ...data,
+      clientDraftId: data.clientDraftId ?? crypto.randomUUID(),
+    })
   });
   if (!res.ok) {
     const err = await res.json();
@@ -119,7 +137,7 @@ export async function addComment(postId: string, content: string, parentId?: str
       'Content-Type': 'application/json',
       ...getAuthHeader()
     },
-    body: JSON.stringify({ content, parentId })
+    body: JSON.stringify({ content, parentId, clientMutationId: crypto.randomUUID() })
   });
   if (!res.ok) {
     const err = await res.json();
@@ -139,7 +157,8 @@ export async function fetchAuthor(idOrPenName: string): Promise<Author> {
 }
 
 export async function fetchAuthorStories(id: string): Promise<Story[]> {
-  const res = await fetch(`${API_BASE}/users/${id}/posts`, {
+  const query = new URLSearchParams({ authorId: id, limit: '50' });
+  const res = await fetch(`${API_BASE}/posts?${query.toString()}`, {
     headers: { ...getAuthHeader() }
   });
   if (!res.ok) throw new Error('Failed to fetch author stories');
@@ -147,13 +166,13 @@ export async function fetchAuthorStories(id: string): Promise<Story[]> {
   return data.posts;
 }
 
-export async function fetchAuthorBookmarks(id: string): Promise<Story[]> {
-  const res = await fetch(`${API_BASE}/users/${id}/bookmarks`, {
+export async function fetchAuthorBookmarks(_id: string): Promise<Story[]> {
+  const res = await fetch(`${API_BASE}/me/bookmarks?limit=50`, {
     headers: { ...getAuthHeader() }
   });
   if (!res.ok) throw new Error('Failed to fetch bookmarks');
   const data = await res.json();
-  return data.bookmarks;
+  return data.posts;
 }
 
 export async function toggleFollow(authorId: string): Promise<{ following: boolean; followersCount: number }> {
@@ -166,8 +185,8 @@ export async function toggleFollow(authorId: string): Promise<{ following: boole
 }
 
 export async function updateProfile(data: { fullName?: string; bio?: string; quoteOfDay?: string; avatarUrl?: string }): Promise<User> {
-  const res = await fetch(`${API_BASE}/users/profile`, {
-    method: 'PUT',
+  const res = await fetch(`${API_BASE}/me`, {
+    method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       ...getAuthHeader()
@@ -176,7 +195,7 @@ export async function updateProfile(data: { fullName?: string; bio?: string; quo
   });
   if (!res.ok) throw new Error('Failed to update profile');
   const result = await res.json();
-  return result.user;
+  return mapProfileToUser(result.profile);
 }
 
 export async function uploadMedia(file: File): Promise<string> {

@@ -230,4 +230,12 @@
     <string name="settings_about_android">• Kotlin ও Jetpack Compose দিয়ে নির্মিত</string>
     <string name="settings_about_offline">• অফলাইন ড্রাফ্ট ও পাঠের ক্যাশ</string>
     <string name="settings_about_security">• Firebase প্রমাণীকরণ ও ঐচ্ছিক বায়োমেট্রিক লক</string>
+    <string name="reader_share_subject">%1$s — WritOn</string>
+    <string name="reader_share_message">%1$s\n%2$s-এর লেখা\n\nWritOn-এ পড়ুন:\n%3$s</string>
+    <string name="comments_replying_to">@%1$s-কে উত্তর দিন</string>
+    <string name="comments_hide_replies">উত্তর লুকান</string>
+    <plurals name="comments_view_replies">
+        <item quantity="one">%dটি উত্তর দেখুন</item>
+        <item quantity="other">%dটি উত্তর দেখুন</item>
+    </plurals>
 </resources>

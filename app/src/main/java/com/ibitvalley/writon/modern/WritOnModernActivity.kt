@@ -6,8 +6,9 @@ import android.content.res.Configuration
 import android.graphics.Color as AndroidColor
 import android.os.Build
 import android.os.Bundle
-import android.view.Window
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.LocalActivityResultRegistryOwner
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -21,7 +22,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -30,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.view.WindowCompat
 import androidx.navigation.compose.rememberNavController
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.auth.BiometricAuthManager
@@ -73,8 +72,8 @@ class WritOnModernActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        applyInitialEdgeToEdgeAppearance()
         super.onCreate(savedInstanceState)
-        applyInitialSystemBarAppearance()
         pendingNotificationRoute = intent?.getStringExtra("targetRoute")
         WritOnTelemetry.appLaunched(applicationContext)
 
@@ -143,7 +142,7 @@ class WritOnModernActivity : AppCompatActivity() {
                 }
 
                 WritOnTheme(themeMode = activeTheme) {
-                    WritOnSystemBars(window = window, themeMode = activeTheme)
+                    WritOnSystemBars(activity = this@WritOnModernActivity, themeMode = activeTheme)
                     if (!launchReady) {
                         WritOnLaunchGate(
                             userPreferences = userPreferences,
@@ -198,18 +197,16 @@ class WritOnModernActivity : AppCompatActivity() {
     }
 }
 
-private fun WritOnModernActivity.applyInitialSystemBarAppearance() {
-    window.statusBarColor = AndroidColor.rgb(248, 244, 238)
-    window.navigationBarColor = AndroidColor.rgb(248, 244, 238)
-    WindowCompat.getInsetsController(window, window.decorView).apply {
-        isAppearanceLightStatusBars = true
-        isAppearanceLightNavigationBars = true
-    }
+private fun WritOnModernActivity.applyInitialEdgeToEdgeAppearance() {
+    val lightStyle = SystemBarStyle.light(
+        scrim = AndroidColor.TRANSPARENT,
+        darkScrim = AndroidColor.TRANSPARENT
+    )
+    enableEdgeToEdge(statusBarStyle = lightStyle, navigationBarStyle = lightStyle)
 }
 
 @Composable
-private fun WritOnSystemBars(window: Window, themeMode: String) {
-    val background = MaterialTheme.colorScheme.background
+private fun WritOnSystemBars(activity: WritOnModernActivity, themeMode: String) {
     val isDarkTheme = when (themeMode.lowercase()) {
         "dark", "obsidian" -> true
         "system" -> androidx.compose.foundation.isSystemInDarkTheme()
@@ -217,12 +214,18 @@ private fun WritOnSystemBars(window: Window, themeMode: String) {
     }
 
     SideEffect {
-        window.statusBarColor = background.toArgb()
-        window.navigationBarColor = background.toArgb()
-        WindowCompat.getInsetsController(window, window.decorView).apply {
-            isAppearanceLightStatusBars = !isDarkTheme
-            isAppearanceLightNavigationBars = !isDarkTheme
+        val systemBarStyle = if (isDarkTheme) {
+            SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+        } else {
+            SystemBarStyle.light(
+                scrim = AndroidColor.TRANSPARENT,
+                darkScrim = AndroidColor.TRANSPARENT
+            )
         }
+        activity.enableEdgeToEdge(
+            statusBarStyle = systemBarStyle,
+            navigationBarStyle = systemBarStyle
+        )
     }
 }
 

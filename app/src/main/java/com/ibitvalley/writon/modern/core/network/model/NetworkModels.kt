@@ -88,9 +88,14 @@ data class CreatePostRequestDto(
     @SerializedName("clientDraftId") val clientDraftId: String? = null
 )
 
+data class RelationStateRequestDto(
+    @SerializedName("enabled") val enabled: Boolean,
+)
+
 data class AddCommentRequestDto(
     @SerializedName("content") val content: String,
     @SerializedName("parentId") val parentId: String? = null,
+    @SerializedName("clientMutationId") val clientMutationId: String? = null,
 )
 
 data class InterestsResponseDto(

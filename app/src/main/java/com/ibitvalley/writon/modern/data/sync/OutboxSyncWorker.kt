@@ -4,15 +4,21 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.google.gson.Gson
-import com.google.gson.JsonParser
 import com.ibitvalley.writon.modern.core.database.WritOnDatabase
 import com.ibitvalley.writon.modern.core.network.NetworkClient
 import com.ibitvalley.writon.modern.core.network.model.CreatePostRequestDto
 import com.ibitvalley.writon.modern.core.network.model.UpdatePostRequestDto
 import com.ibitvalley.writon.modern.core.network.model.AddCommentRequestDto
+import com.ibitvalley.writon.modern.core.network.model.RelationStateRequestDto
 import com.ibitvalley.writon.modern.core.database.model.DraftEntity
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import java.nio.charset.StandardCharsets
+import java.util.UUID
+
+internal fun stableOutboxUuid(kind: String, mutationId: Long): String =
+    UUID.nameUUIDFromBytes("writon:$kind:$mutationId".toByteArray(StandardCharsets.UTF_8)).toString()
 
 class OutboxSyncWorker(
     context: Context,
@@ -36,7 +42,8 @@ class OutboxSyncWorker(
             try {
                 when (mutation.mutationType) {
                     "LIKE" -> {
-                        val response = apiService.toggleLike(mutation.targetId)
+                        val state = relationStateFor(mutation.payloadJson, mutation.targetId, isLike = true)
+                        val response = apiService.setLike(mutation.targetId, state)
                         if (response.isSuccessful) {
                             outboxDao.markMutationSynced(mutation.mutationId)
                         } else {
@@ -44,7 +51,8 @@ class OutboxSyncWorker(
                         }
                     }
                     "BOOKMARK" -> {
-                        val response = apiService.toggleBookmark(mutation.targetId)
+                        val state = relationStateFor(mutation.payloadJson, mutation.targetId, isLike = false)
+                        val response = apiService.setBookmark(mutation.targetId, state)
                         if (response.isSuccessful) {
                             outboxDao.markMutationSynced(mutation.mutationId)
                         } else {
@@ -52,7 +60,12 @@ class OutboxSyncWorker(
                         }
                     }
                     "CREATE_POST" -> {
-                        val postRequest = gson.fromJson(mutation.payloadJson, CreatePostRequestDto::class.java)
+                        val queuedRequest = gson.fromJson(mutation.payloadJson, CreatePostRequestDto::class.java)
+                        val postRequest = if (queuedRequest.clientDraftId.isNullOrBlank()) {
+                            queuedRequest.copy(clientDraftId = stableOutboxUuid("post", mutation.mutationId))
+                        } else {
+                            queuedRequest
+                        }
                         val response = apiService.createPost(postRequest)
                         if (response.isSuccessful && response.body() != null) {
                             val postDto = response.body()!!.post
@@ -84,24 +97,21 @@ class OutboxSyncWorker(
                         }
                     }
                     "ADD_COMMENT" -> {
-                        val content = JsonParser.parseString(mutation.payloadJson)
-                            .asJsonObject
-                            .get("content")
-                            ?.asString
-                            ?.trim()
-                            .orEmpty()
-                        if (content.isBlank()) {
+                        val queuedRequest = gson.fromJson(mutation.payloadJson, AddCommentRequestDto::class.java)
+                        if (queuedRequest.content.isBlank()) {
                             allSuccessful = false
                             continue
                         }
-                        val parentId = JsonParser.parseString(mutation.payloadJson)
-                            .asJsonObject
-                            .get("parentId")
-                            ?.takeUnless { it.isJsonNull }
-                            ?.asString
+                        val request = if (queuedRequest.clientMutationId.isNullOrBlank()) {
+                            queuedRequest.copy(
+                                clientMutationId = stableOutboxUuid("comment", mutation.mutationId),
+                            )
+                        } else {
+                            queuedRequest
+                        }
                         val response = apiService.addComment(
                             mutation.targetId,
-                            AddCommentRequestDto(content = content, parentId = parentId)
+                            request,
                         )
                         if (response.isSuccessful) {
                             outboxDao.markMutationSynced(mutation.mutationId)
@@ -161,5 +171,24 @@ class OutboxSyncWorker(
         outboxDao.clearSyncedMutations()
 
         if (allSuccessful) Result.success() else Result.retry()
+    }
+
+    private suspend fun relationStateFor(
+        payloadJson: String,
+        postId: String,
+        isLike: Boolean,
+    ): RelationStateRequestDto {
+        val payload = runCatching { gson.fromJson(payloadJson, RelationStateRequestDto::class.java) }.getOrNull()
+        val hasExplicitState = runCatching {
+            gson.fromJson(payloadJson, com.google.gson.JsonObject::class.java).has("enabled")
+        }.getOrDefault(false)
+        if (payload != null && hasExplicitState) return payload
+
+        // Upgrade compatibility: old queued toggle rows used an empty object. Room already
+        // contains the user's optimistic desired state, so retry that state explicitly.
+        val cachedPost = db.postDao().getPostById(postId).first()
+        return RelationStateRequestDto(
+            enabled = if (isLike) cachedPost?.isLiked == true else cachedPost?.isBookmarked == true,
+        )
     }
 }

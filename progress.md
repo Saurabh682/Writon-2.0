@@ -7,6 +7,8 @@ Task 4: complete for this stabilization pass — corrected About version data/lo
 Task 5: complete — serialized the server contract suite; current 28/28 tests pass without changing bot behavior
 Task 6: complete — Android lint/unit/release gates, server tests, web build, signed artifact inspection, and Graphify refresh passed
 Task 7: complete — external-only physical-device, Play upload, and branch synchronization gates documented
+Task 8: complete — resolved the seven critical non-bot API/data-integrity findings with transactional deletion, aligned web contracts, desired-state reactions, and retry idempotency
+Task 9: complete — expanded Android verification to six on-device tests plus MockWebServer/repository retry contracts and added the emulator journey suite to CI
 
 Additional local completion:
 - Exported the current Room schema and executed three Android instrumentation tests directly through AndroidJUnitRunner (3/3 pass).
@@ -18,6 +20,7 @@ Known external gates:
 - Play-delivered version 103 has confirmed Google login; remaining flows need device evidence.
 - Android 17 emulator: version 104 debug build installed and launched; Home, Search, auth-required Notifications, Reader, and native Share chooser verified with an empty crash buffer.
 - Branch synchronization must wait for an approved, committed release state.
+- The new Android release candidate is version 2.0.5 / code 107; Play upload and signed two-phone validation remain external gates.
 
 Constraints:
 - Do not modify bot implementation, bot routes, bot data, or deferred bot security behavior.

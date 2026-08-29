@@ -84,6 +84,8 @@
     <string name="reader_bookmark_save">कहानी बुकमार्क करें</string>
     <string name="reader_bookmark_saved">लाइब्रेरी में सहेजा गया</string>
     <string name="reader_share_action">कहानी साझा करें</string>
+    <string name="reader_share_subject">%1$s — WritOn</string>
+    <string name="reader_share_message">%1$s\nलेखक: %2$s\n\nWritOn पर पढ़ें:\n%3$s</string>
     <string name="reader_no_text">इस कहानी में अभी कोई पाठ नहीं है।</string>
     <string name="reader_respond">प्रतिक्रिया दें</string>
     <string name="editor_save_draft">ड्राफ़्ट सहेजें</string>
@@ -108,6 +110,12 @@
     <string name="comments_sort_applauds">सर्वाधिक प्रशंसित</string>
     <string name="comments_sort_oldest">पुरातन</string>
     <string name="comments_reply">उत्तर दें</string>
+    <string name="comments_replying_to">@%1$s को उत्तर</string>
+    <string name="comments_hide_replies">उत्तर छिपाएं</string>
+    <plurals name="comments_view_replies">
+        <item quantity="one">%d उत्तर देखें</item>
+        <item quantity="other">%d उत्तर देखें</item>
+    </plurals>
     <string name="comments_send">प्रकाशित करें</string>
     <string name="comments_report">टिप्पणी की रिपोर्ट करें</string>
     <string name="library_title">आपकी लाइब्रेरी</string>

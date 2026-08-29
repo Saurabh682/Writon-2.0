@@ -230,4 +230,12 @@
     <string name="settings_about_android">• Creada con Kotlin y Jetpack Compose</string>
     <string name="settings_about_offline">• Borradores sin conexión y caché de lectura</string>
     <string name="settings_about_security">• Autenticación de Firebase y bloqueo biométrico opcional</string>
+    <string name="reader_share_subject">%1$s — WritOn</string>
+    <string name="reader_share_message">%1$s\nPor %2$s\n\nLee en WritOn:\n%3$s</string>
+    <string name="comments_replying_to">Responder a @%1$s</string>
+    <string name="comments_hide_replies">Ocultar respuestas</string>
+    <plurals name="comments_view_replies">
+        <item quantity="one">Ver %d respuesta</item>
+        <item quantity="other">Ver %d respuestas</item>
+    </plurals>
 </resources>

@@ -7,14 +7,28 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.6 (Version Code: 108)`
+- **Current Version**: `2.0.7 (Version Code: 109)`
 
 ---
 
 ## [Unreleased] - 2026-08-29
 
-### Story Sharing & Conversation Threading
+### Android 15/16 Edge-to-Edge Compatibility
 
+- Advanced the Android release candidate to version `2.0.7` / version code `109`.
+- Replaced deprecated direct status-bar and navigation-bar color assignments with AndroidX edge-to-edge system-bar styles.
+- Preserved readable system-bar icons across WritOn light, dark, obsidian, and system themes while allowing Compose scaffolds to handle safe drawing insets.
+
+### Google Play Store SEO, ASO Localization & Multi-Language Screenshots
+- **Play Store Metadata & ASO Optimization**:
+  - Authored keyword-optimized App Title (`WritOn: Story Writing & Reads`), high-converting Short Description, and structured Markdown-rich Full Description highlighting WritOn 2.0's flagship capabilities.
+  - Formatted localized store descriptions across 6 languages (`en-US`, `hi-IN`, `es-419`, `fr-FR`, `bn-IN`, `mr-IN`) and packaged them into `WritOn_Store_Translations.zip` for instant Play Console import.
+- **Automated Live In-App Screenshots Across All 6 Languages**:
+  - Booted the local Android Virtual Device (AVD) emulator, dynamically applied localized runtime preferences, and automated screen navigation.
+  - Captured and saved 42 crisp 1080x2400 in-app screenshots spanning all 7 core views (Welcome, Home Feed, Reader, Explore/Search, Library, Profile, and Settings) across English, Hindi, Spanish, French, Bengali, and Marathi in `play_store_assets/screenshots/`.
+  - Packaged all screenshots into `play_store_assets/WritOn_All_Language_Screenshots.zip`.
+
+### Story Sharing & Conversation Threading
 - Advanced the Android release candidate to version `2.0.6` / version code `108`.
 - Replaced the third-party `writon.co` story-share URL and promotional copy with a concise WritOn title, author byline, and environment-aware WritOn API link.
 - Added a server-rendered public story preview with WritOn metadata, canonical URLs, safe text escaping, author-profile imagery, story-cover fallback, and a Play Store call to action.
