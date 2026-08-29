@@ -75,6 +75,7 @@ class WritOnModernActivity : AppCompatActivity() {
         applyInitialEdgeToEdgeAppearance()
         super.onCreate(savedInstanceState)
         pendingNotificationRoute = intent?.getStringExtra("targetRoute")
+            ?: resolveStoryDeepLink(intent?.dataString)
         WritOnTelemetry.appLaunched(applicationContext)
 
         WritOnNotificationManager.createNotificationChannels(this)
@@ -194,6 +195,7 @@ class WritOnModernActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         pendingNotificationRoute = intent.getStringExtra("targetRoute")
+            ?: resolveStoryDeepLink(intent.dataString)
     }
 }
 

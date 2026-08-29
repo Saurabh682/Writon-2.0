@@ -7,11 +7,17 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.7 (Version Code: 109)`
+- **Current Version**: `2.0.8 (Version Code: 110)`
 
 ---
 
 ## [Unreleased] - 2026-08-29
+
+### Verified Story App Links
+
+- Advanced the Android release candidate to version `2.0.8` / version code `110`.
+- Registered Render story-share URLs as verified Android App Links and safely route both current `/stories/` and legacy `/posts/` URLs to the exact in-app reader.
+- Added Render-hosted Digital Asset Links ownership metadata for WritOn's signed Android package.
 
 ### Android 15/16 Edge-to-Edge Compatibility
 

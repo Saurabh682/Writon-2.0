@@ -9,7 +9,7 @@ const runtimeConfig = {
   databasePoolMax: 1,
   databaseSslRejectUnauthorized: false,
   corsOrigins: [],
-  latestAppVersionCode: 109,
+  latestAppVersionCode: 110,
   minSupportedAppVersionCode: 101,
   playStoreAppUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
   publicApiBaseUrl: 'https://api.writon.test',
@@ -205,10 +205,28 @@ describe('Fastify API contract', () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
-      latestVersionCode: 109,
+      latestVersionCode: 110,
       minSupportedVersionCode: 101,
       updateUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
     });
+  });
+
+  it('publishes Android App Link ownership for the signed WritOn app', async () => {
+    const app = await createApp();
+    const response = await app.inject({ method: 'GET', url: '/.well-known/assetlinks.json' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toContain('application/json');
+    expect(response.json()).toEqual([expect.objectContaining({
+      relation: ['delegate_permission/common.handle_all_urls'],
+      target: expect.objectContaining({
+        namespace: 'android_app',
+        package_name: 'com.ibitvalley.writon',
+        sha256_cert_fingerprints: [
+          '2F:C5:3D:AE:26:8C:D2:BE:11:20:00:C1:9E:9A:08:BD:EA:18:A0:D1:6F:0D:CC:CE:F1:C6:0F:86:F8:84:45:7D',
+        ],
+      }),
+    })]);
   });
 
   it('does not accept a device token or notification preferences without Firebase authentication', async () => {
