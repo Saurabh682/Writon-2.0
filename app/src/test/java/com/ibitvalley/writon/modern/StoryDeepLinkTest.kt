@@ -6,7 +6,15 @@ import org.junit.Test
 
 class StoryDeepLinkTest {
     @Test
-    fun `maps Render story links to the matching reader`() {
+    fun `maps writon cc and render story links to the matching reader`() {
+        assertEquals(
+            "reader/the-extraordinary-protocol",
+            resolveStoryDeepLink("https://writon.cc/stories/the-extraordinary-protocol")
+        )
+        assertEquals(
+            "reader/the-extraordinary-protocol",
+            resolveStoryDeepLink("https://www.writon.cc/stories/the-extraordinary-protocol")
+        )
         assertEquals(
             "reader/story-1010-1010",
             resolveStoryDeepLink("https://writon-powerup.onrender.com/stories/story-1010-1010")
@@ -18,6 +26,10 @@ class StoryDeepLinkTest {
         assertEquals(
             "reader/monsoon-letters",
             resolveStoryDeepLink("https://writon.co/posts/monsoon-letters")
+        )
+        assertEquals(
+            "reader/monsoon-letters",
+            resolveStoryDeepLink("https://writon.cc/posts/monsoon-letters")
         )
     }
 

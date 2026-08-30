@@ -139,6 +139,7 @@
     <string name="applauds_open_author">लेखक प्रोफाइल उघडा</string>
     <string name="applauds_empty_title">अद्याप कोणत्याही टाळ्या नाहीत</string>
     <string name="applauds_empty_desc">तुमच्या टाळ्या लेखकांना प्रोत्साहन देतात.</string>
+    <string name="applauds_received_empty_desc">वाचक तुमच्या प्रकाशित लेखनाला दाद देतील तेव्हा ते येथे दिसेल.</string>
     <string name="applauds_thank_you">धन्यवाद!</string>
     <string name="search_title">शोधा</string>
     <string name="search_subtitle">मनोरंजक कथा आणि लेखक शोधा</string>

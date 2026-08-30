@@ -59,6 +59,9 @@ create table if not exists public.editorial_ideas_backlog (
 create index if not exists editorial_backlog_status_genre_idx
   on public.editorial_ideas_backlog (status, genre);
 
+create unique index if not exists editorial_backlog_proposed_title_idx
+  on public.editorial_ideas_backlog (proposed_title);
+
 -- Seed Baseline Anti-Repetition Rules
 insert into public.editorial_anti_repetition (pattern_type, pattern, reason)
 values
@@ -82,4 +85,4 @@ values
   ('devansh_roy', 'Short Stories', 'The Third Ledger: The Mapmaker of Strand Road', 'Continuation of the College Street cycle: Mr. Bimal Chatterjee consults an aging cartographer regarding an unrecorded river canal.', 'English'),
   ('sunita_banerjee', 'Essays', 'The Lost Tactility of Marginalia: Reading With a Pencil', 'An essay exploring why annotations in physical margins create a different cognitive residue than digital highlights.', 'English'),
   ('rohan_kapoor', 'Humour', 'The Jira Sprint Retrospective as Ancient Greek Tragedy', 'A satirical playlet mapping sprint poker estimates and blocked tickets to the chorus of Sophocles.', 'English')
-on conflict do nothing;
+on conflict (proposed_title) do nothing;

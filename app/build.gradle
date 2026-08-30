@@ -36,10 +36,10 @@ def buildConfigString = { value ->
     "\"${value.replace('\\', '\\\\').replace('\"', '\\\"')}\""
 }
 def debugApiBaseUrl = providers.gradleProperty('WRITON_DEBUG_API_BASE_URL')
-    .orElse('https://writon-powerup.onrender.com/')
+    .orElse('https://api.writon.cc/')
     .get()
 def releaseApiBaseUrl = providers.gradleProperty('WRITON_RELEASE_API_BASE_URL')
-    .orElse('https://writon-powerup.onrender.com/')
+    .orElse('https://api.writon.cc/')
     .get()
 
 configurations.all {
@@ -62,8 +62,8 @@ android {
         minSdk 23
         targetSdk 36
         // Each Google Play upload needs a unique, monotonically increasing code.
-        versionCode 114
-        versionName '2.0.12'
+        versionCode 116
+        versionName '2.0.14'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary = true
 

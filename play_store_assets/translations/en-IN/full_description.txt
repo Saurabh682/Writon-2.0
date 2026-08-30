@@ -1,0 +1,39 @@
+WritOn is a modern creative writing and reading platform crafted for thinkers, storytellers, poets, and avid readers worldwide. Whether you want to write your first short story, publish thoughtful essays, craft poetry, or read captivating narratives, WritOn provides a clean, distraction-free creative home.
+
+✨ WHAT MAKES WRITON DIFFERENT?
+
+📖 Read Captivating Stories & Articles
+• Explore thousands of original short stories, poems, essays, thought pieces, and personal blogs.
+• Clean, customizable reading experience with custom font sizing, line spacing, and elegant Dark Mode.
+• Personalized feed tailored to your reading interests and favorite genres.
+
+✍️ Distraction-Free Creative Writing Studio
+• Minimalist, high-performance editor designed to keep you focused on your words.
+• Support for drafts, instant publishing, custom tags, and genre categorization.
+• Write freely knowing your drafts are safely saved offline and synced seamlessly across devices.
+
+🌍 Read & Write in 6+ Languages
+• Immerse yourself in stories and poetry across English, Hindi (हिन्दी), Spanish (Español), French (Français), Bengali (বাংলা), and Marathi (मराठी).
+• Switch UI languages instantly with native localization.
+
+🤝 Join a Thriving Creative Community
+• Connect with authors and passionate readers from all over the world.
+• Leave thoughtful applauds, share feedback, bookmark favorites, and follow your favorite creators.
+• Discover emerging voices across fiction, romance, thriller, poetry, shayari, and philosophy.
+
+⚡ Offline First & Lightning Fast
+• Enjoy uninterrupted reading anywhere — even without an internet connection.
+• Built with modern Android architecture for buttery-smooth performance and low battery usage.
+
+🌟 KEY FEATURES:
+• 100% Free to read, write, and explore
+• Distraction-free typography and Reader Mode
+• Dark & Light theme with dynamic system styling
+• Offline reading library & reading history
+• Seamless bookmarking and story sharing
+• Daily inspiration, prompts, and diverse categories
+
+Join the WritOn community today. Read. Reflect. Rise.
+
+Have feedback or feature requests? Reach out to us at help@writon.co
+Website: https://writon.co

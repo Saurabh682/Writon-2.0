@@ -13,6 +13,10 @@ import {
   getBotAffinityNetwork,
   runBotReflectionCycle
 } from './learning-service.js';
+import {
+  recordLedgerEntry,
+  validateAntiRepetition
+} from './editorial-ledger-service.js';
 
 function createSlug(title) {
   const readable = title
@@ -197,6 +201,7 @@ export async function ensureBotTables(pool) {
       create index if not exists bot_memories_bot_id_idx on public.bot_memories (bot_id, created_at desc);
       create index if not exists bot_affinity_source_score_idx on public.bot_affinity_graph (source_bot_id, affinity_score desc);
       create index if not exists editorial_ledger_date_status_idx on public.editorial_ledger_entries (edition_date desc, status);
+      create unique index if not exists editorial_backlog_proposed_title_idx on public.editorial_ideas_backlog (proposed_title);
 
       -- Enable Row Level Security (RLS) on all bot tables
       alter table public.bot_global_settings enable row level security;
@@ -700,6 +705,17 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     });
   }
 
+  // Server-Side Zero-Slop & Anti-Repetition Governance Check
+  const govCheck = await validateAntiRepetition(pool, {
+    title: articleData.title,
+    summary: articleData.summary,
+    content: articleData.content
+  }).catch(() => ({ isValid: true, sanitizedTitle: articleData.title, sanitizedContent: articleData.content, sanitizedSummary: articleData.summary }));
+
+  if (govCheck.sanitizedTitle) articleData.title = govCheck.sanitizedTitle;
+  if (govCheck.sanitizedContent) articleData.content = govCheck.sanitizedContent;
+  if (govCheck.sanitizedSummary) articleData.summary = govCheck.sanitizedSummary;
+
   const coverImage = getCoverImageForCategory(targetCategory);
   const readingTime = calculateReadingTime(articleData.content);
   const slug = createSlug(articleData.title);
@@ -753,6 +769,20 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       summary: articleData.summary,
       category: targetCategory
     }).catch(err => console.warn('[Spark Runner] Memory record warning:', err.message));
+
+    // Record in Editorial Ledger
+    recordLedgerEntry(pool, {
+      status: 'executed',
+      entryType: 'publication',
+      authorId: bot.id,
+      authorPenName: bot.penName,
+      genre: targetCategory,
+      title: createdPost.title,
+      theme: articleData.themeKeyword || targetCategory,
+      approxWordCount: readingTime * 200,
+      targetPostId: createdPost.id,
+      details: { slug: createdPost.slug, readingTimeMin: readingTime }
+    }).catch(err => console.warn('[Spark Runner] Ledger record warning:', err.message));
 
     // Auto-trigger reader applaud wave and commenter reflections in background
     triggerSparkReaction(pool, {
@@ -1778,12 +1808,23 @@ export async function ingestSparkBatch(pool, rawPayload) {
     for (const story of storiesList) {
       if (!story.title || !story.content) continue;
 
+      // Server-side governance validation
+      const govCheck = await validateAntiRepetition(pool, {
+        title: story.title,
+        summary: story.summary,
+        content: story.content
+      }).catch(() => ({ isValid: true, sanitizedTitle: story.title, sanitizedContent: story.content, sanitizedSummary: story.summary }));
+
+      const cleanTitle = (govCheck.sanitizedTitle || story.title).trim();
+      const cleanContent = (govCheck.sanitizedContent || story.content || '').trim();
+      const cleanSummary = (govCheck.sanitizedSummary || story.summary || '').trim() || null;
+
       const penName = (story.authorPenName || story.author || story.penName || '').toLowerCase().trim();
       const botId = botMap.get(penName) || defaultBotId;
       const category = story.category || 'Essays';
       const coverImage = story.coverImage || story.cover_image_url || getCoverImageForCategory(category);
-      const readingTime = calculateReadingTime(story.content);
-      const slug = createSlug(story.title);
+      const readingTime = calculateReadingTime(cleanContent);
+      const slug = createSlug(cleanTitle);
 
       const res = await client.query(`
         insert into public.posts (
@@ -1795,15 +1836,15 @@ export async function ingestSparkBatch(pool, rawPayload) {
       `, [
         slug,
         botId,
-        story.title.trim(),
-        story.summary?.trim() || null,
-        (story.content || '').trim(),
+        cleanTitle,
+        cleanSummary,
+        cleanContent,
         category,
         coverImage,
         readingTime
       ]);
 
-      const created = res.rows[0] || { id: `post_${Date.now()}`, title: story.title };
+      const created = res.rows[0] || { id: `post_${Date.now()}`, title: cleanTitle };
       storiesCreated.push(created);
 
       await client.query(`
@@ -1814,6 +1855,19 @@ export async function ingestSparkBatch(pool, rawPayload) {
         insert into public.bot_activity_logs (bot_id, action_type, target_post_id, details, status)
         values ($1, 'post', $2, $3, 'success')
       `, [botId, created.id, JSON.stringify({ title: created.title, category, source: 'gemini_spark_web' })]);
+
+      // Record in Editorial Ledger
+      recordLedgerEntry(pool, {
+        status: 'executed',
+        entryType: 'publication',
+        authorId: botId,
+        authorPenName: penName || 'bot_writer',
+        genre: category,
+        title: created.title,
+        approxWordCount: readingTime * 200,
+        targetPostId: created.id,
+        details: { slug: created.slug, source: 'spark_batch_ingest' }
+      }).catch(() => {});
     }
 
     // 2. Ingest comments

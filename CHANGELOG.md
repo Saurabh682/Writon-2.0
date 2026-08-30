@@ -7,7 +7,26 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.12 (Version Code: 114)`
+- **Current Version**: `2.0.14 (Version Code: 116)`
+
+### Recognition empty states
+
+- Replaced indefinite profile-stat loading with a bounded request and a clear retry state for slow responses.
+- Added an original WritOn-themed manuscript-and-applause illustration for writers who have not received applause yet.
+- Added localized empty-state guidance across English, Hindi, Bengali, Marathi, Spanish, and French.
+
+### Deep Link & Android App Link Remediation (v2.0.14)
+
+- Removed legacy unowned domains (`writon.co`, `www.writon.co`) from `android:autoVerify="true"` in `AndroidManifest.xml` to eliminate Google Play Console "Misconfigured Deep Links" errors.
+- Added verified `writon.cc`, `www.writon.cc`, and `writon-app-2020.web.app` to `android:autoVerify="true"` App Links filter, backed by `/.well-known/assetlinks.json`.
+- Extended `StoryDeepLink.kt` to seamlessly map `https://writon.cc/stories/*` and `https://writon.cc/posts/*` directly to modern reader routes (`reader/{slug}`).
+- Added full unit test coverage in `StoryDeepLinkTest.kt`.
+
+### Focused writing workspace
+
+- Refined the story editor into a calmer manuscript-style canvas with clearer empty-writing guidance.
+- Reworked the writer’s desk footer with word count, reading time, autosave feedback, and collapsible formatting tools.
+- Improved keyboard clearance, touch targets, spacing, and visual hierarchy while preserving draft autosave and publishing behavior.
 
 ### Respectful app-update experience
 
@@ -19,9 +38,12 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 ### Provider-neutral API migration preparation
 
 - Defined `api.writon.cc` as the stable API boundary so future hosting-provider changes do not require an Android update.
+- Switched Android debug and release defaults from the legacy Render origin to `api.writon.cc`, fixing media uploads through the configured Cloud Run service.
+- Added the missing Supabase Storage secret declarations to the Render rollback blueprint so the fallback origin can support media uploads once its dashboard secrets are populated.
 - Added a parallel Cloud Run canary and rollback checklist while keeping Render as the active origin.
 - Added independent push-delivery polling control so a scale-to-zero request service cannot compete with the active Render notification worker.
 - Enabled Firebase Admin Messaging to use Google Cloud Application Default Credentials without a committed service-account key.
+- Stored Supabase media credentials in Google Secret Manager for the Cloud Run canary and added support for the newer `sb_secret` API-key authorization format used by avatar uploads.
 
 ### WritOn Milestones
 

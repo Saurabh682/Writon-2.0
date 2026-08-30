@@ -28,8 +28,47 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Deep linking for story URLs -->
+            <!-- Android App Links (Auto-verified with digital asset links on owned domains) -->
             <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="https"
+                    android:host="writon.cc"
+                    android:pathPrefix="/stories/" />
+                <data
+                    android:scheme="https"
+                    android:host="writon.cc"
+                    android:pathPrefix="/posts/" />
+                <data
+                    android:scheme="https"
+                    android:host="www.writon.cc"
+                    android:pathPrefix="/stories/" />
+                <data
+                    android:scheme="https"
+                    android:host="www.writon.cc"
+                    android:pathPrefix="/posts/" />
+                <data
+                    android:scheme="https"
+                    android:host="writon-app-2020.web.app"
+                    android:pathPrefix="/stories/" />
+                <data
+                    android:scheme="https"
+                    android:host="writon-app-2020.web.app"
+                    android:pathPrefix="/posts/" />
+                <data
+                    android:scheme="https"
+                    android:host="writon-powerup.onrender.com"
+                    android:pathPrefix="/stories/" />
+                <data
+                    android:scheme="https"
+                    android:host="writon-powerup.onrender.com"
+                    android:pathPrefix="/posts/" />
+            </intent-filter>
+
+            <!-- Fallback Deep Linking for Legacy URLs (Without autoVerify to prevent Play Console verification errors) -->
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -41,16 +80,6 @@
                     android:scheme="https"
                     android:host="www.writon.co"
                     android:pathPrefix="/posts/" />
-            </intent-filter>
-
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="writon-powerup.onrender.com"
-                    android:pathPrefix="/stories/" />
             </intent-filter>
         </activity>
 

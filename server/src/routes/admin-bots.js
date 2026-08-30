@@ -32,9 +32,12 @@ import {
 } from '../bot-engine/learning-service.js';
 import {
   getEditorialBriefing,
+  getEditorialState,
   recordLedgerEntry,
+  updateLedgerEntryStatus,
   getLedgerEntries,
   addIdeaToBacklog,
+  updateBacklogIdeaStatus,
   addAntiRepetitionPattern
 } from '../bot-engine/editorial-ledger-service.js';
 import { CURATED_BOT_PERSONAS } from '../bot-engine/curated-personas.js';
@@ -134,6 +137,47 @@ const triggerInteractSchema = z.object({
   postId: z.string().uuid(),
   actionType: z.enum(['applaud', 'like', 'comment', 'follow']),
   customComment: z.string().trim().optional(),
+});
+
+const ledgerEntryInputSchema = z.object({
+  editionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  status: z.enum(['planned', 'executed', 'deferred', 'avoid']).default('executed'),
+  entryType: z.enum(['publication', 'comment_wave', 'applaud_swarm', 'reflection', 'anti_repetition_rule', 'future_idea']).default('publication'),
+  authorId: z.string().trim().optional().nullable(),
+  authorPenName: z.string().trim().optional().nullable(),
+  genre: z.string().trim().optional().nullable(),
+  languageStyle: z.string().trim().default('English').optional(),
+  title: z.string().trim().max(300).optional().nullable(),
+  theme: z.string().trim().max(300).optional().nullable(),
+  approxWordCount: z.coerce.number().int().min(0).max(50000).optional().nullable(),
+  details: z.record(z.any()).default({}).optional(),
+  avoidReason: z.string().trim().max(500).optional().nullable(),
+  targetPostId: z.string().uuid().optional().nullable(),
+});
+
+const ledgerStatusUpdateSchema = z.object({
+  status: z.enum(['planned', 'executed', 'deferred', 'avoid']),
+  targetPostId: z.string().uuid().optional().nullable(),
+  details: z.record(z.any()).optional().nullable(),
+  avoidReason: z.string().trim().max(500).optional().nullable(),
+});
+
+const ideaBacklogInputSchema = z.object({
+  targetAuthorPenName: z.string().trim().optional().nullable(),
+  genre: z.string().trim().default('Essays').optional(),
+  proposedTitle: z.string().trim().min(1).max(300),
+  premise: z.string().trim().min(1).max(5000),
+  languageStyle: z.string().trim().default('English').optional(),
+});
+
+const ideaStatusUpdateSchema = z.object({
+  status: z.enum(['backlog', 'planned', 'executed', 'discarded']),
+});
+
+const antiRepetitionRuleSchema = z.object({
+  patternType: z.enum(['title_formula', 'opening_phrase', 'overused_theme', 'cliche_phrase', 'interaction_formula']).default('cliche_phrase'),
+  pattern: z.string().trim().min(1).max(300),
+  reason: z.string().trim().max(500).optional(),
 });
 
 export async function adminBotsRoutes(fastify, options) {
@@ -881,6 +925,35 @@ export async function adminBotsRoutes(fastify, options) {
 
   // --- EDITORIAL LEDGER & BRIEFING ENDPOINTS ---
 
+  const requireAdminOrBotSecret = async (request, reply) => {
+    // In development mode without explicit auth headers, allow local execution
+    if (process.env.NODE_ENV === 'development' && !request.headers.authorization && !request.headers['x-admin-key'] && !request.headers['x-bot-secret']) {
+      request.user = { uid: 'dev-admin', email: 'admin@writon.internal' };
+      return;
+    }
+
+    const adminSecret = process.env.ADMIN_SECRET_KEY;
+    const botSecret = process.env.BOT_INGEST_SECRET;
+    const headerKey = request.headers['x-admin-key'];
+    const headerSecret = request.headers['x-bot-secret'];
+    const bearer = request.headers.authorization?.startsWith('Bearer ')
+      ? request.headers.authorization.substring(7)
+      : null;
+
+    if (adminSecret && (headerKey === adminSecret || bearer === adminSecret)) {
+      request.user = { uid: 'secret-admin', email: 'admin@writon.internal' };
+      return;
+    }
+    if (botSecret && (headerSecret === botSecret || bearer === botSecret)) {
+      request.user = { uid: 'secret-bot', email: 'bot@writon.internal' };
+      return;
+    }
+    if (request.user) return;
+
+    return reply.code(401).send({ error: 'Authentication required. Provide valid X-Admin-Key, X-Bot-Secret, or Bearer token.' });
+  };
+
+  // 1. Editorial Briefing (Public GET)
   fastify.get('/api/v1/spark/ledger/briefing', async (request, reply) => {
     try {
       const briefing = await getEditorialBriefing(pool);
@@ -891,6 +964,7 @@ export async function adminBotsRoutes(fastify, options) {
     }
   });
 
+  // 2. Ledger History (Public GET)
   fastify.get('/api/v1/spark/ledger', async (request, reply) => {
     const { date, status, limit, offset } = request.query || {};
     try {
@@ -907,10 +981,14 @@ export async function adminBotsRoutes(fastify, options) {
     }
   });
 
-  fastify.post('/api/v1/spark/ledger/entries', async (request, reply) => {
-    const entryData = request.body || {};
+  // 3. Record Ledger Entry (Authenticated POST)
+  fastify.post('/api/v1/spark/ledger/entries', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const parsed = ledgerEntryInputSchema.safeParse(request.body || {});
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Invalid ledger entry payload', details: parsed.error.flatten().fieldErrors });
+    }
     try {
-      const entry = await recordLedgerEntry(pool, entryData);
+      const entry = await recordLedgerEntry(pool, parsed.data);
       return reply.code(201).send({ success: true, entry });
     } catch (error) {
       fastify.log.error(error);
@@ -918,10 +996,30 @@ export async function adminBotsRoutes(fastify, options) {
     }
   });
 
-  fastify.post('/api/v1/spark/ledger/ideas', async (request, reply) => {
-    const ideaData = request.body || {};
+  // 4. Update Ledger Entry Lifecycle Status (Authenticated PATCH)
+  fastify.patch('/api/v1/spark/ledger/entries/:id/status', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const { id } = request.params;
+    const parsed = ledgerStatusUpdateSchema.safeParse(request.body || {});
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Invalid ledger status update payload', details: parsed.error.flatten().fieldErrors });
+    }
     try {
-      const idea = await addIdeaToBacklog(pool, ideaData);
+      const updated = await updateLedgerEntryStatus(pool, id, parsed.data);
+      return reply.code(200).send({ success: true, entry: updated });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(error.message.includes('not found') ? 404 : 500).send({ error: error.message });
+    }
+  });
+
+  // 5. Add Idea to Backlog (Authenticated POST)
+  fastify.post('/api/v1/spark/ledger/ideas', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const parsed = ideaBacklogInputSchema.safeParse(request.body || {});
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Invalid backlog idea payload', details: parsed.error.flatten().fieldErrors });
+    }
+    try {
+      const idea = await addIdeaToBacklog(pool, parsed.data);
       return reply.code(201).send({ success: true, idea });
     } catch (error) {
       fastify.log.error(error);
@@ -929,14 +1027,126 @@ export async function adminBotsRoutes(fastify, options) {
     }
   });
 
-  fastify.post('/api/v1/spark/ledger/avoid', async (request, reply) => {
-    const avoidData = request.body || {};
+  // 6. Update Backlog Idea Status (Authenticated PATCH)
+  fastify.patch('/api/v1/spark/ledger/ideas/:id/status', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const { id } = request.params;
+    const parsed = ideaStatusUpdateSchema.safeParse(request.body || {});
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Invalid idea status update payload', details: parsed.error.flatten().fieldErrors });
+    }
     try {
-      const rule = await addAntiRepetitionPattern(pool, avoidData);
+      const updated = await updateBacklogIdeaStatus(pool, id, parsed.data);
+      return reply.code(200).send({ success: true, idea: updated });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(error.message.includes('not found') ? 404 : 500).send({ error: error.message });
+    }
+  });
+
+  // 7. Add Anti-Repetition Rule (Authenticated POST)
+  fastify.post('/api/v1/spark/ledger/avoid', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const parsed = antiRepetitionRuleSchema.safeParse(request.body || {});
+    if (!parsed.success) {
+      return reply.code(400).send({ error: 'Invalid anti-repetition rule payload', details: parsed.error.flatten().fieldErrors });
+    }
+    try {
+      const rule = await addAntiRepetitionPattern(pool, parsed.data);
       return reply.code(201).send({ success: true, rule });
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ error: 'Failed to add anti-repetition rule.' });
     }
   });
+
+  // --- UNIFIED EDITORIAL STATE ENDPOINTS (FOR CHATGPT & AUTOMATION) ---
+
+  const handleGetEditorialState = async (request, reply) => {
+    const { date } = request.query || {};
+    try {
+      const state = await getEditorialState(pool, date);
+      return state;
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to retrieve editorial state.' });
+    }
+  };
+
+  fastify.get('/api/v1/editorial/state', handleGetEditorialState);
+  fastify.get('/api/v1/spark/editorial/state', handleGetEditorialState);
+
+  const handlePostEditorialState = async (request, reply) => {
+    const body = request.body || {};
+    const outcomes = { recordedEntries: [], recordedIdeas: [], recordedRules: [], transitions: [] };
+
+    try {
+      // 1. Process single entry or multiple entries
+      if (body.entry) {
+        const parsed = ledgerEntryInputSchema.safeParse(body.entry);
+        if (parsed.success) {
+          const entry = await recordLedgerEntry(pool, parsed.data);
+          outcomes.recordedEntries.push(entry);
+        }
+      }
+      if (Array.isArray(body.entries)) {
+        for (const rawEntry of body.entries) {
+          const parsed = ledgerEntryInputSchema.safeParse(rawEntry);
+          if (parsed.success) {
+            const entry = await recordLedgerEntry(pool, parsed.data);
+            outcomes.recordedEntries.push(entry);
+          }
+        }
+      }
+
+      // 2. Process ideas
+      if (Array.isArray(body.ideas)) {
+        for (const rawIdea of body.ideas) {
+          const parsed = ideaBacklogInputSchema.safeParse(rawIdea);
+          if (parsed.success) {
+            const idea = await addIdeaToBacklog(pool, parsed.data);
+            outcomes.recordedIdeas.push(idea);
+          }
+        }
+      }
+
+      // 3. Process avoid rules
+      if (Array.isArray(body.avoidRules)) {
+        for (const rawRule of body.avoidRules) {
+          const parsed = antiRepetitionRuleSchema.safeParse(rawRule);
+          if (parsed.success) {
+            const rule = await addAntiRepetitionPattern(pool, parsed.data);
+            outcomes.recordedRules.push(rule);
+          }
+        }
+      }
+
+      // 4. Process status updates
+      if (body.statusUpdate && body.statusUpdate.id && body.statusUpdate.status) {
+        if (body.statusUpdate.type === 'backlog_idea') {
+          const updated = await updateBacklogIdeaStatus(pool, body.statusUpdate.id, { status: body.statusUpdate.status });
+          outcomes.transitions.push({ type: 'backlog_idea', result: updated });
+        } else {
+          const updated = await updateLedgerEntryStatus(pool, body.statusUpdate.id, {
+            status: body.statusUpdate.status,
+            targetPostId: body.statusUpdate.targetPostId,
+            details: body.statusUpdate.details
+          });
+          outcomes.transitions.push({ type: 'ledger_entry', result: updated });
+        }
+      }
+
+      const currentState = await getEditorialState(pool, body.date);
+      return reply.code(201).send({
+        success: true,
+        message: 'Editorial state processed successfully.',
+        outcomes,
+        state: currentState
+      });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to update editorial state.', message: error.message });
+    }
+  };
+
+  fastify.post('/api/v1/editorial/state', { preHandler: requireAdminOrBotSecret }, handlePostEditorialState);
+  fastify.post('/api/v1/spark/editorial/state', { preHandler: requireAdminOrBotSecret }, handlePostEditorialState);
 }

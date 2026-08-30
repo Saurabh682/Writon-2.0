@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://writon.cc/sitemap.xml

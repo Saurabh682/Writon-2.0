@@ -21,8 +21,11 @@ import {
 } from '../bot-engine/learning-service.js';
 import {
   getEditorialBriefing,
+  getEditorialState,
   recordLedgerEntry,
+  updateLedgerEntryStatus,
   addIdeaToBacklog,
+  updateBacklogIdeaStatus,
   addAntiRepetitionPattern
 } from '../bot-engine/editorial-ledger-service.js';
 
@@ -441,6 +444,46 @@ export const WRITON_TOOLS = [
         languageStyle: { type: 'string', default: 'English' }
       },
       required: ['proposedTitle', 'premise']
+    }
+  },
+  {
+    name: 'writon_update_ledger_entry_status',
+    description: 'Transition the lifecycle state of an existing editorial ledger entry (planned -> executed, deferred, avoid).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Ledger entry UUID' },
+        status: { type: 'string', enum: ['planned', 'executed', 'deferred', 'avoid'] },
+        targetPostId: { type: 'string', description: 'Optional post UUID if executed' },
+        avoidReason: { type: 'string' },
+        details: { type: 'object' }
+      },
+      required: ['id', 'status']
+    }
+  },
+  {
+    name: 'writon_update_backlog_idea_status',
+    description: 'Transition a backlog idea status (backlog -> planned -> executed -> discarded).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', description: 'Backlog idea UUID' },
+        status: { type: 'string', enum: ['backlog', 'planned', 'executed', 'discarded'] }
+      },
+      required: ['id', 'status']
+    }
+  },
+  {
+    name: 'writon_get_editorial_state',
+    description: 'Retrieve the complete unified daily editorial state (today\'s published stories, community interactions, writer cooldowns, avoid lists, backlog ideas, and tomorrow\'s forecast).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        date: {
+          type: 'string',
+          description: 'Optional date filter (YYYY-MM-DD). Defaults to today.'
+        }
+      }
     }
   }
 ];
@@ -1105,6 +1148,32 @@ export async function executeMcpTool(pool, toolName, args) {
       message: `New story idea added to backlog for @${args.targetAuthorPenName || 'writers'}`,
       idea
     };
+  }
+
+  if (toolName === 'writon_update_ledger_entry_status') {
+    const { id, status, targetPostId, avoidReason, details } = args;
+    const entry = await updateLedgerEntryStatus(pool, id, { status, targetPostId, avoidReason, details });
+    return {
+      success: true,
+      message: `Editorial ledger entry "${id}" updated to "${status}"`,
+      entry
+    };
+  }
+
+  if (toolName === 'writon_update_backlog_idea_status') {
+    const { id, status } = args;
+    const idea = await updateBacklogIdeaStatus(pool, id, { status });
+    return {
+      success: true,
+      message: `Backlog idea "${id}" transitioned to "${status}"`,
+      idea
+    };
+  }
+
+  if (toolName === 'writon_get_editorial_state') {
+    const { date } = args;
+    const state = await getEditorialState(pool, date);
+    return state;
   }
 
   throw new Error(`Unknown tool name: ${toolName}`);

@@ -1,0 +1,9 @@
+# Historical Android implementation is reference-only; exclude it from active architecture queries.
+app/archived_java/
+
+# Generated/runtime data is not source architecture.
+app/build/
+server/node_modules/
+web/node_modules/
+data-exports/
+release/

@@ -95,6 +95,14 @@ const profileIdentifierSchema = z.string().trim().min(1).max(200);
 const storyShareSlugSchema = z.string().trim().min(1).max(200).regex(/^[a-z0-9-]+$/);
 const allowedImageMimeTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
+export function supabaseStorageHeaders(apiKey, extraHeaders = {}) {
+  const headers = { apikey: apiKey, ...extraHeaders };
+  if (!apiKey.startsWith('sb_secret_')) {
+    headers.Authorization = `Bearer ${apiKey}`;
+  }
+  return headers;
+}
+
 const storyShareCss = `
 :root{color-scheme:light;--paper:#f8f2e9;--ink:#26211d;--muted:#756b61;--rust:#c94724;--line:#ded4c8}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -767,11 +775,9 @@ async function createSignedMediaUrl(key) {
     `${config.supabaseUrl}/storage/v1/object/sign/${encodeURIComponent(config.supabaseStorageBucket)}/${mediaObjectPath(key)}`,
     {
       method: 'POST',
-      headers: {
-        apikey: config.supabaseServiceRoleKey,
-        Authorization: `Bearer ${config.supabaseServiceRoleKey}`,
+      headers: supabaseStorageHeaders(config.supabaseServiceRoleKey, {
         'Content-Type': 'application/json',
-      },
+      }),
       body: JSON.stringify({ expiresIn: 3600 }),
     }
   );
@@ -1877,12 +1883,10 @@ fastify.post(
       `${config.supabaseUrl}/storage/v1/object/${encodeURIComponent(config.supabaseStorageBucket)}/${mediaObjectPath(key)}`,
       {
         method: 'POST',
-        headers: {
-          apikey: config.supabaseServiceRoleKey,
-          Authorization: `Bearer ${config.supabaseServiceRoleKey}`,
+        headers: supabaseStorageHeaders(config.supabaseServiceRoleKey, {
           'Content-Type': 'image/webp',
           'x-upsert': 'false',
-        },
+        }),
         body: webp,
       }
     );

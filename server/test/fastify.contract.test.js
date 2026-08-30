@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { buildServer } from '../src/server.js';
+import { buildServer, supabaseStorageHeaders } from '../src/server.js';
 import { loadRuntimeConfig } from '../src/config.js';
 
 const runtimeConfig = {
@@ -171,6 +171,17 @@ describe('Fastify API contract', () => {
 
     expect(response.statusCode).toBe(401);
     expect(response.json()).toEqual({ error: 'Authentication required' });
+  });
+
+  it('uses new Supabase secret keys only as API keys while retaining legacy service-role JWT support', () => {
+    expect(supabaseStorageHeaders('sb_secret_example', { 'Content-Type': 'image/webp' })).toEqual({
+      apikey: 'sb_secret_example',
+      'Content-Type': 'image/webp',
+    });
+    expect(supabaseStorageHeaders('legacy-service-role-jwt')).toEqual({
+      apikey: 'legacy-service-role-jwt',
+      Authorization: 'Bearer legacy-service-role-jwt',
+    });
   });
 
   it('keeps bot automation off by default on Render and on elsewhere', () => {

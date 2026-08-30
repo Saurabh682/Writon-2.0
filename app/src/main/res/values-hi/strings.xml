@@ -147,6 +147,7 @@
     <string name="applauds_open_author">लेखक प्रोफ़ाइल खोलें</string>
     <string name="applauds_empty_title">अभी तक कोई प्रशंसा नहीं</string>
     <string name="applauds_empty_desc">आपकी प्रशंसा लेखकों को प्रोत्साहित करती है।</string>
+    <string name="applauds_received_empty_desc">जब पाठक आपकी प्रकाशित रचनाओं की प्रशंसा करेंगे, तो वे यहाँ दिखाई देंगी।</string>
     <string name="applauds_thank_you">धन्यवाद!</string>
     <string name="search_title">खोजें</string>
     <string name="search_subtitle">रोमांचक कहानियाँ और लेखक खोजें</string>

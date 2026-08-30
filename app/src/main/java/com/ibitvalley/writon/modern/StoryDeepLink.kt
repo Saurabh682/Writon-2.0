@@ -3,6 +3,9 @@ package com.ibitvalley.writon.modern
 import java.net.URI
 
 private val supportedStoryHosts = setOf(
+    "writon.cc",
+    "www.writon.cc",
+    "writon-app-2020.web.app",
     "writon-powerup.onrender.com",
     "writon.co",
     "www.writon.co"

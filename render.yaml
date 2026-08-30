@@ -28,6 +28,10 @@ services:
         value: "108"
       - key: DATABASE_URL
         sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
       - key: FIREBASE_SERVICE_ACCOUNT_JSON
         sync: false
       - key: CORS_ORIGINS

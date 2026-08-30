@@ -139,6 +139,7 @@
     <string name="applauds_open_author">Ouvrir le profil de l\'auteur</string>
     <string name="applauds_empty_title">Aucun applaudissement</string>
     <string name="applauds_empty_desc">Vos applaudissements encouragent les écrivains.</string>
+    <string name="applauds_received_empty_desc">Lorsque des lecteurs applaudiront vos histoires publiées, elles apparaîtront ici.</string>
     <string name="applauds_thank_you">Merci !</string>
     <string name="search_title">Rechercher</string>
     <string name="search_subtitle">Trouvez des histoires et des écrivains</string>

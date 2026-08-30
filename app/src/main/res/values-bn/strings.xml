@@ -139,6 +139,7 @@
     <string name="applauds_open_author">লেখকের প্রোফাইল খুলুন</string>
     <string name="applauds_empty_title">এখনও কোনো প্রশংসা নেই</string>
     <string name="applauds_empty_desc">আপনার প্রশংসা লেখকদের উৎসাহিত করে।</string>
+    <string name="applauds_received_empty_desc">পাঠকেরা আপনার প্রকাশিত লেখায় প্রশংসা জানালে সেগুলি এখানে দেখা যাবে।</string>
     <string name="applauds_thank_you">ধন্যবাদ!</string>
     <string name="search_title">অনুসন্ধান</string>
     <string name="search_subtitle">আকর্ষণীয় গল্প এবং লেখক খুঁজুন</string>

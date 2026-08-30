@@ -1,0 +1,20 @@
+# WritOn
+> Words worth remembering. A quiet digital sanctuary for writers, poets, and avid readers worldwide.
+
+WritOn is an unhurried, distraction-free literary publishing and reading platform built for thoughtful literature across 6 languages: English, Hindi (हिन्दी), Bengali (বাংলা), Marathi (मराठी), Spanish (Español), and French (Français).
+
+## Core Links
+- [WritOn Home](https://writon.cc/): The official website and editorial overview.
+- [Google Play Store App](https://play.google.com/store/apps/details?id=com.ibitvalley.writon): Official Android application download.
+- [Explore Stories](https://writon.cc/#explore): Curated stories, poetry, essays, and reflective literature.
+- [For Writers](https://writon.cc/#writers): Distraction-free writing tools and offline drafting.
+- [For Readers](https://writon.cc/#readers): Calmer, ad-free reader environment with reading history.
+- [Privacy Policy](https://writon.cc/privacy-policy.html): Complete user privacy and data retention policies.
+- [Terms of Service](https://writon.cc/terms.html): Terms and conditions for writers and readers.
+- [Child Safety Standards](https://writon.cc/child-safety.html): Child protection and safety policies.
+- [Delete Account](https://writon.cc/delete-account.html): User account and data deletion request procedure.
+
+## Features
+- Offline-first draft storage with Room SQLite.
+- Custom typography themes: Paper Cream, Sepia, and Obsidian Dark.
+- Fastify server-side rendering for deep-linked story previews.

@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title id="page-title">Story Preview — WritOn</title>
+
+  <meta id="meta-desc" name="description" content="Read thoughtful stories, poems, and essays on WritOn." />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="WritOn" />
+  <meta id="og-title" property="og:title" content="WritOn — Story" />
+  <meta id="og-desc" property="og:description" content="Read thoughtful stories on WritOn." />
+  <meta id="og-img" property="og:image" content="https://writon.cc/assets/hero-banner.jpg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/stories/share.css" />
+</head>
+<body>
+  <main>
+    <div id="loading" class="loading-box">
+      <p>Loading story...</p>
+    </div>
+
+    <article id="story-article" style="display:none;">
+      <header class="story-header">
+        <a href="/" class="brand-badge">
+          <span>✒ WritOn</span>
+        </a>
+        <h1 id="story-title"></h1>
+        <div class="story-meta-row">
+          <div id="author-avatar-wrap"></div>
+          <div>
+            <div id="author-name" class="author-name"></div>
+            <div id="reading-meta" class="reading-meta"></div>
+          </div>
+        </div>
+      </header>
+
+      <div id="cover-wrap"></div>
+
+      <div id="story-content" class="story-content"></div>
+
+      <div class="app-cta-card">
+        <h3>Continue Reading in WritOn</h3>
+        <p>Enjoy distraction-free reading, offline library access, and join the writer discussion.</p>
+        <div class="cta-buttons">
+          <a id="btn-app-intent" class="btn-open" href="#">Open in App</a>
+          <a class="btn-store" href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon" target="_blank">Get WritOn Free</a>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <script>
+    const API_BASE = "https://writon-powerup.onrender.com";
+    const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.ibitvalley.writon";
+
+    async function loadStory() {
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      const slug = pathParts[pathParts.length - 1];
+
+      if (!slug || slug === 'stories') {
+        window.location.href = '/#explore';
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/posts/${encodeURIComponent(slug)}`);
+        if (!res.ok) throw new Error("Story not found");
+        const data = await res.json();
+        const post = data.post || data;
+
+        document.getElementById('page-title').textContent = `${post.title} — WritOn`;
+        document.getElementById('story-title').textContent = post.title;
+        document.getElementById('author-name').textContent = post.authorName || 'WritOn Author';
+        document.getElementById('reading-meta').textContent = `${post.category || 'Literature'} • ${post.readingTimeMinutes || 3} min read`;
+
+        // Avatar
+        const avatarWrap = document.getElementById('author-avatar-wrap');
+        if (post.authorAvatarUrl) {
+          avatarWrap.innerHTML = `<img class="author-avatar" src="${post.authorAvatarUrl}" alt="${post.authorName}">`;
+        } else {
+          const initial = (post.authorName || 'W')[0].toUpperCase();
+          avatarWrap.innerHTML = `<div class="author-avatar-fallback">${initial}</div>`;
+        }
+
+        // Cover
+        if (post.coverImageUrl) {
+          document.getElementById('cover-wrap').innerHTML = `<img class="cover-img" src="${post.coverImageUrl}" alt="${post.title}">`;
+        }
+
+        // Content
+        const contentDiv = document.getElementById('story-content');
+        const paragraphs = (post.content || post.summary || '').split('\n\n').filter(Boolean);
+        contentDiv.innerHTML = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+
+        // App Intent
+        const intentUrl = `intent://writon.cc/stories/${slug}#Intent;scheme=https;package=com.ibitvalley.writon;S.browser_fallback_url=${encodeURIComponent(PLAY_STORE_URL)};end`;
+        document.getElementById('btn-app-intent').href = intentUrl;
+
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('story-article').style.display = 'block';
+
+      } catch (err) {
+        document.getElementById('loading').innerHTML = `
+          <h2>Story Not Found</h2>
+          <p style="margin: 16px 0;">This story may have been moved or removed.</p>
+          <a href="/" style="color: #C85A3C; font-weight: 600; text-decoration: none;">← Back to WritOn Home</a>
+        `;
+      }
+    }
+
+    loadStory();
+  </script>
+</body>
+</html>

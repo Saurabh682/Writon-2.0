@@ -147,6 +147,7 @@
     <string name="applauds_open_author">Open author profile</string>
     <string name="applauds_empty_title">No applauds yet</string>
     <string name="applauds_empty_desc">Your applause encourages writers and helps stories reach more readers.</string>
+    <string name="applauds_received_empty_desc">When readers applaud your published stories, they’ll appear here.</string>
     <string name="applauds_thank_you">Thank you!</string>
     <string name="search_title">Search</string>
     <string name="search_subtitle">Find compelling stories and writers</string>

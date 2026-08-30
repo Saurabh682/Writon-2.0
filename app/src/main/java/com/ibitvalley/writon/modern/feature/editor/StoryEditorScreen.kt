@@ -18,6 +18,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -131,8 +132,8 @@ fun StoryEditorScreen(
                 onValueChange = viewModel::updateTitle,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 42.dp)
-                    .heightIn(min = 108.dp),
+                    .padding(top = 30.dp)
+                    .heightIn(min = 96.dp),
                 placeholder = {
                     Text(
                         "Add a title…",
@@ -252,19 +253,31 @@ private fun EditorBodyField(
         decorationBox = { innerTextField ->
             Box(modifier = Modifier.fillMaxSize()) {
                 if (value.text.isBlank()) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        VerticalDivider(
-                            modifier = Modifier.height(25.dp).width(2.dp),
-                            color = BrandRed
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            VerticalDivider(
+                                modifier = Modifier.height(27.dp).width(2.dp),
+                                color = BrandRed
+                            )
+                            Spacer(Modifier.width(10.dp))
+                            Text(
+                                "Start writing your story…",
+                                style = bodyStyle.copy(fontStyle = FontStyle.Italic, fontSize = 17.sp),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        HorizontalDivider(
+                            modifier = Modifier.padding(top = 25.dp, end = 36.dp),
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
                         )
-                        Spacer(Modifier.width(9.dp))
                         Text(
-                            "Start writing your story…",
-                            style = bodyStyle.copy(fontStyle = FontStyle.Italic, fontSize = 17.sp),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            "Every story starts somewhere.\nBegin with the moment you can see most clearly.",
+                            modifier = Modifier.padding(top = 22.dp),
+                            style = MaterialTheme.typography.bodyMedium.copy(
+                                fontFamily = EditorEditorialFamily,
+                                lineHeight = 23.sp
+                            ),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.78f)
                         )
                     }
                 }
@@ -325,28 +338,21 @@ private fun EditorToolbar(
     onPickImage: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shape = RoundedCornerShape(WritOnRadius.field),
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            ToolbarLabel("B", "Bold", FontWeight.Bold, onClick = { onFormat(EditorFormatAction.Bold) })
-            ToolbarLabel("I", "Italic", FontWeight.Normal, FontStyle.Italic, onClick = { onFormat(EditorFormatAction.Italic) })
-            ToolbarLabel("U", "Underline", onClick = { onFormat(EditorFormatAction.Underline) })
-            VerticalDivider(modifier = Modifier.height(24.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            ToolbarIcon(R.drawable.ic_bullet_list, "Bulleted list", onClick = { onFormat(EditorFormatAction.Bullet) })
-            ToolbarIcon(R.drawable.ic_quote, "Block quote", onClick = { onFormat(EditorFormatAction.Quote) })
-            ToolbarIcon(R.drawable.ic_image, "Add cover image", onClick = onPickImage)
-        }
+        ToolbarLabel("B", "Bold", FontWeight.Bold, onClick = { onFormat(EditorFormatAction.Bold) })
+        ToolbarLabel("I", "Italic", FontWeight.Normal, FontStyle.Italic, onClick = { onFormat(EditorFormatAction.Italic) })
+        ToolbarLabel("U", "Underline", onClick = { onFormat(EditorFormatAction.Underline) })
+        VerticalDivider(modifier = Modifier.height(24.dp), color = MaterialTheme.colorScheme.outlineVariant)
+        ToolbarIcon(R.drawable.ic_bullet_list, "Bulleted list", onClick = { onFormat(EditorFormatAction.Bullet) })
+        ToolbarIcon(R.drawable.ic_quote, "Block quote", onClick = { onFormat(EditorFormatAction.Quote) })
+        ToolbarIcon(R.drawable.ic_image, "Add cover image", onClick = onPickImage)
     }
 }
 
@@ -360,8 +366,7 @@ private fun ToolbarLabel(
 ) {
     Box(
         modifier = Modifier
-            .width(38.dp)
-            .height(40.dp)
+            .size(48.dp)
             .semantics { contentDescription = description }
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
@@ -374,8 +379,7 @@ private fun ToolbarLabel(
 private fun ToolbarIcon(icon: Int, description: String, enabled: Boolean = true, onClick: () -> Unit = {}) {
     Box(
         modifier = Modifier
-            .width(40.dp)
-            .height(40.dp)
+            .size(48.dp)
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
@@ -396,35 +400,62 @@ private fun EditorWritingFooter(
     onFormat: (EditorFormatAction) -> Unit,
     onPickImage: () -> Unit
 ) {
+    var formattingExpanded by rememberSaveable { mutableStateOf(true) }
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 28.dp, vertical = 12.dp),
+            .imePadding()
+            .padding(horizontal = 20.dp, vertical = 10.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)),
         shape = RoundedCornerShape(WritOnRadius.card),
-        shadowElevation = WritOnElevation.flat
+        shadowElevation = WritOnElevation.raised
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 12.dp, vertical = 10.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text("$wordCount words", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Text("  •  ", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.width(14.dp))
+                Image(
+                    painter = painterResource(R.drawable.ic_clock_muted),
+                    contentDescription = null,
+                    modifier = Modifier.size(15.dp),
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                )
+                Spacer(Modifier.width(5.dp))
                 Text("$readTime min read", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.weight(1f))
-                Text(savedStatus, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Spacer(Modifier.width(5.dp))
                 Image(
                     painter = painterResource(R.drawable.ic_check_muted),
-                    contentDescription = savedStatus,
-                    modifier = Modifier.size(14.dp)
+                    contentDescription = null,
+                    modifier = Modifier.size(15.dp),
+                    colorFilter = ColorFilter.tint(BrandRed)
                 )
+                Spacer(Modifier.width(5.dp))
+                Text(savedStatus, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                IconButton(
+                    onClick = { formattingExpanded = !formattingExpanded },
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Image(
+                        painterResource(if (formattingExpanded) R.drawable.ic_chevron_up else R.drawable.ic_chevron_down),
+                        contentDescription = if (formattingExpanded) "Hide formatting tools" else "Show formatting tools",
+                        modifier = Modifier.size(18.dp),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                    )
+                }
             }
-            Spacer(Modifier.height(8.dp))
-            EditorToolbar(onFormat = onFormat, onPickImage = onPickImage)
+            if (formattingExpanded) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
+                Spacer(Modifier.height(5.dp))
+                EditorToolbar(onFormat = onFormat, onPickImage = onPickImage)
+            }
         }
     }
 }
