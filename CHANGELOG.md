@@ -7,7 +7,14 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.10 (Version Code: 112)`
+- **Current Version**: `2.0.11 (Version Code: 113)`
+
+### WritOn Milestones
+
+- Added a server-authoritative Writer’s Journey with 12 launch milestones for reading, applauding, saving, commenting, publishing, profile completion, followers, and reader appreciation.
+- Added durable, idempotent milestone awards and progress derived from verified activity records.
+- Excluded bot-generated follows and engagement from writer-recognition milestones.
+- Added a localized profile Journey card, progress indicators, and a quiet milestone-unlocked presentation.
 
 ### Profile Photo Upload
 

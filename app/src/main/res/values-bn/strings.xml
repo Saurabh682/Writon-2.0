@@ -224,6 +224,9 @@
     <string name="profile_location_hint">অবস্থান (যেমন ঢাকা, বাংলাদেশ)</string>
     <string name="profile_pen_name_hint">ছদ্মনাম / ব্যবহারকারীর নাম</string>
     <string name="profile_change_photo">প্রোফাইল ছবি বেছে নিন</string>
+    <string name="profile_writer_journey">লেখকের যাত্রা</string>
+    <string name="profile_milestones_count">%2$dটির মধ্যে %1$dটি মাইলফলক অর্জিত</string>
+    <string name="profile_milestone_unlocked">মাইলফলক আনলক হয়েছে</string>
     <string name="notif_title">বিজ্ঞপ্তি</string>
     <string name="notif_empty_title">এখনও কোনো বিজ্ঞপ্তি নেই</string>
     <string name="notif_empty_desc">গল্পের কার্যকলাপ এখানে দেখা যাবে।</string>

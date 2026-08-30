@@ -18,6 +18,7 @@ import { appMetaRoutes } from './routes/app-meta.js';
 import { notificationRoutes } from './routes/notifications.js';
 import { triggerSparkReaction, triggerSparkCommentReaction, startSparkScheduler } from './bot-engine/spark-runner.js';
 import { mcpRoutes } from './routes/mcp-server.js';
+import { milestoneRoutes } from './routes/milestones.js';
 
 const { Pool } = pg;
 
@@ -227,6 +228,18 @@ await fastify.register(multipart, {
       { url: 'http://localhost:3001', description: 'Local Server' }
     ],
     paths: {
+      '/api/v1/me/milestones': {
+        get: {
+          operationId: 'getMyMilestones',
+          summary: 'Return the authenticated reader or writer milestone journey',
+          description: 'Calculates progress from verified app activity, records newly earned milestones idempotently, and excludes automated bot engagement from recognition totals.',
+          responses: {
+            '200': { description: 'Milestone definitions, progress, earned dates, new unlocks, and journey summary' },
+            '401': { description: 'Firebase authentication is required' },
+            '404': { description: 'Profile not found' }
+          }
+        }
+      },
       '/api/v1/spark/feed': {
         get: {
           operationId: 'getFeed',
@@ -2944,6 +2957,7 @@ fastify.patch(
     parseCollectionQuery,
     postIdSchema,
   });
+  await fastify.register(milestoneRoutes, { database, requireUser });
   await fastify.register(adminBotsRoutes, { pool: database, requireUser });
   await fastify.register(mcpRoutes, { pool: database });
 

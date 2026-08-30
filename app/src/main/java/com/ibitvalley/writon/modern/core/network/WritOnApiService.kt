@@ -13,6 +13,9 @@ interface WritOnApiService {
     @GET("api/v1/me")
     suspend fun getMyProfile(): Response<MyProfileResponseDto>
 
+    @GET("api/v1/me/milestones")
+    suspend fun getMyMilestones(): Response<MilestoneJourneyDto>
+
     @PUT("api/v1/me")
     suspend fun upsertMyProfile(
         @Body request: UpsertMyProfileRequestDto

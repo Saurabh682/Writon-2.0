@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.ibitvalley.writon.modern.core.database.dao.UserDao
 import com.ibitvalley.writon.modern.core.network.WritOnApiService
 import com.ibitvalley.writon.modern.core.network.model.MyProfileDto
+import com.ibitvalley.writon.modern.core.network.model.MilestoneJourneyDto
 import com.ibitvalley.writon.modern.core.network.model.PostDto
 import com.ibitvalley.writon.modern.core.network.model.UpsertMyProfileRequestDto
 import com.ibitvalley.writon.modern.data.repository.MediaRepository
@@ -30,6 +31,9 @@ class ProfileViewModel(
     private val _highlights = MutableStateFlow<List<PostDto>>(emptyList())
     val highlights: StateFlow<List<PostDto>> = _highlights
 
+    private val _milestoneJourney = MutableStateFlow<MilestoneJourneyDto?>(null)
+    val milestoneJourney: StateFlow<MilestoneJourneyDto?> = _milestoneJourney
+
     val isLoading = MutableStateFlow(false)
 
     init {
@@ -44,6 +48,15 @@ class ProfileViewModel(
                 if (response.isSuccessful && response.body() != null) {
                     val profile = response.body()!!.profile
                     _userProfile.value = profile
+
+                    try {
+                        val milestoneResponse = apiService.getMyMilestones()
+                        if (milestoneResponse.isSuccessful) {
+                            _milestoneJourney.value = milestoneResponse.body()
+                        }
+                    } catch (_: Exception) {
+                        // Milestones enhance the profile but must never block its core content.
+                    }
 
                     // Fetch user's own stories by authorId or authorPenName
                     val postsResponse = apiService.getPosts(

@@ -236,6 +236,28 @@ data class MyProfileResponseDto(
     @SerializedName("profile") val profile: MyProfileDto
 )
 
+data class MilestoneDto(
+    @SerializedName("key") val key: String,
+    @SerializedName("title") val title: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("icon") val icon: String,
+    @SerializedName("progress") val progress: Int,
+    @SerializedName("target") val target: Int,
+    @SerializedName("earned") val earned: Boolean,
+    @SerializedName("earnedAt") val earnedAt: String?
+)
+
+data class MilestoneSummaryDto(
+    @SerializedName("earned") val earned: Int,
+    @SerializedName("total") val total: Int
+)
+
+data class MilestoneJourneyDto(
+    @SerializedName("milestones") val milestones: List<MilestoneDto>,
+    @SerializedName("newlyEarned") val newlyEarned: List<MilestoneDto>,
+    @SerializedName("summary") val summary: MilestoneSummaryDto
+)
+
 data class AppVersionResponseDto(
     @SerializedName("latestVersionCode") val latestVersionCode: Int,
     @SerializedName("minSupportedVersionCode") val minSupportedVersionCode: Int,

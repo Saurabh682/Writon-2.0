@@ -37,6 +37,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogWindowProvider
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.network.model.PostDto
+import com.ibitvalley.writon.modern.core.network.model.MilestoneDto
+import com.ibitvalley.writon.modern.core.network.model.MilestoneJourneyDto
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.SurfacePaper
@@ -67,12 +69,18 @@ fun ProfileScreen(
     val user by viewModel.userProfile.collectAsState()
     val stories by viewModel.userStories.collectAsState()
     val highlights by viewModel.highlights.collectAsState()
+    val milestoneJourney by viewModel.milestoneJourney.collectAsState()
     val isUpdating by viewModel.isLoading.collectAsState()
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var overflowExpanded by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var profileSaveError by remember { mutableStateOf<String?>(null) }
+    var unlockedMilestone by remember { mutableStateOf<MilestoneDto?>(null) }
+
+    LaunchedEffect(milestoneJourney?.newlyEarned) {
+        unlockedMilestone = milestoneJourney?.newlyEarned?.firstOrNull()
+    }
 
     val name = user?.fullName ?: stringResource(R.string.profile_title)
     val penName = user?.penName ?: ""
@@ -146,6 +154,9 @@ fun ProfileScreen(
                     onFollowingClick = onFollowingClick,
                 )
             }
+            milestoneJourney?.let { journey ->
+                item { MilestoneJourneyCard(journey) }
+            }
             item { ProfileTabs(selectedTab) { selectedTab = it } }
 
             when (selectedTab) {
@@ -205,6 +216,23 @@ fun ProfileScreen(
                         profileSaveError = error.toUserFacingProfileError()
                     }
                 )
+            }
+        )
+    }
+
+    unlockedMilestone?.let { milestone ->
+        AlertDialog(
+            onDismissRequest = { unlockedMilestone = null },
+            title = { Text(stringResource(R.string.profile_milestone_unlocked), fontFamily = ProfileEditorialFamily) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(milestoneSymbol(milestone.icon), fontSize = 36.sp)
+                    Text(milestone.title, style = MaterialTheme.typography.titleLarge, fontFamily = ProfileEditorialFamily)
+                    Text(milestone.description, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { unlockedMilestone = null }) { Text(stringResource(R.string.common_done)) }
             }
         )
     }
@@ -813,6 +841,64 @@ private fun String.toUserFacingProfileError(): String {
         normalized.isBlank() -> "We couldn't save your profile. Please try again."
         else -> normalized.removePrefix("{\"error\":\"").substringBefore("\"}")
     }
+}
+
+@Composable
+private fun MilestoneJourneyCard(journey: MilestoneJourneyDto) {
+    val nextMilestones = journey.milestones
+        .filterNot { it.earned }
+        .sortedByDescending { if (it.target == 0) 0f else it.progress.toFloat() / it.target }
+        .take(3)
+    val earned = journey.milestones.filter { it.earned }.takeLast(3)
+    val visible = if (nextMilestones.isNotEmpty()) nextMilestones else earned
+
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(stringResource(R.string.profile_writer_journey), style = MaterialTheme.typography.titleLarge.copy(fontFamily = ProfileEditorialFamily, fontWeight = FontWeight.Bold))
+                    Text(stringResource(R.string.profile_milestones_count, journey.summary.earned, journey.summary.total), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Text("✦", color = BrandRed, fontSize = 28.sp)
+            }
+            visible.forEach { milestone ->
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Surface(shape = CircleShape, color = if (milestone.earned) BrandRed.copy(alpha = 0.14f) else MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(42.dp)) {
+                        Box(contentAlignment = Alignment.Center) { Text(milestoneSymbol(milestone.icon), fontSize = 20.sp) }
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(milestone.title, fontWeight = FontWeight.SemiBold)
+                        Text(milestone.description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        if (!milestone.earned) {
+                            LinearProgressIndicator(
+                                progress = { if (milestone.target == 0) 0f else milestone.progress.toFloat() / milestone.target },
+                                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+                                color = BrandRed
+                            )
+                            Text("${milestone.progress}/${milestone.target}", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun milestoneSymbol(icon: String): String = when (icon) {
+    "book" -> "▤"
+    "applause" -> "👏"
+    "bookmark" -> "⌑"
+    "comment" -> "◌"
+    "quill" -> "✒"
+    "reader" -> "◉"
+    "compass" -> "◇"
+    "signature" -> "✎"
+    else -> "✦"
 }
 
 

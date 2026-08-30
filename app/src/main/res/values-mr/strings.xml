@@ -224,6 +224,9 @@
     <string name="profile_location_hint">स्थान (उदा. पुणे, महाराष्ट्र)</string>
     <string name="profile_pen_name_hint">टोपणनाव / वापरकर्ता नाव</string>
     <string name="profile_change_photo">प्रोफाइल फोटो निवडा</string>
+    <string name="profile_writer_journey">लेखकाचा प्रवास</string>
+    <string name="profile_milestones_count">%2$d पैकी %1$d टप्पे पूर्ण</string>
+    <string name="profile_milestone_unlocked">नवा टप्पा पूर्ण</string>
     <string name="notif_title">सूचना</string>
     <string name="notif_empty_title">अद्याप कोणत्याही सूचना नाहीत</string>
     <string name="notif_empty_desc">कथेचा क्रियाकलाप येथे दिसेल।</string>

@@ -240,6 +240,9 @@
     <string name="profile_location_hint">स्थान (उदा. मुंबई, भारत)</string>
     <string name="profile_pen_name_hint">उपनाम / उपयोगकर्ता नाम</string>
     <string name="profile_change_photo">प्रोफ़ाइल फ़ोटो चुनें</string>
+    <string name="profile_writer_journey">लेखक की यात्रा</string>
+    <string name="profile_milestones_count">%2$d में से %1$d उपलब्धियाँ अर्जित</string>
+    <string name="profile_milestone_unlocked">उपलब्धि अनलॉक हुई</string>
     <string name="notif_title">सूचनाएं</string>
     <string name="notif_empty_title">अभी तक कोई सूचना नहीं</string>
     <string name="notif_empty_desc">कहानी की गतिविधि यहाँ दिखाई देगी।</string>

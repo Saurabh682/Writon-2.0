@@ -18,7 +18,7 @@ const runtimeEnvironmentSchema = z.object({
   ADMIN_SECRET_KEY: z.string().trim().optional(),
   RENDER: z.enum(['true', 'false']).optional(),
   SPARK_AUTOMATION_ENABLED: z.enum(['true', 'false']).optional(),
-  LATEST_APP_VERSION_CODE: z.coerce.number().int().min(1).default(112),
+  LATEST_APP_VERSION_CODE: z.coerce.number().int().min(1).default(113),
   MIN_SUPPORTED_APP_VERSION_CODE: z.coerce.number().int().min(1).default(101),
   PLAY_STORE_APP_URL: z.string().url().default('https://play.google.com/store/apps/details?id=com.ibitvalley.writon'),
   PUSH_DELIVERY_POLL_INTERVAL_MS: z.coerce.number().int().min(5_000).max(300_000).default(30_000),

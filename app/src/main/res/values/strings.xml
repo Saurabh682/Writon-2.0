@@ -240,6 +240,9 @@
     <string name="profile_location_hint">Location (e.g. San Francisco, CA)</string>
     <string name="profile_pen_name_hint">Pen Name / Username</string>
     <string name="profile_change_photo">Choose profile photo</string>
+    <string name="profile_writer_journey">Writer’s Journey</string>
+    <string name="profile_milestones_count">%1$d of %2$d milestones earned</string>
+    <string name="profile_milestone_unlocked">Milestone unlocked</string>
     <string name="notif_title">Notifications</string>
     <string name="notif_empty_title">No notifications yet</string>
     <string name="notif_empty_desc">Story activity will appear here.</string>
