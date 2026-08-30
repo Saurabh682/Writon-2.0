@@ -1,0 +1,20 @@
+{
+  "hosting": {
+    "site": "writon-api-gateway",
+    "public": "public-api",
+    "ignore": [
+      "firebase.api.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "writon-app-api-canary",
+          "region": "asia-south1"
+        }
+      }
+    ]
+  }
+}

@@ -57,6 +57,21 @@ Never commit `.env`, Firebase JSON, a database URL, or Android signing keys.
 
 Render Blueprints support Docker build contexts, health-check paths, and dashboard-supplied `sync: false` secrets; the generated service URL is public HTTPS. [Render Blueprint reference](https://render.com/docs/blueprint-spec)
 
+## Provider-neutral API and Cloud Run canary
+
+Production Android builds should use `https://api.writon.cc/`, never a Render or Cloud Run hostname. The custom domain is the stable API boundary; its origin can change without publishing a new Android build as long as `/api/v1` remains backward compatible.
+
+The Cloud Run migration is deliberately parallel:
+
+1. Deploy `writon-app-api-canary` in `asia-south1` with zero minimum instances and a conservative maximum instance count.
+2. Keep `SPARK_AUTOMATION_ENABLED=false`; bot automation remains on its dedicated service.
+3. Keep `PUSH_DELIVERY_ENABLED=false` during the canary. The current Render worker continues draining the shared notification outbox so scale-to-zero cannot interrupt notifications.
+4. Configure the database and Supabase service-role values through Secret Manager, and use the Cloud Run service identity for Firebase Admin.
+5. Verify `/health`, authentication, feed, publishing, replies, media uploads, notifications, milestones, story previews, and deep links before routing `api.writon.cc` to the canary.
+6. Retain Render as the rollback origin for at least two Android releases.
+
+See `docs/deployment/cloud-run-migration.md` for the deployment and cutover checklist.
+
 ## Android API configuration
 
 Copy `gradle.properties.example` to either the project `gradle.properties` or your user Gradle properties, then set the appropriate endpoint:

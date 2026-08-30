@@ -1,0 +1,26 @@
+# Cloud Run source deployments use the root Dockerfile and the active server only.
+.git/
+.github/
+.gradle/
+.idea/
+.agents/
+.codex/
+.worktrees/
+app/
+docs/
+graphify-out/
+play_store_assets/
+public/
+scripts/
+web/
+**/node_modules/
+**/build/
+**/.env
+**/.env.*
+!**/.env.example
+**/*.jks
+**/*.keystore
+**/serviceAccountKey*.json
+**/google-services.json
+server/test/
+server/migrations/

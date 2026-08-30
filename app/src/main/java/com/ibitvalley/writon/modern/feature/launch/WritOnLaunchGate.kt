@@ -47,7 +47,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
-data class AppUpdatePrompt(val url: String, val required: Boolean)
+data class AppUpdatePrompt(val url: String, val required: Boolean = true)
+
+internal fun requiredAppUpdatePrompt(
+    installedVersionCode: Int,
+    remoteVersion: AppVersionResponseDto?
+): AppUpdatePrompt? = remoteVersion
+    ?.takeIf { installedVersionCode < it.minSupportedVersionCode }
+    ?.let { AppUpdatePrompt(url = it.updateUrl) }
 
 /** Brief, offline-safe version check wrapped in WritOn's paper editorial opening. */
 @Composable
@@ -70,9 +77,10 @@ fun WritOnLaunchGate(
                 .also(userPreferences::saveAppVersion)
         } ?: userPreferences.cachedAppVersion
 
-        val prompt = version?.takeIf { BuildConfig.VERSION_CODE < it.latestVersionCode }?.let {
-            AppUpdatePrompt(it.updateUrl, BuildConfig.VERSION_CODE < it.minSupportedVersionCode)
-        }
+        // Optional releases never interrupt launch. A stale cached policy must
+        // also never lock a reader out while offline, so only a fresh response
+        // may enforce the minimum supported version.
+        val prompt = requiredAppUpdatePrompt(BuildConfig.VERSION_CODE, remote)
         WritOnTelemetry.versionCheck(
             context = context,
             source = if (remote == null) "cache" else "network",
@@ -89,9 +97,9 @@ fun WritOnLaunchGate(
 fun WritOnAppUpdateDialog(prompt: AppUpdatePrompt, onDismiss: () -> Unit) {
     val context = LocalContext.current
     AlertDialog(
-            onDismissRequest = { if (!prompt.required) onDismiss() },
-            title = { Text(if (prompt.required) "Update required" else "A new WritOn is ready") },
-            text = { Text(if (prompt.required) "This version is no longer supported. Update WritOn to continue safely." else "Update for the latest reading and writing improvements.") },
+            onDismissRequest = {},
+            title = { Text("Update required") },
+            text = { Text("This version is no longer supported. Update WritOn to continue safely.") },
             confirmButton = {
                 TextButton(onClick = {
                     context.startActivitySafely(Intent(Intent.ACTION_VIEW, Uri.parse(prompt.url)))
@@ -99,9 +107,7 @@ fun WritOnAppUpdateDialog(prompt: AppUpdatePrompt, onDismiss: () -> Unit) {
                     Text("Update")
                 }
             },
-            dismissButton = if (!prompt.required) {
-                { TextButton(onClick = onDismiss) { Text("Later") } }
-            } else null
+            dismissButton = null
         )
 }
 

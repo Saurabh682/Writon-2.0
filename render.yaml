@@ -23,6 +23,9 @@ services:
         value: "https://writon-powerup.onrender.com"
       - key: LATEST_APP_VERSION_CODE
         value: "113"
+      # Advance only after Google Play confirms that the build is available.
+      - key: PUBLISHED_APP_VERSION_CODE
+        value: "108"
       - key: DATABASE_URL
         sync: false
       - key: FIREBASE_SERVICE_ACCOUNT_JSON

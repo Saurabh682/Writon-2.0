@@ -188,7 +188,9 @@ const firebaseApp = auth
       ? initializeApp({ credential: cert(serviceAccount) })
       : initializeApp({ projectId: 'writon-app-2020' })));
 const firebaseAuth = auth ?? (firebaseApp ? getAuth(firebaseApp) : null);
-const firebaseMessaging = messaging ?? (serviceAccount && firebaseApp ? getMessaging(firebaseApp) : null);
+// On Google Cloud, Firebase Admin uses Application Default Credentials from the
+// Cloud Run service identity. Render can continue supplying an explicit key.
+const firebaseMessaging = messaging ?? (firebaseApp ? getMessaging(firebaseApp) : null);
 
 const database = pool ?? new Pool({
   connectionString: config.databaseUrl,
@@ -2982,16 +2984,18 @@ if (isEntrypoint) {
     if (runtimeConfig.sparkAutomationEnabled) {
       startSparkScheduler(database, 15);
     }
-    const runPushDelivery = async () => {
-      try {
-        const outcome = await fastify.deliverPushNotifications();
-        if (outcome.processed > 0) fastify.log.info(outcome, 'Processed push notification delivery work');
-      } catch (error) {
-        fastify.log.error({ err: error }, 'Push notification delivery pass failed');
-      }
-    };
-    void runPushDelivery();
-    setInterval(() => { void runPushDelivery(); }, runtimeConfig.pushDeliveryPollIntervalMs).unref();
+    if (runtimeConfig.pushDeliveryEnabled) {
+      const runPushDelivery = async () => {
+        try {
+          const outcome = await fastify.deliverPushNotifications();
+          if (outcome.processed > 0) fastify.log.info(outcome, 'Processed push notification delivery work');
+        } catch (error) {
+          fastify.log.error({ err: error }, 'Push notification delivery pass failed');
+        }
+      };
+      void runPushDelivery();
+      setInterval(() => { void runPushDelivery(); }, runtimeConfig.pushDeliveryPollIntervalMs).unref();
+    }
   } catch (error) {
     fastify.log.error(error);
     process.exit(1);

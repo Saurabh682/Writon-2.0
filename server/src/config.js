@@ -19,8 +19,10 @@ const runtimeEnvironmentSchema = z.object({
   RENDER: z.enum(['true', 'false']).optional(),
   SPARK_AUTOMATION_ENABLED: z.enum(['true', 'false']).optional(),
   LATEST_APP_VERSION_CODE: z.coerce.number().int().min(1).default(113),
+  PUBLISHED_APP_VERSION_CODE: z.coerce.number().int().min(1).default(108),
   MIN_SUPPORTED_APP_VERSION_CODE: z.coerce.number().int().min(1).default(101),
   PLAY_STORE_APP_URL: z.string().url().default('https://play.google.com/store/apps/details?id=com.ibitvalley.writon'),
+  PUSH_DELIVERY_ENABLED: z.enum(['true', 'false']).default('true'),
   PUSH_DELIVERY_POLL_INTERVAL_MS: z.coerce.number().int().min(5_000).max(300_000).default(30_000),
 });
 
@@ -66,8 +68,10 @@ export function loadRuntimeConfig(environment = process.env) {
       ? values.SPARK_AUTOMATION_ENABLED === 'true'
       : values.RENDER !== 'true',
     latestAppVersionCode: values.LATEST_APP_VERSION_CODE,
+    publishedAppVersionCode: values.PUBLISHED_APP_VERSION_CODE,
     minSupportedAppVersionCode: values.MIN_SUPPORTED_APP_VERSION_CODE,
     playStoreAppUrl: values.PLAY_STORE_APP_URL,
+    pushDeliveryEnabled: values.PUSH_DELIVERY_ENABLED === 'true',
     pushDeliveryPollIntervalMs: values.PUSH_DELIVERY_POLL_INTERVAL_MS,
   };
 }

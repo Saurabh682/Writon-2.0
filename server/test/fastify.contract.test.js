@@ -10,6 +10,7 @@ const runtimeConfig = {
   databaseSslRejectUnauthorized: false,
   corsOrigins: [],
   latestAppVersionCode: 113,
+  publishedAppVersionCode: 108,
   minSupportedAppVersionCode: 101,
   playStoreAppUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
   publicApiBaseUrl: 'https://api.writon.test',
@@ -184,6 +185,16 @@ describe('Fastify API contract', () => {
     }).sparkAutomationEnabled).toBe(true);
   });
 
+  it('allows request-serving Cloud Run instances to leave push polling to the active worker', () => {
+    const baseEnvironment = { DATABASE_URL: runtimeConfig.databaseUrl };
+
+    expect(loadRuntimeConfig(baseEnvironment).pushDeliveryEnabled).toBe(true);
+    expect(loadRuntimeConfig({
+      ...baseEnvironment,
+      PUSH_DELIVERY_ENABLED: 'false',
+    }).pushDeliveryEnabled).toBe(false);
+  });
+
   it('renders a WritOn story preview with escaped metadata and the author photo', async () => {
     const app = await createApp();
 
@@ -208,7 +219,7 @@ describe('Fastify API contract', () => {
 
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({
-      latestVersionCode: 113,
+      latestVersionCode: 108,
       minSupportedVersionCode: 101,
       updateUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
     });

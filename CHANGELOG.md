@@ -7,7 +7,21 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.11 (Version Code: 113)`
+- **Current Version**: `2.0.12 (Version Code: 114)`
+
+### Respectful app-update experience
+
+- Removed optional update modals from app launch so ordinary releases never interrupt reading.
+- Restricted blocking prompts to a fresh server response where the installed build is below the minimum supported version.
+- Prevented stale cached update policies from locking readers out while offline.
+- Separated internal build numbers from the version confirmed installable through Google Play.
+
+### Provider-neutral API migration preparation
+
+- Defined `api.writon.cc` as the stable API boundary so future hosting-provider changes do not require an Android update.
+- Added a parallel Cloud Run canary and rollback checklist while keeping Render as the active origin.
+- Added independent push-delivery polling control so a scale-to-zero request service cannot compete with the active Render notification worker.
+- Enabled Firebase Admin Messaging to use Google Cloud Application Default Credentials without a committed service-account key.
 
 ### WritOn Milestones
 
@@ -23,6 +37,18 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - Kept the existing avatar unchanged when a profile is edited without selecting a new photo.
 
 ---
+
+## [2.1.0] - 2026-08-30
+
+### Official Brand Domain & Warm Editorial Landing Page
+- Launched custom domain `writon.cc` mapped to Firebase Hosting with automated Google SSL encryption.
+- Built and deployed a warm editorial landing page featuring 3D mobile previews, live category discovery tabs, and direct Google Play install CTAs.
+- Added full Google Play policy compliance suite:
+  - `privacy-policy.html`: Complete data retention, usage, and security policies.
+  - `terms.html`: Author copyright protection and community guidelines.
+  - `child-safety.html`: Zero-tolerance child safety standards and reporting channels.
+  - `delete-account.html`: Instant in-app and email-based user account and data deletion workflows.
+- Registered `writon.cc` deep links (`/posts/*` and `/stories/*`) in `AndroidManifest.xml`.
 
 ## [Unreleased] - 2026-08-29
 
