@@ -1,5 +1,6 @@
 import { getAuthenticFallbackArticle } from './curated-articles.js';
 import { formatMemoriesForPrompt } from './learning-service.js';
+import { attachHashtagsAndWatermark } from './watermark-service.js';
 
 /**
  * Gemini Spark Client
@@ -9,9 +10,9 @@ import { formatMemoriesForPrompt } from './learning-service.js';
 function cleanJsonText(rawText) {
   if (!rawText || typeof rawText !== 'string') return '{}';
   let cleaned = rawText.trim();
-  const match = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-  if (match) {
-    cleaned = match[1];
+  // Only strip markdown fences if the ENTIRE payload is wrapped in ```json ... ```
+  if (cleaned.startsWith('```')) {
+    cleaned = cleaned.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
   }
   return cleaned.trim();
 }
@@ -47,7 +48,15 @@ export function validateContentSafety(content, title = '') {
   };
 }
 
-export async function callGeminiApi({ apiKey, model = 'gemini-2.0-flash', prompt, systemInstruction = '', temperature = 0.7, maxTokens = 2048, timeoutMs = 15000 }) {
+export async function callGeminiApi({
+  apiKey,
+  model = process.env.GEMINI_MODEL || 'gemini-2.5-flash',
+  prompt,
+  systemInstruction = '',
+  temperature = 0.7,
+  maxTokens = 8192,
+  timeoutMs = 30000
+}) {
   if (!apiKey) {
     throw new Error('Gemini API key is not configured.');
   }
@@ -63,8 +72,9 @@ export async function callGeminiApi({ apiKey, model = 'gemini-2.0-flash', prompt
     ],
     generationConfig: {
       temperature,
-      maxOutputTokens: maxTokens,
+      maxOutputTokens: maxTokens || 8192,
       topP: 0.95,
+      responseMimeType: 'application/json'
     }
   };
 
@@ -102,13 +112,31 @@ export async function callGeminiApi({ apiKey, model = 'gemini-2.0-flash', prompt
   }
 }
 
-export async function generateSparkArticle({ apiKey, model, persona, category, topicHint, excludeTitles = [], memories = [] }) {
-  const activeApiKey = apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+export async function generateSparkArticle({ apiKey, model, persona, category, topicHint, researchDossier = null, excludeTitles = [], memories = [] }) {
+  const activeApiKey = apiKey !== undefined ? apiKey : (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
   if (!activeApiKey) {
-    return generateFallbackArticle(persona, category, topicHint, excludeTitles);
+    return generateFallbackArticle(persona, category, topicHint, excludeTitles, researchDossier);
   }
 
   const memoryBlock = formatMemoriesForPrompt(memories);
+  const researchBlock = researchDossier ? `
+===================================================================
+ONLINE TREND RESEARCH & FACTUAL BRIEFING (VERIFIED SOURCES):
+- Trending Topic: "${researchDossier.topic}"
+- Category: ${category}
+${researchDossier.newsReports?.length ? `- Verified News Headlines & Reports:
+${researchDossier.newsReports.map(r => `  * "${r.headline}" — Published by ${r.source} (${r.pubDate || 'Recent'})`).join('\n')}` : ''}
+${researchDossier.knowledgeSummary ? `- Background Knowledge & Definitions:
+  ${researchDossier.knowledgeSummary.title}: ${researchDossier.knowledgeSummary.description || ''}
+  ${researchDossier.knowledgeSummary.extract}` : ''}
+${researchDossier.verifiedContext ? `- Factual Context: ${researchDossier.verifiedContext}` : ''}
+
+FACTUAL GROUNDING & LITERARY TRUTH RULES:
+1. ACCURACY: You MUST ground your writing in the genuine facts, events, technical details, or real-world background provided above. NEVER invent fake dates, false claims, or imaginary technical jargon.
+2. LITERARY CRAFT OVER NEWS CLIPPINGS: Do NOT write a dry news report. Transform these real-world events into rich, human, evocative literature—exploring what this moment reveals about society, craft, ambition, silence, or human nature.
+3. AUTHENTIC PERSONA: Write strictly through ${persona.fullName}'s cognitive lens and perspective.
+===================================================================
+` : '';
 
   const prompt = `You are writing a new editorial piece for the publishing app 'WritOn'.
 Your Persona Details:
@@ -117,7 +145,7 @@ Bio: ${persona.bio}
 Writing Style & Cognitive Lens:
 ${persona.personaPrompt}
 
-${memoryBlock ? `${memoryBlock}\n` : ''}Target Category: ${category}
+${memoryBlock ? `${memoryBlock}\n` : ''}${researchBlock ? `${researchBlock}\n` : ''}Target Category: ${category}
 ${topicHint ? `Topic/Theme guidance: ${topicHint}` : 'Choose a timely, evocative, and compelling topic suited to your persona and category.'}
 ${excludeTitles?.length ? `Do NOT write about or use any of the following already published titles:\n${excludeTitles.map(t => `- "${t}"`).join('\n')}` : ''}
 
@@ -126,6 +154,7 @@ Editorial Quality Rules:
 - Structure: Start in media res with a vivid sensory scene or concrete engineering/life moment. Avoid symmetrical 3-bullet listicles.
 - Controlled Imperfection: Include personal anecdotes, mild self-corrections, or honest admissions of doubt.
 - Length: Full, comprehensive article between 450 and 800 words. Format with clean Markdown headers (###), pull quotes (>), and code/stanzas where appropriate.
+- Thematic Hashtags: Conclude the article with 3-4 atmospheric hashtags (e.g. #ShortStories #UrbanNarratives #Reflections or #Tech #SystemsArchitecture) separated by spaces on the final line.
 
 Please return a strictly valid JSON object with the following structure:
 {
@@ -138,29 +167,61 @@ Please return a strictly valid JSON object with the following structure:
 Ensure the response is raw JSON without extraneous commentary.`;
 
   try {
-    const rawOutput = await callGeminiApi({
-      apiKey: activeApiKey,
-      model: model || 'gemini-2.0-flash',
-      prompt,
-      systemInstruction: 'You are an acclaimed writer generating authentic literature with a distinctive voice. Output strictly valid JSON without boilerplate.',
-      temperature: 0.85
-    });
+    // Route deep essays and philosophy to Pro model tier; route fast items to Flash tier
+    const targetModel = model || (
+      ['Essays', 'Philosophy', 'Short Stories'].includes(category)
+        ? (process.env.GEMINI_PRO_MODEL || 'gemini-3.1-pro-preview')
+        : (process.env.GEMINI_MODEL || 'gemini-3.5-flash')
+    );
+
+    // Model failover ladder to survive temporary Google 503 capacity spikes
+    const candidateModels = [
+      targetModel,
+      'gemini-3.8-flash',
+      'gemini-3.5-flash',
+      'gemini-3.1-flash-lite',
+      'gemini-2.5-flash'
+    ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);
+
+    let rawOutput = null;
+    let lastError = null;
+
+    for (const attemptModel of candidateModels) {
+      try {
+        rawOutput = await callGeminiApi({
+          apiKey: activeApiKey,
+          model: attemptModel,
+          prompt,
+          systemInstruction: 'You are an acclaimed writer generating authentic literature with a distinctive voice. Output strictly valid JSON without boilerplate.',
+          temperature: 0.85
+        });
+        if (rawOutput) break;
+      } catch (err) {
+        lastError = err;
+        console.warn(`[Gemini Spark Client] Model ${attemptModel} failed (${err.message}). Trying next in ladder...`);
+      }
+    }
+
+    if (!rawOutput) {
+      throw lastError || new Error('All candidate Gemini models failed.');
+    }
 
     const parsed = JSON.parse(cleanJsonText(rawOutput));
+    const rawContent = parsed.content?.trim() || 'Content generated by WritOn writer.';
     return {
       title: parsed.title?.trim() || `Reflections on ${category}`,
       summary: parsed.summary?.trim() || null,
-      content: parsed.content?.trim() || 'Content generated by WritOn writer.',
+      content: attachHashtagsAndWatermark(rawContent, category, parsed.themeKeyword),
       themeKeyword: parsed.themeKeyword || category
     };
   } catch (error) {
     console.warn(`[Gemini Spark Client] API call failed, using fallback generator: ${error.message}`);
-    return generateFallbackArticle(persona, category, topicHint, excludeTitles);
+    return generateFallbackArticle(persona, category, topicHint, excludeTitles, researchDossier);
   }
 }
 
 export async function generateSparkComment({ apiKey, model, persona, postTitle, postCategory, postExcerpt, existingComments }) {
-  const activeApiKey = apiKey || process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  const activeApiKey = apiKey !== undefined ? apiKey : (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
   if (!activeApiKey) {
     return generateFallbackComment(persona, postTitle, postCategory);
   }
@@ -197,7 +258,7 @@ Return strictly a JSON object:
   try {
     const rawOutput = await callGeminiApi({
       apiKey: activeApiKey,
-      model: model || 'gemini-2.0-flash-lite',
+      model: model || process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite',
       prompt,
       systemInstruction: 'You are an active community member engaging in thoughtful literary and cultural discourse. Output raw JSON only.',
       temperature: 0.8
@@ -211,8 +272,8 @@ Return strictly a JSON object:
   }
 }
 
-function generateFallbackArticle(persona, category, topicHint, excludeTitles = []) {
-  return getAuthenticFallbackArticle(persona, category, topicHint, excludeTitles);
+function generateFallbackArticle(persona, category, topicHint, excludeTitles = [], researchDossier = null) {
+  return getAuthenticFallbackArticle(persona, category, topicHint, excludeTitles, researchDossier);
 }
 
 function generateFallbackComment(persona, postTitle, category = 'Essays') {

@@ -16,9 +16,18 @@ export async function appMetaRoutes(fastify, { config, database }) {
   fastify.get('/api/v1/app/version', async () => ({
     // Advertise only a build users can install from Google Play. Internal/CI
     // version codes must never trigger a public update prompt.
-    latestVersionCode: config.publishedAppVersionCode ?? 108,
+    latestVersionCode: config.publishedAppVersionCode ?? 128,
     minSupportedVersionCode: config.minSupportedAppVersionCode ?? 101,
     updateUrl: config.playStoreAppUrl ?? 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+    reviewPrompt: {
+      enabled: config.reviewPromptEnabled ?? false,
+      rolloutPercent: config.reviewPromptRolloutPercent ?? 0,
+      minimumVersionCode: config.reviewPromptMinVersionCode ?? 120,
+      excludedVersionCodes: config.reviewPromptExcludedVersionCodes ?? [],
+      eligibilityVersion: 'review_eligibility_v1',
+      readerEnabled: config.reviewPromptReaderEnabled ?? false,
+      writerEnabled: config.reviewPromptWriterEnabled ?? false,
+    },
   }));
 
   fastify.get('/health', async () => {

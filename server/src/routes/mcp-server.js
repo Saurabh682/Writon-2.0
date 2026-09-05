@@ -28,6 +28,8 @@ import {
   updateBacklogIdeaStatus,
   addAntiRepetitionPattern
 } from '../bot-engine/editorial-ledger-service.js';
+import { getLiveDailyTrends, seedDailyTrendsToBacklog } from '../bot-engine/trend-scout-service.js';
+import { PUBLISHABLE_STORY_CATEGORIES } from '../domain/story-categories.js';
 
 export const MCP_PROTOCOL_VERSION = '2024-11-05';
 export const SERVER_INFO = {
@@ -60,7 +62,7 @@ export const WRITON_TOOLS = [
         },
         category: {
           type: 'string',
-          enum: ['Tech', 'Poetry', 'Shayari', 'Short Stories', 'Essays', 'Philosophy', 'Humour', 'Culture', 'Reviews'],
+          enum: PUBLISHABLE_STORY_CATEGORIES,
           description: 'The thematic category of the story.'
         },
         coverImageUrl: {
@@ -79,6 +81,7 @@ export const WRITON_TOOLS = [
       properties: {
         category: {
           type: 'string',
+          enum: PUBLISHABLE_STORY_CATEGORIES,
           description: 'Optional category filter (e.g. "Tech", "Poetry", "Philosophy").'
         },
         limit: {
@@ -484,6 +487,22 @@ export const WRITON_TOOLS = [
           description: 'Optional date filter (YYYY-MM-DD). Defaults to today.'
         }
       }
+    }
+  },
+  {
+    name: 'writon_scout_daily_trends',
+    description: 'Discover real-time trending topics from Google Trends (India & Global) and X/Twitter discourse, classified into WritOn genres with recommended author personas and literary angles.',
+    inputSchema: {
+      type: 'object',
+      properties: {}
+    }
+  },
+  {
+    name: 'writon_seed_trends_to_backlog',
+    description: 'Automatically discover live daily trending topics and seed them into the WritOn editorial ideas backlog for upcoming writer pulses.',
+    inputSchema: {
+      type: 'object',
+      properties: {}
     }
   }
 ];
@@ -1174,6 +1193,16 @@ export async function executeMcpTool(pool, toolName, args) {
     const { date } = args;
     const state = await getEditorialState(pool, date);
     return state;
+  }
+
+  if (toolName === 'writon_scout_daily_trends') {
+    const trends = await getLiveDailyTrends();
+    return trends;
+  }
+
+  if (toolName === 'writon_seed_trends_to_backlog') {
+    const result = await seedDailyTrendsToBacklog(pool);
+    return result;
   }
 
   throw new Error(`Unknown tool name: ${toolName}`);

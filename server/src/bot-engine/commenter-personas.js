@@ -57,7 +57,7 @@ export const RAW_COMMENTER_DATA = [
     bio: 'Backend engineer. Pragmatic, loves elegant database schema & low latency.',
     categories: ['Tech', 'Essays'],
     tone: 'pragmatic_tech',
-    quickReactions: ['Spot on.', 'Clean explanation.', 'So true.', 'Clean writeup.', 'Bookmarked.', 'Hits home.', 'Nicely put.', 'Solid points.'],
+    quickReactions: ['Spot on.', 'Clean explanation.', 'So true.', 'Clean writeup.', 'Well articulated.', 'Hits home.', 'Nicely put.', 'Solid points.'],
     mediumTemplates: [
       'The point about system complexity hits home. We often over-engineer when simpler abstractions suffice.',
       'Really liked the architecture perspective here. Especially regarding failure recovery.',
@@ -155,7 +155,7 @@ export const RAW_COMMENTER_DATA = [
     bio: 'Cloud infra specialist and developer advocate.',
     categories: ['Tech', 'Essays'],
     tone: 'cloud_eng',
-    quickReactions: ['Bookmarked!', 'Great read.', 'Spot on.', 'Super helpful.'],
+    quickReactions: ['Insightful read.', 'Great read.', 'Spot on.', 'Super helpful.'],
     mediumTemplates: [
       'The cost-versus-latency trade-off here is so well articulated.',
       'Clear, actionable, and straight to the point. Great contribution to the community.'
@@ -764,31 +764,35 @@ export const CURATED_COMMENTER_PERSONAS = RAW_COMMENTER_DATA.map((c, index) => {
 
 /**
  * Multi-Tier Authentic Comment Generator:
- * Generates natural comments following the 65% Micro / 25% Medium / 10% In-Depth rule.
+ * Enforces the 1:10 ratio:
+ * - 90% (9 in 10): 1-2-3 words short punchy comments ("Loved this.", "So true.", "Spot on.", "100%", "Great read.", "Wah!", "Bookmarked.", "Deep.")
+ * - 10% (1 in 10): Simple, plain daily English conversational comments (no floral or academic phrasing).
  */
 export function generateAuthenticComment(commenter, { postTitle = '', category = 'Essays', snippet = '', depth = 'auto' } = {}) {
-  const chosenDepth = depth === 'auto'
-    ? (Math.random() < 0.65 ? 'micro' : Math.random() < 0.90 ? 'medium' : 'deep')
-    : depth;
+  const isShort = depth === 'short' || depth === 'micro' || (depth === 'auto' && Math.random() < 0.90);
 
-  if (chosenDepth === 'micro') {
-    const list = commenter.quickReactions || ['Wah!', 'So true.', 'Spot on.', 'Loved this perspective.'];
+  if (isShort) {
+    const list = (commenter && commenter.quickReactions && commenter.quickReactions.length > 0)
+      ? commenter.quickReactions
+      : ['Loved this.', 'So true.', 'Spot on.', '100%', 'Great read.', 'Well said.', 'So real.', 'Felt this.', 'Insightful read.', 'Nice one.', 'Solid.'];
     return list[Math.floor(Math.random() * list.length)];
   }
 
-  if (chosenDepth === 'medium') {
-    const templates = commenter.mediumTemplates || [
-      'Really resonated with this perspective. Well written!',
-      'Such a thoughtful piece. Thanks for sharing this.'
-    ];
-    return templates[Math.floor(Math.random() * templates.length)];
+  // Long comment (1 in 10 ratio): strictly simple, plain, everyday conversational English
+  const PLAIN_ENGLISH_FALLBACKS = [
+    'I had this exact thing happen to me at work last week. Really well put.',
+    'The way you explained this made a lot of sense. Thanks for sharing.',
+    'This reminded me of my morning train rides back home. Very good read.',
+    'I was just talking to a friend about this yesterday. Such good timing.',
+    'Honestly this made my morning. Simple and very relatable.',
+    'I really liked the second half of this. Put a lot of things in perspective.',
+    'Spot on with this one. We really need to slow down and notice these things more.',
+    'I never thought about it this way before, but it makes total sense.'
+  ];
+
+  if (commenter && commenter.mediumTemplates && commenter.mediumTemplates.length > 0) {
+    return commenter.mediumTemplates[Math.floor(Math.random() * commenter.mediumTemplates.length)];
   }
 
-  // Deep comment fallback
-  if (commenter.mediumTemplates && commenter.mediumTemplates.length > 0) {
-    const base = commenter.mediumTemplates[Math.floor(Math.random() * commenter.mediumTemplates.length)];
-    return base + (postTitle ? ' Especially in how you framed "' + postTitle.trim() + '".' : '');
-  }
-
-  return 'A truly profound read. The emotional depth and clarity here are remarkable.';
+  return PLAIN_ENGLISH_FALLBACKS[Math.floor(Math.random() * PLAIN_ENGLISH_FALLBACKS.length)];
 }

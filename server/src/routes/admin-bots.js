@@ -42,6 +42,7 @@ import {
 } from '../bot-engine/editorial-ledger-service.js';
 import { CURATED_BOT_PERSONAS } from '../bot-engine/curated-personas.js';
 import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from '../bot-engine/commenter-personas.js';
+import { getLiveDailyTrends, seedDailyTrendsToBacklog } from '../bot-engine/trend-scout-service.js';
 
 const botUpdateSchema = z.object({
   isActive: z.boolean().optional(),
@@ -767,6 +768,26 @@ export async function adminBotsRoutes(fastify, options) {
       limit $2
     `, [category, limit]);
     return { count: result.rows.length, stories: result.rows };
+  });
+
+  // Live Daily Trends Discovery (Google Trends & X/Twitter Discourse)
+  fastify.get('/api/v1/spark/trends', async () => {
+    try {
+      const trends = await getLiveDailyTrends();
+      return { success: true, ...trends };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Seed Daily Trends directly into Editorial Backlog
+  fastify.post('/api/v1/spark/trends/seed', async (request, reply) => {
+    try {
+      const result = await seedDailyTrendsToBacklog(pool);
+      return reply.code(201).send(result);
+    } catch (error) {
+      return reply.code(500).send({ error: error.message });
+    }
   });
 
   // Spark ingest: open for automated bot publishing / ChatGPT Actions

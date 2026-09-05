@@ -1,0 +1,21 @@
+services:
+  writon-staging-postgres:
+    image: postgres:17-alpine
+    container_name: writon-staging-postgres
+    environment:
+      POSTGRES_DB: writon_staging
+      POSTGRES_USER: writon_staging
+      POSTGRES_PASSWORD: local_staging_only
+    ports:
+      - "127.0.0.1:55432:5432"
+    volumes:
+      - writon-staging-postgres-data:/var/lib/postgresql/data
+      - ./server/staging/bootstrap:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U writon_staging -d writon_staging"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  writon-staging-postgres-data:

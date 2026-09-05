@@ -8,7 +8,10 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "db:import-legacy-postgres": "node src/db/import-legacy-postgres.mjs --dry-run",
-    "test": "vitest run --no-file-parallelism test/fastify.contract.test.js test/spark-bot-engine.test.js test/milestone-service.test.js"
+    "db:daily-digest-ledger": "node src/scripts/apply-daily-digest-ledger.mjs",
+    "db:staging:engagement-preferences": "node src/scripts/apply-engagement-preferences-staging.mjs",
+    "verify:staging:engagement-preferences": "node src/scripts/verify-engagement-preferences-api-staging.mjs",
+    "test": "vitest run --no-file-parallelism test/fastify.contract.test.js test/spark-bot-engine.test.js test/trend-scout.test.js test/seo-sitemap.test.js test/milestone-service.test.js test/campaign-redirect.test.js test/feed-ranking.test.js test/feed-route.test.js test/watermark-service.test.js test/social-card-generator.test.js test/daily-digest.test.js test/fcm-analytics-label.test.js test/story-categories.test.js test/engagement-preferences.test.js test/staging-database-guard.test.js"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",
@@ -21,6 +24,7 @@
     "pg": "^8.23.0",
     "sharp": "^0.35.3",
     "slugify": "^1.6.6",
+    "twitter-api-v2": "^1.29.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { buildServer, supabaseStorageHeaders } from '../src/server.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { buildServer, sendFoundRedirect, supabaseStorageHeaders } from '../src/server.js';
 import { loadRuntimeConfig } from '../src/config.js';
 
 const runtimeConfig = {
@@ -15,6 +15,34 @@ const runtimeConfig = {
   playStoreAppUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
   publicApiBaseUrl: 'https://api.writon.test',
 };
+
+it('builds a media redirect without depending on Fastify redirect argument order', () => {
+  const calls = [];
+  const reply = {
+    code(statusCode) {
+      calls.push(['code', statusCode]);
+      return this;
+    },
+    header(name, value) {
+      calls.push(['header', name, value]);
+      return this;
+    },
+    send() {
+      calls.push(['send']);
+      return 'sent';
+    },
+    redirect() {
+      throw new Error('The version-specific redirect overload must not be used.');
+    },
+  };
+
+  expect(sendFoundRedirect(reply, 'https://project.supabase.co/object/sign/avatar')).toBe('sent');
+  expect(calls).toEqual([
+    ['code', 302],
+    ['header', 'Location', 'https://project.supabase.co/object/sign/avatar'],
+    ['send'],
+  ]);
+});
 
 function profileRow(id = 'test-user') {
   return {
@@ -72,7 +100,7 @@ function sharedStoryRow() {
     category: 'Poetry',
     coverImage: 'https://images.example.com/cover.jpg',
     authorName: 'Kavya Nair',
-    authorAvatarUrl: 'https://images.example.com/kavya.jpg',
+    authorAvatarUrl: 'https://api.writon.test/api/v1/media/profiles%2Ftest-user%2F33333333-3333-4333-8333-333333333333.webp',
   };
 }
 
@@ -117,6 +145,7 @@ describe('Fastify API contract', () => {
 
   afterEach(async () => {
     await Promise.all(apps.splice(0).map((app) => app.close()));
+    vi.unstubAllGlobals();
   });
 
   async function createApp() {
@@ -164,6 +193,36 @@ describe('Fastify API contract', () => {
     expect(response.json().error).toBe('Invalid feed query');
   });
 
+  it('returns the ordered database category catalog including categories with no stories yet', async () => {
+    const categoryRows = [
+      { name: 'Reviews', count: 19 },
+      { name: 'Journal', count: 0 },
+      { name: 'Science & Health', count: 0 },
+      { name: 'Business & Finance', count: 0 },
+      { name: 'Sports', count: 0 },
+      { name: 'Entertainment', count: 0 },
+    ];
+    const queries = [];
+    const pool = {
+      query: async (sql, params) => {
+        queries.push({ sql, params });
+        return { rows: categoryRows, rowCount: categoryRows.length };
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const response = await app.inject({ method: 'GET', url: '/api/v1/tags' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ tags: categoryRows });
+    expect(queries).toHaveLength(1);
+    expect(queries[0].sql).toContain('from public.story_categories category');
+    expect(queries[0].sql).toContain("category.category_type = 'content'");
+    expect(queries[0].sql).toContain('order by category.display_order asc');
+    expect(queries[0].params).toEqual([null]);
+  });
+
   it('rejects private library collections before querying the database', async () => {
     const app = await createApp();
 
@@ -206,6 +265,37 @@ describe('Fastify API contract', () => {
     }).pushDeliveryEnabled).toBe(false);
   });
 
+  it('keeps the in-process daily digest timer disabled unless explicitly requested', () => {
+    const baseEnvironment = { DATABASE_URL: runtimeConfig.databaseUrl };
+
+    expect(loadRuntimeConfig(baseEnvironment).dailyDigestEnabled).toBe(false);
+    expect(loadRuntimeConfig({
+      ...baseEnvironment,
+      DAILY_DIGEST_ENABLED: 'true',
+    }).dailyDigestEnabled).toBe(true);
+  });
+
+  it('keeps review prompts fail-closed unless deployment explicitly enables them', () => {
+    const baseEnvironment = { DATABASE_URL: runtimeConfig.databaseUrl };
+    const defaults = loadRuntimeConfig(baseEnvironment);
+    expect(defaults.reviewPromptEnabled).toBe(false);
+    expect(defaults.reviewPromptRolloutPercent).toBe(0);
+    expect(defaults.reviewPromptReaderEnabled).toBe(false);
+    expect(defaults.reviewPromptWriterEnabled).toBe(false);
+
+    const enabled = loadRuntimeConfig({
+      ...baseEnvironment,
+      REVIEW_PROMPT_ENABLED: 'true',
+      REVIEW_PROMPT_ROLLOUT_PERCENT: '10',
+      REVIEW_PROMPT_READER_ENABLED: 'true',
+      REVIEW_PROMPT_WRITER_ENABLED: 'true',
+    });
+    expect(enabled.reviewPromptEnabled).toBe(true);
+    expect(enabled.reviewPromptRolloutPercent).toBe(10);
+    expect(enabled.reviewPromptReaderEnabled).toBe(true);
+    expect(enabled.reviewPromptWriterEnabled).toBe(true);
+  });
+
   it('renders a WritOn story preview with escaped metadata and the author photo', async () => {
     const app = await createApp();
 
@@ -215,7 +305,9 @@ describe('Fastify API contract', () => {
     expect(response.headers['content-type']).toContain('text/html');
     expect(response.body).toContain('<meta property="og:site_name" content="WritOn">');
     expect(response.body).toContain('Monsoon &lt;Letters&gt; — WritOn');
-    expect(response.body).toContain('https://images.example.com/kavya.jpg');
+    expect(response.body).toContain(
+      'https://api.writon.test/api/v1/media/profiles%2Ftest-user%2F33333333-3333-4333-8333-333333333333.webp'
+    );
     expect(response.body).toContain('Written by');
     expect(response.body).toContain('Kavya Nair');
     expect(response.body).toContain('Open in WritOn');
@@ -233,6 +325,15 @@ describe('Fastify API contract', () => {
       latestVersionCode: 108,
       minSupportedVersionCode: 101,
       updateUrl: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+      reviewPrompt: {
+        enabled: false,
+        rolloutPercent: 0,
+        minimumVersionCode: 120,
+        excludedVersionCodes: [],
+        eligibilityVersion: 'review_eligibility_v1',
+        readerEnabled: false,
+        writerEnabled: false,
+      },
     });
   });
 
@@ -271,6 +372,86 @@ describe('Fastify API contract', () => {
     }
   });
 
+  it('allows the authenticated scheduler secret to run the daily digest without a user session', async () => {
+    // Production defect caught: Cloud Scheduler cannot supply a Firebase user token,
+    // so combining requireUser with the scheduler secret makes the job unreachable.
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes("p.status = 'published'") && sql.includes("interval '24 hours'")) {
+          return { rows: [{ total: 0, by_category: null }], rowCount: 1 };
+        }
+        throw new Error(`Unexpected daily-digest query: ${sql}`);
+      },
+    };
+    const app = await buildServer({
+      runtimeConfig: { ...runtimeConfig, adminSecretKey: 'scheduler-secret' },
+      pool,
+      auth,
+      messaging: { send: vi.fn() },
+    });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/spark/daily-digest/test',
+      headers: { 'x-admin-key': 'scheduler-secret' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ skipped: true, reason: 'No new stories today' });
+  });
+
+  it('exposes the daily digest on a production internal scheduler route', async () => {
+    // Production defect caught: the only trigger route is named as a manual test
+    // route, leaving deployment automation without a stable operational contract.
+    const pool = {
+      query: async () => ({ rows: [{ total: 0, by_category: null }], rowCount: 1 }),
+    };
+    const app = await buildServer({
+      runtimeConfig: { ...runtimeConfig, adminSecretKey: 'scheduler-secret' },
+      pool,
+      auth,
+      messaging: { send: vi.fn() },
+    });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/internal/notifications/daily-digest',
+      headers: { 'x-admin-key': 'scheduler-secret' },
+    });
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  it.each([0, 12, 17, 32])('accepts %i reading interests with the unchanged response contract', async (count) => {
+    const client = { query: vi.fn(async () => ({ rows: [], rowCount: 0 })), release: vi.fn() };
+    const app = await buildServer({ runtimeConfig, auth, pool: { ...createPool(), connect: async () => client } });
+    apps.push(app);
+    const topicIds = Array.from({ length: count }, (_, index) => `topic_${index}`);
+    const response = await app.inject({
+      method: 'PUT', url: '/api/v1/me/interests',
+      headers: { authorization: 'Bearer test-token' }, payload: { topicIds },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toEqual({ topicIds });
+    expect(client.query).toHaveBeenCalledWith('commit');
+    expect(client.release).toHaveBeenCalledOnce();
+  });
+
+  it('rejects more than 32 interests without replacing saved choices', async () => {
+    const connect = vi.fn();
+    const app = await buildServer({ runtimeConfig, auth, pool: { ...createPool(), connect } });
+    apps.push(app);
+    const response = await app.inject({
+      method: 'PUT', url: '/api/v1/me/interests',
+      headers: { authorization: 'Bearer test-token' },
+      payload: { topicIds: Array.from({ length: 33 }, (_, index) => `topic_${index}`) },
+    });
+    expect(response.statusCode).toBe(400);
+    expect(connect).not.toHaveBeenCalled();
+  });
+
   it('protects profile-stat lists and reading interests before querying the database', async () => {
     const app = await createApp();
 
@@ -281,6 +462,12 @@ describe('Fastify API contract', () => {
       app.inject({ method: 'GET', url: '/api/v1/me/following' }),
       app.inject({ method: 'GET', url: '/api/v1/me/interests' }),
       app.inject({ method: 'PUT', url: '/api/v1/me/interests', payload: { topicIds: ['poetry'] } }),
+      app.inject({ method: 'GET', url: '/api/v1/me/engagement-preferences' }),
+      app.inject({
+        method: 'PUT',
+        url: '/api/v1/me/engagement-preferences',
+        payload: { primaryIntent: null, onboardingVersion: 0, onboardingCompletedAt: null, preferenceCardState: 'unseen' },
+      }),
     ]);
 
     for (const response of responses) {
@@ -290,13 +477,48 @@ describe('Fastify API contract', () => {
   });
 
   it('returns compact card data from the feed and leaves full content for the reader endpoint', async () => {
-    const app = await createApp();
+    const queries = [];
+    const pool = {
+      query: async (sql) => {
+        queries.push(sql);
+        if (sql.includes('from public.posts p')) return { rows: [feedPostRow()], rowCount: 1 };
+        throw new Error(`Unexpected compact-feed query: ${sql}`);
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
 
     const response = await app.inject({ method: 'GET', url: '/api/v1/posts?limit=1' });
 
     expect(response.statusCode).toBe(200);
     expect(response.json().posts).toHaveLength(1);
     expect(response.json().posts[0].content).toBe('');
+    expect(queries[0]).toContain("p.provenance = 'human_verified'");
+    expect(queries[0]).toContain("author.account_type = 'human'");
+  });
+
+  it('removes legacy third-party avatar URLs from reader-facing feed responses', async () => {
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('from public.posts p')) {
+          return {
+            rows: [{
+              ...feedPostRow(),
+              author: { ...feedPostRow().author, avatarUrl: 'https://tracker.example/reader-pixel.png' },
+            }],
+            rowCount: 1,
+          };
+        }
+        throw new Error(`Unexpected unsafe-avatar feed query: ${sql}`);
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const response = await app.inject({ method: 'GET', url: '/api/v1/posts?limit=1' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().posts[0].author.avatarUrl).toBeNull();
   });
 
   it('requires authentication for the following feed and filters it by followed authors', async () => {
@@ -347,6 +569,233 @@ describe('Fastify API contract', () => {
       expect(response.statusCode).toBe(401);
       expect(response.json()).toEqual({ error: 'Authentication required' });
     }
+  });
+
+  it('serves encoded profile-media paths through the stable media route', async () => {
+    const signedMediaUrl = 'https://project.supabase.co/storage/v1/object/sign/writon-media/profiles/test-user/avatar.webp?token=signed';
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({ signedURL: signedMediaUrl }),
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    const app = await buildServer({
+      runtimeConfig: {
+        ...runtimeConfig,
+        supabaseUrl: 'https://project.supabase.co',
+        supabaseServiceRoleKey: 'sb_secret_test_service_role_key',
+        supabaseStorageBucket: 'writon-media',
+      },
+      pool: createPool(),
+      auth,
+    });
+    apps.push(app);
+
+    const responses = await Promise.all([
+      app.inject({
+        method: 'GET',
+        url: '/api/v1/media/profiles%2Ftest-user%2F11111111-1111-4111-8111-111111111111.webp',
+      }),
+      app.inject({
+        method: 'GET',
+        url: '/api/v1/media/profiles/test-user/11111111-1111-4111-8111-111111111111.webp',
+      }),
+    ]);
+
+    for (const response of responses) {
+      expect(response.statusCode).toBe(302);
+      expect(response.headers.location).toBe(signedMediaUrl);
+    }
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://project.supabase.co/storage/v1/object/sign/writon-media/profiles/test-user/11111111-1111-4111-8111-111111111111.webp',
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
+  it('streams legacy profile media whose storage key cannot be used in a Supabase signed URL', async () => {
+    const image = Buffer.from('RIFF0000WEBP', 'ascii');
+    const fetchMock = vi.fn(async () => new Response(image, {
+      status: 200,
+      headers: { 'Content-Type': 'image/webp' },
+    }));
+    vi.stubGlobal('fetch', fetchMock);
+    const app = await buildServer({
+      runtimeConfig: {
+        ...runtimeConfig,
+        supabaseUrl: 'https://project.supabase.co',
+        supabaseServiceRoleKey: 'sb_secret_test_service_role_key',
+        supabaseStorageBucket: 'writon-media',
+      },
+      pool: createPool(),
+      auth,
+    });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/v1/media/profiles%2Flegacy%3Ausr_leg_73%2F11111111-1111-4111-8111-111111111111.webp',
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers['content-type']).toBe('image/webp');
+    expect(response.headers['cache-control']).toContain('max-age=300');
+    expect(response.rawPayload).toEqual(image);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://project.supabase.co/storage/v1/object/authenticated/writon-media/profiles/legacy%3Ausr_leg_73/11111111-1111-4111-8111-111111111111.webp',
+      expect.objectContaining({
+        headers: expect.objectContaining({ apikey: 'sb_secret_test_service_role_key' }),
+      }),
+    );
+    expect(fetchMock.mock.calls[0][1].headers).not.toHaveProperty('Authorization');
+  });
+
+  it('accepts an authenticated profile image and stores a normalized WebP object', async () => {
+    const fetchMock = vi.fn(async () => ({ ok: true, status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const app = await buildServer({
+      runtimeConfig: {
+        ...runtimeConfig,
+        supabaseUrl: 'https://project.supabase.co',
+        supabaseServiceRoleKey: 'sb_secret_test_service_role_key',
+        supabaseStorageBucket: 'writon-media',
+      },
+      pool: createPool(),
+      auth,
+    });
+    apps.push(app);
+
+    const boundary = '----writon-profile-photo-boundary';
+    const onePixelPng = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+      'base64',
+    );
+    const payload = Buffer.concat([
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="avatar.png"\r\nContent-Type: image/png\r\n\r\n`,
+      ),
+      onePixelPng,
+      Buffer.from(`\r\n--${boundary}--\r\n`),
+    ]);
+
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/media/upload',
+      headers: {
+        authorization: 'Bearer test-token',
+        'content-type': `multipart/form-data; boundary=${boundary}`,
+      },
+      payload,
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.json()).toMatchObject({
+      key: expect.stringMatching(/^profiles\/test-user\/[a-f0-9-]+\.webp$/),
+      url: expect.stringMatching(/^https:\/\/api\.writon\.test\/api\/v1\/media\/profiles%2Ftest-user%2F[a-f0-9-]+\.webp$/),
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toMatch(
+      /^https:\/\/project\.supabase\.co\/storage\/v1\/object\/writon-media\/profiles\/test-user\/[a-f0-9-]+\.webp$/,
+    );
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({
+      method: 'POST',
+      headers: expect.objectContaining({ 'Content-Type': 'image/webp', 'x-upsert': 'false' }),
+      body: expect.any(Buffer),
+    });
+  });
+
+  it.each([
+    'http://api.writon.cc/api/v1/media/profiles%2Ftest-user%2F11111111-1111-4111-8111-111111111111.webp',
+    'https://tracker.example/avatar.png',
+    'file:///data/user/0/com.ibitvalley.writon/private-avatar.png',
+  ])('rejects an unsafe profile-photo URL: %s', async (avatarUrl) => {
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        throw new Error(`Profile validation should reject the URL before this query: ${sql}`);
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: '/api/v1/me',
+      headers: { authorization: 'Bearer test-token' },
+      payload: { avatarUrl },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toMatchObject({ error: 'Invalid profile update' });
+  });
+
+  it('canonicalizes a legacy WritOn avatar URL and removes the replaced storage object', async () => {
+    const oldKey = 'profiles/test-user/11111111-1111-4111-8111-111111111111.webp';
+    const newKey = 'profiles/test-user/22222222-2222-4222-8222-222222222222.webp';
+    const legacyAvatarUrl = `https://writon-app-api-canary-rfusi3iwbq-el.a.run.app/api/v1/media/${encodeURIComponent(newKey)}`;
+    const expectedAvatarUrl = `https://api.writon.test/api/v1/media/${encodeURIComponent(newKey)}`;
+    const fetchMock = vi.fn(async () => ({ ok: true, status: 200, json: async () => [] }));
+    vi.stubGlobal('fetch', fetchMock);
+    const transactionQueries = [];
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        throw new Error(`Unexpected profile replacement query outside transaction: ${sql}`);
+      },
+      connect: async () => ({
+        query: async (sql, params) => {
+          transactionQueries.push({ sql, params });
+          if (sql === 'begin' || sql === 'commit' || sql === 'rollback') {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql.includes('update public.profiles')) {
+            return {
+              rows: [{
+                ...profileRow(),
+                avatar_url: expectedAvatarUrl,
+                previous_avatar_url: `https://api.writon.test/api/v1/media/${encodeURIComponent(oldKey)}`,
+              }],
+              rowCount: 1,
+            };
+          }
+          throw new Error(`Unexpected profile replacement transaction query: ${sql}`);
+        },
+        release: () => {},
+      }),
+    };
+    const app = await buildServer({
+      runtimeConfig: {
+        ...runtimeConfig,
+        supabaseUrl: 'https://project.supabase.co',
+        supabaseServiceRoleKey: 'sb_secret_test_service_role_key',
+        supabaseStorageBucket: 'writon-media',
+      },
+      pool,
+      auth,
+    });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: '/api/v1/me',
+      headers: { authorization: 'Bearer test-token' },
+      payload: { avatarUrl: legacyAvatarUrl },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().profile.avatarUrl).toBe(expectedAvatarUrl);
+    expect(transactionQueries.find(({ sql }) => sql.includes('update public.profiles')).params[5]).toBe(expectedAvatarUrl);
+    expect(fetchMock).toHaveBeenCalledWith(
+      'https://project.supabase.co/storage/v1/object/writon-media',
+      expect.objectContaining({
+        method: 'DELETE',
+        body: JSON.stringify({ prefixes: [oldKey] }),
+      }),
+    );
   });
 
   it('keeps desired applause and bookmark state stable when a retry repeats the same request', async () => {
@@ -430,6 +879,126 @@ describe('Fastify API contract', () => {
       expect(first.json()).toMatchObject({ [interaction.responseKey]: true, [interaction.countKey]: 1 });
       expect(retry.json()).toEqual(first.json());
     }
+  });
+
+  it('delivers an interaction push before the successful mutation response completes', async () => {
+    // Production defect caught: Cloud Run can suspend the timer after the HTTP request,
+    // leaving a committed interaction notification without a delivery attempt.
+    const postId = '11111111-1111-1111-1111-111111111111';
+    const notificationId = '22222222-2222-4222-8222-222222222222';
+    const deliveryId = '33333333-3333-4333-8333-333333333333';
+    let outboxReady = false;
+    let deliveryStatus = 'pending';
+    let claimedDeliveryLimit = null;
+    const send = vi.fn(async () => 'projects/test/messages/1');
+    const pool = {
+      query: async (sql, params) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'reader-user' }], rowCount: 1 };
+        }
+        if (sql.includes('insert into public.profiles')) {
+          return { rows: [profileRow('reader-user')], rowCount: 1 };
+        }
+        if (sql.includes('with candidates as')) {
+          claimedDeliveryLimit = params?.[0] ?? null;
+          if (!outboxReady || deliveryStatus !== 'pending') return { rows: [], rowCount: 0 };
+          deliveryStatus = 'sending';
+          return {
+            rows: [{ id: deliveryId, notificationId, recipientId: 'writer-user', attempts: 1 }],
+            rowCount: 1,
+          };
+        }
+        if (sql.includes('from public.notifications notification') && sql.includes('where notification.id = $1')) {
+          return {
+            rows: [{
+              kind: 'applaud',
+              message: 'applauded your story',
+              postId,
+              postTitle: 'A story worth reading',
+              actorName: 'A Reader',
+            }],
+            rowCount: 1,
+          };
+        }
+        if (sql.includes('from public.device_push_tokens')) {
+          return { rows: [{ id: 'token-row-1', token: 'fcm-token-value' }], rowCount: 1 };
+        }
+        if (sql.includes("set status = 'sent'")) {
+          deliveryStatus = 'sent';
+          return { rows: [], rowCount: 1 };
+        }
+        throw new Error(`Unexpected push-delivery query outside transaction: ${sql}`);
+      },
+      connect: async () => ({
+        query: async (sql) => {
+          if (sql === 'begin' || sql === 'commit' || sql === 'rollback') {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql.includes('from public.posts') && sql.includes('for update')) {
+            return {
+              rows: [{ id: postId, author_id: 'writer-user', likes_count: 0, bookmarks_count: 0, comments_count: 0 }],
+              rowCount: 1,
+            };
+          }
+          if (sql.includes('insert into public.post_applauds')) {
+            return { rows: [{ inserted: true }], rowCount: 1 };
+          }
+          if (sql.includes('returning likes_count as count')) {
+            return { rows: [{ count: 1 }], rowCount: 1 };
+          }
+          if (sql.includes('insert into public.notifications')) {
+            return { rows: [{ id: notificationId }], rowCount: 1 };
+          }
+          if (sql.includes('from public.notification_preferences')) {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql.includes('insert into public.notification_delivery_outbox')) {
+            outboxReady = true;
+            return { rows: [], rowCount: 1 };
+          }
+          throw new Error(`Unexpected push-delivery transaction query: ${sql}`);
+        },
+        release: () => {},
+      }),
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth, messaging: { send } });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'PUT',
+      url: `/api/v1/posts/${postId}/like`,
+      headers: { authorization: 'Bearer test-token' },
+      payload: { enabled: true },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(send).toHaveBeenCalledTimes(1);
+    expect(deliveryStatus).toBe('sent');
+    expect(claimedDeliveryLimit).toBe(1);
+    expect(send.mock.calls[0][0]).toMatchObject({
+      notification: {
+        title: 'A Reader applauded your story',
+        body: '“A story worth reading”',
+      },
+      data: {
+        kind: 'applaud',
+        actorName: 'A Reader',
+        storyTitle: 'A story worth reading',
+      },
+      fcmOptions: {
+        analyticsLabel: 'interaction_applaud',
+      },
+      android: {
+        fcmOptions: {
+          analyticsLabel: 'interaction_applaud',
+        },
+        notification: {
+          channelId: 'writon_interactions_channel',
+          icon: 'ic_stat_writon',
+          color: '#E75A2A',
+        },
+      },
+    });
   });
 
   it('returns the original comment and increments the counter once when an idempotent comment is retried', async () => {
@@ -787,6 +1356,85 @@ describe('Fastify API contract', () => {
       { sql: 'commit', params: undefined },
     ]);
     expect(deletedFirebaseUsers).toEqual(['account-owner']);
+  });
+
+  it('removes every stored profile image after account deletion succeeds', async () => {
+    const storageCalls = [];
+    vi.stubGlobal('fetch', vi.fn(async (url, options) => {
+      storageCalls.push({ url, options });
+      if (String(url).includes('/object/list/')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => [
+            { name: '11111111-1111-4111-8111-111111111111.webp' },
+            { name: '22222222-2222-4222-8222-222222222222.webp' },
+          ],
+        };
+      }
+      return { ok: true, status: 200, json: async () => [] };
+    }));
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'legacy-profile' }], rowCount: 1 };
+        }
+        throw new Error(`Unexpected account-media query outside transaction: ${sql}`);
+      },
+      connect: async () => ({
+        query: async (sql) => {
+          if (sql === 'begin' || sql === 'commit' || sql === 'rollback') {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql === 'delete from public.profiles where id = $1 returning id') {
+            return { rows: [{ id: 'legacy-profile' }], rowCount: 1 };
+          }
+          throw new Error(`Unexpected account-media transaction query: ${sql}`);
+        },
+        release: () => {},
+      }),
+    };
+    const deletionAuth = {
+      verifyIdToken: async () => ({ uid: 'account-owner', email: 'owner@example.com', email_verified: true }),
+      deleteUser: async () => {},
+    };
+    const app = await buildServer({
+      runtimeConfig: {
+        ...runtimeConfig,
+        supabaseUrl: 'https://project.supabase.co',
+        supabaseServiceRoleKey: 'sb_secret_test_service_role_key',
+        supabaseStorageBucket: 'writon-media',
+      },
+      pool,
+      auth: deletionAuth,
+    });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'DELETE',
+      url: '/api/v1/me',
+      headers: { authorization: 'Bearer test-token' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(storageCalls).toHaveLength(2);
+    expect(JSON.parse(storageCalls[0].options.body)).toMatchObject({
+      prefix: 'profiles/legacy-profile/',
+      limit: 1000,
+      offset: 0,
+    });
+    expect(storageCalls[1]).toMatchObject({
+      url: 'https://project.supabase.co/storage/v1/object/writon-media',
+      options: {
+        method: 'DELETE',
+        body: JSON.stringify({
+          prefixes: [
+            'profiles/legacy-profile/11111111-1111-4111-8111-111111111111.webp',
+            'profiles/legacy-profile/22222222-2222-4222-8222-222222222222.webp',
+          ],
+        }),
+      },
+    });
   });
 
   it('rolls back account deletion and preserves Firebase access when the database delete fails', async () => {

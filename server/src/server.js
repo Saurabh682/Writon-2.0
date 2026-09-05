@@ -14,27 +14,81 @@ import { getMessaging } from 'firebase-admin/messaging';
 import { z } from 'zod';
 import { loadFirebaseServiceAccount, loadRuntimeConfig } from './config.js';
 import { adminBotsRoutes } from './routes/admin-bots.js';
+import { adminReviewsRoutes } from './routes/admin-reviews.js';
 import { appMetaRoutes } from './routes/app-meta.js';
+import { seoRoutes, renderDiscoveryDeckHtml } from './routes/seo-routes.js';
 import { notificationRoutes } from './routes/notifications.js';
+import { engagementPreferenceRoutes } from './routes/engagement-preferences.js';
 import { triggerSparkReaction, triggerSparkCommentReaction, startSparkScheduler } from './bot-engine/spark-runner.js';
+import { startMasterDailyScheduler } from './bot-engine/master-scheduler.js';
 import { mcpRoutes } from './routes/mcp-server.js';
 import { milestoneRoutes } from './routes/milestones.js';
+import { campaignRedirectRoutes } from './routes/campaign-redirect.js';
+import { feedRoutes } from './routes/feed.js';
+import { cleanExpiredFeedData } from './services/feed-service.js';
+import { toFcmAnalyticsLabel } from './services/fcm-analytics-label.js';
+import { runDailyDigest } from './jobs/daily-digest.js';
+import { runDailyCampaignPublish } from './jobs/social-campaign-publisher.js';
+import { attachHashtagsAndWatermark, stripWatermark } from './bot-engine/watermark-service.js';
+import { PUBLISHABLE_STORY_CATEGORIES } from './domain/story-categories.js';
+import fs from 'node:fs/promises';
 
 const { Pool } = pg;
+
+const profileMediaKeyPattern = /^profiles\/[A-Za-z0-9:_-]+\/[a-f0-9-]+\.webp$/i;
+const trustedWritOnMediaHosts = new Set([
+  'api.writon.cc',
+  'writon-powerup.onrender.com',
+  'writon-api-rfusi3iwbq-el.a.run.app',
+  'writon-api-802112841589.asia-south1.run.app',
+  'writon-app-api-canary-rfusi3iwbq-el.a.run.app',
+]);
+
+function decodedProfileMediaKey(value) {
+  try {
+    const decoded = decodeURIComponent(String(value ?? '').replace(/^\/+/, ''));
+    return profileMediaKeyPattern.test(decoded) ? decoded : null;
+  } catch {
+    return null;
+  }
+}
+
+function profileMediaKeyFromUrl(value, configuredBaseUrl) {
+  try {
+    const url = new URL(value);
+    const configuredHost = configuredBaseUrl ? new URL(configuredBaseUrl).hostname.toLowerCase() : null;
+    const hostname = url.hostname.toLowerCase();
+    if (
+      url.protocol !== 'https:'
+      || url.username
+      || url.password
+      || url.search
+      || url.hash
+      || (!trustedWritOnMediaHosts.has(hostname) && hostname !== configuredHost)
+    ) {
+      return null;
+    }
+    const mediaPrefix = '/api/v1/media/';
+    if (!url.pathname.startsWith(mediaPrefix)) return null;
+    return decodedProfileMediaKey(url.pathname.slice(mediaPrefix.length));
+  } catch {
+    return null;
+  }
+}
 
 const profileInputSchema = z.object({
   penName: z.string().trim().toLowerCase().min(3).max(32)
     .regex(/^[a-z0-9_]+$/, 'Username may contain only lowercase letters, numbers, and underscores.'),
   fullName: z.string().trim().min(2).max(80),
   bio: z.string().trim().max(500).nullable().optional(),
-  avatarUrl: z.string().url().max(2_000).nullable().optional(),
+  avatarUrl: z.string().trim().max(2_000).nullable().optional(),
   location: z.string().trim().max(120).nullable().optional(),
 });
 
 const profilePatchSchema = z.object({
   fullName: z.string().trim().min(2).max(80).optional(),
   bio: z.string().trim().max(500).nullable().optional(),
-  avatarUrl: z.string().url().max(2_000).nullable().optional(),
+  avatarUrl: z.string().trim().max(2_000).nullable().optional(),
   location: z.string().trim().max(120).nullable().optional(),
   quoteOfDay: z.string().trim().max(280).nullable().optional(),
 }).refine((value) => Object.keys(value).length > 0, 'At least one profile field is required.');
@@ -53,10 +107,11 @@ const postInputSchema = z.object({
   title: z.string().trim().min(3).max(160),
   content: z.string().trim().min(1).max(100_000),
   summary: z.string().trim().max(500).nullable().optional(),
-  category: z.string().trim().min(2).max(80),
+  category: z.enum(PUBLISHABLE_STORY_CATEGORIES),
   coverImage: z.string().url().max(2_000).nullable().optional(),
   isPublished: z.boolean().default(true),
   clientDraftId: z.string().uuid().optional(),
+  languageCode: z.enum(['en', 'hi', 'bn', 'mr', 'es', 'fr', 'ur', 'und']).default('und'),
 });
 
 const postPatchSchema = postInputSchema.partial().refine(
@@ -77,7 +132,7 @@ const relationStateInputSchema = z.object({
 const interestsInputSchema = z.object({
   topicIds: z.array(
     z.string().trim().min(1).max(64).regex(/^[a-z0-9_]+$/, 'Invalid topic identifier.')
-  ).max(12),
+  ).max(32),
 });
 
 const collectionQuerySchema = z.object({
@@ -87,7 +142,7 @@ const collectionQuerySchema = z.object({
 
 const readingProgressInputSchema = z.object({
   progress: z.coerce.number().min(0).max(1).default(0.05),
-  readSeconds: z.coerce.number().int().min(0).max(86_400).default(0),
+  readSeconds: z.coerce.number().int().min(0).max(60).default(0),
 });
 
 const postIdSchema = z.string().uuid();
@@ -103,16 +158,44 @@ export function supabaseStorageHeaders(apiKey, extraHeaders = {}) {
   return headers;
 }
 
+// Fastify 4 used redirect(statusCode, url), while Fastify 5 uses
+// redirect(url, statusCode). Building the response explicitly keeps profile
+// media compatible across a rolling deployment where both versions can run.
+export function sendFoundRedirect(reply, url) {
+  return reply.code(302).header('Location', url).send();
+}
+
 const storyShareCss = `
 :root{color-scheme:light;--paper:#f8f2e9;--ink:#26211d;--muted:#756b61;--rust:#c94724;--line:#ded4c8}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-main{min-height:100vh;display:grid;place-items:center;padding:32px 20px}.story{width:min(680px,100%);border-top:4px solid var(--rust);padding:36px 0}
+main{min-height:100vh;display:grid;place-items:center;padding:32px 20px;padding-bottom:80px}.story{width:min(680px,100%);border-top:4px solid var(--rust);padding:36px 0}
 .brand{font:600 18px Georgia,serif;letter-spacing:.02em}.eyebrow{margin:42px 0 14px;color:var(--rust);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
-h1{margin:0;font:600 clamp(38px,7vw,68px)/1.04 Georgia,"Times New Roman",serif;letter-spacing:-.025em}.summary{margin:24px 0 30px;font:400 20px/1.65 Georgia,"Times New Roman",serif;color:#4f4740}
-.author{display:flex;align-items:center;gap:14px;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.author img,.avatar-fallback{width:64px;height:64px;border-radius:50%;object-fit:cover;background:#eee3d6}
-.avatar-fallback{display:grid;place-items:center;color:var(--rust);font:600 23px Georgia,serif}.byline{margin:0 0 3px;color:var(--muted);font-size:13px}.author-name{margin:0;font-weight:700}
-.cta{display:inline-flex;min-height:48px;align-items:center;justify-content:center;margin-top:30px;padding:0 24px;border-radius:999px;background:var(--rust);color:#fff;text-decoration:none;font-weight:700}.store-link{display:inline-block;margin-left:16px;color:var(--muted);font-size:14px}.tagline{margin-top:42px;color:var(--muted);font:italic 16px Georgia,serif}
-@media(max-width:520px){main{place-items:start;padding:22px}.story{padding-top:26px}.eyebrow{margin-top:34px}.summary{font-size:18px}}
+h1{margin:0;font:600 clamp(36px,6vw,60px)/1.08 Georgia,"Times New Roman",serif;letter-spacing:-.025em}.summary{margin:20px 0 26px;font:400 20px/1.6 Georgia,"Times New Roman",serif;color:#4f4740}
+.author{display:flex;align-items:center;gap:14px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.author img,.avatar-fallback{width:56px;height:56px;border-radius:50%;object-fit:cover;background:#eee3d6}
+.avatar-fallback{display:grid;place-items:center;color:var(--rust);font:600 20px Georgia,serif}.byline{margin:0 0 2px;color:var(--muted);font-size:12px}.author-name{margin:0;font-weight:700;font-size:15px}
+.story-body{margin-top:28px;font:400 18px/1.8 Georgia,"Times New Roman",serif;color:#2c2621}
+.story-body h2{margin:36px 0 16px;font:600 26px/1.2 Georgia,serif}
+.story-body h3{margin:28px 0 12px;font:600 20px/1.3 Georgia,serif}
+.story-body h4{margin:22px 0 10px;font:600 18px/1.3 Georgia,serif}
+.story-body p{margin:0 0 20px}
+.story-body strong{color:var(--ink);font-weight:700}
+.story-body ol{margin:0 0 22px;padding-left:26px;line-height:1.75}
+.story-body ol li{margin-bottom:10px;padding-left:4px}
+.story-body ul{margin:0 0 22px;padding-left:26px;line-height:1.75}
+.story-body ul li{margin-bottom:8px}
+.story-body blockquote{margin:28px 0;padding:16px 22px;border-left:3px solid var(--rust);background:rgba(201,71,36,0.05);border-radius:0 10px 10px 0;font:italic 18px/1.65 Georgia,serif;color:#3f3730}
+.story-body blockquote p{margin:0}
+.story-body code{font-family:monospace;background:#eee3d6;padding:2px 6px;border-radius:4px;font-size:0.9em}
+.story-body a{color:var(--rust);text-decoration:underline}
+.story-divider{border:none;border-top:1px solid var(--line);margin:36px auto;width:60%}
+.story-hashtags{margin-top:24px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:8px;font:500 14px system-ui,-apple-system,sans-serif}
+.story-hashtags .hashtag{color:var(--rust);background:#eee3d6;padding:4px 10px;border-radius:999px;font-weight:600}
+.writon-watermark{opacity:0;position:absolute;pointer-events:none;font-size:0;width:0;height:0;overflow:hidden;user-select:none;display:inline-block;line-height:0}
+.cta{display:inline-flex;min-height:46px;align-items:center;justify-content:center;padding:0 22px;border-radius:999px;background:var(--rust);color:#fff;text-decoration:none;font-weight:700;font-size:14px}.store-link{display:inline-block;margin-left:16px;color:var(--muted);font-size:14px;text-decoration:underline}.tagline{margin-top:36px;color:var(--muted);font:italic 15px Georgia,serif}
+.sticky-app-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(248,242,233,0.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;z-index:100;box-shadow:0 -4px 12px rgba(0,0,0,0.06)}
+.sticky-app-bar .bar-text{font-size:13px;font-weight:600;color:var(--ink)}
+.sticky-app-bar .bar-btn{background:var(--rust);color:#fff;text-decoration:none;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px}
+@media(max-width:520px){main{place-items:start;padding:20px;padding-bottom:70px}.story{padding-top:24px}.eyebrow{margin-top:30px}.summary{font-size:18px}}
 `;
 
 function escapeHtml(value) {
@@ -122,6 +205,65 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+}
+
+function formatContentToHtml(rawContent) {
+  if (!rawContent) return '';
+  const hasWatermark = rawContent.includes('#writon');
+  const cleanRaw = rawContent.replace(/<!--\s*#writon\s*watermark\s*-->/gi, '').replace(/<span\b[^>]*class=["']writon-watermark["'][^>]*>[\s\S]*?<\/span>/gi, '');
+  const escaped = escapeHtml(cleanRaw);
+  const formatted = escaped
+    .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    .replace(/^(?:---|___|\*\*\*)$/gim, '<hr class="story-divider">')
+    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/_(.*?)_/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[(.*?)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    .split(/\n\n+/)
+    .map(chunk => {
+      const trimmed = chunk.trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('<h') || trimmed.startsWith('<hr')) return trimmed;
+
+      // Hashtags block
+      if (/^#[a-zA-Z0-9_]+(?:\s+#[a-zA-Z0-9_]+)*$/.test(trimmed)) {
+        const tags = trimmed.split(/\s+/).map(t => `<span class="hashtag">${t}</span>`).join(' ');
+        return `<div class="story-hashtags">${tags}</div>`;
+      }
+
+      const lines = trimmed.split(/\n/);
+
+      // Blockquotes (> or &gt;)
+      if (lines.every(l => /^(?:&gt;|>)/.test(l.trim()))) {
+        const quoteContent = lines.map(l => l.trim().replace(/^(?:&gt;|>)\s*/, '')).join('<br>');
+        return `<blockquote><p>${quoteContent}</p></blockquote>`;
+      }
+
+      // Numbered Lists (1. , 2. )
+      if (lines.every(l => /^\d+\.\s+/.test(l.trim()))) {
+        const items = lines.map(l => `<li>${l.trim().replace(/^\d+\.\s+/, '')}</li>`).join('');
+        return `<ol>${items}</ol>`;
+      }
+
+      // Unordered Lists (- , * , • )
+      if (lines.every(l => /^(?:[-*•]|&bull;)\s+/.test(l.trim()))) {
+        const items = lines.map(l => `<li>${l.trim().replace(/^(?:[-*•]|&bull;)\s+/, '')}</li>`).join('');
+        return `<ul>${items}</ul>`;
+      }
+
+      return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
+    })
+    .filter(Boolean)
+    .join('\n');
+
+  return hasWatermark
+    ? `${formatted}\n<span class="writon-watermark" style="opacity:0;position:absolute;pointer-events:none;font-size:0;width:0;height:0;overflow:hidden;user-select:none;display:inline-block;line-height:0;" aria-hidden="true">#writon</span>`
+    : formatted;
 }
 
 function shareDescription(story) {
@@ -159,29 +301,110 @@ function requestOrigin(request, configuredBaseUrl) {
   return `${protocol}://${host}`;
 }
 
-function renderStorySharePage({ story, canonicalUrl, playStoreUrl }) {
+function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
   const title = `${story.title} — WritOn`;
   const description = shareDescription(story);
-  const imageUrl = safePublicImageUrl(story.authorAvatarUrl, story.coverImage);
+  const authorVisualUrl = safePublicImageUrl(story.authorAvatarUrl, story.coverImage);
+  const ogImageUrl = safePublicImageUrl(story.coverImage, story.authorAvatarUrl);
   const authorInitials = String(story.authorName || 'WritOn')
     .trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('');
-  const imageMetadata = imageUrl
-    ? `<meta property="og:image" content="${escapeHtml(imageUrl)}"><meta property="og:image:alt" content="Portrait of ${escapeHtml(story.authorName)}"><meta name="twitter:image" content="${escapeHtml(imageUrl)}">`
+  const imageMetadata = ogImageUrl
+    ? `<meta property="og:image" content="${escapeHtml(ogImageUrl)}"><meta property="og:image:alt" content="Cover illustration for ${escapeHtml(story.title)}"><meta name="twitter:image" content="${escapeHtml(ogImageUrl)}">`
     : '';
-  const authorVisual = imageUrl
-    ? `<img src="${escapeHtml(imageUrl)}" alt="Portrait of ${escapeHtml(story.authorName)}">`
+  const authorVisual = authorVisualUrl
+    ? `<img src="${escapeHtml(authorVisualUrl)}" alt="Portrait of ${escapeHtml(story.authorName)}">`
     : `<div class="avatar-fallback" aria-hidden="true">${escapeHtml(authorInitials || 'W')}</div>`;
   const canonical = new URL(canonicalUrl);
-  const appIntentUrl = `intent://${canonical.host}${canonical.pathname}#Intent;scheme=https;package=com.ibitvalley.writon;S.browser_fallback_url=${encodeURIComponent(playStoreUrl)};end`;
+  const playStoreTrackingUrl = `${playStoreUrl}?utm_source=google_search&utm_medium=story_web&utm_campaign=${encodeURIComponent(story.slug || 'story')}`;
+  const appIntentUrl = `intent://${canonical.host}${canonical.pathname}#Intent;scheme=https;package=com.ibitvalley.writon;S.browser_fallback_url=${encodeURIComponent(playStoreTrackingUrl)};end`;
+
+  const formattedBody = formatContentToHtml(story.content || story.summary || '');
+  const publishedDateIso = new Date(story.publishedAt || story.createdAt || Date.now()).toISOString();
+  const modifiedDateIso = new Date(story.updatedAt || story.publishedAt || story.createdAt || Date.now()).toISOString();
+
+  // JSON-LD Schema.org Structured Data
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: story.title,
+    description,
+    articleBody: (story.content || story.summary || '').replace(/\s+/g, ' ').trim().slice(0, 5000),
+    url: canonicalUrl,
+    mainEntityOfPage: canonicalUrl,
+    datePublished: publishedDateIso,
+    dateModified: modifiedDateIso,
+    articleSection: story.category || 'Literature',
+    author: {
+      '@type': 'Person',
+      name: story.authorName || 'WritOn Author'
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'WritOn',
+      url: origin || 'https://writon.cc'
+    }
+  };
+  if (ogImageUrl) {
+    jsonLd.image = [ogImageUrl];
+  }
 
   return `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(title)}</title><meta name="description" content="${escapeHtml(description)}"><link rel="canonical" href="${escapeHtml(canonicalUrl)}"><link rel="stylesheet" href="/stories/share.css">
-<meta property="og:type" content="article"><meta property="og:site_name" content="WritOn"><meta property="og:url" content="${escapeHtml(canonicalUrl)}"><meta property="og:title" content="${escapeHtml(title)}"><meta property="og:description" content="${escapeHtml(description)}">${imageMetadata}
-<meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escapeHtml(title)}"><meta name="twitter:description" content="${escapeHtml(description)}"></head>
-<body><main><article class="story"><div class="brand">WritOn</div><p class="eyebrow">${escapeHtml(story.category || 'Story')}</p><h1>${escapeHtml(story.title)}</h1><p class="summary">${escapeHtml(description)}</p>
-<div class="author">${authorVisual}<div><p class="byline">Written by</p><p class="author-name">${escapeHtml(story.authorName)}</p></div></div>
-<a class="cta" href="${escapeHtml(appIntentUrl)}">Open in WritOn</a><a class="store-link" href="${escapeHtml(playStoreUrl)}">Get the app</a><p class="tagline">Words worth remembering.</p></article></main></body></html>`;
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${escapeHtml(title)}</title>
+  <meta name="description" content="${escapeHtml(description)}">
+  <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+  <link rel="stylesheet" href="/stories/share.css">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="WritOn">
+  <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(description)}">
+  ${imageMetadata}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(description)}">
+  <script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>
+</head>
+<body>
+  <main>
+    <article class="story">
+      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+        <a href="/stories" class="brand" style="text-decoration:none; color:inherit;">WritOn</a>
+        <a href="/stories" style="font-size:13px; color:var(--muted); text-decoration:none; font-weight:600;">&larr; All Stories</a>
+      </div>
+      <p class="eyebrow">${escapeHtml(story.category || 'Story')}</p>
+      <h1>${escapeHtml(story.title)}</h1>
+      ${story.summary ? `<p class="summary">${escapeHtml(story.summary)}</p>` : ''}
+      <div class="author">
+        ${authorVisual}
+        <div>
+          <p class="byline">Written by</p>
+          <p class="author-name">${escapeHtml(story.authorName)} ${story.authorPenName ? `<span style="font-weight:400; color:var(--muted);">(@${escapeHtml(story.authorPenName)})</span>` : ''}</p>
+        </div>
+      </div>
+
+      <div class="story-body">
+        ${formattedBody}
+      </div>
+
+      <div style="margin-top:48px; padding-top:24px; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; align-items:center; gap:16px;">
+        <a class="cta" href="${escapeHtml(appIntentUrl)}">Open in WritOn App</a>
+        <a class="store-link" href="${escapeHtml(playStoreTrackingUrl)}" target="_blank" rel="noopener">Get the app on Google Play</a>
+      </div>
+      <p class="tagline">Words worth remembering.</p>
+    </article>
+  </main>
+
+  <div class="sticky-app-bar">
+    <div class="bar-text">Read smoothly in WritOn</div>
+    <a class="bar-btn" href="${escapeHtml(appIntentUrl)}">Open App</a>
+  </div>
+</body>
+</html>`;
 }
 
 export async function buildServer({ runtimeConfig, pool, auth, messaging } = {}) {
@@ -238,6 +461,35 @@ await fastify.register(multipart, {
       { url: 'http://localhost:3001', description: 'Local Server' }
     ],
     paths: {
+      '/api/v1/feed': {
+        get: {
+          operationId: 'getReaderFeed',
+          summary: 'Return a stable, human-only, language-aware reader feed',
+          parameters: [
+            { name: 'language', in: 'query', schema: { type: 'string', enum: ['en', 'hi', 'bn', 'mr', 'es', 'fr', 'ur', 'und'], default: 'en' } },
+            { name: 'limit', in: 'query', schema: { type: 'integer', minimum: 1, maximum: 50, default: 20 } },
+            { name: 'cursor', in: 'query', schema: { type: 'string' } },
+            { name: 'guestTopics', in: 'query', schema: { type: 'string' }, description: 'Optional bounded local guest topic vector.' },
+            { name: 'guestAuthors', in: 'query', schema: { type: 'string' }, description: 'Optional bounded local guest author vector.' }
+          ],
+          responses: {
+            '200': { description: 'Feed items, opaque cursor, session ID, and ranking version' },
+            '400': { description: 'Invalid feed query' }
+          }
+        }
+      },
+      '/api/v1/feed/events': {
+        post: {
+          operationId: 'recordReaderFeedEvents',
+          summary: 'Record idempotent, privacy-bounded feed impressions, opens, quick exits, and shares',
+          responses: {
+            '202': { description: 'Accepted and duplicate/rejected event counts' },
+            '400': { description: 'Invalid event batch' },
+            '401': { description: 'Firebase authentication is required' },
+            '429': { description: 'Event rate limit exceeded' }
+          }
+        }
+      },
       '/api/v1/me/milestones': {
         get: {
           operationId: 'getMyMilestones',
@@ -256,7 +508,7 @@ await fastify.register(multipart, {
           summary: 'Retrieve recent published stories to inspect topics, categories, and author pen names for deduplication',
           parameters: [
             { name: 'limit', in: 'query', schema: { type: 'integer', default: 8 }, description: 'Number of recent stories to inspect (1-30)' },
-            { name: 'category', in: 'query', schema: { type: 'string' }, description: 'Optional category filter (e.g. Short Stories, Poetry, Shayari, Essays, Humour, Tech)' }
+            { name: 'category', in: 'query', schema: { type: 'string', enum: PUBLISHABLE_STORY_CATEGORIES }, description: 'Optional canonical story-category filter.' }
           ],
           responses: {
             '200': {
@@ -280,7 +532,7 @@ await fastify.register(multipart, {
                     title: { type: 'string', description: 'Compelling, human title under 120 chars' },
                     summary: { type: 'string', description: '1-2 sentence synopsis or hook' },
                     content: { type: 'string', description: 'Full literary text in Markdown format (400-800 words)' },
-                    category: { type: 'string', description: 'Genre category: Short Stories, Poetry, Shayari, Essays, Philosophy, Humour, or Tech' },
+                    category: { type: 'string', enum: PUBLISHABLE_STORY_CATEGORIES, description: 'Canonical publishable story category.' },
                     coverImage: { type: 'string', description: 'Optional cover image URL' }
                   },
                   required: ['title', 'content']
@@ -663,6 +915,50 @@ await fastify.register(multipart, {
 
   fastify.get('/', async (req, reply) => {
     reply.header('Access-Control-Allow-Origin', '*');
+    const acceptHeader = String(req.headers.accept || '').toLowerCase();
+
+    // If request is from a web browser or Googlebot expecting HTML, render Discovery Deck
+    if (acceptHeader.includes('text/html') || (!acceptHeader.includes('application/json') && !req.headers['x-api-key'])) {
+      const origin = requestOrigin(req, config.publicApiBaseUrl);
+      const playStoreUrl = config.playStoreAppUrl || 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon';
+
+      const result = await database.query(`
+        select
+          p.title,
+          p.slug,
+          p.summary,
+          p.category,
+          p.reading_time_min as "readingTimeMin",
+          p.likes_count as "likesCount",
+          p.comments_count as "commentsCount",
+          coalesce(p.published_at, p.created_at) as "publishedAt",
+          author.full_name as "authorName",
+          author.pen_name as "authorPenName"
+        from public.posts p
+        inner join public.profiles author on author.id = p.author_id
+        where p.status = 'published' and p.is_public = true and p.slug is not null
+        order by coalesce(p.published_at, p.created_at) desc
+        limit 21
+      `);
+
+      const stories = result.rows.slice(0, 20);
+      const hasMore = result.rows.length > 20;
+
+      const html = renderDiscoveryDeckHtml({
+        stories,
+        totalCount: result.rows.length,
+        category: null,
+        origin,
+        playStoreUrl,
+        hasMore,
+      });
+
+      return reply
+        .header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600')
+        .type('text/html; charset=utf-8')
+        .send(html);
+    }
+
     return {
       name: 'WritOn Autonomous Publishing API',
       version: '2.0.0',
@@ -710,15 +1006,17 @@ await fastify.register(multipart, {
 </head>
 <body>
   <h1>Privacy Policy for WritOn</h1>
-  <p><strong>Last Updated: August 28, 2026</strong></p>
+  <p><strong>Last Updated: August 30, 2026</strong></p>
   <p>WritOn ("we", "our", or "us") respects your privacy and is committed to protecting your personal data.</p>
   <h2>1. Information We Collect</h2>
-  <p>We collect basic profile information (such as pen name, bio, and avatar) and authentication tokens required to securely identify you across devices.</p>
+  <p>We collect basic profile information (such as pen name, bio, and avatar) and authentication tokens required to securely identify you across devices. For signed-in readers, limited reading signals such as opens, engaged time, progress, bookmarks, rereads, comments, follows, shares, and quick exits support recommendations. Guest preferences remain in local app storage and are not tied to a persistent server-side guest identity.</p>
   <h2>2. How We Use Information</h2>
   <p>Your data is used solely to provide and improve the WritOn reading and publishing platform, deliver notifications, and enable literary community discussions.</p>
   <h2>3. Data Security & Retention</h2>
-  <p>We use industry-standard encryption and security measures. We do not sell or monetize your personal data with third-party advertisers.</p>
-  <h2>4. Contact Us</h2>
+  <p>We use industry-standard encryption and security measures. Raw signed-in feed events are retained for up to 90 days, feed exposures for up to 30 days, and aggregate preferences until account deletion. Account deletion removes reader-learning data. We do not sell or monetize your personal data with third-party advertisers.</p>
+  <h2>4. Personalization Safeguards</h2>
+  <p>Recommendations admit verified human-authored stories only. Bot, system, test, and suspicious activity is excluded from ranking quality. Campaign analytics do not include story text, author identity, email, profile name, authentication tokens, device fingerprints, or raw reading history.</p>
+  <h2>5. Contact Us</h2>
   <p>If you have any questions, contact us at: <a href="mailto:saurabh.682@gmail.com">saurabh.682@gmail.com</a></p>
 </body>
 </html>`;
@@ -755,11 +1053,30 @@ function mediaObjectPath(key) {
   return key.split('/').map((segment) => encodeURIComponent(segment)).join('/');
 }
 
-function publicMediaUrl(request, key) {
+function publicMediaBaseUrl(request) {
+  if (config.publicApiBaseUrl) return new URL(config.publicApiBaseUrl).origin;
+  if (!request) return 'https://api.writon.cc';
   const forwardedProto = request.headers['x-forwarded-proto'];
   const protocol = typeof forwardedProto === 'string' ? forwardedProto.split(',')[0] : request.protocol;
-  const baseUrl = config.publicApiBaseUrl || `${protocol}://${request.headers.host}`;
-  return `${baseUrl}/api/v1/media/${encodeURIComponent(key)}`;
+  return `${protocol}://${request.headers.host}`;
+}
+
+function publicMediaUrl(request, key) {
+  return `${publicMediaBaseUrl(request)}/api/v1/media/${encodeURIComponent(key)}`;
+}
+
+function normalizeStoredAvatarUrl(value) {
+  if (value == null) return null;
+  const key = profileMediaKeyFromUrl(value, config.publicApiBaseUrl);
+  return key ? publicMediaUrl(null, key) : null;
+}
+
+function normalizeAvatarInput(value) {
+  if (value === null) return { success: true, value: null, key: null };
+  const key = profileMediaKeyFromUrl(value, config.publicApiBaseUrl);
+  return key
+    ? { success: true, value: publicMediaUrl(null, key), key }
+    : { success: false, value: null, key: null };
 }
 
 function assertStorageConfigured(reply) {
@@ -786,6 +1103,71 @@ async function createSignedMediaUrl(key) {
   const signedPath = payload.signedURL || payload.signedUrl;
   if (!signedPath) throw new Error('Supabase Storage did not return a signed URL.');
   return new URL(signedPath, config.supabaseUrl).toString();
+}
+
+function requiresAuthenticatedMediaProxy(key) {
+  // Supabase currently signs keys containing ':' but rejects the resulting
+  // download path as invalid. Imported WritOn profile IDs use a legacy:<id>
+  // form, so keep those existing objects readable without exposing the
+  // server-side storage credential.
+  return key.split('/')[1]?.includes(':') === true;
+}
+
+async function fetchAuthenticatedMedia(key) {
+  return fetch(
+    `${config.supabaseUrl}/storage/v1/object/authenticated/${encodeURIComponent(config.supabaseStorageBucket)}/${mediaObjectPath(key)}`,
+    { headers: supabaseStorageHeaders(config.supabaseServiceRoleKey) }
+  );
+}
+
+async function deleteMediaKeys(keys) {
+  const validKeys = [...new Set(keys.filter((key) => profileMediaKeyPattern.test(key)))];
+  if (validKeys.length === 0) return;
+  const response = await fetch(
+    `${config.supabaseUrl}/storage/v1/object/${encodeURIComponent(config.supabaseStorageBucket)}`,
+    {
+      method: 'DELETE',
+      headers: supabaseStorageHeaders(config.supabaseServiceRoleKey, {
+        'Content-Type': 'application/json',
+      }),
+      body: JSON.stringify({ prefixes: validKeys }),
+    }
+  );
+  if (!response.ok) throw new Error(`Supabase Storage deletion failed (${response.status})`);
+}
+
+async function deleteProfileMedia(profileId) {
+  if (!config.supabaseUrl || !config.supabaseServiceRoleKey) return;
+  if (!/^[A-Za-z0-9:_-]+$/.test(profileId)) {
+    throw new Error('Profile identifier cannot be mapped to a storage prefix.');
+  }
+  const prefix = `profiles/${profileId}/`;
+  const pageSize = 1_000;
+  const keys = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const response = await fetch(
+      `${config.supabaseUrl}/storage/v1/object/list/${encodeURIComponent(config.supabaseStorageBucket)}`,
+      {
+        method: 'POST',
+        headers: supabaseStorageHeaders(config.supabaseServiceRoleKey, {
+          'Content-Type': 'application/json',
+        }),
+        body: JSON.stringify({ prefix, limit: pageSize, offset, sortBy: { column: 'name', order: 'asc' } }),
+      }
+    );
+    if (!response.ok) throw new Error(`Supabase Storage listing failed (${response.status})`);
+    const objects = await response.json();
+    if (!Array.isArray(objects)) throw new Error('Supabase Storage returned an invalid object list.');
+    for (const object of objects) {
+      const name = typeof object?.name === 'string' ? object.name.replace(/^\/+/, '') : '';
+      const key = name.startsWith(prefix) ? name : `${prefix}${name}`;
+      if (profileMediaKeyPattern.test(key)) keys.push(key);
+    }
+    if (objects.length < pageSize) break;
+  }
+  for (let index = 0; index < keys.length; index += pageSize) {
+    await deleteMediaKeys(keys.slice(index, index + pageSize));
+  }
 }
 
 async function requireUser(request, reply) {
@@ -850,6 +1232,7 @@ function postSelectSql(whereClause, extraColumns = '', includeContent = true) {
     p.summary,
     ${includeContent ? 'p.content' : "''::text"} as content,
     p.category,
+    p.language_code as "languageCode",
     p.cover_image_url as "coverImage",
     p.reading_time_min as "readingTimeMin",
     p.likes_count as "likesCnt",
@@ -890,11 +1273,36 @@ function toAuthor(row) {
     id: row.id,
     penName: row.pen_name,
     fullName: row.full_name,
-    avatarUrl: row.avatar_url,
+    avatarUrl: normalizeStoredAvatarUrl(row.avatar_url),
     bio: row.bio,
     quoteOfDay: row.quote_of_day ?? null,
     followersCnt: row.followers_count,
     followingCnt: row.following_count,
+  };
+}
+
+function toReaderPost(row) {
+  if (!row || typeof row !== 'object' || !row.author || typeof row.author !== 'object') return row;
+  const rawContent = row.content || '';
+  const cleanContent = stripWatermark(rawContent);
+  return {
+    ...row,
+    content: cleanContent || row.content,
+    author: {
+      ...row.author,
+      avatarUrl: normalizeStoredAvatarUrl(row.author.avatarUrl),
+    },
+  };
+}
+
+function toReaderComment(row) {
+  if (!row || typeof row !== 'object' || !row.author || typeof row.author !== 'object') return row;
+  return {
+    ...row,
+    author: {
+      ...row.author,
+      avatarUrl: normalizeStoredAvatarUrl(row.author.avatarUrl),
+    },
   };
 }
 
@@ -991,6 +1399,7 @@ async function togglePostRelation({ postId, userId, table, counterColumn }) {
       });
     }
     await client.query('commit');
+    await deliverPushAfterCommit();
 
     return { enabled, count: updated.rows[0].count };
   } catch (error) {
@@ -1048,6 +1457,7 @@ async function setPostRelation({ postId, userId, table, counterColumn, enabled }
       });
     }
     await client.query('commit');
+    await deliverPushAfterCommit();
 
     return { enabled, count: updated.rows[0].count };
   } catch (error) {
@@ -1107,7 +1517,7 @@ function isInvalidPushToken(error) {
     || error?.code === 'messaging/invalid-registration-token';
 }
 
-async function deliverPendingPushNotifications() {
+async function deliverPendingPushNotifications({ limit = 20 } = {}) {
   if (!firebaseMessaging) return { processed: 0, reason: 'Firebase Messaging is not configured.' };
 
   const claimed = await database.query(
@@ -1116,7 +1526,7 @@ async function deliverPendingPushNotifications() {
          from public.notification_delivery_outbox
         where status = 'pending' and next_attempt_at <= now()
         order by created_at asc
-        limit 20
+        limit $1
         for update skip locked
      )
      update public.notification_delivery_outbox delivery
@@ -1124,7 +1534,8 @@ async function deliverPendingPushNotifications() {
        from candidates
       where delivery.id = candidates.id
      returning delivery.id::text as id, delivery.notification_id::text as "notificationId",
-               delivery.recipient_id as "recipientId", delivery.attempts`
+               delivery.recipient_id as "recipientId", delivery.attempts`,
+    [limit]
   );
 
   for (const delivery of claimed.rows) {
@@ -1160,7 +1571,11 @@ async function deliverPendingPushNotifications() {
       const title = item.actorName
         ? `${item.actorName} ${item.message}`
         : 'New activity on WritOn';
-      const body = item.postTitle || 'Open WritOn to see the latest activity.';
+      const body = item.postTitle
+        ? `“${item.postTitle}”`
+        : item.kind === 'follow'
+          ? 'A new reader found your writing.'
+          : 'Open WritOn to see the latest activity.';
       const outcomes = await Promise.all(tokens.rows.map(async (tokenRow) => {
         try {
           await firebaseMessaging.send({
@@ -1170,9 +1585,24 @@ async function deliverPendingPushNotifications() {
               notificationId: delivery.notificationId,
               kind: String(item.kind),
               storyId: item.postId || '',
+              storyTitle: item.postTitle || '',
+              actorName: item.actorName || '',
               targetRoute: item.postId ? `reader/${item.postId}` : 'notifications',
             },
-            android: { priority: 'high', notification: { channelId: 'writon_interactions_channel' } },
+            fcmOptions: {
+              analyticsLabel: toFcmAnalyticsLabel('interaction', item.kind),
+            },
+            android: {
+              priority: 'high',
+              notification: {
+                channelId: 'writon_interactions_channel',
+                icon: 'ic_stat_writon',
+                color: '#E75A2A',
+              },
+              fcmOptions: {
+                analyticsLabel: toFcmAnalyticsLabel('interaction', item.kind),
+              },
+            },
           });
           return { delivered: true, tokenRow };
         } catch (error) {
@@ -1223,6 +1653,21 @@ async function deliverPendingPushNotifications() {
   return { processed: claimed.rowCount };
 }
 
+async function deliverPushAfterCommit() {
+  try {
+    // Keep the mutation response bounded: one request delivers at most one
+    // pending notification while the scheduled/worker path drains larger batches.
+    const outcome = await deliverPendingPushNotifications({ limit: 1 });
+    if (outcome.processed > 0) {
+      fastify.log.info(outcome, 'Processed push notification delivery work after commit');
+    }
+  } catch (error) {
+    // The user-visible interaction is already committed. Preserve that successful
+    // response while the durable outbox retains retryable delivery work.
+    fastify.log.error({ err: error }, 'Push notification delivery after commit failed');
+  }
+}
+
 function parseCollectionQuery(request, reply, schema = collectionQuerySchema) {
   const parsed = schema.safeParse(request.query);
   if (!parsed.success) {
@@ -1242,7 +1687,7 @@ function toProfile(row) {
     penName: row.pen_name,
     fullName: row.full_name,
     bio: row.bio,
-    avatarUrl: row.avatar_url,
+    avatarUrl: normalizeStoredAvatarUrl(row.avatar_url),
     location: row.location,
     quoteOfDay: row.quote_of_day ?? null,
     joinedAt: row.joined_at,
@@ -1520,10 +1965,16 @@ async function ensureProfileForId(decodedToken, profileId) {
     || 'WritOn writer';
 
   const result = await database.query(
-    `insert into public.profiles (id, email, pen_name, full_name)
-     values ($1, $2, $3, $4)
+    `insert into public.profiles (id, email, pen_name, full_name, account_type)
+     values ($1, $2, $3, $4, 'human')
      on conflict (id) do update
-       set email = coalesce(excluded.email, public.profiles.email)
+       set email = coalesce(excluded.email, public.profiles.email),
+           account_type = case
+             when public.profiles.account_type = 'unknown'
+               and not exists (select 1 from public.bot_configs bot where bot.id = public.profiles.id)
+             then 'human'
+             else public.profiles.account_type
+           end
      returning ${profileReturningColumns}`,
     [profileId, decodedToken.email ?? null, fallbackPenName, fallbackFullName]
   );
@@ -1564,6 +2015,8 @@ fastify.get('/api/v1/posts', async (request, reply) => {
   const result = await database.query(
     `${postSelectSql(`where p.status = 'published'
       and p.is_public = true
+      and p.provenance = 'human_verified'
+      and author.account_type = 'human'
       and ($2::text is null or lower(p.category) = lower($2))
       and ($3::text is null or p.author_id = $3)
       and ($4::text is null or lower(author.pen_name) = lower($4))
@@ -1590,7 +2043,7 @@ fastify.get('/api/v1/posts', async (request, reply) => {
     [viewer?.profileId ?? null, category ?? null, authorId ?? null, authorPenName ?? null, q || null, tab, limit + 1, (page - 1) * limit]
   );
 
-  const posts = result.rows.slice(0, limit);
+  const posts = result.rows.slice(0, limit).map(toReaderPost);
   return {
     posts,
     pagination: {
@@ -1604,12 +2057,22 @@ fastify.get('/api/v1/posts', async (request, reply) => {
 fastify.get('/api/v1/tags', async (request) => {
   const q = request.query.q ? String(request.query.q).trim() : null;
   const result = await database.query(
-    `select category as name, count(*)::int as count
-     from public.posts
-     where status = 'published' and is_public = true
-       and ($1::text is null or category ilike '%' || $1 || '%')
-     group by category
-     order by count desc, category asc`,
+    `with human_story_counts as (
+       select post.category, count(*)::int as count
+       from public.posts post
+       inner join public.profiles author
+         on author.id = post.author_id and author.account_type = 'human'
+       where post.status = 'published' and post.is_public = true
+         and post.provenance = 'human_verified'
+       group by post.category
+     )
+     select category.name, coalesce(counts.count, 0)::int as count
+     from public.story_categories category
+     left join human_story_counts counts on counts.category = category.name
+     where category.is_active = true
+       and category.category_type = 'content'
+       and ($1::text is null or category.name ilike '%' || $1 || '%')
+     order by category.display_order asc, category.name asc`,
     [q]
   );
   return { tags: result.rows };
@@ -1629,7 +2092,7 @@ fastify.get(
       [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
     );
     return {
-      posts: result.rows.slice(0, limit),
+      posts: result.rows.slice(0, limit).map(toReaderPost),
       pagination: { page, limit, hasMore: result.rows.length > limit },
     };
   }
@@ -1653,10 +2116,13 @@ fastify.get('/stories/:slug', async (request, reply) => {
        p.title,
        p.slug,
        p.summary,
-       left(p.content, 500) as content,
+       p.content,
        p.category,
        p.cover_image_url as "coverImage",
+       coalesce(p.published_at, p.created_at) as "publishedAt",
+       coalesce(p.updated_at, p.published_at, p.created_at) as "updatedAt",
        author.full_name as "authorName",
+       author.pen_name as "authorPenName",
        author.avatar_url as "authorAvatarUrl"
      from public.posts p
      inner join public.profiles author on author.id = p.author_id
@@ -1673,7 +2139,11 @@ fastify.get('/stories/:slug', async (request, reply) => {
   const origin = requestOrigin(request, config.publicApiBaseUrl);
   const canonicalUrl = `${origin}/stories/${encodeURIComponent(parsedSlug.data)}`;
   const playStoreUrl = config.playStoreAppUrl || 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon';
-  const html = renderStorySharePage({ story: result.rows[0], canonicalUrl, playStoreUrl });
+  const story = {
+    ...result.rows[0],
+    authorAvatarUrl: normalizeStoredAvatarUrl(result.rows[0].authorAvatarUrl),
+  };
+  const html = renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin });
 
   return reply
     .header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600')
@@ -1701,7 +2171,7 @@ fastify.get('/api/v1/posts/:idOrSlug', async (request, reply) => {
     return reply.code(404).send({ error: 'Story not found' });
   }
 
-  return { post: result.rows[0] };
+  return { post: toReaderPost(result.rows[0]) };
 });
 
 fastify.post(
@@ -1718,11 +2188,26 @@ fastify.post(
 
     await ensureProfileForId(request.user, request.profileId);
     const story = parsed.data;
+    const finalContent = story.isPublished
+      ? attachHashtagsAndWatermark(story.content, story.category, null)
+      : story.content;
     const result = await database.query(
       `insert into public.posts (
         slug, author_id, title, summary, content, category, cover_image_url,
-        status, is_public, reading_time_min, published_at, client_draft_id
-      ) values ($1, $2, $3, $4, $5, $6, $7, $8, true, $9, case when $8 = 'published' then now() else null end, $10)
+        status, is_public, reading_time_min, published_at, client_draft_id,
+        language_code, language_source, language_confidence,
+        provenance, provenance_verified_at, provenance_verified_by
+      ) values (
+        $1, $2, $3, $4, $5, $6, $7, $8, true, $9,
+        case when $8 = 'published' then now() else null end, $11,
+        $10, 'author', 1,
+        case when (select account_type from public.profiles where id = $2) = 'human'
+          then 'human_verified' else 'unknown' end,
+        case when (select account_type from public.profiles where id = $2) = 'human'
+          then now() else null end,
+        case when (select account_type from public.profiles where id = $2) = 'human'
+          then $2 else null end
+      )
       on conflict (author_id, client_draft_id) where client_draft_id is not null do update
         set title = excluded.title,
             summary = excluded.summary,
@@ -1730,6 +2215,12 @@ fastify.post(
             category = excluded.category,
             cover_image_url = excluded.cover_image_url,
             reading_time_min = excluded.reading_time_min,
+            language_code = excluded.language_code,
+            language_source = excluded.language_source,
+            language_confidence = excluded.language_confidence,
+            provenance = excluded.provenance,
+            provenance_verified_at = excluded.provenance_verified_at,
+            provenance_verified_by = excluded.provenance_verified_by,
             status = case when excluded.status = 'published' then 'published' else public.posts.status end,
             published_at = case
               when excluded.status = 'published' then coalesce(public.posts.published_at, now())
@@ -1742,11 +2233,12 @@ fastify.post(
         request.profileId,
         story.title,
         story.summary ?? null,
-        story.content,
+        finalContent,
         story.category,
         story.coverImage ?? null,
         story.isPublished ? 'published' : 'draft',
-        calculateReadingTime(story.content),
+        calculateReadingTime(finalContent),
+        story.languageCode,
         story.clientDraftId ?? null,
       ]
     );
@@ -1766,7 +2258,7 @@ fastify.post(
       }).catch((err) => fastify.log.warn(`[Spark Trigger Exception] ${err.message}`));
     }
 
-    return reply.code(201).send({ post: postResult.rows[0] });
+    return reply.code(201).send({ post: toReaderPost(postResult.rows[0]) });
   }
 );
 
@@ -1782,7 +2274,7 @@ fastify.put(
     }
 
     const existing = await database.query(
-      `select id::text as id, title, summary, content, category, cover_image_url,
+      `select id::text as id, title, summary, content, category, cover_image_url, language_code,
               status, client_draft_id, published_at
        from public.posts where id = $1 and author_id = $2`,
       [postId, request.profileId]
@@ -1798,6 +2290,7 @@ fastify.put(
       coverImage: prior.cover_image_url,
       isPublished: prior.status === 'published',
       clientDraftId: prior.client_draft_id,
+      languageCode: prior.language_code,
       ...patch.data,
     });
     if (!merged.success) {
@@ -1811,14 +2304,25 @@ fastify.put(
            reading_time_min = $9,
            status = case when $10 then 'published' else status end,
            published_at = case when $10 then coalesce(published_at, now()) else published_at end,
+           language_code = $11, language_source = 'author', language_confidence = 1,
+           provenance = case
+             when (select account_type from public.profiles where id = $2) = 'human'
+             then 'human_verified' else provenance end,
+           provenance_verified_at = case
+             when (select account_type from public.profiles where id = $2) = 'human'
+             then now() else provenance_verified_at end,
+           provenance_verified_by = case
+             when (select account_type from public.profiles where id = $2) = 'human'
+             then $2 else provenance_verified_by end,
            updated_at = now()
        where id = $1 and author_id = $2
        returning id`,
       [postId, request.profileId, story.title, story.summary ?? null, story.content, story.category,
-        story.coverImage ?? null, story.clientDraftId ?? null, calculateReadingTime(story.content), story.isPublished]
+        story.coverImage ?? null, story.clientDraftId ?? null, calculateReadingTime(story.content),
+        story.isPublished, story.languageCode]
     );
     const postResult = await database.query(`${postSelectSql('where p.id = $2')}`, [request.profileId, result.rows[0].id]);
-    return { post: postResult.rows[0] };
+    return { post: toReaderPost(postResult.rows[0]) };
   }
 );
 
@@ -1830,7 +2334,17 @@ fastify.post(
     if (!postId) return;
     const result = await database.query(
       `update public.posts
-       set status = 'published', is_public = true, published_at = coalesce(published_at, now()), updated_at = now()
+       set status = 'published', is_public = true, published_at = coalesce(published_at, now()),
+           provenance = case
+             when (select account_type from public.profiles where id = $2) = 'human'
+             then 'human_verified' else provenance end,
+           provenance_verified_at = case
+             when (select account_type from public.profiles where id = $2) = 'human'
+             then coalesce(provenance_verified_at, now()) else provenance_verified_at end,
+           provenance_verified_by = case
+             when (select account_type from public.profiles where id = $2) = 'human'
+             then coalesce(provenance_verified_by, $2) else provenance_verified_by end,
+           updated_at = now()
        where id = $1 ${request.profileId ? 'and author_id = $2' : ''}
        returning id, title, category, summary, author_id`,
       request.profileId ? [postId, request.profileId] : [postId]
@@ -1842,7 +2356,7 @@ fastify.post(
         .catch((error) => fastify.log.warn(`[Spark Trigger Exception] ${error.message}`));
     }
     const postResult = await database.query(`${postSelectSql('where p.id = $2')}`, [request.profileId || 'public_view', post.id]);
-    return { post: postResult.rows[0] };
+    return { post: toReaderPost(postResult.rows[0]) };
   }
 );
 
@@ -1898,16 +2412,29 @@ fastify.post(
   }
 );
 
-fastify.get('/api/v1/media/:key', async (request, reply) => {
+fastify.get('/api/v1/media/*', async (request, reply) => {
   if (!assertStorageConfigured(reply)) return;
-  const key = String(request.params.key ?? '');
-  if (!/^profiles\/[A-Za-z0-9:_-]+\/[a-f0-9-]+\.webp$/i.test(key)) {
+  const key = decodedProfileMediaKey(request.params['*']);
+  if (!key) {
     return reply.code(404).send({ error: 'Media not found' });
   }
   try {
-    return reply.redirect(302, await createSignedMediaUrl(key));
+    if (requiresAuthenticatedMediaProxy(key)) {
+      const media = await fetchAuthenticatedMedia(key);
+      if (media.status === 404) return reply.code(404).send({ error: 'Media not found' });
+      if (!media.ok) throw new Error(`Supabase Storage download failed (${media.status})`);
+      const contentType = media.headers.get('content-type');
+      if (contentType !== 'image/webp') throw new Error('Supabase Storage returned an unexpected media type.');
+      const content = Buffer.from(await media.arrayBuffer());
+      return reply
+        .code(200)
+        .header('Content-Type', contentType)
+        .header('Cache-Control', 'public, max-age=300, stale-while-revalidate=86400')
+        .send(content);
+    }
+    return sendFoundRedirect(reply, await createSignedMediaUrl(key));
   } catch (error) {
-    request.log.error({ err: error }, 'Could not sign media URL');
+    request.log.error({ err: error }, 'Could not retrieve media');
     return reply.code(502).send({ error: 'Media is temporarily unavailable.' });
   }
 });
@@ -2016,7 +2543,7 @@ fastify.get(
        limit $3 offset $4`,
       [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
     );
-    return { posts: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
+    return { posts: result.rows.slice(0, limit).map(toReaderPost), pagination: { page, limit, hasMore: result.rows.length > limit } };
   }
 );
 
@@ -2034,7 +2561,7 @@ fastify.get(
        limit $3 offset $4`,
       [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
     );
-    return { posts: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
+    return { posts: result.rows.slice(0, limit).map(toReaderPost), pagination: { page, limit, hasMore: result.rows.length > limit } };
   }
 );
 
@@ -2051,7 +2578,7 @@ fastify.get(
        limit $3 offset $4`,
       [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
     );
-    return { posts: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
+    return { posts: result.rows.slice(0, limit).map(toReaderPost), pagination: { page, limit, hasMore: result.rows.length > limit } };
   }
 );
 
@@ -2068,7 +2595,7 @@ fastify.get(
        limit $3 offset $4`,
       [request.profileId, request.profileId, limit + 1, (page - 1) * limit]
     );
-    return { posts: result.rows.slice(0, limit), pagination: { page, limit, hasMore: result.rows.length > limit } };
+    return { posts: result.rows.slice(0, limit).map(toReaderPost), pagination: { page, limit, hasMore: result.rows.length > limit } };
   }
 );
 
@@ -2190,7 +2717,7 @@ fastify.get(
       [request.profileId]
     );
     return {
-      items: history.rows.slice(0, limit),
+      items: history.rows.slice(0, limit).map(toReaderPost),
       summary: summary.rows[0],
       pagination: { page, limit, hasMore: history.rows.length > limit },
     };
@@ -2210,7 +2737,16 @@ fastify.post(
     await ensureProfileForId(request.user, request.profileId);
     const result = await database.query(
       `insert into public.reading_history (user_id, post_id, progress, read_seconds)
-       select $1, p.id, $3, $4 from public.posts p
+       select $1, p.id,
+              case
+                when $3 >= 0.95
+                  and coalesce(history.read_seconds, 0) + $4 < greatest(30, p.reading_time_min * 30)
+                then 0.94
+                else $3
+              end,
+              $4
+       from public.posts p
+       left join public.reading_history history on history.user_id = $1 and history.post_id = p.id
        where p.id = $2 and p.status = 'published' and p.is_public = true
        on conflict (user_id, post_id) do update set
          progress = greatest(public.reading_history.progress, excluded.progress),
@@ -2258,7 +2794,7 @@ fastify.get('/api/v1/comments/:postId', async (request, reply) => {
     [postId]
   );
 
-  return { comments: result.rows, total: result.rowCount };
+  return { comments: result.rows.map(toReaderComment), total: result.rowCount };
 });
 
 fastify.post(
@@ -2347,6 +2883,7 @@ fastify.post(
         });
       }
       await client.query('commit');
+      await deliverPushAfterCommit();
 
       // Trigger asynchronous in-character bot reply with realistic human cadence
       if (wasInserted && config.sparkAutomationEnabled) {
@@ -2391,7 +2928,8 @@ fastify.get('/api/v1/users', async (request) => {
     `select p.id, p.pen_name, p.full_name, p.avatar_url, p.bio, p.followers_count, p.following_count, alias.quote_of_day
      from public.profiles p
      left join public.legacy_import_profile_attributes alias on alias.profile_id = p.id
-     where ($1::text is null
+     where p.account_type = 'human'
+       and ($1::text is null
         or p.full_name ilike '%' || $1 || '%'
         or p.pen_name ilike '%' || $1 || '%'
         or coalesce(p.bio, '') ilike '%' || $1 || '%')
@@ -2504,6 +3042,7 @@ fastify.post(
         [request.profileId]
       );
       await client.query('commit');
+      await deliverPushAfterCommit();
 
       return {
         following,
@@ -2531,19 +3070,33 @@ fastify.put(
     }
 
     const profile = parsed.data;
+    const hasAvatarUrl = Object.hasOwn(profile, 'avatarUrl');
+    const normalizedAvatar = hasAvatarUrl ? normalizeAvatarInput(profile.avatarUrl) : null;
+    if (normalizedAvatar && !normalizedAvatar.success) {
+      return reply.code(400).send({
+        error: 'Invalid profile data',
+        details: { avatarUrl: ['Use a profile photo uploaded securely through WritOn.'] },
+      });
+    }
+    if (normalizedAvatar) profile.avatarUrl = normalizedAvatar.value;
     try {
       const result = await database.query(
-        `insert into public.profiles (
-          id, email, pen_name, full_name, bio, avatar_url, location
-        ) values ($1, $2, $3, $4, $5, $6, $7)
-        on conflict (id) do update
-          set email = coalesce(excluded.email, public.profiles.email),
-              pen_name = excluded.pen_name,
-              full_name = excluded.full_name,
-              bio = coalesce(excluded.bio, public.profiles.bio),
-              avatar_url = coalesce(excluded.avatar_url, public.profiles.avatar_url),
-              location = coalesce(excluded.location, public.profiles.location)
-        returning ${profileReturningColumns}`,
+        `with previous as (
+           select avatar_url from public.profiles where id = $1
+         ), saved as (
+           insert into public.profiles (
+             id, email, pen_name, full_name, bio, avatar_url, location
+           ) values ($1, $2, $3, $4, $5, $6, $7)
+           on conflict (id) do update
+             set email = coalesce(excluded.email, public.profiles.email),
+                 pen_name = excluded.pen_name,
+                 full_name = excluded.full_name,
+                 bio = coalesce(excluded.bio, public.profiles.bio),
+                 avatar_url = case when $8 then excluded.avatar_url else public.profiles.avatar_url end,
+                 location = coalesce(excluded.location, public.profiles.location)
+           returning ${profileReturningColumns}
+         )
+         select saved.*, (select avatar_url from previous) as previous_avatar_url from saved`,
         [
           request.profileId,
           request.user.email ?? null,
@@ -2552,8 +3105,18 @@ fastify.put(
           profile.bio ?? null,
           profile.avatarUrl ?? null,
           profile.location ?? null,
+          hasAvatarUrl,
         ]
       );
+
+      const previousKey = profileMediaKeyFromUrl(result.rows[0].previous_avatar_url, config.publicApiBaseUrl);
+      if (previousKey && previousKey !== normalizedAvatar?.key) {
+        try {
+          await deleteMediaKeys([previousKey]);
+        } catch (error) {
+          request.log.warn({ err: error, key: previousKey }, 'Could not remove replaced profile media');
+        }
+      }
 
       return { profile: toProfile(result.rows[0]) };
     } catch (error) {
@@ -2578,18 +3141,33 @@ fastify.patch(
     }
 
     const patch = parsed.data;
+    const normalizedAvatar = Object.hasOwn(patch, 'avatarUrl')
+      ? normalizeAvatarInput(patch.avatarUrl)
+      : null;
+    if (normalizedAvatar && !normalizedAvatar.success) {
+      return reply.code(400).send({
+        error: 'Invalid profile update',
+        details: { avatarUrl: ['Use a profile photo uploaded securely through WritOn.'] },
+      });
+    }
+    if (normalizedAvatar) patch.avatarUrl = normalizedAvatar.value;
     const client = await database.connect();
     try {
       await client.query('begin');
       const result = await client.query(
-        `update public.profiles
-         set full_name = coalesce($2, full_name),
-             bio = case when $3 then $4 else bio end,
-             avatar_url = case when $5 then $6 else avatar_url end,
-             location = case when $7 then $8 else location end,
-             updated_at = now()
-         where id = $1
-         returning ${profileReturningColumns}`,
+        `with previous as (
+           select avatar_url from public.profiles where id = $1
+         ), updated as (
+           update public.profiles
+           set full_name = coalesce($2, full_name),
+               bio = case when $3 then $4 else bio end,
+               avatar_url = case when $5 then $6 else avatar_url end,
+               location = case when $7 then $8 else location end,
+               updated_at = now()
+           where id = $1
+           returning ${profileReturningColumns}
+         )
+         select updated.*, (select avatar_url from previous) as previous_avatar_url from updated`,
         [
           request.profileId,
           patch.fullName ?? null,
@@ -2617,6 +3195,15 @@ fastify.patch(
         );
       }
       await client.query('commit');
+
+      const previousKey = profileMediaKeyFromUrl(result.rows[0].previous_avatar_url, config.publicApiBaseUrl);
+      if (previousKey && previousKey !== normalizedAvatar?.key) {
+        try {
+          await deleteMediaKeys([previousKey]);
+        } catch (error) {
+          request.log.warn({ err: error, key: previousKey }, 'Could not remove replaced profile media');
+        }
+      }
 
       return {
         profile: {
@@ -2920,6 +3507,12 @@ fastify.patch(
     async (request, reply) => {
       const profileId = request.profileId;
       const firebaseUid = request.user.uid;
+      try {
+        await deleteProfileMedia(profileId);
+      } catch (error) {
+        request.log.error({ err: error, profileId }, 'Account deletion stopped because profile media could not be removed');
+        return reply.code(502).send({ error: 'Could not remove profile media. Please try account deletion again.' });
+      }
       const client = await database.connect();
       let authDeletionFailed = false;
       try {
@@ -2957,17 +3550,66 @@ fastify.patch(
   );
 
   await fastify.register(appMetaRoutes, { config, database });
+  await fastify.register(seoRoutes, { config, database });
   await fastify.register(notificationRoutes, {
     database,
     requireUser,
     parseCollectionQuery,
     postIdSchema,
   });
+  await fastify.register(engagementPreferenceRoutes, {
+    database,
+    requireUser,
+    ensureProfile: (request) => ensureProfileForId(request.user, request.profileId),
+  });
   await fastify.register(milestoneRoutes, { database, requireUser });
+  await fastify.register(feedRoutes, {
+    database,
+    optionalUser,
+    requireUser,
+    config,
+    normalizeAvatarUrl: normalizeStoredAvatarUrl,
+  });
   await fastify.register(adminBotsRoutes, { pool: database, requireUser });
+  await fastify.register(adminReviewsRoutes, { pool: database });
   await fastify.register(mcpRoutes, { pool: database });
+  await fastify.register(campaignRedirectRoutes, { config, database });
 
   fastify.decorate('deliverPushNotifications', deliverPendingPushNotifications);
+
+  const handleDailyDigestRun = async (request, reply) => {
+    if (!config.adminSecretKey || request.headers['x-admin-key'] !== config.adminSecretKey) {
+      return reply.code(403).send({ error: 'Forbidden' });
+    }
+    const outcome = await runDailyDigest(database, firebaseMessaging, fastify.log);
+    return outcome;
+  };
+  fastify.post('/api/v1/internal/notifications/daily-digest', handleDailyDigestRun);
+  // Temporary compatibility path for existing operator tooling.
+  fastify.post('/api/v1/spark/daily-digest/test', handleDailyDigestRun);
+
+  fastify.get('/campaign-assets/:filename', async (request, reply) => {
+    const filename = resolve(request.params.filename);
+    const safeBaseName = filename.split(/[\\/]/).pop();
+    const filePath = resolve(process.cwd(), '../campaign/fomo-ground-floor/rendered-assets', safeBaseName);
+    try {
+      const file = await fs.readFile(filePath);
+      reply.header('Content-Type', 'image/png');
+      reply.header('Cache-Control', 'public, max-age=86400');
+      return reply.send(file);
+    } catch {
+      return reply.code(404).send({ error: 'Campaign asset not found' });
+    }
+  });
+
+  fastify.post('/api/v1/spark/campaign/publish-now', { preHandler: requireUser }, async (request, reply) => {
+    if (!config.adminSecretKey || request.headers['x-admin-key'] !== config.adminSecretKey) {
+      return reply.code(403).send({ error: 'Forbidden' });
+    }
+    const day = Number(request.query?.day || request.body?.day || 1);
+    const outcome = await runDailyCampaignPublish({ day, config, log: fastify.log });
+    return outcome;
+  });
 
   return fastify;
 }
@@ -2987,6 +3629,7 @@ if (isEntrypoint) {
     await fastify.listen({ port: runtimeConfig.port, host: '0.0.0.0' });
     if (runtimeConfig.sparkAutomationEnabled) {
       startSparkScheduler(database, 15);
+      startMasterDailyScheduler(database);
     }
     if (runtimeConfig.pushDeliveryEnabled) {
       const runPushDelivery = async () => {
@@ -3000,6 +3643,58 @@ if (isEntrypoint) {
       void runPushDelivery();
       setInterval(() => { void runPushDelivery(); }, runtimeConfig.pushDeliveryPollIntervalMs).unref();
     }
+    if (runtimeConfig.dailyDigestEnabled) {
+      const scheduleDailyDigest = () => {
+        const now = new Date();
+        const target = new Date(now);
+        target.setUTCHours(runtimeConfig.dailyDigestHourUtc, runtimeConfig.dailyDigestMinuteUtc, 0, 0);
+        if (target <= now) target.setDate(target.getDate() + 1);
+        const delayMs = target.getTime() - now.getTime();
+        fastify.log.info({ nextRunAt: target.toISOString(), delayMs }, 'Daily digest notification scheduled');
+        setTimeout(async () => {
+          try {
+            const firebaseMessaging = getMessaging(getApps()[0]);
+            const outcome = await runDailyDigest(database, firebaseMessaging, fastify.log);
+            fastify.log.info(outcome, 'Daily digest completed');
+          } catch (error) {
+            fastify.log.error({ err: error }, 'Daily digest failed');
+          }
+          scheduleDailyDigest();
+        }, delayMs).unref();
+      };
+      scheduleDailyDigest();
+    }
+    if (runtimeConfig.socialAutoPublishEnabled) {
+      const scheduleSocialCampaign = () => {
+        const now = new Date();
+        const target = new Date(now);
+        target.setUTCHours(runtimeConfig.socialAutoPublishHourUtc, runtimeConfig.socialAutoPublishMinuteUtc, 0, 0);
+        if (target <= now) target.setDate(target.getDate() + 1);
+        const delayMs = target.getTime() - now.getTime();
+        fastify.log.info({ nextRunAt: target.toISOString(), delayMs }, 'Social campaign auto-publisher scheduled');
+        setTimeout(async () => {
+          try {
+            const dayOfCampaign = Math.max(1, Math.min(30, Math.ceil((Date.now() - new Date('2026-09-01T00:00:00Z').getTime()) / (24 * 3600 * 1000))));
+            const outcome = await runDailyCampaignPublish({ day: dayOfCampaign, config: runtimeConfig, log: fastify.log });
+            fastify.log.info(outcome, 'Social campaign auto-publish pass completed');
+          } catch (error) {
+            fastify.log.error({ err: error }, 'Social campaign auto-publish failed');
+          }
+          scheduleSocialCampaign();
+        }, delayMs).unref();
+      };
+      scheduleSocialCampaign();
+    }
+    const runFeedRetention = async () => {
+      try {
+        const outcome = await cleanExpiredFeedData(database);
+        fastify.log.info(outcome, 'Completed reader-feed retention cleanup');
+      } catch (error) {
+        fastify.log.error({ err: error }, 'Reader-feed retention cleanup failed');
+      }
+    };
+    void runFeedRetention();
+    setInterval(() => { void runFeedRetention(); }, 24 * 60 * 60 * 1_000).unref();
   } catch (error) {
     fastify.log.error(error);
     process.exit(1);

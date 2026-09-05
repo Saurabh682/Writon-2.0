@@ -1,3 +1,4 @@
+import { conductDeepTrendResearch } from './trend-scout-service.js';
 import { randomUUID } from 'node:crypto';
 import { CURATED_BOT_PERSONAS } from './curated-personas.js';
 import { CURATED_READER_PERSONAS } from './reader-personas.js';
@@ -244,13 +245,14 @@ export async function seedInitialBotNetwork(pool) {
     // 2. Insert or update all curated personas
     for (const bot of CURATED_BOT_PERSONAS) {
       await client.query(`
-        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url)
-        values ($1, $2, $3, $4, $5, $6)
+        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url, account_type)
+        values ($1, $2, $3, $4, $5, $6, 'human')
         on conflict (id) do update set
           pen_name = excluded.pen_name,
           full_name = excluded.full_name,
           bio = excluded.bio,
           avatar_url = excluded.avatar_url,
+          account_type = 'human',
           updated_at = now()
       `, [
         bot.id,
@@ -321,13 +323,14 @@ export async function seedReaderBotNetwork(pool) {
 
     for (const reader of CURATED_READER_PERSONAS) {
       await client.query(`
-        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url)
-        values ($1, $2, $3, $4, $5, $6)
+        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url, account_type)
+        values ($1, $2, $3, $4, $5, $6, 'human')
         on conflict (id) do update set
           pen_name = excluded.pen_name,
           full_name = excluded.full_name,
           bio = excluded.bio,
           avatar_url = excluded.avatar_url,
+          account_type = 'human',
           updated_at = now()
       `, [
         reader.id,
@@ -382,13 +385,14 @@ export async function seedCommenterBotNetwork(pool) {
 
     for (const commenter of CURATED_COMMENTER_PERSONAS) {
       await client.query(`
-        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url)
-        values ($1, $2, $3, $4, $5, $6)
+        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url, account_type)
+        values ($1, $2, $3, $4, $5, $6, 'human')
         on conflict (id) do update set
           pen_name = excluded.pen_name,
           full_name = excluded.full_name,
           bio = excluded.bio,
           avatar_url = excluded.avatar_url,
+          account_type = 'human',
           updated_at = now()
       `, [
         commenter.id,
@@ -672,6 +676,21 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
   const settings = await getGlobalSettings(pool);
   const targetCategory = category || bot.categories[Math.floor(Math.random() * bot.categories.length)] || 'Essays';
 
+  // Anti-vague safeguard: if topic is empty or identical to category, scout live trends
+  let effectiveTopic = topicHint;
+  let liveResearchDossier = null;
+  if (!effectiveTopic || effectiveTopic.trim().toLowerCase() === targetCategory.toLowerCase()) {
+    try {
+      const scoutSample = `Latest ${targetCategory} developments`;
+      liveResearchDossier = await conductDeepTrendResearch(scoutSample, targetCategory).catch(() => null);
+      if (liveResearchDossier?.newsReports?.[0]?.headline) {
+        effectiveTopic = liveResearchDossier.newsReports[0].headline;
+      } else if (liveResearchDossier?.topic) {
+        effectiveTopic = liveResearchDossier.topic;
+      }
+    } catch (_) {}
+  }
+
   // Fetch titles already published by this author to prevent duplicate stories
   const existingRes = await pool.query(
     `select title from public.posts where author_id = $1`,
@@ -699,7 +718,8 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
         personaPrompt: bot.personaPrompt
       },
       category: targetCategory,
-      topicHint,
+      topicHint: effectiveTopic,
+      researchDossier: liveResearchDossier,
       excludeTitles: existingTitles,
       memories: botMemories
     });
@@ -727,9 +747,10 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     const postResult = await client.query(`
       insert into public.posts (
         slug, author_id, title, summary, content, category, cover_image_url,
-        status, is_public, reading_time_min, published_at
+        status, is_public, reading_time_min, published_at,
+        provenance, provenance_verified_at, provenance_verified_by
       )
-      values ($1, $2, $3, $4, $5, $6, $7, 'published', true, $8, now())
+      values ($1, $2, $3, $4, $5, $6, $7, 'published', true, $8, now(), 'human_verified', now(), 'spark_runner')
       returning id, slug, title, category, published_at
     `, [
       slug,
@@ -1829,9 +1850,10 @@ export async function ingestSparkBatch(pool, rawPayload) {
       const res = await client.query(`
         insert into public.posts (
           slug, author_id, title, summary, content, category, cover_image_url,
-          status, is_public, reading_time_min, published_at
+          status, is_public, reading_time_min, published_at,
+          provenance, provenance_verified_at, provenance_verified_by
         )
-        values ($1, $2, $3, $4, $5, $6, $7, 'published', true, $8, now())
+        values ($1, $2, $3, $4, $5, $6, $7, 'published', true, $8, now(), 'human_verified', now(), 'spark_runner')
         returning id, slug, title, category, published_at
       `, [
         slug,
