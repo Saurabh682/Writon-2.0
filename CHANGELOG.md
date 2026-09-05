@@ -15,6 +15,9 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - Made the disposable database production-shaped for this migration by creating non-login equivalents of Supabase's `anon` and `authenticated` roles.
 - Added a real Fastify/PostgreSQL staging smoke test covering default reads, validated upserts, persisted reads, invalid input, and account-deletion cascade behavior.
 - Added a data-free, staging-only compatibility schema for remote authentication/profile and engagement-preference smoke testing; it is explicitly not a production-schema replacement.
+- Provisioned the isolated Supabase and Render staging resources, pinned Render
+  to the staging branch/commit, kept production-affecting jobs disabled, and
+  documented the Supabase pooler recovery and scoped-CA verification gates.
 
 ### Engagement roadmap Phase 2 foundation (September 05, 2026)
 - Added an authenticated, additive engagement-preferences contract for primary intent, onboarding version/completion, and the existing-user preference-card lifecycle; all existing API routes and response shapes remain unchanged.

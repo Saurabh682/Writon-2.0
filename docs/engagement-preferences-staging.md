@@ -32,3 +32,30 @@ Required safe defaults:
 After migration verification, deploy the server to the staging service, check `/health`, then exercise authenticated GET and PUT requests using staging-only Firebase users. Only after those checks pass should an Android debug build be compiled with `-PWRITON_DEBUG_API_BASE_URL=https://<staging-host>/` and installed on a tester device.
 
 Production promotion remains a separate, explicit decision.
+
+## Hosted staging status (2026-09-06)
+
+- Supabase project: `writon-staging` (`xrfnebvkazewqramkpri`, Singapore).
+- Render service: `writon-api-staging` (`srv-dae6l58u01pc73dahp20`).
+- Render source: `codex/staging-engagement-preferences` at commit
+  `1d0b94218c6baf75b62a071d5b7f83f249422119`.
+- Push delivery, daily digest, social auto-publishing, Spark automation,
+  behavior rollout, and review prompts remain disabled.
+- The service is suspended while the Supabase shared-pooler password-rotation
+  cool-down completes. Repeated `28P01` responses followed several password
+  rotations; Supabase documents that continued failed pooler traffic can extend
+  the temporary lockout.
+- A temporary staging-only `NODE_TLS_REJECT_UNAUTHORIZED=0` diagnostic setting
+  distinguished the TLS-chain error from the credential failure. Replace it
+  with scoped Supabase CA trust before using this environment beyond the smoke
+  test.
+
+### Hosted recovery gate
+
+1. Keep Render suspended for at least two uninterrupted minutes.
+2. Resume without rotating the database password again.
+3. Require `GET /` to return HTTP 200 with a successful database probe.
+4. Run the authenticated engagement-preferences staging verifier.
+5. Replace the process-wide TLS diagnostic bypass with scoped Supabase CA trust
+   and repeat steps 3 and 4.
+6. Keep all production-affecting switches disabled until every gate passes.
