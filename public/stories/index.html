@@ -25,13 +25,23 @@
   <meta property="og:site_name" content="WritOn" />
   <meta id="og-title" property="og:title" content="WritOn — Story" />
   <meta id="og-desc" property="og:description" content="Read thoughtful stories on WritOn." />
-  <meta id="og-img" property="og:image" content="https://writon.cc/assets/hero-banner.jpg" />
+  <meta id="og-img" property="og:image" content="https://writon.cc/assets/hero-banner.webp" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
 
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@WritOn_Social" />
+  <meta id="twitter-title" name="twitter:title" content="WritOn — Story" />
+  <meta id="twitter-desc" name="twitter:description" content="Read thoughtful stories on WritOn." />
+  <meta id="twitter-img" name="twitter:image" content="https://writon.cc/assets/hero-banner.webp" />
+
+  <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap"></noscript>
   <link rel="stylesheet" href="/stories/share.css" />
 
   <!-- Schema.org FAQPage Structured Data for Generative AI & Google Search Rich Snippets -->
@@ -238,6 +248,13 @@
           document.getElementById('og-img').setAttribute('content', coverImg);
         }
 
+        const twTitle = document.getElementById('twitter-title');
+        if (twTitle) twTitle.setAttribute('content', `${post.title} — WritOn`);
+        const twDesc = document.getElementById('twitter-desc');
+        if (twDesc && post.summary) twDesc.setAttribute('content', post.summary);
+        const twImg = document.getElementById('twitter-img');
+        if (twImg && coverImg) twImg.setAttribute('content', coverImg);
+
         // Schema.org Structured Data (BlogPosting + BreadcrumbList) for Google Search Rich Results
         try {
           const breadcrumbLd = {
@@ -297,6 +314,9 @@
         const avatarWrap = document.getElementById('author-avatar-wrap');
         if (authorAvatarUrl) {
           avatarWrap.innerHTML = `<img class="author-avatar" src="${authorAvatarUrl}" alt="Portrait of ${authorName}" loading="lazy" decoding="async">`;
+          avatarWrap.querySelector('img').addEventListener('error', () => {
+            avatarWrap.innerHTML = `<div class="author-avatar-fallback">${initial}</div>`;
+          }, { once: true });
         } else {
           const initial = (authorName || 'W')[0].toUpperCase();
           avatarWrap.innerHTML = `<div class="author-avatar-fallback">${initial}</div>`;
@@ -322,7 +342,7 @@
         document.getElementById('loading').innerHTML = `
           <h2>Story Not Found</h2>
           <p style="margin: 16px 0;">This story may have been moved or removed.</p>
-          <a href="/" style="color: #C85A3C; font-weight: 600; text-decoration: none;">← Back to WritOn Home</a>
+          <a href="/" style="color: #B5442A; font-weight: 600; text-decoration: none;">← Back to WritOn Home</a>
         `;
       }
     }

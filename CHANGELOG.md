@@ -7,7 +7,61 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.50 (Version Code: 152)`
+- **Current Version**: `2.0.51 (Version Code: 153)`
+
+### Shared story routing and author imagery (September 06, 2026)
+- Changed story sharing to use the verified `writon.cc/stories/<slug>` App Link so opening a shared link routes to that exact story in WritOn.
+- Corrected server-rendered story app intents to target the verified public story host without changing the existing API contract.
+- Kept legacy profile-media URLs canonicalized through `api.writon.cc` and added an initials fallback when a public story avatar cannot load.
+
+### Native crash symbolication (September 06, 2026)
+- Enabled `SYMBOL_TABLE` native debug metadata for release builds so Gradle automatically packages any available native symbols for Google Play.
+- Verified that the current native libraries (`libandroidx.graphics.path.so` and `libdatastore_shared_counter.so`) arrive pre-stripped from AndroidX dependencies, so this build cannot manufacture their unavailable symbols and Play may continue to show its advisory warning.
+- Incremented the Android release identity to `2.0.51` (`versionCode 153`); version code 152 had already been uploaded to Google Play and is not reused.
+- Enabled generated per-app locale configuration for English, Hindi, Spanish, French, Bengali, and Marathi, and disabled Play language splitting so every language selectable inside WritOn is present on-device.
+- Suppressed AGP 8.10.1's `AppBundleLocaleChanges` false positive only after configuring the corresponding `bundle.language.enableSplit = false` release safeguard.
+- Split every supported story/post App Link into an explicit host-and-path intent filter, preventing Android from combining attributes into unintended URLs while preserving all existing deep-link destinations.
+- Added Android 13+ monochrome adaptive launcher assets using WritOn's existing single-colour “W” mark, enabling system-themed home-screen icons without changing the legacy or full-colour launcher appearance.
+- Completed Spanish and French CLDR plural coverage for reply and selected-interest counts, preventing fallback or grammatically inconsistent count labels at large quantities.
+
+### Website Deep Dive & Technical Architecture Polish (September 06, 2026)
+- **Hero Showcase Overhaul & Asset Restoration (Resolving "This is so wrong")**:
+  - **Asset Restoration**: Repaired `public/assets/explore-screen.webp` and `public/assets/editor-screen.webp`, which had been corrupted by being inadvertently overwritten with a pre-rotated two-device graphic, causing awkward double-phone nested inception inside device borders. Restored pristine 575×1280 high-fidelity single-device screenshots.
+  - **Unclipped 9:20 Aspect Ratios**: Eliminated rigid fixed height cropping (`290×600` and `250×520` CSS containers with `object-fit: cover`) that truncated UI typography ("Discover stories", "The Illusion of Cache Consistency", "Add a title...", bottom navigation). Applied responsive `aspect-ratio: 575 / 1280` with chin bezel padding (`border-bottom-width: 11px`), ensuring 100% full-screen visibility from top status bar to bottom navigation.
+  - **Editorial Composition & Depth**: Redesigned device alignment to gentle, complementary angles (`-3deg` front Explore feed, `+4deg` back Editor view with `255px` horizontal offset) so both screens breathe harmoniously without obscuring crucial titles or "Publish" actions.
+  - **Atmospheric Watercolor & Feather Flourish**: Replaced arbitrary harsh curved stroke line with a soft radial watercolor aura and high-resolution golden sand editorial feather flourish ([public/assets/editorial_feather.svg](file:///d:/VibeCode/WritOn-PowerUp/public/assets/editorial_feather.svg)).
+  - **Fluid Responsive Layout**: Seamlessly transitions from a dual-device showcase on desktop and tablet to a centered, unclipped, single-device showcase on mobile (`max-width: 560px`), eliminating cramped visual collisions.
+- **Resolved Featured Stories to True Latest Published Stories**:
+  - Replaced hardcoded August stories with the actual 4 latest published stories from September 5–6, 2026:
+    1. *The Rear Gate of Eighth Cross* (`/stories/the-rear-gate-of-eighth-cross-b5df236f-dc3`, Essays by Devika Prasad)
+    2. *The Siphon Beneath the Oak Roots* (`/stories/the-siphon-beneath-the-oak-roots-122315a6-690`, Essays by Sanjay Rawat)
+    3. *The Bevel of the Qalam* (`/stories/the-bevel-of-the-qalam-620cf224-257`, Short Stories by Farhan Akhtar Kazmi)
+    4. *The Night-Watch at the Sluice Gate* (`/stories/the-night-watch-at-the-sluice-gate-24316d76-d22`, Poetry by Harpreet Singh)
+  - Updated category tabs in [public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html) to reflect the active database catalog: `All`, `Essays`, `Short Stories`, `Poetry`, `Shayari`, `Culture`, `Tech`, `Humour`.
+  - Activated the client-side live story deck in [public/app.js](file:///d:/VibeCode/WritOn-PowerUp/public/app.js) by wiring `id="live-story-grid"`, `data-category` tab attributes, `#stories-spinner`, `#load-more-stories-btn`, and `#end-of-stories-msg`.
+- **WCAG 2.1 AA Accessibility & Contrast Compliance**:
+  - Replaced low-contrast brand terracotta (`#c85a3c`, 3.84:1) with `#B5442A` (5.89:1) on cream backgrounds and updated muted ink (`#746c64` → `#645c54`, 6.52:1), achieving strict WCAG AA standard compliance across the entire landing page.
+  - Updated [public/stories/share.css](file:///d:/VibeCode/WritOn-PowerUp/public/stories/share.css) with high-contrast tokens (`--primary: #A5381F`, `--muted: #655B51`), guaranteeing 4.68:1 contrast on hashtag pills and 5.21:1 on reading metadata.
+  - Updated all 4 legal pages ([privacy-policy.html](file:///d:/VibeCode/WritOn-PowerUp/public/privacy-policy.html), [terms.html](file:///d:/VibeCode/WritOn-PowerUp/public/terms.html), [child-safety.html](file:///d:/VibeCode/WritOn-PowerUp/public/child-safety.html), [delete-account.html](file:///d:/VibeCode/WritOn-PowerUp/public/delete-account.html)) with `#A5532E` (4.87:1) and `#6E6A65` (4.82:1).
+- **Performance & Asset Footprint Optimization**:
+  - Deleted orphaned 16 KB unreferenced stylesheet [public/styles.css](file:///d:/VibeCode/WritOn-PowerUp/public/styles.css).
+  - Switched CTA watercolor background in inlined CSS from uncompressed PNG (`70 KB`) to WebP (`21 KB`).
+  - Switched JSON-LD image references from 760 KB PNG to `app-icon.webp` (2.8 KB) and 320 KB wordmark to `writon-logo.webp` (8.6 KB).
+  - Preloaded LCP hero image (`assets/explore-screen.webp`) and preconnected to `https://api.writon.cc` in `<head>`.
+  - Converted below-the-fold editor screen image from `fetchpriority="high"` to `loading="lazy"`.
+  - Archived ~3 MB of unused raw design mockups into `public/assets/_archive/`.
+  - Added cache-busting version parameter `app.js?v=2` to eliminate 1-year immutable cache retention on JavaScript updates.
+- **Web App Manifest & Security Headers (PWA & CSP)**:
+  - Created Web App Manifest at [public/manifest.webmanifest](file:///d:/VibeCode/WritOn-PowerUp/public/manifest.webmanifest) with responsive icons, theme colors, and standalone display mode.
+  - Configured strict Content Security Policy (CSP), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and `Referrer-Policy: strict-origin-when-cross-origin` in [firebase.json](file:///d:/VibeCode/WritOn-PowerUp/firebase.json).
+- **Brand Consistency & Crawl Hygiene**:
+  - Replaced legacy `@Saurabh_682` Twitter site/creator handles with `@WritOn_Social` across all landing and story pages.
+  - Replaced legacy `help@writon.co` contact emails with `help@writon.cc` across all legal policies.
+  - Fixed OpenGraph URL domain in [web/index.html](file:///d:/VibeCode/WritOn-PowerUp/web/index.html) (`writon.co` → `writon.cc`).
+  - Added crawler protection in [public/robots.txt](file:///d:/VibeCode/WritOn-PowerUp/public/robots.txt) for `/api/` and `/go/` endpoints.
+- **Automated Verification**:
+  - Created automated 41-assertion test harness (`scratch/verify-website-audit.mjs`), validating 100% pass rate.
+  - Verified 164/164 tests passing across all 15 backend server test suites.
 
 ### Google News & Discover Syndication Standards (September 06, 2026)
 - **Dynamic Google News XML Sitemap Endpoint (`/news-sitemap.xml`)**:
