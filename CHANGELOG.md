@@ -7,17 +7,174 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.45 (Version Code: 147)`
+- **Current Version**: `2.0.50 (Version Code: 152)`
 
-### Engagement-preferences staging safety (September 06, 2026)
-- Added an isolated PostgreSQL staging harness and a guarded engagement-preferences migration command that cannot silently fall back to the configured production database.
-- Added automated checks rejecting production URL reuse and unapproved remote database targets, plus a staging deployment and verification runbook.
-- Made the disposable database production-shaped for this migration by creating non-login equivalents of Supabase's `anon` and `authenticated` roles.
-- Added a real Fastify/PostgreSQL staging smoke test covering default reads, validated upserts, persisted reads, invalid input, and account-deletion cascade behavior.
-- Added a data-free, staging-only compatibility schema for remote authentication/profile and engagement-preference smoke testing; it is explicitly not a production-schema replacement.
-- Provisioned the isolated Supabase and Render staging resources, pinned Render
-  to the staging branch/commit, kept production-affecting jobs disabled, and
-  documented the Supabase pooler recovery and scoped-CA verification gates.
+### Mobile-First Indexing & Core Web Vitals Optimization (September 06, 2026)
+- **Font Resource Optimization (LCP & CLS Prevention)**:
+  - Enforced `<link rel="preconnect" href="https://fonts.googleapis.com">` and `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` across server-rendered templates (`renderDiscoveryDeckHtml` in [server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js), `renderStorySharePage` in [server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js)) and verified presence in public static pages ([public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html), [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html), [public/privacy-policy.html](file:///d:/VibeCode/WritOn-PowerUp/public/privacy-policy.html), [public/terms.html](file:///d:/VibeCode/WritOn-PowerUp/public/terms.html), [public/child-safety.html](file:///d:/VibeCode/WritOn-PowerUp/public/child-safety.html), [public/delete-account.html](file:///d:/VibeCode/WritOn-PowerUp/public/delete-account.html)).
+  - Ensured Google Fonts stylesheets (Inter, Newsreader, Plus Jakarta Sans) include `&display=swap` to eliminate Flash of Invisible Text (FOIT) and eliminate Cumulative Layout Shift (CLS).
+- **Standardized Mobile Viewport & Safe-Area Insets (`viewport-fit=cover`)**:
+  - Upgraded `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">` consistently across [server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js), [server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js) (story share and policy routes `/privacy-policy`, `/terms`, `/delete-account`, `/child-safety`), [public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html), [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html), and all public/root policy HTML files.
+- **Critical Asset Preloading (LCP Acceleration)**:
+  - Added `<link rel="preload" as="image" href="/assets/favicon-48x48.png">` to `<head>` in `renderDiscoveryDeckHtml` and `renderStorySharePage` to expedite Largest Contentful Paint during initial browser DOM streaming and header parse.
+- **Touch Target Sizing Compliance (Google Mobile Usability & WCAG AA)**:
+  - Configured interactive controls to satisfy the minimum touch target dimensions (`min-height: 44px; display: inline-flex; align-items: center; justify-content: center;`) for category filter pills (`.pill`), header action buttons (`.app-badge-btn`), card arrow links (`.card-arrow-btn`, 44x44px), sticky conversion actions (`.sticky-btn`, `.bar-btn`), and call-to-actions.
+- **Automated Verification & Test Coverage**:
+  - Added 4 automated vitest test cases in [server/test/seo-sitemap.test.js](file:///d:/VibeCode/WritOn-PowerUp/server/test/seo-sitemap.test.js) validating font preconnect directives, `display=swap`, `viewport-fit=cover` viewport meta tag, critical image preload tag, and minimum touch target CSS metrics.
+  - Verified 100% pass rate across 22 tests in `seo-sitemap.test.js` and all 156 tests across 15 test suites.
+
+### International & Multilingual SEO Compliance (hreflang) (September 06, 2026)
+- **Dynamic HTML Language Declaration (`<html lang="...">`)**:
+  - Selected `coalesce(nullif(p.language_code, 'und'), 'en') as "language"` in `/stories/:slug` SQL query ([server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js)).
+  - Implemented dynamic language normalization (`normalizeStoryLanguage`) supporting English (`en`), Hindi (`hi`), Marathi (`mr`), Bengali (`bn`), Spanish (`es`), and French (`fr`) with safe `'en'` fallback.
+  - Rendered `<html lang="${escapeXml(storyLang)}">` dynamically in `renderStorySharePage` instead of hardcoded `<html lang="en">`.
+  - Added client-side dynamic language declaration in [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html), setting `document.documentElement.lang = story.language || 'en'` on post payload resolution.
+  - Exposed normalized `language` property on `toReaderPost` API transformer.
+- **Google `hreflang` Alternates & Global Fallback (`x-default`)**:
+  - Injected self-referential language link `<link rel="alternate" hreflang="${escapeXml(storyLang)}" href="${pureCanonicalUrl}">` and fallback `<link rel="alternate" hreflang="x-default" href="${pureCanonicalUrl}">` into story share page `<head>` ([server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js)).
+  - Injected `<link rel="alternate" hreflang="en" href="${canonicalUrl}">` and `<link rel="alternate" hreflang="x-default" href="${canonicalUrl}">` into `/stories` discovery deck ([server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js)).
+  - Added static hreflang directives `<link rel="alternate" hreflang="en" href="https://writon.cc/">` and `<link rel="alternate" hreflang="x-default" href="https://writon.cc/">` across [public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html) and [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html).
+- **Open Graph Regional Locales (`og:locale`)**:
+  - Mapped language codes to ISO standard Open Graph locales: `en` -> `en_US`, `hi` -> `hi_IN`, `mr` -> `mr_IN`, `bn` -> `bn_IN`, `es` -> `es_ES`, `fr` -> `fr_FR`.
+  - Added `<meta property="og:locale" content="${escapeXml(ogLocale)}">` across `renderStorySharePage` ([server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js)) and `renderDiscoveryDeckHtml` ([server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js)).
+  - Added `<meta property="og:locale" content="en_US" />` in [public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html) and [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html) with dynamic runtime updates.
+- **Automated Verification & Test Coverage**:
+  - Updated mock database in [server/test/seo-sitemap.test.js](file:///d:/VibeCode/WritOn-PowerUp/server/test/seo-sitemap.test.js) with English (`language: 'en'`) and Hindi (`language: 'hi'`) mock stories.
+  - Added test suites asserting dynamic `<html lang>`, `hreflang` alternate tags, `hreflang="x-default"`, and regional `og:locale` (`en_US`, `hi_IN`) across `/stories/:slug` and `/stories` discovery deck.
+  - All 18 tests in `test/seo-sitemap.test.js` and all 152 tests across 15 test suites pass with 100% success.
+
+### Google Search Central Image Sitemaps Extension (September 06, 2026)
+- **Dynamic XML Sitemap Image Extension (`/sitemap.xml`)**:
+  - Implemented the official Google Search Central Image Sitemaps schema (`xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"`) in [server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js).
+  - Updated database query to fetch `p.slug`, `p.title`, `p.summary`, `p.cover_image_url as "coverImage"`, and `coalesce(p.updated_at, p.published_at, p.created_at) as "lastmod"`.
+  - Injected `<image:image>` blocks containing `<image:loc>`, `<image:title>`, and `<image:caption>` for all published stories with cover artwork.
+  - Added brand identity image metadata (`writon_wordmark.png` and `writon_app_icon.png`) for root (`/`) and story hub (`/stories`) static URLs.
+- **Static Feed Generator Synchronization**:
+  - Updated `generateFullSitemapXml(posts)` in [server/src/scripts/generate-seo-feeds.mjs](file:///d:/VibeCode/WritOn-PowerUp/server/src/scripts/generate-seo-feeds.mjs) with image namespace declarations and per-post image nodes.
+  - Regenerated [public/sitemap.xml](file:///d:/VibeCode/WritOn-PowerUp/public/sitemap.xml) indexing 725 URLs with rich image locations, titles, and captions across all 706 live published stories.
+- **Test Coverage & Verification**:
+  - Updated mock database rows and test assertions in [server/test/seo-sitemap.test.js](file:///d:/VibeCode/WritOn-PowerUp/server/test/seo-sitemap.test.js) to verify `xmlns:image`, `<image:image>`, `<image:loc>`, `<image:title>`, `<image:caption>`, and brand images.
+  - Verified 100% pass rate across the full 15 test suites and 150 vitest tests.
+
+### Google Search Appearance & Rich Snippet Compliance (September 06, 2026)
+- **Snippets & Boilerplate Exclusion (`data-nosnippet`)**:
+  - Implemented Google Search Central `data-nosnippet` attribute across boilerplate navigation, banners, app download prompts, and footers in `renderDiscoveryDeckHtml` ([server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js)), `renderStorySharePage` ([server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js)), [public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html), and [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html) to prevent search engines from extracting UI/app chrome boilerplate as story snippets.
+- **Title Links & Meta Descriptions Optimization**:
+  - Added brand-differentiated `<title>` tags and concise `<meta name="description">` tags (under 160 characters) to static policy pages: [public/privacy-policy.html](file:///d:/VibeCode/WritOn-PowerUp/public/privacy-policy.html), [public/terms.html](file:///d:/VibeCode/WritOn-PowerUp/public/terms.html), [public/child-safety.html](file:///d:/VibeCode/WritOn-PowerUp/public/child-safety.html), and [public/delete-account.html](file:///d:/VibeCode/WritOn-PowerUp/public/delete-account.html).
+  - Standardized story title link anchors and page titles in `renderStorySharePage` and `renderDiscoveryDeckHtml` to follow `${story.title} — WritOn`.
+- **Visual Elements & High-Resolution Preview Attributes**:
+  - Added explicit `<meta property="og:image:width" content="1200">` and `<meta property="og:image:height" content="630">` to `renderDiscoveryDeckHtml` and `renderStorySharePage` to instruct Google Search and social crawlers to display high-resolution large preview cards.
+  - Reinforced `max-image-preview:large, max-snippet:-1, max-video-preview:-1` robots directives and ensured story cover images feature descriptive `alt` text (`Cover artwork for ...`) along with `loading="lazy"` and `decoding="async"`.
+- **Automated Verification & Test Coverage**:
+  - Added 4 dedicated tests in [server/test/seo-sitemap.test.js](file:///d:/VibeCode/WritOn-PowerUp/server/test/seo-sitemap.test.js) asserting presence of `data-nosnippet`, Open Graph dimensions (1200x630), robots preview directives, and cover image attributes. All 16 tests in the SEO test suite and 150 tests across the server suite pass cleanly.
+
+### Google Search Canonicalization & Clean URLs Normalization (September 06, 2026)
+- **Tracking & Unwanted Query Parameter Stripping**:
+  - Enforced pure canonical URLs in `renderDiscoveryDeckHtml` ([server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js)) and `renderStorySharePage` ([server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js)), stripping tracking and unwanted query parameters (`utm_*`, `fbclid`, `gclid`, `ref`, `source`) from `<link rel="canonical">` and JSON-LD `url` and `mainEntityOfPage` properties.
+  - Normalized valid category parameter retention (e.g. `https://writon.cc/stories?category=Tech`) while falling back to clean `/stories` for invalid categories or parameterless visits.
+- **Static Canonical Tags on Policy Pages**:
+  - Added clean, self-referential `<link rel="canonical">` tags across [public/privacy-policy.html](file:///d:/VibeCode/WritOn-PowerUp/public/privacy-policy.html), [public/terms.html](file:///d:/VibeCode/WritOn-PowerUp/public/terms.html), [public/child-safety.html](file:///d:/VibeCode/WritOn-PowerUp/public/child-safety.html), and [public/delete-account.html](file:///d:/VibeCode/WritOn-PowerUp/public/delete-account.html), harmonized with `public/index.html` and `public/stories/index.html`.
+- **Trailing Slash Normalization (301 Permanent Redirects)**:
+  - Added Fastify 301 redirect routes in [server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js) for `/stories/` -> `/stories` and `/stories/:slug/` -> `/stories/:slug`, preserving query parameters where appropriate while adhering to Google Search Central URL normalization standards.
+  - Implemented `sendPermanentRedirect` helper alongside `sendFoundRedirect`.
+- **Legacy Story Query Redirection**:
+  - In `/stories` route handler ([server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js)), added database slug lookup and permanent 301 redirection for legacy `?storyId=<id>` and `?id=<id>` query parameters to `/stories/<slug>`.
+- **Automated Verification**:
+  - Added test coverage in [server/test/seo-sitemap.test.js](file:///d:/VibeCode/WritOn-PowerUp/server/test/seo-sitemap.test.js) validating canonical parameter stripping, 301 trailing slash redirects, and legacy story ID redirection (12/12 passing). All 15 server test suites and 146 unit/integration tests passed.
+
+### Google Search Appearance, Favicons & Structured Data Compliance (September 06, 2026)
+- **Google Search Favicon Compliance**: Injected Google-mandated 48px square multiples (`48x48`, `192x192`, `apple-touch-icon 180x180`) into [public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html) and [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html). Resolves the missing homepage favicon links so Google Search displays the branded WritOn logo instead of a generic globe icon.
+- **Dynamic Schema.org Breadcrumbs & BlogPosting**: Added automatic JSON-LD `@graph` injection into `public/stories/index.html` and server-rendered templates, generating `schema.org/BreadcrumbList` (`Home > Category > Story`) and `schema.org/BlogPosting` (`headline`, `description`, `author`, `datePublished`, `image`) for Google rich snippets.
+- **Enhanced Server-Side Rendered Story Reader**: Equipped `renderStorySharePage` and `renderDiscoveryDeckHtml` in [server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js) and [server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js) with Google-compliant favicon links, RSS discovery headers, and breadcrumbs schema.
+- **Verified & Deployed**: Passed all 9 Vitest SEO tests and deployed updated frontend to Firebase Hosting CDN (`writon-app-2020`).
+
+### Google Search Console & Real-Time RSS Ingestion (September 06, 2026)
+- **Implemented RSS 2.0 Feed (`/feed.xml` & `/rss.xml`)**: Generated a production RSS 2.0 feed containing the latest 50 stories with `<pubDate>`, `<dc:creator>`, `<media:content>`, `<category>`, and per-story permanent `<guid>` elements for Google Search, Google Discover, Feedly, and syndication tools.
+- **Synchronized Full Master Sitemap (`/sitemap.xml`)**: Re-synchronized all 706 live published stories and 13 category hubs (725 total URLs) from the database/API with updated `<lastmod>` timestamps.
+- **Added RSS Auto-Discovery Directives**: Added `<link rel="alternate" type="application/rss+xml" href="https://writon.cc/feed.xml" />` across [public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html) and [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html).
+- **Updated Search Engine Directives (`robots.txt`)**: Declared both `Sitemap: https://writon.cc/sitemap.xml` and `Sitemap: https://writon.cc/feed.xml` in [public/robots.txt](file:///d:/VibeCode/WritOn-PowerUp/public/robots.txt) and dynamic server SEO routes.
+- **Configured Firebase Hosting Caching**: Added explicit `application/rss+xml; charset=utf-8` MIME headers and stale-while-revalidate caching directives for `/feed.xml` in [firebase.json](file:///d:/VibeCode/WritOn-PowerUp/firebase.json).
+- **Successfully Submitted Feed to Google Search Console**: Submitted `https://writon.cc/feed.xml` alongside `https://writon.cc/sitemap.xml` to `sc-domain:writon.cc` in Google Search Console, receiving confirmation "Sitemap submitted successfully".
+- **Deployed to Live CDN**: Deployed all updated assets to Firebase Hosting (`writon-app-2020`), with verified live HTTP `200 OK` responses.
+
+### Google Search Console & SEO Indexation Resolution (September 06, 2026)
+- **Resolved Stale Sitemap Failure**: Diagnosed and purged an outdated sitemap entry stuck in `Couldn't fetch` since September 1, 2026. Successfully submitted fresh XML sitemap (`/sitemap.xml`) to Google Search Console on September 6, 2026.
+- **Audited Googlebot Crawl & Index State**: Verified via Search Console live inspection that the homepage (`https://writon.cc/`) is officially crawled, validated as HTTPS, and marked as **Page is indexed** with valid Review Snippets enhancements.
+- **Enqueued Priority Crawl for `/stories` & Homepage**: Pushed priority crawl and index requests directly to Googlebot via URL Inspection for both `https://writon.cc/` and `https://writon.cc/stories`.
+- **Added Robots Meta Directives & Dynamic Canonicals**: Injected `<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />` across `public/index.html` and `public/stories/index.html`. Added explicit dynamic canonical linking (`https://writon.cc/stories/<slug>`) to prevent duplicate canonical warnings.
+
+### Account-Isolated Local Drafts (September 06, 2026)
+- Scoped local draft restoration, updates, deletion, and synchronization to the active account or guest space.
+- Quarantined legacy drafts whose ownership cannot be proven instead of silently assigning or deleting them.
+- Prevented guest, legacy, and account-mismatched queued drafts from uploading under another identity.
+- Added an explicit signed-in recovery prompt so a reader can deliberately claim an older quarantined draft or safely leave it untouched.
+
+### Faster, Clearer Welcome Experience (September 06, 2026)
+- Replaced the four-page technical welcome carousel with one concise, scrollable introduction.
+- Made visitor reading the primary action, retained direct writing and sign-in paths, and added accessible Terms and Privacy links.
+- Removed unverified AI, passkey, and implementation-detail promises from first contact.
+
+### Honest and Recoverable Feed States (September 06, 2026)
+- Distinguished initial loading, genuine empty inventory, network failure, offline cached stories, pagination failure, and end-of-feed states on Home.
+- Added direct retry actions while preserving cached stories during connectivity failures.
+
+### Reader Story Loading Feedback (September 06, 2026)
+- Replaced the misleading empty-story placeholder with a progress indicator while the full story text is fetched.
+- Added a clear connection error and retry action when the story text cannot be retrieved.
+
+### Dietrich Gebert's Ponytail Integration — Pragmatic Code Minimization (September 06, 2026)
+- Installed Dietrich Gebert's **Ponytail** pragmatic code minimization system ("The Decision Ladder") into both the global Antigravity environment (`C:/Users/Kumar/.gemini/config/skills/`) and local workspace (`.agents/skills/`, `.agents/rules/ponytail.md`).
+- Equipped the agent environment with the full skill suite:
+  - `ponytail`: Core Decision Ladder execution (`YAGNI` → `Codebase Reuse` → `Stdlib First` → `Native Platform` → `Installed Dependencies` → `One Line` → `Minimum Necessary`).
+  - `ponytail-audit`: Repository-wide over-engineering audit tool ranking cuttable lines and redundant dependencies.
+  - `ponytail-review`: Focused diff/code-change over-engineering review.
+  - `ponytail-debt`: Ledger tracking for deliberate `ponytail:` shortcut comments and triggers.
+  - `ponytail-gain`: Measured-impact scoreboard (loc, cost, speed benchmark tracking).
+  - `ponytail-help`: Quick-reference command card.
+- Appended the Ponytail Decision Ladder directives to `AGENTS.md` to ensure persistent enforcement across turns while strictly preserving all non-negotiable trust-boundary validations, error handling, security, and accessibility (WCAG AA).
+
+### Personalized onboarding v2 — intent step (September 06, 2026)
+- Added a calm first onboarding step asking new account holders whether they came to read, write, or do both; skipping remains available.
+- Persisted primary intent locally before navigation and queued signed-in changes for the existing engagement-preferences staging API without changing its contract.
+- Kept returning sign-ins and visitor reading friction-free while routing newly created accounts through intent and interests.
+- Marked completed two-step onboarding as version 2 and added English, Hindi, Bengali, Marathi, Spanish, and French copy with scrollable large-text support and 48dp selection targets.
+- Added focused preference tests and Firebase App Testing journeys; production deployment remains intentionally unchanged.
+- Installed the staging-configured 2.0.46 debug build over 2.0.44 on the Redmi 25028RN03I without clearing app data; all three intent-screen tests and the interests-screen test passed, Home loaded staging content, cold launch and background resume succeeded, and the device crash buffer remained empty.
+
+### Day 1 Midday Social Drop: Instagram Story Poll (September 06, 2026)
+- **Live Publishing to Instagram (`@writon_socialapp`)**:
+  - Published Day 1 Midday Story Frame in Option 1 (Warm Parchment & Watercolor Theme) featuring the interactive check-in poll card ("What brings you here today? A: Reading original stories / B: Writing a new draft") to [`@writon_socialapp`](https://www.instagram.com/writon_socialapp/) (Story Media ID: `18100765196198419`).
+  - Strict compliance: 100% visual card policy (1080×1920 9:16 portrait), dynamic campaign shortlink (`https://writon.cc/go/2609_d06_ig_story_en_sprint2_midday_start_with_one_paragraph`), and 5 platform hashtags (`#writon #writingcommunity #amwriting #storytelling #writersofinstagram`).
+  - Recorded publish baseline and status in `campaign/antigravity-2026-09-06-19/metrics.csv`, `published-history.json`, and `publishing-calendar.csv`.
+
+### Day 1 Morning Social Drop: Start With One Paragraph (September 06, 2026)
+- **Live Publishing to X (`@WritOn_Social`)**:
+  - Published Day 1 Morning Prompt Card in Option A (Warm Parchment & Watercolor Theme) featuring the 3 scene anchors to [`@WritOn_Social`](https://x.com/WritOn_Social) (Tweet ID: [`2096467751598690695`](https://x.com/WritOn_Social/status/2096467751598690695)).
+  - Attached automated conversion thread reply with direct shortlink to Google Play (Reply ID: `2096467754476036568`).
+  - Strict compliance: exactly 3 hashtags (`#writon #writingcommunity #amwriting`), 100% visual card policy, dynamic UTM campaign attribution (`2609_d06_x_card_en_sprint2_am_start_with_one_paragraph`).
+  - Recorded initial publish baseline in `campaign/antigravity-2026-09-06-19/metrics.csv`, `published-history.json`, and marked status `published` in `publishing-calendar.csv`.
+
+### Hosted engagement-preferences staging gate recovery (September 06, 2026)
+- **Supabase Staging Recovery (`writon-staging`, ref `xrfnebvkazewqramkpri`)**:
+  - Successfully executed clean password reset in Supabase dashboard and verified via fresh SQL probes (`SELECT 1 AS staging_probe, current_database(), current_user, now()`).
+  - Verified catalog tables (`profiles`, `profile_auth_identities`, `profile_engagement_preferences`, `posts`, `legacy_import_profile_attributes`, `bot_configs`).
+  - Verified column schema (8/8) and RLS enablement on `profile_engagement_preferences`.
+  - Added missing `profile_auth_identities` table to staging bootstrap dependencies (`002_api_smoke_dependencies.sql`) for complete authentication mapping reproducibility.
+- **Render Staging Deployment (`srv-dae6l58u01pc73dahp20`)**:
+  - Live deployment revision `dep-daefne6q1p3s7395b3rg` successfully compiled and deployed on Render.
+  - Pinned `DATABASE_URL` to the IPv4 session pooler (`aws-0-ap-southeast-1.pooler.supabase.com:5432`).
+  - Scoped TLS validation active using `NODE_EXTRA_CA_CERTS=/etc/secrets/prod-ca-2021.crt`.
+  - Enforced all production-isolation flags (`NODE_ENV=staging`, `PUSH_DELIVERY_ENABLED=false`, `DAILY_DIGEST_ENABLED=false`, `SOCIAL_AUTO_PUBLISH_ENABLED=false`, `SPARK_AUTOMATION_ENABLED=false`, `FEED_BEHAVIOR_ROLLOUT_PERCENT=0`, `REVIEW_PROMPT_ENABLED=false`).
+- **End-to-End Hosted Verification**:
+  - `GET /health` returned `HTTP 200 OK` (`status="ok"`, `database="connected"`).
+  - Unauthenticated requests rejected with `HTTP 401 Unauthorized` (`error="Authentication required"`).
+  - Invalid tokens rejected with `HTTP 401 Unauthorized` (`error="Invalid or expired Firebase token"`).
+  - Valid Firebase test identity verified with default preference read (`HTTP 200`, `preferenceCardState="unseen"`).
+  - Malformed preference updates rejected with `HTTP 400 Bad Request`.
+  - Valid preference updates persisted and round-tripped (`HTTP 200`, `primaryIntent="both"`, `onboardingVersion=2`, `preferenceCardState="completed"`).
+  - Multi-user account isolation verified with second disposable test identity.
+  - Teardown verified: test identities deleted from Firebase Auth and cascaded cleanly from staging database (`remaining preference records = 0`).
+  - Production database, Cloud Run, DNS, release branches, and the live Day 1 social media campaign remain completely untouched.
 
 ### Engagement roadmap Phase 2 foundation (September 05, 2026)
 - Added an authenticated, additive engagement-preferences contract for primary intent, onboarding version/completion, and the existing-user preference-card lifecycle; all existing API routes and response shapes remain unchanged.

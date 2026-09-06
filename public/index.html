@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#F7F3EB" />
+
+  <!-- Favicon & Brand Icons (Google Search requires a multiple of 48px square) -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png?v=2" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png?v=2" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png?v=2" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png?v=2" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2" />
 
   <!-- Primary Meta Tags -->
   <title>WritOn — Words worth remembering.</title>
@@ -12,9 +21,14 @@
   <meta name="description" content="A quiet sanctuary for writers, poets, and avid story readers worldwide. Read deeply, write freely, and discover thoughtful voices." />
   <meta name="keywords" content="story writing app, read stories online, poetry app, creative writing, distraction free text editor, hindi shayari app, marathi sahitya, bengali literature" />
   <link rel="canonical" href="https://writon.cc/" />
+  <link rel="alternate" hreflang="en" href="https://writon.cc/" />
+  <link rel="alternate" hreflang="x-default" href="https://writon.cc/" />
+  <link rel="alternate" type="application/rss+xml" title="WritOn — Stories &amp; Essays" href="https://writon.cc/feed.xml" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
   <!-- Open Graph / Facebook / WhatsApp / LinkedIn -->
   <meta property="og:type" content="website" />
+  <meta property="og:locale" content="en_US" />
   <meta property="og:site_name" content="WritOn" />
   <meta property="og:url" content="https://writon.cc/" />
   <meta property="og:title" content="WritOn — Words worth remembering." />
@@ -101,24 +115,24 @@
 <body>
   <div class="paper-noise" aria-hidden="true"></div>
 
-  <header class="site-header" role="banner">
+  <header class="site-header" role="banner" data-nosnippet>
     <div class="container nav-wrap">
       <a class="brand" href="#top" aria-label="WritOn home">
-        <img src="assets/writon-logo.webp" alt="WritOn" width="148" height="50" />
+        <img src="assets/writon-logo.webp" alt="WritOn" width="148" height="50" decoding="async" />
       </a>
 
       <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false">
         <span></span><span></span><span></span>
       </button>
 
-      <nav class="main-nav" role="navigation" aria-label="Primary navigation">
+      <nav class="main-nav" role="navigation" aria-label="Primary navigation" data-nosnippet>
         <a href="#explore">Explore</a>
         <a href="#writers">For Writers</a>
         <a href="#readers">For Readers</a>
         <a href="#about">About</a>
       </nav>
 
-      <a class="button button-primary nav-cta play-store-link" href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon" target="_blank" rel="noopener noreferrer">
+      <a class="button button-primary nav-cta play-store-link" data-nosnippet href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon" target="_blank" rel="noopener noreferrer">
         <span class="play-mark" aria-hidden="true">▶</span>
         Get the App
       </a>
@@ -134,7 +148,7 @@
           <p class="hero-intro">A quiet sanctuary for writers, poets, and avid story readers worldwide.</p>
           <p class="hero-body">Read deeply. Write freely. Discover thoughtful voices, publish your own work, and support the words that stay with you.</p>
 
-          <div class="hero-actions">
+          <div class="hero-actions" data-nosnippet>
             <a class="button button-primary button-lg play-store-link" href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon" target="_blank" rel="noopener noreferrer">
               <span class="play-badge" aria-hidden="true">
                 <svg viewBox="0 0 24 24" width="22" height="22" role="img"><path fill="#34A853" d="M3 2.5 14 12 3 21.5z"/><path fill="#4285F4" d="M3 2.5 17 10 14 12z"/><path fill="#FBBC04" d="M14 12 17 14 3 21.5z"/><path fill="#EA4335" d="M17 10 21 12 17 14 14 12z"/></svg>
@@ -203,7 +217,7 @@
         </div>
 
         <div class="story-grid reveal">
-          <a class="story-card" href="/stories/the-extraordinary-protocol-of-bay-b-14-65q5t" data-category="Humour">
+          <a class="story-card" href="/stories/the-extraordinary-protocol-of-bay-b-14-65q5t" data-category="Humour" title="The Extraordinary Protocol of Bay B-14 — WritOn">
             <div class="story-art story-art-humour"></div>
             <div class="story-card-body">
               <div class="story-meta">HUMOUR · 3 MIN READ</div>
@@ -213,7 +227,7 @@
             </div>
           </a>
 
-          <a class="story-card" href="/stories/the-silt-and-the-brass-bell-dawn-at-chet-singh-ghat-sheoo" data-category="Culture">
+          <a class="story-card" href="/stories/the-silt-and-the-brass-bell-dawn-at-chet-singh-ghat-sheoo" data-category="Culture" title="The Silt and the Brass Bell — WritOn">
             <div class="story-art story-art-culture"></div>
             <div class="story-card-body">
               <div class="story-meta">CULTURE · 4 MIN READ</div>
@@ -223,7 +237,7 @@
             </div>
           </a>
 
-          <a class="story-card" href="/stories/the-stranger-on-the-11-45-local-n71m7" data-category="Life">
+          <a class="story-card" href="/stories/the-stranger-on-the-11-45-local-n71m7" data-category="Life" title="The Stranger on the 11:45 Local — WritOn">
             <img class="story-art-img" src="assets/history-crop.webp" alt="WritOn reading history preview" loading="lazy" decoding="async" width="360" height="190" />
             <div class="story-card-body">
               <div class="story-meta">LIFE · 3 MIN READ</div>
@@ -233,7 +247,7 @@
             </div>
           </a>
 
-          <a class="story-card" href="/stories/the-clockmaker-of-bowbazar-kxph9" data-category="Technology">
+          <a class="story-card" href="/stories/the-clockmaker-of-bowbazar-kxph9" data-category="Technology" title="The Clockmaker of Bowbazar — WritOn">
             <div class="story-art story-art-tech"></div>
             <div class="story-card-body">
               <div class="story-meta">TECH & CRAFT · 3 MIN READ</div>
@@ -303,7 +317,7 @@
       </div>
     </section>
 
-    <section id="cta" class="section-pad cta-section">
+    <section id="cta" class="section-pad cta-section" data-nosnippet>
       <div class="container cta-card reveal">
         <div class="cta-art" aria-hidden="true"></div>
         <div class="cta-content">
@@ -321,10 +335,10 @@
     </section>
   </main>
 
-  <footer class="site-footer" role="contentinfo">
+  <footer class="site-footer" role="contentinfo" data-nosnippet>
     <div class="container footer-grid">
       <div class="footer-brand">
-        <img src="assets/writon-logo.webp" alt="WritOn" width="148" height="50" />
+        <img src="assets/writon-logo.webp" alt="WritOn" width="148" height="50" loading="lazy" decoding="async" />
         <p>A quiet sanctuary for writers, poets, and avid story readers worldwide.</p>
       </div>
       <div>

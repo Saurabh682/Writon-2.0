@@ -165,6 +165,10 @@ export function sendFoundRedirect(reply, url) {
   return reply.code(302).header('Location', url).send();
 }
 
+export function sendPermanentRedirect(reply, url) {
+  return reply.code(301).header('Location', url).send();
+}
+
 const storyShareCss = `
 :root{color-scheme:light;--paper:#f8f2e9;--ink:#26211d;--muted:#756b61;--rust:#c94724;--line:#ded4c8}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -194,7 +198,7 @@ h1{margin:0;font:600 clamp(36px,6vw,60px)/1.08 Georgia,"Times New Roman",serif;l
 .cta{display:inline-flex;min-height:46px;align-items:center;justify-content:center;padding:0 22px;border-radius:999px;background:var(--rust);color:#fff;text-decoration:none;font-weight:700;font-size:14px}.store-link{display:inline-block;margin-left:16px;color:var(--muted);font-size:14px;text-decoration:underline}.tagline{margin-top:36px;color:var(--muted);font:italic 15px Georgia,serif}
 .sticky-app-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(248,242,233,0.96);backdrop-filter:blur(8px);border-top:1px solid var(--line);padding:10px 20px;display:flex;justify-content:space-between;align-items:center;z-index:100;box-shadow:0 -4px 12px rgba(0,0,0,0.06)}
 .sticky-app-bar .bar-text{font-size:13px;font-weight:600;color:var(--ink)}
-.sticky-app-bar .bar-btn{background:var(--rust);color:#fff;text-decoration:none;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px}
+.sticky-app-bar .bar-btn{background:var(--rust);color:#fff;text-decoration:none;font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;min-height:44px;display:inline-flex;align-items:center;justify-content:center}
 @media(max-width:520px){main{place-items:start;padding:20px;padding-bottom:70px}.story{padding-top:24px}.eyebrow{margin-top:30px}.summary{font-size:18px}}
 `;
 
@@ -205,6 +209,34 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;');
+}
+
+function escapeXml(unsafe) {
+  return String(unsafe ?? '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&apos;');
+}
+
+const OG_LOCALES = {
+  en: 'en_US',
+  hi: 'hi_IN',
+  mr: 'mr_IN',
+  bn: 'bn_IN',
+  es: 'es_ES',
+  fr: 'fr_FR',
+};
+
+function normalizeStoryLanguage(lang) {
+  const normalized = String(lang || '').trim().toLowerCase().split(/[-_]/)[0];
+  const supported = ['en', 'hi', 'mr', 'bn', 'es', 'fr'];
+  return supported.includes(normalized) ? normalized : 'en';
+}
+
+function toOgLocale(lang) {
+  return OG_LOCALES[lang] || 'en_US';
 }
 
 function formatContentToHtml(rawContent) {
@@ -308,13 +340,20 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
   const ogImageUrl = safePublicImageUrl(story.coverImage, story.authorAvatarUrl);
   const authorInitials = String(story.authorName || 'WritOn')
     .trim().split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('');
-  const imageMetadata = ogImageUrl
-    ? `<meta property="og:image" content="${escapeHtml(ogImageUrl)}"><meta property="og:image:alt" content="Cover illustration for ${escapeHtml(story.title)}"><meta name="twitter:image" content="${escapeHtml(ogImageUrl)}">`
-    : '';
+  const effectiveOgImage = ogImageUrl || `${origin || 'https://writon.cc'}/assets/hero-banner.webp`;
+  const imageMetadata = `<meta property="og:image" content="${escapeHtml(effectiveOgImage)}"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta property="og:image:alt" content="Cover artwork for ${escapeHtml(story.title)}"><meta name="twitter:image" content="${escapeHtml(effectiveOgImage)}">`;
   const authorVisual = authorVisualUrl
-    ? `<img src="${escapeHtml(authorVisualUrl)}" alt="Portrait of ${escapeHtml(story.authorName)}">`
+    ? `<img src="${escapeHtml(authorVisualUrl)}" alt="Portrait of ${escapeHtml(story.authorName)}" loading="lazy" decoding="async">`
     : `<div class="avatar-fallback" aria-hidden="true">${escapeHtml(authorInitials || 'W')}</div>`;
+  const coverVisual = story.coverImage
+    ? `<div class="cover-wrap"><img class="cover-img" src="${escapeHtml(story.coverImage)}" alt="Cover artwork for ${escapeHtml(story.title)}" loading="lazy" decoding="async"></div>`
+    : '';
   const canonical = new URL(canonicalUrl);
+  canonical.search = '';
+  canonical.hash = '';
+  const pureCanonicalUrl = canonical.toString();
+  const storyLang = normalizeStoryLanguage(story.language || story.languageCode || story.language_code || 'en');
+  const ogLocale = toOgLocale(storyLang);
   const playStoreTrackingUrl = `${playStoreUrl}?utm_source=google_search&utm_medium=story_web&utm_campaign=${encodeURIComponent(story.slug || 'story')}`;
   const appIntentUrl = `intent://${canonical.host}${canonical.pathname}#Intent;scheme=https;package=com.ibitvalley.writon;S.browser_fallback_url=${encodeURIComponent(playStoreTrackingUrl)};end`;
 
@@ -322,18 +361,27 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
   const publishedDateIso = new Date(story.publishedAt || story.createdAt || Date.now()).toISOString();
   const modifiedDateIso = new Date(story.updatedAt || story.publishedAt || story.createdAt || Date.now()).toISOString();
 
-  // JSON-LD Schema.org Structured Data
-  const jsonLd = {
-    '@context': 'https://schema.org',
+  // JSON-LD Schema.org Structured Data (BlogPosting + BreadcrumbList)
+  const categoryName = story.category || 'Literature';
+  const breadcrumbLd = {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin || 'https://writon.cc'}/` },
+      { '@type': 'ListItem', position: 2, name: categoryName, item: `${origin || 'https://writon.cc'}/stories?category=${encodeURIComponent(categoryName)}` },
+      { '@type': 'ListItem', position: 3, name: story.title, item: pureCanonicalUrl }
+    ]
+  };
+
+  const blogPostingLd = {
     '@type': 'BlogPosting',
     headline: story.title,
     description,
     articleBody: (story.content || story.summary || '').replace(/\s+/g, ' ').trim().slice(0, 5000),
-    url: canonicalUrl,
-    mainEntityOfPage: canonicalUrl,
+    url: pureCanonicalUrl,
+    mainEntityOfPage: pureCanonicalUrl,
     datePublished: publishedDateIso,
     dateModified: modifiedDateIso,
-    articleSection: story.category || 'Literature',
+    articleSection: categoryName,
     author: {
       '@type': 'Person',
       name: story.authorName || 'WritOn Author'
@@ -345,25 +393,45 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
     }
   };
   if (ogImageUrl) {
-    jsonLd.image = [ogImageUrl];
+    blogPostingLd.image = [ogImageUrl];
   }
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [breadcrumbLd, blogPostingLd]
+  };
+
   return `<!doctype html>
-<html lang="en">
+<html lang="${escapeXml(storyLang)}">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>${escapeHtml(title)}</title>
   <meta name="description" content="${escapeHtml(description)}">
-  <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+  <link rel="canonical" href="${escapeHtml(pureCanonicalUrl)}">
+  <link rel="alternate" hreflang="${escapeXml(storyLang)}" href="${pureCanonicalUrl}">
+  <link rel="alternate" hreflang="x-default" href="${pureCanonicalUrl}">
+  <link rel="alternate" type="application/rss+xml" title="WritOn — Stories &amp; Essays" href="${origin || 'https://writon.cc'}/feed.xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+  <link rel="preload" as="image" href="/assets/favicon-48x48.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2">
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png?v=2">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png?v=2">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png?v=2">
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png?v=2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2">
   <link rel="stylesheet" href="/stories/share.css">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="WritOn">
-  <meta property="og:url" content="${escapeHtml(canonicalUrl)}">
+  <meta property="og:url" content="${escapeHtml(pureCanonicalUrl)}">
   <meta property="og:title" content="${escapeHtml(title)}">
   <meta property="og:description" content="${escapeHtml(description)}">
   ${imageMetadata}
+  <meta property="og:locale" content="${escapeXml(ogLocale)}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
@@ -372,10 +440,10 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
 <body>
   <main>
     <article class="story">
-      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <header class="site-header" data-nosnippet style="display:flex; justify-content:space-between; align-items:baseline;">
         <a href="/stories" class="brand" style="text-decoration:none; color:inherit;">WritOn</a>
         <a href="/stories" style="font-size:13px; color:var(--muted); text-decoration:none; font-weight:600;">&larr; All Stories</a>
-      </div>
+      </header>
       <p class="eyebrow">${escapeHtml(story.category || 'Story')}</p>
       <h1>${escapeHtml(story.title)}</h1>
       ${story.summary ? `<p class="summary">${escapeHtml(story.summary)}</p>` : ''}
@@ -387,19 +455,23 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
         </div>
       </div>
 
+      ${coverVisual}
+
       <div class="story-body">
         ${formattedBody}
       </div>
 
-      <div style="margin-top:48px; padding-top:24px; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; align-items:center; gap:16px;">
+      <div class="app-banner" data-nosnippet style="margin-top:48px; padding-top:24px; border-top:1px solid var(--line); display:flex; flex-wrap:wrap; align-items:center; gap:16px;">
         <a class="cta" href="${escapeHtml(appIntentUrl)}">Open in WritOn App</a>
         <a class="store-link" href="${escapeHtml(playStoreTrackingUrl)}" target="_blank" rel="noopener">Get the app on Google Play</a>
       </div>
-      <p class="tagline">Words worth remembering.</p>
+      <footer class="story-footer" data-nosnippet>
+        <p class="tagline">Words worth remembering.</p>
+      </footer>
     </article>
   </main>
 
-  <div class="sticky-app-bar">
+  <div class="sticky-app-bar" data-nosnippet>
     <div class="bar-text">Read smoothly in WritOn</div>
     <a class="bar-btn" href="${escapeHtml(appIntentUrl)}">Open App</a>
   </div>
@@ -997,6 +1069,7 @@ await fastify.register(multipart, {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Privacy Policy - WritOn</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #2d3748; }
@@ -1028,6 +1101,7 @@ await fastify.register(multipart, {
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Terms of Service - WritOn</title>
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; max-width: 800px; margin: 40px auto; padding: 0 20px; color: #2d3748; }
@@ -1287,6 +1361,7 @@ function toReaderPost(row) {
   const cleanContent = stripWatermark(rawContent);
   return {
     ...row,
+    language: row.languageCode || row.language || 'en',
     content: cleanContent || row.content,
     author: {
       ...row.author,
@@ -2105,6 +2180,20 @@ fastify.get('/stories/share.css', async (_request, reply) => {
     .send(storyShareCss);
 });
 
+fastify.get('/stories/', async (request, reply) => {
+  const query = request.url.includes('?') ? request.url.slice(request.url.indexOf('?')) : '';
+  return sendPermanentRedirect(reply, `/stories${query}`);
+});
+
+fastify.get('/stories/:slug/', async (request, reply) => {
+  const parsedSlug = storyShareSlugSchema.safeParse(request.params.slug);
+  if (!parsedSlug.success) {
+    return reply.code(400).send({ error: 'Invalid story link' });
+  }
+  const query = request.url.includes('?') ? request.url.slice(request.url.indexOf('?')) : '';
+  return sendPermanentRedirect(reply, `/stories/${encodeURIComponent(parsedSlug.data)}${query}`);
+});
+
 fastify.get('/stories/:slug', async (request, reply) => {
   const parsedSlug = storyShareSlugSchema.safeParse(request.params.slug);
   if (!parsedSlug.success) {
@@ -2118,6 +2207,7 @@ fastify.get('/stories/:slug', async (request, reply) => {
        p.summary,
        p.content,
        p.category,
+       coalesce(nullif(p.language_code, 'und'), 'en') as "language",
        p.cover_image_url as "coverImage",
        coalesce(p.published_at, p.created_at) as "publishedAt",
        coalesce(p.updated_at, p.published_at, p.created_at) as "updatedAt",
@@ -3227,7 +3317,7 @@ fastify.patch(
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>WritOn - Account & Data Deletion Request</title>
   <style>
     :root {
@@ -3368,7 +3458,7 @@ fastify.patch(
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>WritOn - Child Safety &amp; Protection Standards</title>
   <style>
     :root {

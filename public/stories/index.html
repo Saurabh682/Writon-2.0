@@ -2,15 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title id="page-title">Story Preview — WritOn</title>
 
+  <!-- Favicon & Brand Icons (Google Search requires a multiple of 48px square) -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png?v=2" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png?v=2" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png?v=2" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png?v=2" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2" />
+
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link id="canonical-link" rel="canonical" href="https://writon.cc/stories" />
+  <link rel="alternate" hreflang="en" href="https://writon.cc/" />
+  <link rel="alternate" hreflang="x-default" href="https://writon.cc/" />
+  <link rel="alternate" type="application/rss+xml" title="WritOn — Stories &amp; Essays" href="https://writon.cc/feed.xml" />
   <meta id="meta-desc" name="description" content="Read thoughtful stories, poems, and essays on WritOn." />
   <meta property="og:type" content="article" />
+  <meta id="og-locale" property="og:locale" content="en_US" />
   <meta property="og:site_name" content="WritOn" />
   <meta id="og-title" property="og:title" content="WritOn — Story" />
   <meta id="og-desc" property="og:description" content="Read thoughtful stories on WritOn." />
   <meta id="og-img" property="og:image" content="https://writon.cc/assets/hero-banner.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,12 +36,12 @@
 </head>
 <body>
   <main>
-    <div id="loading" class="loading-box">
+    <div id="loading" class="loading-box" data-nosnippet>
       <p>Loading story...</p>
     </div>
 
     <article id="story-article" style="display:none;">
-      <header class="story-header">
+      <header class="story-header" data-nosnippet>
         <a href="/" class="brand-badge">
           <span>✒ WritOn</span>
         </a>
@@ -42,7 +59,7 @@
 
       <div id="story-content" class="story-content"></div>
 
-      <div class="app-cta-card">
+      <div class="app-cta-card" data-nosnippet>
         <h3>Continue Reading in WritOn</h3>
         <p>Enjoy distraction-free reading, offline library access, and join the writer discussion.</p>
         <div class="cta-buttons">
@@ -54,8 +71,82 @@
   </main>
 
   <script>
-    const API_BASE = "https://writon-powerup.onrender.com";
-    const PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.ibitvalley.writon";
+    const API_BASE = "https://api.writon.cc";
+    const FALLBACK_API_BASE = "https://writon-powerup.onrender.com";
+    const urlParams = new URLSearchParams(window.location.search);
+    const storyReferrer = `utm_source=${encodeURIComponent(urlParams.get('utm_source') || 'website')}&utm_medium=${encodeURIComponent(urlParams.get('utm_medium') || 'story_reader')}&utm_campaign=writon_growth_2026_09&utm_content=${encodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || 'story')}`;
+    const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=com.ibitvalley.writon&referrer=${encodeURIComponent(storyReferrer)}`;
+
+    document.querySelectorAll('.btn-store, a[href*="play.google.com"]').forEach(el => el.href = PLAY_STORE_URL);
+
+    function formatMarkdownToHtml(raw) {
+      if (!raw) return '';
+      // Strip watermarks
+      let text = raw
+        .replace(/<!--\s*#writon\s*watermark\s*-->/gi, '')
+        .replace(/<span\b[^>]*class=["']writon-watermark["'][^>]*>[\s\S]*?<\/span>/gi, '')
+        .replace(/^###\s+[^\n]+\n+/i, '')
+        .replace(/^\*[Bb]y\s+[^\n*]+\*\n+/i, '')
+        .trim();
+
+      // Escape HTML
+      text = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+
+      // Markdown formatting
+      text = text
+        .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/^(?:---|___|\*\*\*)$/gim, '<hr class="story-divider">')
+        .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/_(.*?)_/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code>$1</code>')
+        .replace(/\[(.*?)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+      const chunks = text.split(/\n\n+/).filter(Boolean);
+
+      return chunks.map(chunk => {
+        const trimmed = chunk.trim();
+        if (!trimmed) return '';
+        if (trimmed.startsWith('<h') || trimmed.startsWith('<hr')) return trimmed;
+
+        // Hashtags
+        if (/^#[a-zA-Z0-9_]+(?:\s+#[a-zA-Z0-9_]+)*$/.test(trimmed)) {
+          const tags = trimmed.split(/\s+/).map(t => `<span class="hashtag">${t}</span>`).join(' ');
+          return `<div class="story-hashtags">${tags}</div>`;
+        }
+
+        const lines = trimmed.split(/\n/);
+
+        // Blockquotes
+        if (lines.every(l => /^(?:&gt;|>)/.test(l.trim()))) {
+          const quoteContent = lines.map(l => l.trim().replace(/^(?:&gt;|>)\s*/, '')).join('<br>');
+          return `<blockquote><p>${quoteContent}</p></blockquote>`;
+        }
+
+        // Numbered Lists (1. , 2. )
+        if (lines.every(l => /^\d+\.\s+/.test(l.trim()))) {
+          const items = lines.map(l => `<li>${l.trim().replace(/^\d+\.\s+/, '')}</li>`).join('');
+          return `<ol>${items}</ol>`;
+        }
+
+        // Unordered Lists (- , * , • )
+        if (lines.every(l => /^(?:[-*•]|&bull;)\s+/.test(l.trim()))) {
+          const items = lines.map(l => `<li>${l.trim().replace(/^(?:[-*•]|&bull;)\s+/, '')}</li>`).join('');
+          return `<ul>${items}</ul>`;
+        }
+
+        return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
+      }).filter(Boolean).join('\n');
+    }
 
     async function loadStory() {
       const pathParts = window.location.pathname.split('/').filter(Boolean);
@@ -67,34 +158,112 @@
       }
 
       try {
-        const res = await fetch(`${API_BASE}/api/v1/posts/${encodeURIComponent(slug)}`);
+        let res = await fetch(`${API_BASE}/api/v1/posts/${encodeURIComponent(slug)}`).catch(() => null);
+        if (!res || !res.ok) {
+          res = await fetch(`${FALLBACK_API_BASE}/api/v1/posts/${encodeURIComponent(slug)}`);
+        }
         if (!res.ok) throw new Error("Story not found");
         const data = await res.json();
         const post = data.post || data;
+        const story = post;
+        document.documentElement.lang = story.language || 'en';
 
+        const OG_LOCALES = { en: 'en_US', hi: 'hi_IN', mr: 'mr_IN', bn: 'bn_IN', es: 'es_ES', fr: 'fr_FR' };
+        const storyLang = String(story.language || 'en').trim().toLowerCase().split(/[-_]/)[0];
+        const ogLocale = OG_LOCALES[storyLang] || 'en_US';
+        const ogLocaleEl = document.getElementById('og-locale');
+        if (ogLocaleEl) {
+          ogLocaleEl.setAttribute('content', ogLocale);
+        }
+
+        const authorName = post.author?.fullName || post.author?.penName || post.authorName || 'WritOn Author';
+        const authorAvatarUrl = post.author?.avatarUrl || post.authorAvatarUrl;
+        const readingTime = post.readingTimeMin || post.readingTimeMinutes || 3;
+        const coverImg = post.coverImage || post.coverImageUrl;
+
+        const storyUrl = `https://writon.cc/stories/${slug}`;
+        document.getElementById('canonical-link').href = storyUrl;
         document.getElementById('page-title').textContent = `${post.title} — WritOn`;
         document.getElementById('story-title').textContent = post.title;
-        document.getElementById('author-name').textContent = post.authorName || 'WritOn Author';
-        document.getElementById('reading-meta').textContent = `${post.category || 'Literature'} • ${post.readingTimeMinutes || 3} min read`;
+        document.getElementById('author-name').textContent = authorName;
+        document.getElementById('reading-meta').textContent = `${post.category || 'Literature'} • ${readingTime} min read`;
+        if (post.summary) {
+          document.getElementById('meta-desc').setAttribute('content', post.summary);
+          document.getElementById('og-desc').setAttribute('content', post.summary);
+        }
+        document.getElementById('og-title').setAttribute('content', `${post.title} — WritOn`);
+        if (coverImg) {
+          document.getElementById('og-img').setAttribute('content', coverImg);
+        }
+
+        // Schema.org Structured Data (BlogPosting + BreadcrumbList) for Google Search Rich Results
+        try {
+          const breadcrumbLd = {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://writon.cc/" },
+              { "@type": "ListItem", "position": 2, "name": post.category || "Stories", "item": `https://writon.cc/stories?category=${encodeURIComponent(post.category || 'Stories')}` },
+              { "@type": "ListItem", "position": 3, "name": post.title, "item": storyUrl }
+            ]
+          };
+
+          const blogPostingLd = {
+            "@type": "BlogPosting",
+            "mainEntityOfPage": { "@type": "WebPage", "@id": storyUrl },
+            "headline": post.title,
+            "description": post.summary || post.title,
+            "image": coverImg ? [coverImg] : ["https://writon.cc/assets/hero-banner.webp"],
+            "datePublished": post.createdAt ? new Date(post.createdAt).toISOString() : new Date().toISOString(),
+            "dateModified": post.updatedAt ? new Date(post.updatedAt).toISOString() : (post.createdAt ? new Date(post.createdAt).toISOString() : new Date().toISOString()),
+            "author": {
+              "@type": "Person",
+              "name": authorName,
+              "url": `https://writon.cc/stories?author=${encodeURIComponent(post.author?.penName || authorName)}`
+            },
+            "publisher": {
+              "@type": "Organization",
+              "name": "WritOn",
+              "url": "https://writon.cc",
+              "logo": {
+                "@type": "ImageObject",
+                "url": "https://writon.cc/assets/writon_app_icon.png"
+              }
+            },
+            "articleSection": post.category || "Literature"
+          };
+
+          let jsonLdScript = document.getElementById('story-jsonld');
+          if (!jsonLdScript) {
+            jsonLdScript = document.createElement('script');
+            jsonLdScript.id = 'story-jsonld';
+            jsonLdScript.type = 'application/ld+json';
+            document.head.appendChild(jsonLdScript);
+          }
+          jsonLdScript.textContent = JSON.stringify({
+            "@context": "https://schema.org",
+            "@graph": [breadcrumbLd, blogPostingLd]
+          });
+        } catch (schemaErr) {
+          console.warn('Could not inject JSON-LD schema:', schemaErr);
+        }
 
         // Avatar
         const avatarWrap = document.getElementById('author-avatar-wrap');
-        if (post.authorAvatarUrl) {
-          avatarWrap.innerHTML = `<img class="author-avatar" src="${post.authorAvatarUrl}" alt="${post.authorName}">`;
+        if (authorAvatarUrl) {
+          avatarWrap.innerHTML = `<img class="author-avatar" src="${authorAvatarUrl}" alt="Portrait of ${authorName}" loading="lazy" decoding="async">`;
         } else {
-          const initial = (post.authorName || 'W')[0].toUpperCase();
+          const initial = (authorName || 'W')[0].toUpperCase();
           avatarWrap.innerHTML = `<div class="author-avatar-fallback">${initial}</div>`;
         }
 
         // Cover
-        if (post.coverImageUrl) {
-          document.getElementById('cover-wrap').innerHTML = `<img class="cover-img" src="${post.coverImageUrl}" alt="${post.title}">`;
+        if (coverImg) {
+          document.getElementById('cover-wrap').innerHTML = `<img class="cover-img" src="${coverImg}" alt="Cover artwork for ${post.title}" loading="lazy" decoding="async">`;
         }
 
-        // Content
+        // Rich Formatted Content
         const contentDiv = document.getElementById('story-content');
-        const paragraphs = (post.content || post.summary || '').split('\n\n').filter(Boolean);
-        contentDiv.innerHTML = paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+        contentDiv.innerHTML = formatMarkdownToHtml(post.content || post.summary || '');
 
         // App Intent
         const intentUrl = `intent://writon.cc/stories/${slug}#Intent;scheme=https;package=com.ibitvalley.writon;S.browser_fallback_url=${encodeURIComponent(PLAY_STORE_URL)};end`;
