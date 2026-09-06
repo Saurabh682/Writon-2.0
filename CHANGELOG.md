@@ -9,10 +9,17 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Package Name**: `com.ibitvalley.writon`
 - **Current Version**: `2.0.51 (Version Code: 153)`
 
+### Social Media Publishing — Sprint 2 Day 1 Evening Drops (September 06, 2026)
+- **Instagram Feed Carousel Published**: Published 5-panel 1080×1350 carousel (`2609_d06_ig_carousel_en_sprint2_main_start_with_one_paragraph`, Post ID: `17862519315677737`) to `@writon_socialapp` with high-traffic discovery hashtags (`#writon #writingcommunity #amwriting #storytelling #writersofinstagram #books #creators`).
+- **Threads Carousel Published**: Published 5-panel carousel (`2609_d06_threads_carousel_en_sprint2_main_start_with_one_paragraph`, Post ID: `18104585339251444`) to `@writon_socialapp`.
+- **X (Twitter) Evening Feed Card Published**: Published evening reflection card (`2609_d06_x_card_en_sprint2_pm_start_with_one_paragraph`, Post ID: `2096580999165694228`) to `@WritOn_Social` with attached visual card and hashtags (`#writon #writingcommunity #amwriting #storytelling #writersoftwitter`).
+- Synchronized `campaign/published-history.json` and `campaign/antigravity-2026-09-06-19/publishing-calendar.csv`.
+
 ### Shared story routing and author imagery (September 06, 2026)
 - Changed story sharing to use the verified `writon.cc/stories/<slug>` App Link so opening a shared link routes to that exact story in WritOn.
 - Corrected server-rendered story app intents to target the verified public story host without changing the existing API contract.
 - Kept legacy profile-media URLs canonicalized through `api.writon.cc` and added an initials fallback when a public story avatar cannot load.
+- Restored the branded category cover artwork whenever a story has no cover or its remote cover fails to load, across every screen using the shared story-cover component.
 
 ### Native crash symbolication (September 06, 2026)
 - Enabled `SYMBOL_TABLE` native debug metadata for release builds so Gradle automatically packages any available native symbols for Google Play.

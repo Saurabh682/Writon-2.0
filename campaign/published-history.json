@@ -1,0 +1,175 @@
+{
+  "publishedDays": {
+    "1": {
+      "day": 1,
+      "theme": "The Pen Name Landgrab",
+      "timestamp": "2026-09-02T04:43:48+0000",
+      "instagram": {
+        "success": true,
+        "postId": "18091628753405963",
+        "permalink": "https://www.instagram.com/p/DcxaAOzFK2R/"
+      },
+      "x": {
+        "success": true,
+        "postId": "2095022007876464743",
+        "permalink": "https://x.com/WritOn_Social/status/2095022007876464743"
+      }
+    },
+    "2": {
+      "day": 2,
+      "theme": "The Notes App Graveyard",
+      "shortlink": "https://writon.cc/go/2609_d02_ig_carousel_en_notes",
+      "timestamp": "2026-09-02T14:50:40.000Z",
+      "instagram": {
+        "success": true,
+        "postId": "18119244742864134",
+        "permalink": "https://www.instagram.com/p/DcyfcfYGoX_/"
+      },
+      "x": {
+        "success": true,
+        "postId": "2095161124379652420",
+        "permalink": "https://x.com/WritOn_Social/status/2095161124379652420"
+      },
+      "threads": {
+        "success": true,
+        "postId": "17989242954049332"
+      }
+    },
+    "3": {
+      "day": 3,
+      "timestamp": "2026-09-03T04:02:21.039Z",
+      "campaignA_english": {
+        "theme": "The Ground Floor Advantage",
+        "instagram": {
+          "success": true,
+          "postId": "18026919023852678",
+          "permalink": "https://www.instagram.com/p/Dcz5zqHGqtb/"
+        },
+        "shortlink": "https://writon.cc/go/2609_d03_ig_carousel_en_groundfloor",
+        "x": {
+          "success": true,
+          "postId": "2095362529388290320",
+          "permalink": "https://x.com/WritOn_Social/status/2095362529388290320"
+        }
+      },
+      "campaignB_hindi": {
+        "theme": "साहित्यिक कोना • बल्लीमारान की शाम",
+        "instagram": {
+          "success": true,
+          "postId": "18363226426246089",
+          "permalink": "https://www.instagram.com/p/Dcz583TGo7H/"
+        },
+        "shortlink": "https://writon.cc/go/2609_d03_ig_post_hi_verified_poem_quote",
+        "x": {
+          "success": true,
+          "postId": "2095362634241736921",
+          "permalink": "https://x.com/WritOn_Social/status/2095362634241736921"
+        }
+      }
+    },
+    "4": {
+      "day": 4,
+      "theme": "The Golden Window (FOMO Edition)",
+      "timestamp": "2026-09-04T19:48:32.745Z",
+      "shortlink": "https://writon.cc/go/2609_d04_ig_carousel_en_fomo",
+      "instagram": {
+        "success": true,
+        "carouselId": "18103047631998010",
+        "publishedPostId": "18113465488791737",
+        "result": {
+          "id": "18113465488791737"
+        }
+      },
+      "instagram_story": {
+        "success": true,
+        "containerId": "18103049956998010",
+        "storyId": "18125107543701442",
+        "publishedAt": "2026-09-04T19:58:21Z"
+      },
+      "x": {
+        "success": true,
+        "postId": "2095963606554943960",
+        "replyId": "2095963649651462150",
+        "permalink": "https://x.com/WritOn_Social/status/2095963606554943960"
+      },
+      "threads": {
+        "success": true,
+        "postId": "18623304844058676",
+        "containerId": "18097663118094210"
+      },
+      "telegram": null
+    },
+    "5": {
+      "day": 5,
+      "theme": "Author Spotlight: Devansh Roy",
+      "timestamp": "2026-09-05T03:38:17.332Z",
+      "shortlink": "https://writon.cc/go/2609_d05_ig_carousel_en_author_spotlight",
+      "instagram_carousel": {
+        "success": true,
+        "carouselId": "18103117873998010",
+        "publishedPostId": "17967945285154014"
+      },
+      "instagram_story": {
+        "success": true,
+        "storyId": "18633919555036097",
+        "containerId": "18103117885998010"
+      },
+      "x": {
+        "success": true,
+        "postId": "2096080964791459895",
+        "replyId": "2096080967073223038",
+        "permalink": "https://x.com/WritOn_Social/status/2096080964791459895"
+      },
+      "threads": {
+        "success": true,
+        "containerId": "18097746794094210",
+        "postId": "18359488465246358",
+        "permalink": "https://www.threads.net/@writon_socialapp"
+      }
+    },
+    "sprint2_day1": {
+      "sprintDay": 1,
+      "date": "2026-09-06",
+      "executedAt": "2026-09-06T07:23:45.062Z",
+      "outcomes": [
+        {
+          "deliveryId": "2609_d06_ig_story_en_sprint2_midday_start_with_one_paragraph",
+          "platform": "ig",
+          "timeIst": "12:30",
+          "timestamp": "2026-09-06T07:23:28.480Z",
+          "publishedPostId": "18100765196198419",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d06_ig_story_en_sprint2_midday_start_with_one_paragraph",
+          "success": true
+        },
+        {
+          "deliveryId": "2609_d06_ig_carousel_en_sprint2_main_start_with_one_paragraph",
+          "platform": "ig",
+          "surface": "feed_carousel",
+          "timestamp": "2026-09-06T12:47:17.200Z",
+          "publishedPostId": "17862519315677737",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "success": true
+        },
+        {
+          "deliveryId": "2609_d06_threads_carousel_en_sprint2_main_start_with_one_paragraph",
+          "platform": "threads",
+          "surface": "feed_carousel",
+          "timestamp": "2026-09-06T12:47:17.201Z",
+          "publishedPostId": "18104585339251444",
+          "permalink": "https://www.threads.net/@writon_socialapp",
+          "success": true
+        },
+        {
+          "deliveryId": "2609_d06_x_card_en_sprint2_pm_start_with_one_paragraph",
+          "platform": "x",
+          "surface": "feed_card",
+          "timestamp": "2026-09-06T12:47:17.201Z",
+          "publishedPostId": "2096580999165694228",
+          "permalink": "https://x.com/WritOn_Social/status/2096580999165694228",
+          "success": true
+        }
+      ]
+    }
+  }
+}
