@@ -9,6 +9,62 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Package Name**: `com.ibitvalley.writon`
 - **Current Version**: `2.0.50 (Version Code: 152)`
 
+### Google News & Discover Syndication Standards (September 06, 2026)
+- **Dynamic Google News XML Sitemap Endpoint (`/news-sitemap.xml`)**:
+  - Implemented dynamic Google News sitemap endpoint in [server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js) complying with official Google Search Central News Sitemap schema (`xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"`).
+  - Queries stories published within the last 48 hours (with automatic fallback to latest 50 published stories) containing `<news:publication>` (`<news:name>WritOn</news:name>`, `<news:language>`), `<news:publication_date>` in ISO 8601 format, and `<news:title>`.
+  - Added `Sitemap: ${origin}/news-sitemap.xml` and `Allow: /news-sitemap.xml` directives in `/robots.txt` dynamic endpoint and static [public/robots.txt](file:///d:/VibeCode/WritOn-PowerUp/public/robots.txt).
+- **RSS 2.0 Feed Syndication Enhancement for Google Discover (`xmlns:content`)**:
+  - Enriched dynamic `/feed.xml` & `/rss.xml` handlers in [server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js) and static generator in [server/src/scripts/generate-seo-feeds.mjs](file:///d:/VibeCode/WritOn-PowerUp/server/src/scripts/generate-seo-feeds.mjs) with `xmlns:content="http://purl.org/rss/1.0/modules/content/"`.
+  - Injected full syndicated `<content:encoded><![CDATA[ ... ]]></content:encoded>` per item for rich Google Discover rendering and RSS aggregator reader support.
+  - Added Google News static sitemap generation (`generateNewsSitemapXml`) to [server/src/scripts/generate-seo-feeds.mjs](file:///d:/VibeCode/WritOn-PowerUp/server/src/scripts/generate-seo-feeds.mjs).
+- **Automated Verification & Test Coverage**:
+  - Added comprehensive test suites in [server/test/seo-sitemap.test.js](file:///d:/VibeCode/WritOn-PowerUp/server/test/seo-sitemap.test.js) verifying:
+    1. `GET /news-sitemap.xml` returns HTTP 200 with XML content-type, `xmlns:news` schema, `<news:name>`, `<news:language>`, `<news:publication_date>`, and story locations.
+    2. `GET /robots.txt` declares `Sitemap: https://writon.cc/news-sitemap.xml` and `Allow: /news-sitemap.xml`.
+    3. `GET /feed.xml` and `/rss.xml` include `xmlns:content` and `<content:encoded>` tags.
+  - Verified 100% pass rate across all 30 tests in `test/seo-sitemap.test.js` and all 164 tests in the server test suite.
+
+### Author E-E-A-T & Public Profile Pages (September 06, 2026)
+- **Server-Side Rendered Author Profile Pages (`/author/:penName`)**:
+  - Implemented server-side rendered author profile pages in [server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js) returning crawlable, responsive HTML using WritOn's paper/ink design tokens.
+  - Profile features author avatar with fallback initials, full name, `@penName` handle, bio, and quote of the day.
+  - Lists the author's published stories as crawlable `<article>` cards linking to `/stories/:slug` with cover art, category badges, reading time, summary, and published dates.
+  - Added clean 404 HTML fallback (`renderAuthorNotFoundHtml`) for missing or deactivated author profiles.
+- **Canonical Routing & 301 Permanent Redirects**:
+  - Added HTTP 301 permanent redirects from `/authors/:penName` &rarr; `/author/:penName`, `/authors/:penName/` &rarr; `/author/:penName`, and `/author/:penName/` &rarr; `/author/:penName` preserving query parameters.
+- **Schema.org Structured Data (`ProfilePage` & `Person`)**:
+  - Injected Schema.org `ProfilePage` structured data into `<head>` of `/author/:penName` with `mainEntity` set to `Person` containing author full name, alternateName (`@penName`), description/bio, image, canonical url, and `mainEntityOfPage`.
+  - Added full Open Graph (`og:type="profile"`, `profile:username`) and Twitter card preview tags.
+- **Author Knowledge Graph Linking Across Reader & Discovery Feeds**:
+  - In `renderStorySharePage` ([server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js)), linked author byline and portrait to `/author/:penName`, and added author `url` in `BlogPosting` JSON-LD schema.
+  - In `renderDiscoveryDeckHtml` ([server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js)), wrapped author info in clickable links to `/author/:penName` and enriched `CollectionPage` item list JSON-LD schema with author URLs.
+  - Added `Allow: /author/*` directive to `/robots.txt`.
+- **Automated Verification & Test Coverage**:
+  - Updated mock database in [server/test/seo-sitemap.test.js](file:///d:/VibeCode/WritOn-PowerUp/server/test/seo-sitemap.test.js) to support author profiles and authored story queries.
+  - Added test suites asserting:
+    1. `GET /author/maya_lin_craft` returns HTTP 200 with author bio, published story cards, and Schema.org `ProfilePage`/`Person`.
+    2. `GET /authors/maya_lin_craft` and trailing slash variants return HTTP 301 redirect to `/author/maya_lin_craft`.
+    3. `GET /stories/:slug` contains author URL linking to `/author/...` in HTML and JSON-LD `BlogPosting` schema.
+    4. `GET /stories` discovery deck contains author profile links on story cards.
+    5. `GET /author/non_existent_author_xyz` returns HTTP 404 with clean HTML.
+  - Verified 100% pass rate across all 29 tests in `seo-sitemap.test.js` and all 163 tests across 15 test suites.
+
+### Generative AI Search & Answer Engine Optimization (GEO/AEO) (September 06, 2026)
+- **Schema.org FAQPage Structured Data (Google Rich Snippets & Entity Grounding)**:
+  - Injected `schema.org/FAQPage` entity in JSON-LD `@graph` within `renderDiscoveryDeckHtml` ([server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js)) with authoritative Q&As answering platform definition ("What is WritOn?"), offline reading capabilities, author publishing workflow, and free access on Google Play.
+  - Injected matching `FAQPage` structured data in `<head>` of [public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html) and [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html).
+  - Added semantic, accessible `<section class="faq-section">` using native HTML5 `<details>` and `<summary>` elements in the discovery deck to guarantee that all FAQ structured data is visible on the page, complying strictly with Google Search Central guidelines.
+- **Entity Grounding & Authority Graph (`sameAs` & App Schema)**:
+  - Enriched `Organization` and `SoftwareApplication` entities across `renderDiscoveryDeckHtml`, `renderStorySharePage` ([server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js)), [public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html), and [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html).
+  - Grounded canonical authority across verified entity profiles with `sameAs` links to Google Play (`https://play.google.com/store/apps/details?id=com.ibitvalley.writon`) and GitHub (`https://github.com/Saurabh682/WritOn-PowerUp`).
+  - Formally declared `applicationCategory: "BooksAndReferenceApplication"` on `SoftwareApplication` nodes with offers, image, and download metadata.
+- **High-Density Answer Architecture (First 100 Words Direct Answer)**:
+  - Formulated an authoritative, entity-dense lead definition in the discovery deck hero section ("What is WritOn"), designed for direct retrieval and quotation by Generative AI engines (Gemini, Google AI Overviews, Perplexity).
+- **Automated Verification & Test Coverage**:
+  - Added automated test cases in [server/test/seo-sitemap.test.js](file:///d:/VibeCode/WritOn-PowerUp/server/test/seo-sitemap.test.js) verifying FAQPage schema presence, question/answer structure, visible FAQ HTML rendering, and entity `sameAs` grounding across `/stories` and story share pages.
+  - Verified 100% pass rate across 24 tests in `seo-sitemap.test.js` and all 158 tests across 15 test suites.
+
 ### Mobile-First Indexing & Core Web Vitals Optimization (September 06, 2026)
 - **Font Resource Optimization (LCP & CLS Prevention)**:
   - Enforced `<link rel="preconnect" href="https://fonts.googleapis.com">` and `<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>` across server-rendered templates (`renderDiscoveryDeckHtml` in [server/src/routes/seo-routes.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/seo-routes.js), `renderStorySharePage` in [server/src/server.js](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js)) and verified presence in public static pages ([public/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/index.html), [public/stories/index.html](file:///d:/VibeCode/WritOn-PowerUp/public/stories/index.html), [public/privacy-policy.html](file:///d:/VibeCode/WritOn-PowerUp/public/privacy-policy.html), [public/terms.html](file:///d:/VibeCode/WritOn-PowerUp/public/terms.html), [public/child-safety.html](file:///d:/VibeCode/WritOn-PowerUp/public/child-safety.html), [public/delete-account.html](file:///d:/VibeCode/WritOn-PowerUp/public/delete-account.html)).

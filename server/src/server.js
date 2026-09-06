@@ -176,7 +176,7 @@ main{min-height:100vh;display:grid;place-items:center;padding:32px 20px;padding-
 .brand{font:600 18px Georgia,serif;letter-spacing:.02em}.eyebrow{margin:42px 0 14px;color:var(--rust);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 h1{margin:0;font:600 clamp(36px,6vw,60px)/1.08 Georgia,"Times New Roman",serif;letter-spacing:-.025em}.summary{margin:20px 0 26px;font:400 20px/1.6 Georgia,"Times New Roman",serif;color:#4f4740}
 .author{display:flex;align-items:center;gap:14px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.author img,.avatar-fallback{width:56px;height:56px;border-radius:50%;object-fit:cover;background:#eee3d6}
-.avatar-fallback{display:grid;place-items:center;color:var(--rust);font:600 20px Georgia,serif}.byline{margin:0 0 2px;color:var(--muted);font-size:12px}.author-name{margin:0;font-weight:700;font-size:15px}
+.avatar-fallback{display:grid;place-items:center;color:var(--rust);font:600 20px Georgia,serif}.byline{margin:0 0 2px;color:var(--muted);font-size:12px}.author-name{margin:0;font-weight:700;font-size:15px}.author-link{text-decoration:none;color:inherit;display:flex;align-items:center;gap:14px}.author-link:hover .author-name{color:var(--rust)}
 .story-body{margin-top:28px;font:400 18px/1.8 Georgia,"Times New Roman",serif;color:#2c2621}
 .story-body h2{margin:36px 0 16px;font:600 26px/1.2 Georgia,serif}
 .story-body h3{margin:28px 0 12px;font:600 20px/1.3 Georgia,serif}
@@ -384,21 +384,45 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
     articleSection: categoryName,
     author: {
       '@type': 'Person',
-      name: story.authorName || 'WritOn Author'
+      name: story.authorName || 'WritOn Author',
+      ...(story.authorPenName ? { url: `${origin || 'https://writon.cc'}/author/${encodeURIComponent(story.authorPenName)}` } : {})
     },
     publisher: {
       '@type': 'Organization',
       name: 'WritOn',
-      url: origin || 'https://writon.cc'
+      url: origin || 'https://writon.cc',
+      logo: `${origin || 'https://writon.cc'}/assets/writon_app_icon.png`,
+      sameAs: [
+        'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+        'https://github.com/Saurabh682/WritOn-PowerUp'
+      ]
     }
   };
   if (ogImageUrl) {
     blogPostingLd.image = [ogImageUrl];
   }
 
+  const softwareAppLd = {
+    '@type': 'SoftwareApplication',
+    name: 'WritOn',
+    operatingSystem: 'Android',
+    applicationCategory: 'BooksAndReferenceApplication',
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD'
+    },
+    url: origin || 'https://writon.cc',
+    downloadUrl: playStoreUrl || 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+    sameAs: [
+      'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+      'https://github.com/Saurabh682/WritOn-PowerUp'
+    ]
+  };
+
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@graph': [breadcrumbLd, blogPostingLd]
+    '@graph': [breadcrumbLd, blogPostingLd, softwareAppLd]
   };
 
   return `<!doctype html>
@@ -448,11 +472,19 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
       <h1>${escapeHtml(story.title)}</h1>
       ${story.summary ? `<p class="summary">${escapeHtml(story.summary)}</p>` : ''}
       <div class="author">
+        ${story.authorPenName ? `
+        <a href="/author/${encodeURIComponent(story.authorPenName)}" class="author-link">
+          ${authorVisual}
+          <div>
+            <p class="byline">Written by</p>
+            <p class="author-name">${escapeHtml(story.authorName)} <span style="font-weight:400; color:var(--muted);">(@${escapeHtml(story.authorPenName)})</span></p>
+          </div>
+        </a>` : `
         ${authorVisual}
         <div>
           <p class="byline">Written by</p>
-          <p class="author-name">${escapeHtml(story.authorName)} ${story.authorPenName ? `<span style="font-weight:400; color:var(--muted);">(@${escapeHtml(story.authorPenName)})</span>` : ''}</p>
-        </div>
+          <p class="author-name">${escapeHtml(story.authorName)}</p>
+        </div>`}
       </div>
 
       ${coverVisual}

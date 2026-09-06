@@ -74,6 +74,8 @@ function generateRssFeedXml(posts) {
       mediaTag = `\n      <media:content url="${escapeXml(coverUrl)}" medium="image" />`;
     }
 
+    const storyContent = post.content || summary;
+
     return `    <item>
       <title>${escapeXml(post.title)}</title>
       <link>${escapeXml(storyUrl)}</link>
@@ -81,13 +83,15 @@ function generateRssFeedXml(posts) {
       <pubDate>${escapeXml(pubDate)}</pubDate>
       <dc:creator>${escapeXml(authorName)}</dc:creator>
       <category>${escapeXml(category)}</category>
-      <description>${escapeXml(summary)}</description>${mediaTag}
+      <description>${escapeXml(summary)}</description>
+      <content:encoded><![CDATA[${String(storyContent).replace(/\]\]>/g, ']]]]><![CDATA[>')}]]></content:encoded>${mediaTag}
     </item>`;
   }).join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" 
      xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
      xmlns:dc="http://purl.org/dc/elements/1.1/"
      xmlns:media="http://search.yahoo.com/mrss/">
   <channel>
@@ -192,6 +196,46 @@ ${urlsXml}
 `;
 }
 
+function generateNewsSitemapXml(posts) {
+  const now = Date.now();
+  const twoDaysAgo = now - 48 * 60 * 60 * 1000;
+
+  // Filter for posts published within last 48 hours, or fallback to latest 50
+  let recentPosts = posts.filter((post) => {
+    const pubTime = new Date(post.publishedAt || post.createdAt || 0).getTime();
+    return pubTime >= twoDaysAgo;
+  });
+
+  if (recentPosts.length === 0) {
+    recentPosts = posts.slice(0, 50);
+  }
+
+  const itemsXml = recentPosts.map((story) => {
+    const storyUrl = `${SITE_BASE_URL}/stories/${encodeURIComponent(story.slug)}`;
+    const pubDate = (story.publishedAt || story.createdAt) ? new Date(story.publishedAt || story.createdAt).toISOString() : new Date().toISOString();
+    const language = story.language || story.languageCode || story.language_code || 'en';
+
+    return `  <url>
+    <loc>${storyUrl}</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>${escapeXml(language === 'und' ? 'en' : language)}</news:language>
+      </news:publication>
+      <news:publication_date>${pubDate}</news:publication_date>
+      <news:title>${escapeXml(story.title)}</news:title>
+    </news:news>
+  </url>`;
+  }).join('\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+${itemsXml}
+</urlset>
+`;
+}
+
 async function main() {
   const posts = await fetchAllPosts();
 
@@ -206,6 +250,12 @@ async function main() {
   const sitemapPath = path.join(PUBLIC_DIR, 'sitemap.xml');
   fs.writeFileSync(sitemapPath, sitemapXml, 'utf8');
   console.log(`Wrote full sitemap to ${sitemapPath} (${sitemapXml.length} bytes, ${posts.length + 19} total URLs).`);
+
+  // 3. Generate public/news-sitemap.xml
+  const newsSitemapXml = generateNewsSitemapXml(posts);
+  const newsSitemapPath = path.join(PUBLIC_DIR, 'news-sitemap.xml');
+  fs.writeFileSync(newsSitemapPath, newsSitemapXml, 'utf8');
+  console.log(`Wrote Google News sitemap to ${newsSitemapPath} (${newsSitemapXml.length} bytes).`);
 }
 
 main().catch((err) => {

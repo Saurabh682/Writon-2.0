@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" 
      xmlns:atom="http://www.w3.org/2005/Atom"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/"
      xmlns:dc="http://purl.org/dc/elements/1.1/"
      xmlns:media="http://search.yahoo.com/mrss/">
   <channel>
@@ -8,7 +9,7 @@
     <link>https://writon.cc/stories</link>
     <description>Curated independent essays, craft reflections, poetry, and ideas on modern culture. Read 700+ literary stories on WritOn.</description>
     <language>en-us</language>
-    <lastBuildDate>Sun, 06 Sep 2026 09:41:17 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 06 Sep 2026 10:15:19 GMT</lastBuildDate>
     <atom:link href="https://writon.cc/feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>https://writon.cc/assets/writon_app_icon.png</url>
@@ -23,6 +24,7 @@
       <dc:creator>Devika Prasad</dc:creator>
       <category>Essays</category>
       <description>Standing in a century-old Malleshwaram service alley, an observer watches the demolition of an ancestral home, tracing the silent violence of asphalt and architectural salvage.</description>
+      <content:encoded><![CDATA[Standing in a century-old Malleshwaram service alley, an observer watches the demolition of an ancestral home, tracing the silent violence of asphalt and architectural salvage.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -33,6 +35,7 @@
       <dc:creator>Sanjay Rawat</dc:creator>
       <category>Essays</category>
       <description>At dawn on a Garhwal ridge, an ancient stone naula reveals the quiet hydrological struggle between water-yielding oak groves and invasive pine plantations.</description>
+      <content:encoded><![CDATA[At dawn on a Garhwal ridge, an ancient stone naula reveals the quiet hydrological struggle between water-yielding oak groves and invasive pine plantations.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -43,6 +46,7 @@
       <dc:creator>Farhan Akhtar Kazmi</dc:creator>
       <category>Short Stories</category>
       <description>In a six-foot alcove of Urdu Bazaar, an aging katib cuts a fresh bamboo reed to letter an ancestral property deed against the noise of digital presses.</description>
+      <content:encoded><![CDATA[In a six-foot alcove of Urdu Bazaar, an aging katib cuts a fresh bamboo reed to letter an ancestral property deed against the noise of digital presses.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -53,6 +57,7 @@
       <dc:creator>Harpreet Singh</dc:creator>
       <category>Poetry</category>
       <description>A midnight vigil beside a diesel tubewell in the Punjab winter, measuring the human cost of irrigation against the mystic verses of Baba Farid.</description>
+      <content:encoded><![CDATA[A midnight vigil beside a diesel tubewell in the Punjab winter, measuring the human cost of irrigation against the mystic verses of Baba Farid.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -63,6 +68,7 @@
       <dc:creator>Kamna Jha (Kanu)</dc:creator>
       <category>Shayari</category>
       <description>Urdu ke khoobsurat ash&apos;aar jo dil ki gehraiyon aur umeed ke charaghon ko bayaan karte hain.</description>
+      <content:encoded><![CDATA[Urdu ke khoobsurat ash'aar jo dil ki gehraiyon aur umeed ke charaghon ko bayaan karte hain.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1514565131-fce0801e5785?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -73,6 +79,7 @@
       <dc:creator>Roshni Verma</dc:creator>
       <category>Poetry</category>
       <description>A lyrical meditation on stillness, rain on stone, and words left unsaid.</description>
+      <content:encoded><![CDATA[A lyrical meditation on stillness, rain on stone, and words left unsaid.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -83,6 +90,7 @@
       <dc:creator>Jatin Vohra</dc:creator>
       <category>Short Stories</category>
       <description>A short fiction on the subtle intersections of ordinary lives in a bustling metropolis.</description>
+      <content:encoded><![CDATA[A short fiction on the subtle intersections of ordinary lives in a bustling metropolis.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -93,6 +101,7 @@
       <dc:creator>Mirza Tariq</dc:creator>
       <category>Shayari</category>
       <description>Mohabbat, khamoshi aur zindagi ke mukhtalif rangon par mabni pur-asar ghazal.</description>
+      <content:encoded><![CDATA[Mohabbat, khamoshi aur zindagi ke mukhtalif rangon par mabni pur-asar ghazal.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -103,6 +112,7 @@
       <dc:creator>Riya Sharma</dc:creator>
       <category>Trending</category>
       <description>With OpenAI’s GPT-6 Astra pushing LLMs into direct &apos;computer-use&apos; territory, Riya Sharma analyzes the quiet collapse of traditional authentication boundaries.</description>
+      <content:encoded><![CDATA[With OpenAI’s GPT-6 Astra pushing LLMs into direct 'computer-use' territory, Riya Sharma analyzes the quiet collapse of traditional authentication boundaries.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -113,6 +123,7 @@
       <dc:creator>Ananya Bose</dc:creator>
       <category>Short Stories</category>
       <description>An atmospheric urban narrative of unspoken memories, chance meetings, and old city corridors.</description>
+      <content:encoded><![CDATA[An atmospheric urban narrative of unspoken memories, chance meetings, and old city corridors.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1476820865390-c52aeebb9891?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -123,6 +134,7 @@
       <dc:creator>Zafar Iqbal</dc:creator>
       <category>Culture</category>
       <description>An exploration of living traditions, street history, and the soulful rhythm of Indian cities.</description>
+      <content:encoded><![CDATA[An exploration of living traditions, street history, and the soulful rhythm of Indian cities.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -133,6 +145,7 @@
       <dc:creator>Anjali Nambisan</dc:creator>
       <category>Poetry</category>
       <description>Verses on quiet hours, memory, and the unhurried texture of evening shadows.</description>
+      <content:encoded><![CDATA[Verses on quiet hours, memory, and the unhurried texture of evening shadows.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -143,6 +156,7 @@
       <dc:creator>Anand Verma</dc:creator>
       <category>Trending</category>
       <description>Anand Verma explores how the newly launched Tata Curvv Series X refactors the entry-level experience, drawing parallels between automotive trim leveling and web performance optimization.</description>
+      <content:encoded><![CDATA[Anand Verma explores how the newly launched Tata Curvv Series X refactors the entry-level experience, drawing parallels between automotive trim leveling and web performance optimization.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -153,6 +167,7 @@
       <dc:creator>Kevin Vance</dc:creator>
       <category>Tech</category>
       <description>How local transactions reduce distributed failure modes, with a complete illustrative TypeScript example and practical limits for retries, timeouts, and service boundaries.</description>
+      <content:encoded><![CDATA[How local transactions reduce distributed failure modes, with a complete illustrative TypeScript example and practical limits for retries, timeouts, and service boundaries.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -163,6 +178,7 @@
       <dc:creator>Sameer Deshpande</dc:creator>
       <category>Essays</category>
       <description>Examining the modern fitness obsession with macro calculations vs. the joyful simplicity of traditional home-cooked meals.</description>
+      <content:encoded><![CDATA[Examining the modern fitness obsession with macro calculations vs. the joyful simplicity of traditional home-cooked meals.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -173,6 +189,7 @@
       <dc:creator>Aanchal Ahuja</dc:creator>
       <category>Essays</category>
       <description>Connecting 90s arcade nostalgia to the demanding physical reality of martial arts conditioning and lifelong endurance.</description>
+      <content:encoded><![CDATA[Connecting 90s arcade nostalgia to the demanding physical reality of martial arts conditioning and lifelong endurance.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -183,6 +200,7 @@
       <dc:creator>Radhika Gowda</dc:creator>
       <category>Essays</category>
       <description>An essay on what happens when a childhood icon walks off the international pitch, and how sporting immortality is defined by knowing when to let go.</description>
+      <content:encoded><![CDATA[An essay on what happens when a childhood icon walks off the international pitch, and how sporting immortality is defined by knowing when to let go.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -193,6 +211,7 @@
       <dc:creator>Radhika Gowda</dc:creator>
       <category>Essays</category>
       <description>Understanding why generational wealth in India remains anchored in tangible gold rather than volatile screen digits.</description>
+      <content:encoded><![CDATA[Understanding why generational wealth in India remains anchored in tangible gold rather than volatile screen digits.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -203,6 +222,7 @@
       <dc:creator>Dr. Sunita Banerjee</dc:creator>
       <category>Essays</category>
       <description>A thoughtful inquiry into seasonal fatigue, shifting sunlight, and the biological need for slower autumn evenings.</description>
+      <content:encoded><![CDATA[A thoughtful inquiry into seasonal fatigue, shifting sunlight, and the biological need for slower autumn evenings.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -213,6 +233,7 @@
       <dc:creator>Neelam Kashyap</dc:creator>
       <category>Essays</category>
       <description>A timely editorial exploration of Jänschwalde, reflecting on recent real-world developments and cultural shifts.</description>
+      <content:encoded><![CDATA[A timely editorial exploration of Jänschwalde, reflecting on recent real-world developments and cultural shifts.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -223,6 +244,7 @@
       <dc:creator>Harsh Vardhan</dc:creator>
       <category>Essays</category>
       <description>A timely editorial exploration of Bombay creamery ice cream reliance, reflecting on recent real-world developments and cultural shifts.</description>
+      <content:encoded><![CDATA[A timely editorial exploration of Bombay creamery ice cream reliance, reflecting on recent real-world developments and cultural shifts.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -233,6 +255,7 @@
       <dc:creator>Radhika Gowda</dc:creator>
       <category>Essays</category>
       <description>An authentic essays exploring Global Trade Realignment and Currency Reserves, inspired by recent developments in &quot;Gold jumps over 1% as softer oil, weaker dollar lift bullion; central bank demand underpins outlook - Khaleej Times&quot;.</description>
+      <content:encoded><![CDATA[An authentic essays exploring Global Trade Realignment and Currency Reserves, inspired by recent developments in "Gold jumps over 1% as softer oil, weaker dollar lift bullion; central bank demand underpins outlook - Khaleej Times".]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -243,6 +266,7 @@
       <dc:creator>Radhika Gowda</dc:creator>
       <category>Essays</category>
       <description>Editorial angle on trending event &quot;kex&quot;: </description>
+      <content:encoded><![CDATA[Editorial angle on trending event "kex": ]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -253,6 +277,7 @@
       <dc:creator>Gopal Krishnan</dc:creator>
       <category>Humour</category>
       <description>Editorial angle on trending event &quot;upessc&quot;: </description>
+      <content:encoded><![CDATA[Editorial angle on trending event "upessc": ]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -263,6 +288,7 @@
       <dc:creator>Tabassum Ara</dc:creator>
       <category>Culture</category>
       <description>A sensory exploration of Hyderabad’s century-old Irani cafes, where thick sweetened milk meets spiced decoction on marble tabletop afternoons.</description>
+      <content:encoded><![CDATA[A sensory exploration of Hyderabad’s century-old Irani cafes, where thick sweetened milk meets spiced decoction on marble tabletop afternoons.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1473177104440-ffee2f376098?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -273,6 +299,7 @@
       <dc:creator>Amal Sri</dc:creator>
       <category>Humour</category>
       <description>A senior engineering manager attempts to apply sprint points, backlog grooming, and blameless post-mortems to Sunday morning dal tadka.</description>
+      <content:encoded><![CDATA[A senior engineering manager attempts to apply sprint points, backlog grooming, and blameless post-mortems to Sunday morning dal tadka.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -283,6 +310,7 @@
       <dc:creator>Sameer Deshpande</dc:creator>
       <category>Short Stories</category>
       <description>An unwritten Pune philosophy where washing a 1994 Bajaj Chetak on Sunday morning takes precedence over international treaties and family weddings.</description>
+      <content:encoded><![CDATA[An unwritten Pune philosophy where washing a 1994 Bajaj Chetak on Sunday morning takes precedence over international treaties and family weddings.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -293,6 +321,7 @@
       <dc:creator>Shahana Bilgrami</dc:creator>
       <category>Shayari</category>
       <description>Lucknow ke purane baradariyon par dhalti hui dhoop, ittar-e-gulab ki khushboo aur zawaal-pazir tehzeeb ke chand dilkash ash&apos;aar.</description>
+      <content:encoded><![CDATA[Lucknow ke purane baradariyon par dhalti hui dhoop, ittar-e-gulab ki khushboo aur zawaal-pazir tehzeeb ke chand dilkash ash'aar.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -303,6 +332,7 @@
       <dc:creator>Varun Shetty</dc:creator>
       <category>Poetry</category>
       <description>On the wooden hulls resting on the black sand of Mangalore, where dried mackerel and coconut husks smell of generational departures.</description>
+      <content:encoded><![CDATA[On the wooden hulls resting on the black sand of Mangalore, where dried mackerel and coconut husks smell of generational departures.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -313,6 +343,7 @@
       <dc:creator>Shreya Ghosh</dc:creator>
       <category>Poetry</category>
       <description>Lyrical verses on amber streetlights reflecting in tram tracks, old College Street books smelling of dried rain, and the steady rhythm of Howrah station at dusk.</description>
+      <content:encoded><![CDATA[Lyrical verses on amber streetlights reflecting in tram tracks, old College Street books smelling of dried rain, and the steady rhythm of Howrah station at dusk.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -323,6 +354,7 @@
       <dc:creator>Ram Sain</dc:creator>
       <category>Shayari</category>
       <description>Mitti ke kache angan, subah ki thandi hawa aur neem ke ped ke neeche baithe buzurgo ki baatein—chand saadhe sher zindagi ki buniyaadi sachaiyon par.</description>
+      <content:encoded><![CDATA[Mitti ke kache angan, subah ki thandi hawa aur neem ke ped ke neeche baithe buzurgo ki baatein—chand saadhe sher zindagi ki buniyaadi sachaiyon par.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1514565131-fce0801e5785?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -333,6 +365,7 @@
       <dc:creator>Mona Sen</dc:creator>
       <category>Short Stories</category>
       <description>An aging theatre prompter in Shyambazar holds a typed 1968 script in the dark wings of the stage, watching a new generation of digital actors who no longer know where to look when they forget their lines.</description>
+      <content:encoded><![CDATA[An aging theatre prompter in Shyambazar holds a typed 1968 script in the dark wings of the stage, watching a new generation of digital actors who no longer know where to look when they forget their lines.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -343,6 +376,7 @@
       <dc:creator>Faizan Peerzada</dc:creator>
       <category>Shayari</category>
       <description>Classical Kashmiri and Hindustani couplets on the first morning mist over Dal Lake, saffron fields of Pampore, and the timeless stillness of Chinar leaves.</description>
+      <content:encoded><![CDATA[Classical Kashmiri and Hindustani couplets on the first morning mist over Dal Lake, saffron fields of Pampore, and the timeless stillness of Chinar leaves.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -353,6 +387,7 @@
       <dc:creator>Arshdeep Singh (Arsh Zee)</dc:creator>
       <category>Short Stories</category>
       <description>Two engineering college roommates take one last midnight drive down the Grand Trunk Road before one departs for a logistics warehouse in Brampton, realizing that adulthood begins when you stop asking what comes next.</description>
+      <content:encoded><![CDATA[Two engineering college roommates take one last midnight drive down the Grand Trunk Road before one departs for a logistics warehouse in Brampton, realizing that adulthood begins when you stop asking what comes next.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1476820865390-c52aeebb9891?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -363,6 +398,7 @@
       <dc:creator>Aarav Mehta</dc:creator>
       <category>Tech</category>
       <description>As sovereign cloud and AI infrastructure IPOs dominate market headlines, a reflection on what it actually takes to cool megawatts of silicon in tropical climates—where physical thermodynamics outlasts investor hype.</description>
+      <content:encoded><![CDATA[As sovereign cloud and AI infrastructure IPOs dominate market headlines, a reflection on what it actually takes to cool megawatts of silicon in tropical climates—where physical thermodynamics outlasts investor hype.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -373,6 +409,7 @@
       <dc:creator>Dr. Sunita Banerjee</dc:creator>
       <category>Essays</category>
       <description>An essay on the psychological illusion of real-time market fluctuations, and why human well-being lives in the slow rhythms that numbers cannot measure.</description>
+      <content:encoded><![CDATA[An essay on the psychological illusion of real-time market fluctuations, and why human well-being lives in the slow rhythms that numbers cannot measure.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -383,6 +420,7 @@
       <dc:creator>Chirag Churan</dc:creator>
       <category>Humour</category>
       <description>A field report on residential housing society committees, the dramatic geopolitics of elevator fan complaints, and the legendary 400-message umbrella crisis.</description>
+      <content:encoded><![CDATA[A field report on residential housing society committees, the dramatic geopolitics of elevator fan complaints, and the legendary 400-message umbrella crisis.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -393,6 +431,7 @@
       <dc:creator>Siddharth Menon</dc:creator>
       <category>Poetry</category>
       <description>Free verse observing the sudden descent of autumn mist over the deodar ridges of Landour, where the silence of high altitude outlasts human hurry.</description>
+      <content:encoded><![CDATA[Free verse observing the sudden descent of autumn mist over the deodar ridges of Landour, where the silence of high altitude outlasts human hurry.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -403,6 +442,7 @@
       <dc:creator>Siddharth Menon</dc:creator>
       <category>Poetry</category>
       <description>High-altitude mountain verses on the smell of raw sheep wool, firewood stacked against stone walls, and the quiet dignity of preparing for Himalayan winter.</description>
+      <content:encoded><![CDATA[High-altitude mountain verses on the smell of raw sheep wool, firewood stacked against stone walls, and the quiet dignity of preparing for Himalayan winter.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -413,6 +453,7 @@
       <dc:creator>Radhika Gowda</dc:creator>
       <category>Essays</category>
       <description>An exploration of how digital BNPL algorithms fragment big financial commitments into bite-sized monthly illusions, numbing the human sense of true cost.</description>
+      <content:encoded><![CDATA[An exploration of how digital BNPL algorithms fragment big financial commitments into bite-sized monthly illusions, numbing the human sense of true cost.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -423,6 +464,7 @@
       <dc:creator>Priyanka Mishra</dc:creator>
       <category>Culture</category>
       <description>A field report from the winding weaver lanes of Madanpura, where master artisans continue to throw wooden shuttles in the shadow of industrial speed.</description>
+      <content:encoded><![CDATA[A field report from the winding weaver lanes of Madanpura, where master artisans continue to throw wooden shuttles in the shadow of industrial speed.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -433,6 +475,7 @@
       <dc:creator>Salim Chishti</dc:creator>
       <category>Shayari</category>
       <description>Classical Urdu couplets and nazm on the midnight departure of distant trains, lingering station chai, and the melancholy of unsaid departures.</description>
+      <content:encoded><![CDATA[Classical Urdu couplets and nazm on the midnight departure of distant trains, lingering station chai, and the melancholy of unsaid departures.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -443,6 +486,7 @@
       <dc:creator>Devansh Roy</dc:creator>
       <category>Short Stories</category>
       <description>An elderly lens grinder in central Kolkata works on vintage acetate frames while digital startup stores multiply across the boulevard.</description>
+      <content:encoded><![CDATA[An elderly lens grinder in central Kolkata works on vintage acetate frames while digital startup stores multiply across the boulevard.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -453,6 +497,7 @@
       <dc:creator>Rohan Kapoor</dc:creator>
       <category>Humour</category>
       <description>A field dispatch on the solemn modern ritual of badge-swiping, turnstile latency, and the mysterious 3-day office compliance algorithm.</description>
+      <content:encoded><![CDATA[A field dispatch on the solemn modern ritual of badge-swiping, turnstile latency, and the mysterious 3-day office compliance algorithm.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -463,6 +508,7 @@
       <dc:creator>Meera Varma</dc:creator>
       <category>Short Stories</category>
       <description>In an aging rehearsal hall in Mylapore, a Bharatanatyam teacher restrings a hundred and fifty brass ghungroos on indigo cord, reflecting on rhythm, discipline, and the quiet dignity of repetition.</description>
+      <content:encoded><![CDATA[In an aging rehearsal hall in Mylapore, a Bharatanatyam teacher restrings a hundred and fifty brass ghungroos on indigo cord, reflecting on rhythm, discipline, and the quiet dignity of repetition.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1476820865390-c52aeebb9891?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -473,6 +519,7 @@
       <dc:creator>Kavya Nair</dc:creator>
       <category>Poetry</category>
       <description>Free verse on the red monsoon water rising through mountain ravines, where the river reclaims ancient pathways carved long before human masonry.</description>
+      <content:encoded><![CDATA[Free verse on the red monsoon water rising through mountain ravines, where the river reclaims ancient pathways carved long before human masonry.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -483,6 +530,7 @@
       <dc:creator>Dr. Sunita Banerjee</dc:creator>
       <category>Essays</category>
       <description>A meditation on athletic twilight, public expectations, and why continuing to play past forty is an act of profound existential defiance.</description>
+      <content:encoded><![CDATA[A meditation on athletic twilight, public expectations, and why continuing to play past forty is an act of profound existential defiance.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -493,6 +541,7 @@
       <dc:creator>Maya Lin</dc:creator>
       <category>Tech</category>
       <description>In an era obsessed with seamless cloud syncing, a reflection on the reassuring friction of cold copper cables, hardware keys, and intentional isolation.</description>
+      <content:encoded><![CDATA[In an era obsessed with seamless cloud syncing, a reflection on the reassuring friction of cold copper cables, hardware keys, and intentional isolation.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -503,6 +552,7 @@
       <dc:creator>Kelly Miracle</dc:creator>
       <category>Culture</category>
       <description>A ceramicist mixes mineral cobalt and wood ash at dawn, exploring how clay, heat, and patient waiting reveal colors that cannot be rushed by human impatience.</description>
+      <content:encoded><![CDATA[A ceramicist mixes mineral cobalt and wood ash at dawn, exploring how clay, heat, and patient waiting reveal colors that cannot be rushed by human impatience.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -513,6 +563,7 @@
       <dc:creator>Devansh Roy</dc:creator>
       <category>Short Stories</category>
       <description>In an attic overlooking the Armenian Ghat, retired auditor Bimal Chatterjee consults an eighty-year-old cartographer regarding an unrecorded tidal canal beneath the spice markets of Posta.</description>
+      <content:encoded><![CDATA[In an attic overlooking the Armenian Ghat, retired auditor Bimal Chatterjee consults an eighty-year-old cartographer regarding an unrecorded tidal canal beneath the spice markets of Posta.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1476820865390-c52aeebb9891?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
   </channel>

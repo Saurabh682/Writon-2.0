@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 Sitemap: https://writon.cc/sitemap.xml
+Sitemap: https://writon.cc/news-sitemap.xml
 Sitemap: https://writon.cc/feed.xml

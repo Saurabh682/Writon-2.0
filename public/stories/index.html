@@ -33,6 +33,48 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/stories/share.css" />
+
+  <!-- Schema.org FAQPage Structured Data for Generative AI & Google Search Rich Snippets -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is WritOn?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "WritOn is an independent storytelling and publishing platform designed for thinkers, essayists, poets, and discerning readers who value craftsmanship, intentional writing, and distraction-free literature."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I read stories and essays offline on WritOn?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The WritOn Android mobile application provides native offline reading, allowing users to save stories, essays, and poetry to their offline library for uninterrupted reading anywhere."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do authors publish on WritOn?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Authors compose stories using WritOn’s distraction-free editor with markdown support, publishing directly to categorized discovery feeds and reaching a global literary community."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is WritOn free to read?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, WritOn is completely free to read on the web and available as a free download on Google Play, providing open access to independent essays, poetry, and stories without paywalls."
+        }
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
   <main>
@@ -227,7 +269,11 @@
               "logo": {
                 "@type": "ImageObject",
                 "url": "https://writon.cc/assets/writon_app_icon.png"
-              }
+              },
+              "sameAs": [
+                "https://play.google.com/store/apps/details?id=com.ibitvalley.writon",
+                "https://github.com/Saurabh682/WritOn-PowerUp"
+              ]
             },
             "articleSection": post.category || "Literature"
           };
