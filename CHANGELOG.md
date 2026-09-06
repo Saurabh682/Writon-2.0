@@ -1,5 +1,10 @@
 # Changelog & Update History — WritOn 2.0
 
+## [2.0.52] - 2026-09-06
+
+### Fixed
+- Stop reporting normal coroutine lifecycle cancellation (`Job was cancelled`) as a Crashlytics non-fatal while preserving reporting for genuine operational failures.
+
 All notable changes, architectural improvements, UI/UX refinements, security features, and localization additions in the **WritOn-PowerUp** project are documented in this file.
 
 ### 📌 Active Repository & Fork Details
@@ -7,19 +12,41 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.51 (Version Code: 153)`
+- **Current Version**: `2.0.52 (Version Code: 154)`
 
 ### Social Media Publishing — Sprint 2 Day 1 Evening Drops (September 06, 2026)
 - **Instagram Feed Carousel Published**: Published 5-panel 1080×1350 carousel (`2609_d06_ig_carousel_en_sprint2_main_start_with_one_paragraph`, Post ID: `17862519315677737`) to `@writon_socialapp` with high-traffic discovery hashtags (`#writon #writingcommunity #amwriting #storytelling #writersofinstagram #books #creators`).
 - **Threads Carousel Published**: Published 5-panel carousel (`2609_d06_threads_carousel_en_sprint2_main_start_with_one_paragraph`, Post ID: `18104585339251444`) to `@writon_socialapp`.
 - **X (Twitter) Evening Feed Card Published**: Published evening reflection card (`2609_d06_x_card_en_sprint2_pm_start_with_one_paragraph`, Post ID: `2096580999165694228`) to `@WritOn_Social` with attached visual card and hashtags (`#writon #writingcommunity #amwriting #storytelling #writersoftwitter`).
-- Synchronized `campaign/published-history.json` and `campaign/antigravity-2026-09-06-19/publishing-calendar.csv`.
+- **Instagram Stories 2-Frame Drop Published (20:45 IST)**: Published 2-frame story sequence (`2609_d06_ig_story_en_sprint2_evening_start_with_one_paragraph`) to `@writon_socialapp`: Frame 1 (`18116316326319028`) featuring three scene anchors, and Frame 2 (`17904036192514029`) featuring verified Google Play CTA with live shortlink (`https://writon.cc/go/2609_d06_ig_story_en_sprint2_evening_start_with_one_paragraph`) and discovery hashtags (`#writon #writingcommunity #amwriting #storytelling #writersofinstagram`).
+- Synchronized `campaign/published-history.json`, `campaign/antigravity-2026-09-06-19/metrics.csv`, and `campaign/antigravity-2026-09-06-19/publishing-calendar.csv`.
 
 ### Shared story routing and author imagery (September 06, 2026)
+- Extended the existing notification preference endpoints additively with eight optional granular controls while preserving all four broad fields, endpoint paths, HTTP methods, and legacy request compatibility; nullable database overrides inherit their existing broad parent.
+- Added canonical notification kinds for first applause, replies, new followers, followed-writer publications, reading/draft nudges, weekly prompts, and daily digests while keeping legacy inbox kinds queryable and readable.
+- Updated Android notification settings to expose the eight focused controls, send only the changed field, and render legacy and canonical social kinds identically; localized all new controls in English, Hindi, Bengali, Marathi, Spanish, and French.
+- Updated daily-digest and followed-writer delivery eligibility to honor their granular override before falling back to the existing editorial or publishing preference.
+- Verified the additive migration and canonical publication fan-out against the isolated local PostgreSQL staging database; all 169 backend tests pass and no hosted or production environment was changed.
+- Documented the proposed backward-compatible notification contract for the remaining engagement roadmap work, including legacy-field inheritance, canonical kind aliases, database-enforced deduplication, followed-writer publication fan-out, staging gates, and rollback; no API, database, or production behavior changed.
+- Added an unapplied, additive notification-event deduplication migration and stable logical keys for first applause, comments, replies, and follows; duplicate notification creation now exits before enqueueing a second delivery while all public endpoints and legacy kinds remain unchanged.
+- Added a disabled-by-default, migration-backed followed-writer publication pipeline: a database trigger records verified-human publication transitions atomically, a bounded retryable worker fans out only to human followers who allow publishing notifications, and recipient/author/local-day keys batch repeat publications without calling FCM inside the fan-out transaction.
+- Added an isolated local/staging migration runner and the minimum staging-only notification schema needed to verify the publication trigger, delivery outbox, partial unique index, and RLS without contacting the production database or enabling FCM delivery.
+- Added a disposable real-PostgreSQL notification verifier covering atomic publication capture, repeated-state deduplication, human-only follower fan-out, same-author/local-day batching, and queued-but-unsent delivery work with automatic test-record cleanup.
+- Kept the publication trigger function security-invoker and revoked direct execution from public API roles, preserving internal trigger behavior without creating a callable privileged function in the exposed schema.
+- Decoupled signed-in direct-token registration from guest-topic unsubscribe success, so a transient FCM topic failure cannot make an authenticated reader unreachable; expanded policy coverage for signed-in, disabled, and permission-denied states while retaining guest-only topic delivery.
 - Changed story sharing to use the verified `writon.cc/stories/<slug>` App Link so opening a shared link routes to that exact story in WritOn.
 - Corrected server-rendered story app intents to target the verified public story host without changing the existing API contract.
 - Kept legacy profile-media URLs canonicalized through `api.writon.cc` and added an initials fallback when a public story avatar cannot load.
 - Restored the branded category cover artwork whenever a story has no cover or its remote cover fails to load, across every screen using the shared story-cover component.
+- Added a remotely disabled-by-default, one-time Home preference card for readers with fewer than three interests; dismissal persists locally and synchronizes across signed-in devices without blocking reading or changing an open feed session.
+- Changed Settings → Reading to edit primary reading/writing intent before interests, while the optional Home card continues to open interests directly.
+- Corrected social-notification semantics without changing the public API: bookmarks remain private and no longer notify authors, while applause notifications are limited to the first genuine human applause on a verified-human story and cannot be repeated by un-applauding and applauding again.
+- Added contract coverage for verified story provenance, verified-human reader filtering, first-applause deduplication, and retry-safe bookmark/applause mutations.
+- Removed the notification-permission request that previously appeared merely from opening the notification inbox; permission remains tied to an earned reading value moment and its existing cooldown.
+- Added a localized, branded notification pre-prompt after an eligible value moment; only one opportunity is consumed per app session, declining starts the existing 14-day quiet period, and the Android system dialog appears only after explicit continuation.
+- Replaced Settings’ notification-inbox shortcut with a dedicated notification settings screen backed by the existing four-field preference API, while retaining a separate inbox path and adding accurate device-level blocked status with a direct system-settings action.
+- Localized the dedicated notification controls in every supported app language and made Android notification status refresh immediately when a reader returns from system settings.
+- Added a device-local guest discovery-notification control that is accessible without signing in, persists across restarts, and directly governs guest-only topic membership without creating a server-side guest identity.
 
 ### Native crash symbolication (September 06, 2026)
 - Enabled `SYMBOL_TABLE` native debug metadata for release builds so Gradle automatically packages any available native symbols for Google Play.

@@ -130,7 +130,7 @@
     "sprint2_day1": {
       "sprintDay": 1,
       "date": "2026-09-06",
-      "executedAt": "2026-09-06T07:23:45.062Z",
+      "executedAt": "2026-09-06T15:20:37.186Z",
       "outcomes": [
         {
           "deliveryId": "2609_d06_ig_story_en_sprint2_midday_start_with_one_paragraph",
@@ -167,6 +167,16 @@
           "timestamp": "2026-09-06T12:47:17.201Z",
           "publishedPostId": "2096580999165694228",
           "permalink": "https://x.com/WritOn_Social/status/2096580999165694228",
+          "success": true
+        },
+        {
+          "deliveryId": "2609_d06_ig_story_en_sprint2_evening_start_with_one_paragraph",
+          "platform": "ig",
+          "timeIst": "20:45",
+          "timestamp": "2026-09-06T15:20:02.972Z",
+          "publishedPostId": "18116316326319028;17904036192514029",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d06_ig_story_en_sprint2_evening_start_with_one_paragraph",
           "success": true
         }
       ]
