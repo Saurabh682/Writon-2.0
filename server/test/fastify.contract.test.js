@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { buildServer, sendFoundRedirect, supabaseStorageHeaders } from '../src/server.js';
 import { loadRuntimeConfig } from '../src/config.js';
@@ -131,6 +133,12 @@ function createPool() {
         }
         return { rows: [feedPostRow()], rowCount: 1 };
       }
+      if (sql.includes('from public.publication_notification_events')) {
+        return { rows: [], rowCount: 0 };
+      }
+      if (sql.includes('from public.reader_behavior_events') || sql.includes('from public.reader_feed_sessions')) {
+        return { rows: [], rowCount: 0 };
+      }
       throw new Error(`Unexpected database query in contract test: ${sql}`);
     },
   };
@@ -148,8 +156,8 @@ describe('Fastify API contract', () => {
     vi.unstubAllGlobals();
   });
 
-  async function createApp() {
-    const app = await buildServer({ runtimeConfig, pool: createPool(), auth });
+  async function createApp(configOverrides = {}) {
+    const app = await buildServer({ runtimeConfig: { ...runtimeConfig, ...configOverrides }, pool: createPool(), auth });
     apps.push(app);
     return app;
   }
@@ -219,6 +227,8 @@ describe('Fastify API contract', () => {
     expect(queries).toHaveLength(1);
     expect(queries[0].sql).toContain('from public.story_categories category');
     expect(queries[0].sql).toContain("category.category_type = 'content'");
+    expect(queries[0].sql).toContain("post.provenance = 'human_verified'");
+    expect(queries[0].sql).toContain("author.account_type = 'human'");
     expect(queries[0].sql).toContain('order by category.display_order asc');
     expect(queries[0].params).toEqual([null]);
   });
@@ -311,7 +321,7 @@ describe('Fastify API contract', () => {
     expect(response.body).toContain('Written by');
     expect(response.body).toContain('Kavya Nair');
     expect(response.body).toContain('Open in WritOn');
-    expect(response.body).toContain('intent://api.writon.test/stories/monsoon-letters#Intent;scheme=https;package=com.ibitvalley.writon;');
+    expect(response.body).toContain('intent://writon.cc/stories/monsoon-letters#Intent;scheme=https;package=com.ibitvalley.writon;');
     expect(response.body).toContain('Get the app');
     expect(response.body).not.toContain('<h1>Monsoon <Letters></h1>');
   });
@@ -370,6 +380,90 @@ describe('Fastify API contract', () => {
       expect(response.statusCode).toBe(401);
       expect(response.json()).toEqual({ error: 'Authentication required' });
     }
+  });
+
+  it('keeps legacy notification preferences and adds effective granular preferences', async () => {
+    const effective = {
+      interactionsEnabled: false,
+      followsEnabled: true,
+      editorialEnabled: true,
+      publishingEnabled: true,
+      firstApplauseEnabled: false,
+      commentsRepliesEnabled: true,
+      newFollowersEnabled: true,
+      followedWriterPublishedEnabled: false,
+      readingNudgesEnabled: true,
+      draftNudgesEnabled: true,
+      weeklyPromptEnabled: true,
+      dailyDigestEnabled: true,
+    };
+    let updateParams = null;
+    const pool = {
+      query: async (sql, params) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        if (sql.includes('from public.notification_preferences where profile_id')) {
+          expect(sql).toContain('coalesce(first_applause_enabled, interactions_enabled)');
+          return { rows: [effective], rowCount: 1 };
+        }
+        if (sql.includes('insert into public.notification_preferences')) {
+          updateParams = params;
+          return { rows: [{ ...effective, commentsRepliesEnabled: false }], rowCount: 1 };
+        }
+        throw new Error(`Unexpected notification-preference query: ${sql}`);
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const getResponse = await app.inject({
+      method: 'GET',
+      url: '/api/v1/me/notification-preferences',
+      headers: { authorization: 'Bearer test-token' },
+    });
+    const putResponse = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/me/notification-preferences',
+      headers: { authorization: 'Bearer test-token' },
+      payload: { commentsRepliesEnabled: false },
+    });
+
+    expect(getResponse.statusCode).toBe(200);
+    expect(getResponse.json()).toEqual(effective);
+    expect(putResponse.statusCode).toBe(200);
+    expect(putResponse.json()).toEqual({ ...effective, commentsRepliesEnabled: false });
+    expect(updateParams).toEqual([
+      'test-user', null, null, null, null, null, false, null, null, null, null, null, null,
+    ]);
+  });
+
+  it('accepts legacy and canonical notification kind filters', async () => {
+    const seenKinds = [];
+    const pool = {
+      query: async (sql, params) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        if (sql.includes('from public.notifications notification')) {
+          seenKinds.push(params[1]);
+          return { rows: [], rowCount: 0 };
+        }
+        throw new Error(`Unexpected notification-filter query: ${sql}`);
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    for (const kind of ['applaud', 'first_applause', 'follow', 'new_follower', 'reply', 'daily_digest']) {
+      const response = await app.inject({
+        method: 'GET',
+        url: `/api/v1/me/notifications?kind=${kind}`,
+        headers: { authorization: 'Bearer test-token' },
+      });
+      expect(response.statusCode).toBe(200);
+    }
+    expect(seenKinds).toEqual(['applaud', 'first_applause', 'follow', 'new_follower', 'reply', 'daily_digest']);
   });
 
   it('allows the authenticated scheduler secret to run the daily digest without a user session', async () => {
@@ -493,6 +587,8 @@ describe('Fastify API contract', () => {
     expect(response.statusCode).toBe(200);
     expect(response.json().posts).toHaveLength(1);
     expect(response.json().posts[0].content).toBe('');
+    expect(queries[0]).toContain("p.status = 'published'");
+    expect(queries[0]).toContain("p.is_public = true");
     expect(queries[0]).toContain("p.provenance = 'human_verified'");
     expect(queries[0]).toContain("author.account_type = 'human'");
   });
@@ -802,6 +898,7 @@ describe('Fastify API contract', () => {
     const postId = '11111111-1111-1111-1111-111111111111';
     const relations = { post_applauds: false, bookmarks: false };
     const counts = { likes_count: 0, bookmarks_count: 0 };
+    const applauseEligibilityQueries = [];
     const pool = {
       query: async (sql) => {
         if (sql.includes('select profile_id from public.profile_auth_identities')) {
@@ -845,9 +942,13 @@ describe('Fastify API contract', () => {
               counts[counterColumn] = 0;
               return { rows: removed ? [{ removed: true }] : [], rowCount: removed ? 1 : 0 };
             }
-            if (sql.includes(`returning ${counterColumn} as count`)) {
+          if (sql.includes(`returning ${counterColumn} as count`)) {
               return { rows: [{ count: counts[counterColumn] }], rowCount: 1 };
             }
+          }
+          if (sql.includes('as eligible') && sql.includes("prior.kind in ('applaud', 'first_applause')")) {
+            applauseEligibilityQueries.push(sql);
+            return { rows: [{ eligible: false }], rowCount: 1 };
           }
           throw new Error(`Unexpected desired-state transaction query: ${sql}`);
         },
@@ -879,6 +980,11 @@ describe('Fastify API contract', () => {
       expect(first.json()).toMatchObject({ [interaction.responseKey]: true, [interaction.countKey]: 1 });
       expect(retry.json()).toEqual(first.json());
     }
+    expect(applauseEligibilityQueries).toHaveLength(1);
+    expect(applauseEligibilityQueries[0]).toContain("post.provenance = 'human_verified'");
+    expect(applauseEligibilityQueries[0]).toContain("actor.account_type = 'human'");
+    expect(applauseEligibilityQueries[0]).toContain("reader.account_type = 'human'");
+    expect(applauseEligibilityQueries[0]).toContain("prior.kind in ('applaud', 'first_applause')");
   });
 
   it('delivers an interaction push before the successful mutation response completes', async () => {
@@ -890,6 +996,8 @@ describe('Fastify API contract', () => {
     let outboxReady = false;
     let deliveryStatus = 'pending';
     let claimedDeliveryLimit = null;
+    let notificationInsert = null;
+    let notificationDeliveryQuery = null;
     const send = vi.fn(async () => 'projects/test/messages/1');
     const pool = {
       query: async (sql, params) => {
@@ -909,10 +1017,11 @@ describe('Fastify API contract', () => {
           };
         }
         if (sql.includes('from public.notifications notification') && sql.includes('where notification.id = $1')) {
+          notificationDeliveryQuery = sql;
           return {
             rows: [{
-              kind: 'applaud',
-              message: 'applauded your story',
+              kind: 'first_applause',
+              message: 'gave your story its first applause',
               postId,
               postTitle: 'A story worth reading',
               actorName: 'A Reader',
@@ -930,7 +1039,7 @@ describe('Fastify API contract', () => {
         throw new Error(`Unexpected push-delivery query outside transaction: ${sql}`);
       },
       connect: async () => ({
-        query: async (sql) => {
+        query: async (sql, params) => {
           if (sql === 'begin' || sql === 'commit' || sql === 'rollback') {
             return { rows: [], rowCount: 0 };
           }
@@ -946,7 +1055,11 @@ describe('Fastify API contract', () => {
           if (sql.includes('returning likes_count as count')) {
             return { rows: [{ count: 1 }], rowCount: 1 };
           }
+          if (sql.includes('as eligible') && sql.includes("prior.kind in ('applaud', 'first_applause')")) {
+            return { rows: [{ eligible: true }], rowCount: 1 };
+          }
           if (sql.includes('insert into public.notifications')) {
+            notificationInsert = { sql, params };
             return { rows: [{ id: notificationId }], rowCount: 1 };
           }
           if (sql.includes('from public.notification_preferences')) {
@@ -975,22 +1088,31 @@ describe('Fastify API contract', () => {
     expect(send).toHaveBeenCalledTimes(1);
     expect(deliveryStatus).toBe('sent');
     expect(claimedDeliveryLimit).toBe(1);
+    expect(notificationInsert.sql).toContain('deduplication_key');
+    expect(notificationInsert.sql).toContain('on conflict (deduplication_key)');
+    expect(notificationInsert.params[6]).toBe(`first_applause:${postId}`);
+    // Production defect caught: a push queued while a story was public could still be
+    // delivered after that story became private, unpublished, or provenance-ineligible.
+    expect(notificationDeliveryQuery).toContain("post.status = 'published'");
+    expect(notificationDeliveryQuery).toContain('post.is_public = true');
+    expect(notificationDeliveryQuery).toContain("post.provenance = 'human_verified'");
+    expect(notificationDeliveryQuery).toContain("post_author.account_type = 'human'");
     expect(send.mock.calls[0][0]).toMatchObject({
       notification: {
-        title: 'A Reader applauded your story',
+        title: 'A Reader gave your story its first applause',
         body: '“A story worth reading”',
       },
       data: {
-        kind: 'applaud',
+        kind: 'first_applause',
         actorName: 'A Reader',
         storyTitle: 'A story worth reading',
       },
       fcmOptions: {
-        analyticsLabel: 'interaction_applaud',
+        analyticsLabel: 'interaction_first_applause',
       },
       android: {
         fcmOptions: {
-          analyticsLabel: 'interaction_applaud',
+          analyticsLabel: 'interaction_first_applause',
         },
         notification: {
           channelId: 'writon_interactions_channel',
@@ -1535,4 +1657,158 @@ describe('Fastify API contract', () => {
     expect(response.statusCode).toBe(400);
     expect(response.json()).toEqual({ error: 'Invalid story identifier' });
   });
+
+  describe('immutable build & container standards', () => {
+    const dockerfilePath = path.resolve(import.meta.dirname, '../../Dockerfile');
+    const dockerfileContent = fs.readFileSync(dockerfilePath, 'utf8');
+
+    it('specifies Node.js 22 alpine as the immutable base image', () => {
+      expect(dockerfileContent).toMatch(/^FROM node:22-alpine/m);
+    });
+
+    it('enforces reproducible lockfile-based installation with npm ci --omit=dev', () => {
+      expect(dockerfileContent).toMatch(/npm ci --omit=dev/);
+      expect(dockerfileContent).not.toMatch(/npm install/);
+    });
+
+    it('runs as a dedicated non-root user', () => {
+      expect(dockerfileContent).toMatch(/adduser -S writon/);
+      expect(dockerfileContent).toMatch(/USER writon/);
+    });
+
+    it('isolates container filesystem to minimal runtime contents only', () => {
+      expect(dockerfileContent).toMatch(/COPY server\/package\*\.json/);
+      expect(dockerfileContent).toMatch(/COPY server\/src \.\/src/);
+      expect(dockerfileContent).not.toMatch(/COPY server\/test/);
+      expect(dockerfileContent).not.toMatch(/COPY docs/);
+    });
+
+    it('supports dynamic PORT configuration for Cloud Run', () => {
+      const config = loadRuntimeConfig({
+        PORT: '8080',
+        DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
+        ADMIN_SECRET_KEY: 'test-key-1234567890',
+      });
+      expect(config.port).toBe(8080);
+    });
+  });
+
+  describe('bounded protected operations & timer standards', () => {
+    it('rejects unauthenticated requests to internal operational endpoints with 403', async () => {
+      const app = await createApp({ adminSecretKey: 'secret-admin-pass' });
+
+      const resDrain = await app.inject({
+        method: 'POST',
+        url: '/api/v1/internal/notifications/drain-outbox',
+      });
+      expect(resDrain.statusCode).toBe(403);
+
+      const resFanout = await app.inject({
+        method: 'POST',
+        url: '/api/v1/internal/notifications/fanout-publications',
+      });
+      expect(resFanout.statusCode).toBe(403);
+
+      const resRetention = await app.inject({
+        method: 'POST',
+        url: '/api/v1/internal/maintenance/feed-retention',
+      });
+      expect(resRetention.statusCode).toBe(403);
+    });
+
+    it('rejects wrong admin key with 403', async () => {
+      const app = await createApp({ adminSecretKey: 'secret-admin-pass' });
+
+      const resDrain = await app.inject({
+        method: 'POST',
+        url: '/api/v1/internal/notifications/drain-outbox',
+        headers: { 'x-admin-key': 'wrong-key' },
+      });
+      expect(resDrain.statusCode).toBe(403);
+    });
+
+    it('executes protected endpoints with valid admin key', async () => {
+      const app = await createApp({ adminSecretKey: 'secret-admin-pass' });
+
+      const resDrain = await app.inject({
+        method: 'POST',
+        url: '/api/v1/internal/notifications/drain-outbox',
+        headers: { 'x-admin-key': 'secret-admin-pass' },
+      });
+      expect(resDrain.statusCode).toBe(200);
+      const data = resDrain.json();
+      expect(data).toHaveProperty('processed');
+      expect(data).toHaveProperty('remaining');
+
+      const resFanout = await app.inject({
+        method: 'POST',
+        url: '/api/v1/internal/notifications/fanout-publications',
+        headers: { 'x-admin-key': 'secret-admin-pass' },
+      });
+      expect(resFanout.statusCode).toBe(200);
+
+      const resRetention = await app.inject({
+        method: 'POST',
+        url: '/api/v1/internal/maintenance/feed-retention',
+        headers: { 'x-admin-key': 'secret-admin-pass' },
+      });
+      expect(resRetention.statusCode).toBe(200);
+    });
+
+    it('parses TIMERS_DISABLED and K_SERVICE environment settings', () => {
+      const configWithTimersDisabled = loadRuntimeConfig({
+        DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
+        TIMERS_DISABLED: 'true',
+      });
+      expect(configWithTimersDisabled.timersDisabled).toBe(true);
+
+      const configWithDefaults = loadRuntimeConfig({
+        DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
+        TIMERS_DISABLED: 'false',
+      });
+      expect(configWithDefaults.timersDisabled).toBe(false);
+    });
+
+    it('reverts unprocessed claimed outbox rows to pending when delivery budget expires', async () => {
+      const deliveryQueries = [];
+      const pool = {
+        query: async (sql, params) => {
+          deliveryQueries.push({ sql, params });
+          if (sql.includes('with candidates as')) {
+            return {
+              rows: [
+                { id: 'delivery-1', notificationId: 'notif-1', recipientId: 'user-1', attempts: 1 },
+                { id: 'delivery-2', notificationId: 'notif-2', recipientId: 'user-2', attempts: 1 },
+              ],
+              rowCount: 2,
+            };
+          }
+          if (sql.includes("set status = 'pending'") && sql.includes("where id = any($1::uuid[])")) {
+            return { rows: [], rowCount: 2 };
+          }
+          if (sql.includes('select count(*)::int as remaining')) {
+            return { rows: [{ remaining: 2 }], rowCount: 1 };
+          }
+          throw new Error(`Unexpected query in outbox timeout test: ${sql}`);
+        },
+      };
+      const app = await buildServer({
+        runtimeConfig,
+        pool,
+        auth,
+        messaging: { send: vi.fn() },
+      });
+      apps.push(app);
+
+      const outcome = await app.deliverPushNotifications({ limit: 2, maxSeconds: 0 });
+
+      expect(outcome.processed).toBe(0);
+      const revertQuery = deliveryQueries.find((q) =>
+        q.sql.includes("set status = 'pending'") && q.sql.includes("where id = any($1::uuid[]) and status = 'sending'")
+      );
+      expect(revertQuery).toBeDefined();
+      expect(revertQuery.params[0]).toEqual(['delivery-1', 'delivery-2']);
+    });
+  });
 });
+

@@ -15,14 +15,22 @@ services:
         value: "10000"
       - key: DATABASE_POOL_MAX
         value: "10"
-      # Bot automation is owned by the dedicated Google Cloud Run service.
-      # Keep Render focused on the public application API to avoid duplicate pulses.
+      # Bot automation and scheduled workers are owned by Google Cloud Run.
+      # Keep Render focused exclusively on standby application serving to avoid duplicate notifications.
       - key: SPARK_AUTOMATION_ENABLED
         value: "false"
+      - key: PUSH_DELIVERY_ENABLED
+        value: "false"
+      - key: DAILY_DIGEST_ENABLED
+        value: "false"
+      - key: FOLLOWED_WRITER_NOTIFICATIONS_ENABLED
+        value: "false"
+      - key: TIMERS_DISABLED
+        value: "true"
       - key: PUBLIC_API_BASE_URL
-        value: "https://writon-powerup.onrender.com"
+        value: "https://api.writon.cc"
       - key: LATEST_APP_VERSION_CODE
-        value: "113"
+        value: "119"
       # Advance only after Google Play confirms that the build is available.
       - key: PUBLISHED_APP_VERSION_CODE
         value: "108"

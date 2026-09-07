@@ -222,6 +222,8 @@ export async function loadFeedCandidates(database, profileId, guestVectors) {
        from public.posts post
        inner join public.profiles author on author.id = post.author_id
        where post.status = 'published' and post.is_public = true
+         and post.provenance = 'human_verified'
+         and author.account_type = 'human'
          and ($1::text is null or not exists (
            select 1 from public.reading_history completed
            where completed.user_id = $1 and completed.post_id::text = post.id::text
@@ -308,7 +310,7 @@ async function createFeedSession(database, {
         `insert into public.feed_exposures (
            profile_id, feed_session_id, story_id, rank_position, candidate_pool, model_version
          )
-         select $1, $2, item.story_id::uuid, item.rank_position, item.candidate_pool, $3
+         select $1, $2::uuid, item.story_id::uuid, item.rank_position, item.candidate_pool, $3
          from jsonb_to_recordset($4::jsonb) as item(
            story_id text, rank_position integer, candidate_pool text
          )`,
@@ -333,7 +335,7 @@ async function loadSessionPage(database, { sessionId, profileId, nextRank, limit
   const sessionResult = await database.query(
     `select id, profile_id, ranking_version, expires_at
      from public.reader_feed_sessions
-     where id = $1 and expires_at > now()
+     where id = $1::uuid and expires_at > now()
        and (($2::text is null and profile_id is null) or profile_id = $2)
      limit 1`,
     [sessionId, profileId]
@@ -362,7 +364,7 @@ async function loadSessionPage(database, { sessionId, profileId, nextRank, limit
      inner join public.posts post on post.id = exposure.story_id
      inner join public.profiles author on author.id = post.author_id and author.account_type = 'human'
      left join public.legacy_import_profile_attributes alias on alias.profile_id = author.id
-     where exposure.feed_session_id = $1 and exposure.rank_position >= $3
+     where exposure.feed_session_id = $1::uuid and exposure.rank_position >= $3
        and post.status = 'published' and post.is_public = true and post.provenance = 'human_verified'
      order by exposure.rank_position
      limit $4`,

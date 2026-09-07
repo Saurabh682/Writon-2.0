@@ -1,0 +1,29 @@
+steps:
+  # Step 1: Run server unit and contract test suite
+  - name: 'node:22-alpine'
+    entrypoint: 'sh'
+    args:
+      - '-c'
+      - 'cd server && npm ci && npm test'
+    id: 'test'
+
+  # Step 2: Build immutable container image using root Dockerfile
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-south1-docker.pkg.dev/writon-app-2020/writon/writon-api:${_IMAGE_TAG}'
+      - '-t'
+      - 'asia-south1-docker.pkg.dev/writon-app-2020/writon/writon-api:latest'
+      - '.'
+    id: 'build'
+
+images:
+  - 'asia-south1-docker.pkg.dev/writon-app-2020/writon/writon-api:${_IMAGE_TAG}'
+  - 'asia-south1-docker.pkg.dev/writon-app-2020/writon/writon-api:latest'
+
+substitutions:
+  _IMAGE_TAG: 'latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY

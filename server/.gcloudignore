@@ -1,0 +1,13 @@
+.gcloudignore
+.git
+.gitignore
+node_modules/
+dist/
+.env
+serviceAccountKey.json
+scratch*.mjs
+writon.db*
+uploads/
+backups/
+test/
+npm-debug.log*

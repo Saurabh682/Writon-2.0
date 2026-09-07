@@ -11,7 +11,7 @@
       {
         "source": "**",
         "run": {
-          "serviceId": "writon-app-api-canary",
+          "serviceId": "writon-app-api",
           "region": "asia-south1"
         }
       }

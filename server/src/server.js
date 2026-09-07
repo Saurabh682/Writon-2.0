@@ -29,6 +29,7 @@ import { cleanExpiredFeedData } from './services/feed-service.js';
 import { toFcmAnalyticsLabel } from './services/fcm-analytics-label.js';
 import { runDailyDigest } from './jobs/daily-digest.js';
 import { runDailyCampaignPublish } from './jobs/social-campaign-publisher.js';
+import { runFollowedWriterNotifications } from './jobs/followed-writer-notifications.js';
 import { attachHashtagsAndWatermark, stripWatermark } from './bot-engine/watermark-service.js';
 import { PUBLISHABLE_STORY_CATEGORIES } from './domain/story-categories.js';
 import fs from 'node:fs/promises';
@@ -1460,6 +1461,32 @@ async function fetchInteractionPost(client, postId, userId) {
   return result.rows[0] ?? null;
 }
 
+async function shouldNotifyFirstHumanApplause(client, { postId, actorId }) {
+  const result = await client.query(
+    `select exists (
+       select 1
+       from public.posts post
+       inner join public.profiles actor on actor.id = $2
+       where post.id = $1
+         and post.provenance = 'human_verified'
+         and actor.account_type = 'human'
+         and not exists (
+           select 1 from public.notifications prior
+           where prior.post_id = post.id and prior.kind in ('applaud', 'first_applause')
+         )
+         and 1 = (
+           select count(*)::int
+           from public.post_applauds applause
+           inner join public.profiles reader
+             on reader.id = applause.user_id and reader.account_type = 'human'
+           where applause.post_id = post.id
+         )
+     ) as eligible`,
+    [postId, actorId]
+  );
+  return result.rows[0]?.eligible === true;
+}
+
 async function togglePostRelation({ postId, userId, table, counterColumn }) {
   const client = await database.connect();
 
@@ -1496,13 +1523,15 @@ async function togglePostRelation({ postId, userId, table, counterColumn }) {
        returning ${counterColumn} as count`,
       [postId, enabled ? 1 : -1]
     );
-    if (enabled && (table === 'post_applauds' || table === 'bookmarks')) {
+    if (enabled && table === 'post_applauds'
+        && await shouldNotifyFirstHumanApplause(client, { postId, actorId: userId })) {
       await createNotification(client, {
         recipientId: post.author_id,
         actorId: userId,
         postId,
-        kind: table === 'post_applauds' ? 'applaud' : 'bookmark',
-        message: table === 'post_applauds' ? 'applauded your story' : 'bookmarked your story',
+        kind: 'first_applause',
+        message: 'gave your story its first applause',
+        deduplicationKey: `first_applause:${postId}`,
       });
     }
     await client.query('commit');
@@ -1554,13 +1583,15 @@ async function setPostRelation({ postId, userId, table, counterColumn, enabled }
       [postId]
     );
 
-    if (enabled && changed.rowCount > 0 && (table === 'post_applauds' || table === 'bookmarks')) {
+    if (enabled && changed.rowCount > 0 && table === 'post_applauds'
+        && await shouldNotifyFirstHumanApplause(client, { postId, actorId: userId })) {
       await createNotification(client, {
         recipientId: post.author_id,
         actorId: userId,
         postId,
-        kind: table === 'post_applauds' ? 'applaud' : 'bookmark',
-        message: table === 'post_applauds' ? 'applauded your story' : 'bookmarked your story',
+        kind: 'first_applause',
+        message: 'gave your story its first applause',
+        deduplicationKey: `first_applause:${postId}`,
       });
     }
     await client.query('commit');
@@ -1575,23 +1606,45 @@ async function setPostRelation({ postId, userId, table, counterColumn, enabled }
   }
 }
 
-async function createNotification(client, { recipientId, actorId, postId = null, commentId = null, kind, message }) {
+async function createNotification(client, {
+  recipientId,
+  actorId,
+  postId = null,
+  commentId = null,
+  kind,
+  message,
+  deduplicationKey = null,
+}) {
   if (!recipientId || recipientId === actorId) return;
 
   const inserted = await client.query(
-    `insert into public.notifications (recipient_id, actor_id, post_id, comment_id, kind, message)
-     values ($1, $2, $3, $4, $5, $6)
+    `insert into public.notifications (
+       recipient_id, actor_id, post_id, comment_id, kind, message, deduplication_key
+     ) values ($1, $2, $3, $4, $5, $6, $7)
+     on conflict (deduplication_key) where deduplication_key is not null do nothing
      returning id::text as id`,
-    [recipientId, actorId, postId, commentId, kind, message]
+    [recipientId, actorId, postId, commentId, kind, message, deduplicationKey]
   );
+  if (inserted.rowCount === 0) return;
 
   try {
-    const preferenceColumn = kind === 'follow' ? 'follows_enabled'
-      : kind === 'editorial' ? 'editorial_enabled'
-        : kind === 'publishing' ? 'publishing_enabled'
-          : 'interactions_enabled';
+    const preferenceExpression = {
+      first_applause: 'coalesce(first_applause_enabled, interactions_enabled)',
+      applaud: 'coalesce(first_applause_enabled, interactions_enabled)',
+      comment: 'coalesce(comments_replies_enabled, interactions_enabled)',
+      reply: 'coalesce(comments_replies_enabled, interactions_enabled)',
+      new_follower: 'coalesce(new_followers_enabled, follows_enabled)',
+      follow: 'coalesce(new_followers_enabled, follows_enabled)',
+      followed_writer_published: 'coalesce(followed_writer_published_enabled, publishing_enabled)',
+      publishing: 'coalesce(followed_writer_published_enabled, publishing_enabled)',
+      reading_nudge: 'coalesce(reading_nudges_enabled, editorial_enabled)',
+      draft_nudge: 'coalesce(draft_nudges_enabled, editorial_enabled)',
+      weekly_prompt_live: 'coalesce(weekly_prompt_enabled, editorial_enabled)',
+      daily_digest: 'coalesce(daily_digest_enabled, editorial_enabled)',
+      editorial: 'editorial_enabled',
+    }[kind] ?? 'interactions_enabled';
     const preference = await client.query(
-      `select ${preferenceColumn} as enabled
+      `select ${preferenceExpression} as enabled
          from public.notification_preferences
         where profile_id = $1`,
       [recipientId]
@@ -1624,8 +1677,11 @@ function isInvalidPushToken(error) {
     || error?.code === 'messaging/invalid-registration-token';
 }
 
-async function deliverPendingPushNotifications({ limit = 20 } = {}) {
-  if (!firebaseMessaging) return { processed: 0, reason: 'Firebase Messaging is not configured.' };
+async function deliverPendingPushNotifications({ limit = 20, maxSeconds = 20 } = {}) {
+  if (!firebaseMessaging) return { processed: 0, remaining: 0, reason: 'Firebase Messaging is not configured.' };
+
+  const startTime = Date.now();
+  const maxDurationMs = maxSeconds * 1000;
 
   const claimed = await database.query(
     `with candidates as (
@@ -1645,120 +1701,159 @@ async function deliverPendingPushNotifications({ limit = 20 } = {}) {
     [limit]
   );
 
-  for (const delivery of claimed.rows) {
-    try {
-      const notification = await database.query(
-        `select notification.kind, notification.message, notification.post_id::text as "postId",
-                post.title as "postTitle", actor.full_name as "actorName"
-           from public.notifications notification
-           left join public.posts post on post.id = notification.post_id
-           left join public.profiles actor on actor.id = notification.actor_id
-          where notification.id = $1`,
-        [delivery.notificationId]
-      );
-      const tokens = await database.query(
-        `select id::text as id, token
-           from public.device_push_tokens
-          where profile_id = $1
-            and revoked_at is null
-            and notification_permission = 'granted'`,
-        [delivery.recipientId]
-      );
-      if (notification.rowCount === 0 || tokens.rowCount === 0) {
-        await database.query(
-          `update public.notification_delivery_outbox
-              set status = 'skipped', updated_at = now(), last_error = null
-            where id = $1`,
-          [delivery.id]
-        );
-        continue;
+  let processedCount = 0;
+  try {
+    for (const delivery of claimed.rows) {
+      if (Date.now() - startTime >= maxDurationMs) {
+        break;
       }
+      processedCount += 1;
+      try {
 
-      const item = notification.rows[0];
-      const title = item.actorName
-        ? `${item.actorName} ${item.message}`
-        : 'New activity on WritOn';
-      const body = item.postTitle
-        ? `“${item.postTitle}”`
-        : item.kind === 'follow'
-          ? 'A new reader found your writing.'
-          : 'Open WritOn to see the latest activity.';
-      const outcomes = await Promise.all(tokens.rows.map(async (tokenRow) => {
-        try {
-          await firebaseMessaging.send({
-            token: tokenRow.token,
-            notification: { title, body },
-            data: {
-              notificationId: delivery.notificationId,
-              kind: String(item.kind),
-              storyId: item.postId || '',
-              storyTitle: item.postTitle || '',
-              actorName: item.actorName || '',
-              targetRoute: item.postId ? `reader/${item.postId}` : 'notifications',
-            },
-            fcmOptions: {
-              analyticsLabel: toFcmAnalyticsLabel('interaction', item.kind),
-            },
-            android: {
-              priority: 'high',
-              notification: {
-                channelId: 'writon_interactions_channel',
-                icon: 'ic_stat_writon',
-                color: '#E75A2A',
+        const notification = await database.query(
+          `select notification.kind, notification.message, notification.post_id::text as "postId",
+                  post.title as "postTitle", actor.full_name as "actorName"
+             from public.notifications notification
+             left join public.posts post on post.id = notification.post_id
+             left join public.profiles post_author on post_author.id = post.author_id
+             left join public.profiles actor on actor.id = notification.actor_id
+            where notification.id = $1
+              and (
+                notification.post_id is null
+                or (
+                  post.status = 'published'
+                  and post.is_public = true
+                  and post.provenance = 'human_verified'
+                  and post_author.account_type = 'human'
+                )
+              )`,
+          [delivery.notificationId]
+        );
+        const tokens = await database.query(
+          `select id::text as id, token
+             from public.device_push_tokens
+            where profile_id = $1
+              and revoked_at is null
+              and notification_permission = 'granted'`,
+          [delivery.recipientId]
+        );
+        if (notification.rowCount === 0 || tokens.rowCount === 0) {
+          await database.query(
+            `update public.notification_delivery_outbox
+                set status = 'skipped', updated_at = now(), last_error = null
+              where id = $1`,
+            [delivery.id]
+          );
+          continue;
+        }
+
+        const item = notification.rows[0];
+        const title = item.actorName
+          ? `${item.actorName} ${item.message}`
+          : 'New activity on WritOn';
+        const body = item.postTitle
+          ? `“${item.postTitle}”`
+          : item.kind === 'follow'
+            ? 'A new reader found your writing.'
+            : 'Open WritOn to see the latest activity.';
+        const outcomes = await Promise.all(tokens.rows.map(async (tokenRow) => {
+          try {
+            await firebaseMessaging.send({
+              token: tokenRow.token,
+              notification: { title, body },
+              data: {
+                notificationId: delivery.notificationId,
+                kind: String(item.kind),
+                storyId: item.postId || '',
+                storyTitle: item.postTitle || '',
+                actorName: item.actorName || '',
+                targetRoute: item.postId ? `reader/${item.postId}` : 'notifications',
               },
               fcmOptions: {
                 analyticsLabel: toFcmAnalyticsLabel('interaction', item.kind),
               },
-            },
-          });
-          return { delivered: true, tokenRow };
-        } catch (error) {
-          return { delivered: false, tokenRow, error };
-        }
-      }));
+              android: {
+                priority: 'high',
+                notification: {
+                  channelId: 'writon_interactions_channel',
+                  icon: 'ic_stat_writon',
+                  color: '#E75A2A',
+                },
+                fcmOptions: {
+                  analyticsLabel: toFcmAnalyticsLabel('interaction', item.kind),
+                },
+              },
+            });
+            return { delivered: true, tokenRow };
+          } catch (error) {
+            return { delivered: false, tokenRow, error };
+          }
+        }));
 
-      const invalidTokens = outcomes.filter((outcome) => !outcome.delivered && isInvalidPushToken(outcome.error));
-      await Promise.all(invalidTokens.map((outcome) => database.query(
-        `update public.device_push_tokens set revoked_at = now(), updated_at = now() where id = $1`,
-        [outcome.tokenRow.id]
-      )));
-      if (outcomes.some((outcome) => outcome.delivered)) {
-        await database.query(
-          `update public.notification_delivery_outbox
-              set status = 'sent', delivered_at = now(), updated_at = now(), last_error = null
-            where id = $1`,
-          [delivery.id]
-        );
-      } else if (invalidTokens.length === outcomes.length) {
-        await database.query(
-          `update public.notification_delivery_outbox
-              set status = 'skipped', updated_at = now(), last_error = 'All registered tokens are invalid.'
-            where id = $1`,
-          [delivery.id]
-        );
-      } else {
+        const invalidTokens = outcomes.filter((outcome) => !outcome.delivered && isInvalidPushToken(outcome.error));
+        await Promise.all(invalidTokens.map((outcome) => database.query(
+          `update public.device_push_tokens set revoked_at = now(), updated_at = now() where id = $1`,
+          [outcome.tokenRow.id]
+        )));
+        if (outcomes.some((outcome) => outcome.delivered)) {
+          await database.query(
+            `update public.notification_delivery_outbox
+                set status = 'sent', delivered_at = now(), updated_at = now(), last_error = null
+              where id = $1`,
+            [delivery.id]
+          );
+        } else if (invalidTokens.length === outcomes.length) {
+          await database.query(
+            `update public.notification_delivery_outbox
+                set status = 'skipped', updated_at = now(), last_error = 'All registered tokens are invalid.'
+              where id = $1`,
+            [delivery.id]
+          );
+        } else {
+          const delay = retryDelayMs(delivery.attempts);
+          await database.query(
+            `update public.notification_delivery_outbox
+                set status = 'pending', next_attempt_at = now() + ($2 * interval '1 millisecond'),
+                    updated_at = now(), last_error = 'FCM delivery failed and will retry.'
+              where id = $1`,
+            [delivery.id, delay]
+          );
+        }
+      } catch (error) {
         const delay = retryDelayMs(delivery.attempts);
         await database.query(
           `update public.notification_delivery_outbox
               set status = 'pending', next_attempt_at = now() + ($2 * interval '1 millisecond'),
-                  updated_at = now(), last_error = 'FCM delivery failed and will retry.'
+                  updated_at = now(), last_error = left($3, 500)
             where id = $1`,
-          [delivery.id, delay]
+          [delivery.id, delay, error instanceof Error ? error.message : 'Unknown push delivery error']
         );
       }
-    } catch (error) {
-      const delay = retryDelayMs(delivery.attempts);
-      await database.query(
-        `update public.notification_delivery_outbox
-            set status = 'pending', next_attempt_at = now() + ($2 * interval '1 millisecond'),
-                updated_at = now(), last_error = left($3, 500)
-          where id = $1`,
-        [delivery.id, delay, error instanceof Error ? error.message : 'Unknown push delivery error']
-      );
+    }
+  } finally {
+    const unhandled = claimed.rows.slice(processedCount);
+    if (unhandled.length > 0) {
+      try {
+        await database.query(
+          `update public.notification_delivery_outbox
+              set status = 'pending', attempts = greatest(0, attempts - 1), updated_at = now()
+            where id = any($1::uuid[]) and status = 'sending'`,
+          [unhandled.map((d) => d.id)]
+        );
+      } catch {}
     }
   }
-  return { processed: claimed.rowCount };
+  let remaining = 0;
+
+  try {
+    const remResult = await database.query(
+      `select count(*)::int as remaining from public.notification_delivery_outbox where status = 'pending' and next_attempt_at <= now()`
+    );
+    remaining = remResult.rows[0]?.remaining ?? 0;
+  } catch {}
+  return { processed: processedCount, remaining };
 }
+
 
 async function deliverPushAfterCommit() {
   try {
@@ -2164,18 +2259,19 @@ fastify.get('/api/v1/posts', async (request, reply) => {
 fastify.get('/api/v1/tags', async (request) => {
   const q = request.query.q ? String(request.query.q).trim() : null;
   const result = await database.query(
-    `with human_story_counts as (
+    `with story_counts as (
        select post.category, count(*)::int as count
        from public.posts post
-       inner join public.profiles author
-         on author.id = post.author_id and author.account_type = 'human'
-       where post.status = 'published' and post.is_public = true
+       inner join public.profiles author on author.id = post.author_id
+       where post.status = 'published'
+         and post.is_public = true
          and post.provenance = 'human_verified'
+         and author.account_type = 'human'
        group by post.category
      )
      select category.name, coalesce(counts.count, 0)::int as count
      from public.story_categories category
-     left join human_story_counts counts on counts.category = category.name
+     left join story_counts counts on counts.category = category.name
      where category.is_active = true
        and category.category_type = 'content'
        and ($1::text is null or category.name ilike '%' || $1 || '%')
@@ -2259,7 +2355,7 @@ fastify.get('/stories/:slug', async (request, reply) => {
   }
 
   const origin = requestOrigin(request, config.publicApiBaseUrl);
-  const canonicalUrl = `${origin}/stories/${encodeURIComponent(parsedSlug.data)}`;
+  const canonicalUrl = `https://writon.cc/stories/${encodeURIComponent(parsedSlug.data)}`;
   const playStoreUrl = config.playStoreAppUrl || 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon';
   const story = {
     ...result.rows[0],
@@ -3000,8 +3096,9 @@ fastify.post(
           actorId: request.profileId,
           postId,
           commentId: inserted.rows[0].id,
-          kind: 'comment',
+          kind: parent ? 'reply' : 'comment',
           message: parent ? 'replied to your comment' : 'commented on your story',
+          deduplicationKey: `${parent ? 'reply' : 'comment'}:${inserted.rows[0].id}`,
         });
       }
       await client.query('commit');
@@ -3126,8 +3223,9 @@ fastify.post(
         await createNotification(client, {
           recipientId: profileId,
           actorId: request.profileId,
-          kind: 'follow',
+          kind: 'new_follower',
           message: 'started following you',
+          deduplicationKey: `new_follower:${profileId}:${request.profileId}`,
         });
       } else {
         await client.query(
@@ -3699,16 +3797,43 @@ fastify.patch(
 
   fastify.decorate('deliverPushNotifications', deliverPendingPushNotifications);
 
-  const handleDailyDigestRun = async (request, reply) => {
+  const verifyAdminKey = (request, reply) => {
     if (!config.adminSecretKey || request.headers['x-admin-key'] !== config.adminSecretKey) {
-      return reply.code(403).send({ error: 'Forbidden' });
+      reply.code(403).send({ error: 'Forbidden' });
+      return false;
     }
+    return true;
+  };
+
+  fastify.post('/api/v1/internal/notifications/drain-outbox', async (request, reply) => {
+    if (!verifyAdminKey(request, reply)) return;
+    const limit = Number(request.query?.limit || config.outboxDrainBatchSize || 25);
+    const maxSeconds = Number(request.query?.maxSeconds || config.outboxDrainMaxSeconds || 20);
+    const outcome = await deliverPendingPushNotifications({ limit, maxSeconds });
+    return outcome;
+  });
+
+  fastify.post('/api/v1/internal/notifications/fanout-publications', async (request, reply) => {
+    if (!verifyAdminKey(request, reply)) return;
+    const outcome = await runFollowedWriterNotifications(database);
+    return outcome;
+  });
+
+  fastify.post('/api/v1/internal/maintenance/feed-retention', async (request, reply) => {
+    if (!verifyAdminKey(request, reply)) return;
+    const outcome = await cleanExpiredFeedData(database);
+    return outcome;
+  });
+
+  const handleDailyDigestRun = async (request, reply) => {
+    if (!verifyAdminKey(request, reply)) return;
     const outcome = await runDailyDigest(database, firebaseMessaging, fastify.log);
     return outcome;
   };
   fastify.post('/api/v1/internal/notifications/daily-digest', handleDailyDigestRun);
   // Temporary compatibility path for existing operator tooling.
   fastify.post('/api/v1/spark/daily-digest/test', handleDailyDigestRun);
+
 
   fastify.get('/campaign-assets/:filename', async (request, reply) => {
     const filename = resolve(request.params.filename);
@@ -3749,74 +3874,91 @@ if (isEntrypoint) {
   const fastify = await buildServer({ runtimeConfig, pool: database });
   try {
     await fastify.listen({ port: runtimeConfig.port, host: '0.0.0.0' });
-    if (runtimeConfig.sparkAutomationEnabled) {
-      startSparkScheduler(database, 15);
-      startMasterDailyScheduler(database);
-    }
-    if (runtimeConfig.pushDeliveryEnabled) {
-      const runPushDelivery = async () => {
+    if (runtimeConfig.timersDisabled) {
+      fastify.log.info({ service: process.env.K_SERVICE || 'explicit' }, 'In-process background timer loops disabled (relying on Cloud Scheduler)');
+    } else {
+      if (runtimeConfig.sparkAutomationEnabled) {
+        startSparkScheduler(database, 15);
+        startMasterDailyScheduler(database);
+      }
+      if (runtimeConfig.pushDeliveryEnabled) {
+        const runPushDelivery = async () => {
+          try {
+            const outcome = await fastify.deliverPushNotifications();
+            if (outcome.processed > 0) fastify.log.info(outcome, 'Processed push notification delivery work');
+          } catch (error) {
+            fastify.log.error({ err: error }, 'Push notification delivery pass failed');
+          }
+        };
+        void runPushDelivery();
+        setInterval(() => { void runPushDelivery(); }, runtimeConfig.pushDeliveryPollIntervalMs).unref();
+      }
+      if (runtimeConfig.followedWriterNotificationsEnabled) {
+        const runPublicationFanout = async () => {
+          try {
+            const outcome = await runFollowedWriterNotifications(database);
+            if (outcome.processed > 0) fastify.log.info(outcome, 'Processed followed-writer publication events');
+          } catch (error) {
+            fastify.log.error({ err: error }, 'Followed-writer publication fan-out failed');
+          }
+        };
+        void runPublicationFanout();
+        setInterval(() => { void runPublicationFanout(); }, runtimeConfig.pushDeliveryPollIntervalMs).unref();
+      }
+      if (runtimeConfig.dailyDigestEnabled) {
+        const scheduleDailyDigest = () => {
+          const now = new Date();
+          const target = new Date(now);
+          target.setUTCHours(runtimeConfig.dailyDigestHourUtc, runtimeConfig.dailyDigestMinuteUtc, 0, 0);
+          if (target <= now) target.setDate(target.getDate() + 1);
+          const delayMs = target.getTime() - now.getTime();
+          fastify.log.info({ nextRunAt: target.toISOString(), delayMs }, 'Daily digest notification scheduled');
+          setTimeout(async () => {
+            try {
+              const firebaseMessaging = getMessaging(getApps()[0]);
+              const outcome = await runDailyDigest(database, firebaseMessaging, fastify.log);
+              fastify.log.info(outcome, 'Daily digest completed');
+            } catch (error) {
+              fastify.log.error({ err: error }, 'Daily digest failed');
+            }
+            scheduleDailyDigest();
+          }, delayMs).unref();
+        };
+        scheduleDailyDigest();
+      }
+      if (runtimeConfig.socialAutoPublishEnabled) {
+        const scheduleSocialCampaign = () => {
+          const now = new Date();
+          const target = new Date(now);
+          target.setUTCHours(runtimeConfig.socialAutoPublishHourUtc, runtimeConfig.socialAutoPublishMinuteUtc, 0, 0);
+          if (target <= now) target.setDate(target.getDate() + 1);
+          const delayMs = target.getTime() - now.getTime();
+          fastify.log.info({ nextRunAt: target.toISOString(), delayMs }, 'Social campaign auto-publisher scheduled');
+          setTimeout(async () => {
+            try {
+              const dayOfCampaign = Math.max(1, Math.min(30, Math.ceil((Date.now() - new Date('2026-09-01T00:00:00Z').getTime()) / (24 * 3600 * 1000))));
+              const outcome = await runDailyCampaignPublish({ day: dayOfCampaign, config: runtimeConfig, log: fastify.log });
+              fastify.log.info(outcome, 'Social campaign auto-publish pass completed');
+            } catch (error) {
+              fastify.log.error({ err: error }, 'Social campaign auto-publish failed');
+            }
+            scheduleSocialCampaign();
+          }, delayMs).unref();
+        };
+        scheduleSocialCampaign();
+      }
+      const runFeedRetention = async () => {
         try {
-          const outcome = await fastify.deliverPushNotifications();
-          if (outcome.processed > 0) fastify.log.info(outcome, 'Processed push notification delivery work');
+          const outcome = await cleanExpiredFeedData(database);
+          fastify.log.info(outcome, 'Completed reader-feed retention cleanup');
         } catch (error) {
-          fastify.log.error({ err: error }, 'Push notification delivery pass failed');
+          fastify.log.error({ err: error }, 'Reader-feed retention cleanup failed');
         }
       };
-      void runPushDelivery();
-      setInterval(() => { void runPushDelivery(); }, runtimeConfig.pushDeliveryPollIntervalMs).unref();
+      void runFeedRetention();
+      setInterval(() => { void runFeedRetention(); }, 24 * 60 * 60 * 1_000).unref();
     }
-    if (runtimeConfig.dailyDigestEnabled) {
-      const scheduleDailyDigest = () => {
-        const now = new Date();
-        const target = new Date(now);
-        target.setUTCHours(runtimeConfig.dailyDigestHourUtc, runtimeConfig.dailyDigestMinuteUtc, 0, 0);
-        if (target <= now) target.setDate(target.getDate() + 1);
-        const delayMs = target.getTime() - now.getTime();
-        fastify.log.info({ nextRunAt: target.toISOString(), delayMs }, 'Daily digest notification scheduled');
-        setTimeout(async () => {
-          try {
-            const firebaseMessaging = getMessaging(getApps()[0]);
-            const outcome = await runDailyDigest(database, firebaseMessaging, fastify.log);
-            fastify.log.info(outcome, 'Daily digest completed');
-          } catch (error) {
-            fastify.log.error({ err: error }, 'Daily digest failed');
-          }
-          scheduleDailyDigest();
-        }, delayMs).unref();
-      };
-      scheduleDailyDigest();
-    }
-    if (runtimeConfig.socialAutoPublishEnabled) {
-      const scheduleSocialCampaign = () => {
-        const now = new Date();
-        const target = new Date(now);
-        target.setUTCHours(runtimeConfig.socialAutoPublishHourUtc, runtimeConfig.socialAutoPublishMinuteUtc, 0, 0);
-        if (target <= now) target.setDate(target.getDate() + 1);
-        const delayMs = target.getTime() - now.getTime();
-        fastify.log.info({ nextRunAt: target.toISOString(), delayMs }, 'Social campaign auto-publisher scheduled');
-        setTimeout(async () => {
-          try {
-            const dayOfCampaign = Math.max(1, Math.min(30, Math.ceil((Date.now() - new Date('2026-09-01T00:00:00Z').getTime()) / (24 * 3600 * 1000))));
-            const outcome = await runDailyCampaignPublish({ day: dayOfCampaign, config: runtimeConfig, log: fastify.log });
-            fastify.log.info(outcome, 'Social campaign auto-publish pass completed');
-          } catch (error) {
-            fastify.log.error({ err: error }, 'Social campaign auto-publish failed');
-          }
-          scheduleSocialCampaign();
-        }, delayMs).unref();
-      };
-      scheduleSocialCampaign();
-    }
-    const runFeedRetention = async () => {
-      try {
-        const outcome = await cleanExpiredFeedData(database);
-        fastify.log.info(outcome, 'Completed reader-feed retention cleanup');
-      } catch (error) {
-        fastify.log.error({ err: error }, 'Reader-feed retention cleanup failed');
-      }
-    };
-    void runFeedRetention();
-    setInterval(() => { void runFeedRetention(); }, 24 * 60 * 60 * 1_000).unref();
+
   } catch (error) {
     fastify.log.error(error);
     process.exit(1);

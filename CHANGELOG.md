@@ -1,5 +1,53 @@
 # Changelog & Update History — WritOn 2.0
 
+## Full Google Cloud Migration — 2026-09-07
+
+### Completed
+- **Production Cutover to Cloud Run**: Fully migrated live API traffic from Render to Google Cloud Run (`writon-app-api` in `asia-south1`) backed by an immutable container digest (`asia-south1-docker.pkg.dev/writon-app-2020/writon/writon-api@sha256:ff4ed7d4e0c3d6e1f5d482bb1699773396db2e83711c7c7d5894fa5fb2e33d8c`).
+- **Zero-Downtime Public Gateway**: Maintained stable public endpoint `https://api.writon.cc` via Firebase Hosting site `writon-api-gateway` rewrite. Zero Android client code or base URL changes required.
+- **Zero-Consumer Overlap Notification Transfer**: Decoupled in-process notification polling into authenticated, bounded Cloud Scheduler jobs (`writon-notification-outbox-drain` and `writon-followed-writer-fanout`) invoking protected endpoints with `x-admin-key`. Render background push worker safely stopped and confirmed idle.
+- **Database & Secret Isolation**: Provisioned least-privilege IAM service accounts (`writon-api-runtime`, `writon-scheduler-invoker`) and versioned Secret Manager secrets ensuring strict isolation between staging (`xrfnebvkazewqramkpri`) and production (`rrxaitxeirykmiihgiqj`).
+- **Scheduled Maintenance Decoupling**: Provisioned and resumed `writon-feed-retention` Cloud Scheduler job (`0 3 * * *` Asia/Kolkata); daily digest scheduler provisioned and paused pending physical cohort verification.
+- **Render Hot Standby**: Configured `render.yaml` with all workers and timers disabled (`PUSH_DELIVERY_ENABLED=false`, `TIMERS_DISABLED=true`) to maintain a standby failover target for two Android release windows.
+- **Feed Parity & Type Cast Fix**: Resolved PostgreSQL `42883: operator does not exist: uuid = text` on `GET /api/v1/feed` by explicitly casting session parameters (`id = $1::uuid`, `exposure.feed_session_id = $1::uuid`) and aligning `reader_feed_sessions.profile_id` column type to `text` across staging and production Supabase databases.
+- **Feed Parity Verification**: Verified that `GET /api/v1/posts?tab=latest` and `GET /api/v1/feed` serve the latest human-verified published stories (`Recitation of Sundarkand` by `@rajeshrana`, `First try` by `@saurabh`, `The Art of Minimalist CodeCraft` by `@mayalin`), while `GET /api/v1/spark/feed` serves the latest editorial stories (`The Weight of the Uruli` by `@bhavna_nair`, `The Measure of the Seam` by `@hamid_khan_shayari`).
+- **Physical Android Push Verification & Final Lockdown**: Formally verified and locked real-device push notifications on physical Android device (story applause notification confirmed on "परीक्षा के दिन"; bookmarks are strictly private and never trigger push notifications). Outbox deliveries transitioned cleanly with zero duplicate notifications, zero consumer overlap, and permanent Render worker retirement.
+- **Human Content Provenance Lock Restored**: Enforced locked human-only content integrity (`p.provenance = 'human_verified'` and `author.account_type = 'human'`) across `GET /api/v1/posts`, `GET /api/v1/tags`, and feed candidate ranking queries in `server/src/server.js` and `feed-service.js`, preventing any synthetic or unverified stories from reaching reader feeds.
+- **Scheduler Secret Rotation & Header Redaction**: Rotated `writon-admin-secret-key-production`, `writon-admin-secret-key-staging`, and `writon-bot-ingest-secret` to fresh cryptographically random secrets in Secret Manager, updated all 5 Cloud Scheduler jobs, and enforced header redaction across all verification tooling.
+- **Outbox Timeout Release Safeguard**: Wrapped `deliverPendingPushNotifications` claimed outbox loop in try/finally to atomically release any unhandled rows from `sending` back to `pending` with decremented attempt counts whenever `maxSeconds` times out.
+- **Synthetic Clock Paused**: Confirmed and paused `writon-bot-publishing-clock` Cloud Scheduler job to prevent unverified background bot generation.
+- **Test Suite Verification**: 100% passing test suite across all 16 test files (179 unit, contract, and integration tests).
+
+## [2.0.53] - 2026-09-06
+
+### Fixed
+
+- Connected the existing contextual notification-permission pre-prompt to a server-confirmed story publication, while leaving failed or offline-queued publication attempts silent.
+- Connected the same contextual prompt to a server-confirmed bookmark save; removing a bookmark and offline-queued or failed saves remain silent.
+- Made the in-app notification inbox distinguish loading and connection failure from a genuinely empty activity stream, with a localized Retry action in all six app languages.
+- Kept canonical notification aliases visible in every inbox filter by loading the complete activity stream and filtering locally; replies, first applause, new followers, and followed-writer publications can no longer disappear behind legacy single-kind queries. Replaced the non-functional Mentions tab with a useful Stories tab for publication and editorial activity.
+- Made inbox activity lead somewhere useful: story, comment, reply, applause, and followed-writer publication rows open the related story, while new-follower rows open that reader's profile.
+- Localized canonical inbox actions in English, Hindi, Bengali, Marathi, Spanish, and French, including distinct wording for replies and combined same-day publication batches; unknown legacy kinds continue showing their original server message.
+- Revalidated queued social pushes immediately before delivery, so a story that has since become private, unpublished, non-human, or provenance-ineligible cannot still generate a reader-facing notification; existing notification endpoints and payload contracts are unchanged.
+- Kept the shared bottom navigation and its write action above Android’s system navigation area on edge-to-edge devices, restoring fully visible labels and reliable tap targets.
+- Completed signed-in Profile localization across all six app languages, added an honest loading/error/retry state for failed profile requests, made tabs expose their selected state, localized save validation, and preserved coroutine cancellation instead of treating lifecycle shutdown as a profile failure.
+- Localized public writer profiles and the notification inbox across all six app languages, including headings, empty/error states, counts, filters, sections, metrics, and spoken action labels; notification filtering now uses stable internal values instead of English display text.
+- Tightened the first welcome screen so reading, writing, and existing-account entry remain discoverable on compact displays, while retaining scrolling for larger text and translated copy.
+- Localized the complete sign-in and password-reset surface across all six app languages, including loading, validation, recovery, Google-session errors, and show/hide-password accessibility labels.
+- Localized the complete signup and interrupted-account-recovery surface across all six app languages; Terms and Privacy are now distinct accessible actions, password visibility controls are labelled, and the form respects keyboard and navigation-bar insets.
+- Localized the complete writing and publication surface across all six app languages, including draft states, validation, offline/queued publication guidance, formatting-tool descriptions, category selection, cover preview, word count, and reading time without changing publication behavior or API contracts.
+- Made notification preferences recoverable and accessible: failed initial loads now offer Retry, saves are serialized so rapid taps cannot let an older response overwrite a newer choice, cancellation remains cancellation, and each labelled row is exposed as one TalkBack switch target with a localized Back action.
+- Preserved the reader's or writer's intended destination through sign-in, signup, and onboarding; protected actions return to their original screen with a completion hint instead of dropping users on Home.
+- Added a dedicated profile-setup retry after Firebase account creation succeeds, preventing repeated account-creation attempts and preserving entered signup details across recreation.
+- Corrected the password sign-in field to request an email address, matching the authentication method the app actually uses.
+- Replaced the reader's endless spinner after an uncached network failure with an actionable Retry and Back state, while keeping downloaded stories readable with an honest saved-copy notice.
+- Search now distinguishes server-confirmed empty results from connection failures, uses cached results only when the server cannot be reached, labels them honestly, and ignores cancelled stale searches.
+- Removed non-functional private publishing, scheduling, tag, and decorative cover selections that could misrepresent what would actually be published.
+- Made the publish preview show the story's uploaded cover or its real category fallback artwork.
+- Added visible publish-readiness, offline, saving, validation, and failure feedback on the final publish screen.
+- Clearly labels deferred offline publication, lets the writer retry immediately or cancel it and keep the story as a draft, and prevents lifecycle cancellation from creating a publish job.
+- Matched Android title validation to the existing server requirement of at least three characters.
+
 ## [2.0.52] - 2026-09-06
 
 ### Fixed
@@ -12,7 +60,31 @@ All notable changes, architectural improvements, UI/UX refinements, security fea
 - **Upstream Repository**: [`Saurabh682/Writon-2.0`](https://github.com/Saurabh682/Writon-2.0.git)
 - **Active Working Branch**: `Till_29Aug` *(release-branch synchronization remains pending until this stabilization workspace is approved and committed)*
 - **Package Name**: `com.ibitvalley.writon`
-- **Current Version**: `2.0.52 (Version Code: 154)`
+- **Current Version**: `2.0.53 (Version Code: 155)`
+
+### Social Media & SEO Automation — Autonomous Trend Harvester & Daily Briefing (September 07, 2026)
+- **Dual-Scout Trend Harvesters**:
+  - Implemented `scratch/trend-collector.mjs` running Agent 1 (`x-trend-scout`) for live X/Twitter India & Global trends + `#writingcommunity` signals, and Agent 2 (`google-trend-scout`) for Google Trends RSS queries.
+  - Implemented `scratch/trend-analyzer.mjs` providing end-of-day synthesis, spam filtering, literary categorization (Essays, Stories, Poetry, Shayari, Tech, Culture, Humour), and generation of `DAILY_TREND_BRIEF_YYYY-MM-DD.md` and `curated-topics.json`.
+  - Added background daemon cron (`0 11,15,18,21 * * *` IST) via `task-13272` to automatically harvest snapshots throughout the day and execute the 21:00 IST end-of-day SEO synthesis brief.
+
+### Social Media & Bot Engine — Disabled Automated Bot Comments (September 07, 2026)
+- **Bot Comments Disabled**: Completely stopped automated bot comments and replies across the backend.
+  - Guarded `executeInteractAction` to immediately skip any `comment` or `reply` actions.
+  - Short-circuited `triggerCommenterWave` so no new comment waves are dispatched.
+  - Added cancellation handling in `processDueDelayedActions` queue runner to cancel and drain queued comment/reply tasks.
+  - Removed comment/reply scheduling hooks from `triggerSparkReaction` and `triggerSparkCommentReaction`.
+  - Database cleanup: Cancelled all currently pending/processing bot comment and reply actions in `public.bot_delayed_actions`.
+
+### Social Media Publishing — Sprint 2 Day 2 Asset Staging & Pipeline Verification (September 06, 2026)
+- **Visual Card Assets Generated for Day 2**: Generated all high-res visual assets in `campaign/antigravity-2026-09-06-19/assets/day2/` strictly adhering to the 50/50 Warm Parchment (#FCF8F2 canvas, #BA4E28 terracotta accent, #261F1C ink) / Obsidian Dark (#111213 obsidian, #E75A2A brand red, #EDE8DF text) design rule with clean Devanagari typography:
+  - `09:00 IST` (X Morning Prompt, 1080×1080): Warm Parchment / Literary Beige canvas with terracotta accents and 3-anchor Devanagari hook (`day2_am_x_card.png`).
+  - `12:30 IST` (IG Story Question/Poll, 1080×1920): Warm Parchment canvas within safe margins with question graphic *“आप क्या पढ़ना पसंद करेंगे?”* and poll choices *रहस्य / कविता* (`day2_midday_story_frame.png`).
+  - `19:30 IST` (IG Feed Card + Threads, 1080×1080): Obsidian Dark canvas with brand red accents and 3-step Devanagari exercise instructions (`day2_main_feed_card.png`).
+  - `20:30 IST` (X Evening Practice, 1080×1080): Obsidian Dark canvas with craft tip on sensory shifts (`day2_pm_x_card.png`).
+  - `20:45 IST` (IG Story 2-Frame Drop, 1080×1920 each): Obsidian Dark canvases for evening craft reflection (`day2_evening_story_frame_1.png`) and verified Google Play CTA with shortlink (`day2_evening_story_frame_2.png`).
+- **Sharp Asset Validation**: Validated all 6 rendered assets with Sharp; confirmed exact pixel dimensions (1080×1080 square cards, 1080×1920 vertical stories), 4-channel PNG color depth, and valid file sizes.
+- **Publishing Pipeline Updated**: Configured `scratch/sprint2-dispatcher.mjs` asset mappings for Day 2 (`getAssetPathsForDelivery(2, ...)`), added support for single-card feed posts and Threads mirroring, updated `publishing-calendar.csv` asset paths, and executed a complete dry run (`--dry-run --day=2`) verifying 100% readiness across all 5 slots.
 
 ### Social Media Publishing — Sprint 2 Day 1 Evening Drops (September 06, 2026)
 - **Instagram Feed Carousel Published**: Published 5-panel 1080×1350 carousel (`2609_d06_ig_carousel_en_sprint2_main_start_with_one_paragraph`, Post ID: `17862519315677737`) to `@writon_socialapp` with high-traffic discovery hashtags (`#writon #writingcommunity #amwriting #storytelling #writersofinstagram #books #creators`).

@@ -71,9 +71,28 @@ No Firebase private-key JSON is required on Cloud Run. Grant the Cloud Run servi
 
 ## Cutover and rollback
 
-Run the canary for 7–14 days before cutover. Route `api.writon.cc` to Cloud Run only after all checks pass. Keep Render deployed and current for at least two Android releases. A rollback changes the domain origin back to Render; the Android application does not change.
+**Cutover Status (2026-09-07):**
+`https://api.writon.cc` is now live and fully cut over to Cloud Run production service `writon-app-api` (`asia-south1`) via Firebase Hosting gateway `writon-api-gateway`. All notification outbox drains, publication fanout, and reader feed maintenance run via authenticated Cloud Scheduler jobs with zero consumer overlap.
 
-Before retiring Render, replace its notification polling loop with an authenticated scheduled Cloud Run job or endpoint and verify delivery under scale-to-zero.
+**Render Standby & Rollback Drill:**
+Render (`https://writon-powerup.onrender.com`) remains deployed as a warm disaster-recovery standby with background workers disabled (`PUSH_DELIVERY_ENABLED=false`, `TIMERS_DISABLED=true`) for two Android-release observation windows (Sept 7–21, 2026).
+
+Because Firebase Hosting rewrites (`firebase.api.json`) can only proxy to internal Cloud Run services (and not arbitrary external hosts like Render), rollback follows a two-tier strategy:
+
+1. **Tier 1 (Instant In-Place Rollback, <30s):**
+   Revert 100% of Cloud Run traffic to the previous known-good revision:
+   ```bash
+   gcloud run services update-traffic writon-app-api --to-revisions=<PREVIOUS_REVISION>=100 --region=asia-south1 --project=writon-app-2020
+   ```
+2. **Tier 2 (DNS Disaster Recovery to Render for Regional Outage):**
+   - Pause Cloud Scheduler outbox jobs:
+     ```bash
+     gcloud scheduler jobs pause writon-notification-outbox-drain --location=asia-south1 --project=writon-app-2020
+     gcloud scheduler jobs pause writon-followed-writer-fanout --location=asia-south1 --project=writon-app-2020
+     ```
+   - At your DNS provider / Cloudflare, update the CNAME for `api.writon.cc` to point directly to `writon-powerup.onrender.com`.
+   - Re-enable background workers on Render (`TIMERS_DISABLED=false`, `PUSH_DELIVERY_ENABLED=true`) and redeploy Render.
+   - Once GCP service is restored, re-point DNS back to Firebase Hosting and resume Cloud Scheduler jobs. Zero Android client changes required in either tier.
 
 ## Firebase gateway deployment
 
@@ -83,4 +102,11 @@ Deploy the isolated gateway configuration without modifying the main `writon.cc`
 npx --yes firebase-tools@latest deploy --only hosting:writon-api-gateway --config firebase.api.json --project writon-app-2020
 ```
 
-Then add `api.writon.cc` as a custom domain for the `writon-api-gateway` site in Firebase Hosting and apply the DNS records Firebase provides. Do not update the Android base URL until `https://api.writon.cc/health` succeeds with a valid Google-managed certificate.
+`api.writon.cc` is verified operational on `writon-app-api` with valid Google-managed SSL certificate and zero 5xx errors.
+
+## Cutover Evidence & Operations
+
+Current compatibility and rollback baseline is recorded in:
+- [Google Cloud Cutover Evidence & Rollback Baseline](../operations/google-cloud-cutover-evidence.md)
+- [Monitoring, Alerting & Incident Response](../operations/google-cloud-alerts.md)
+- [Implementation Plan](../plans/2026-09-07-google-cloud-full-migration.md)
