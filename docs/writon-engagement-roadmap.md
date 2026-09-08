@@ -1,6 +1,6 @@
 # WritOn Engagement Roadmap
 
-**Status:** Owner approved staged implementation on 2026-09-05; Phases 1 and 2 implemented locally, deployment and device gates remain  
+**Status:** Owner approved staged implementation on 2026-09-05; Phases 1 and 2 and the Phase 3 intent flow are implemented locally; hosted preference API gate passed, Android device gates remain
 **Source:** `writon-engagement-plan.md`, reconciled with the WritOn codebase on 2026-09-05  
 **Scope:** Personalized onboarding, notification lifecycle improvements, and weekly writing prompts  
 **Product principle:** Increase meaningful reading and writing without loud gamification, dark patterns, or notification spam
@@ -255,6 +255,8 @@ Local guest state:
 
 ## Phase 3 — Personalized onboarding v2
 
+**Local implementation status (2026-09-06):** The Read/Write/Both intent step, optional skip, account-scoped local-first persistence, pending synchronization, version-2 completion, six-language resources, scrollable large-text layout, focused JVM coverage, Compose test definitions, and Firebase App Testing journey are implemented in 2.0.46 (148). Newly created accounts enter intent then interests; returning sign-ins and first-page visitor reading are not forced through the new step. The staging-configured build installed over 2.0.44 on the Redmi 25028RN03I without clearing data; all four focused onboarding UI tests, cold launch, and background resume passed with an empty crash buffer. A disposable-account authenticated end-to-end journey and release rollout remain open gates.
+
 ### Objective
 
 Create a short, calm onboarding path that improves the first feed without delaying account creation.
@@ -397,6 +399,27 @@ Correct notification semantics before adding more notification volume.
 ---
 
 ## Phase 6 — Contextual permission and notification controls
+
+### Implementation progress — 2026-09-07
+
+- The localized contextual pre-prompt, Android runtime permission handoff, session consumption guard, 14-day cooldown, reading-completion value moment, OS-level status, system-settings action, guest discovery control, and additive signed-in per-type controls are implemented.
+- Server-confirmed publication now invokes the same contextual pre-prompt only after the publish operation succeeds; failed and offline-queued attempts do not prompt.
+- A server-confirmed bookmark save now invokes the contextual pre-prompt; removing a bookmark and offline-queued or failed saves remain silent.
+- The physical-device permission and audience-convergence matrix remains before this phase can pass its exit gate.
+
+### Implementation progress — 2026-09-08
+
+- On the connected Redmi test device, build `2.0.54` (`versionCode 156`) exposes all three WritOn channels: Daily reads, Story activity, and Writing updates.
+- The device initially had the app-level notification permission set to `ignore`; after granting `POST_NOTIFICATIONS` on the test device, Android reports app notification importance `DEFAULT` and preserves the expected per-channel importance levels.
+- This is device readiness evidence only. The full connected Android test matrix and end-to-end audience-convergence checks remain pending; production behavior is unchanged.
+- Android’s app-specific notification settings route opened successfully on the test phone (`Settings$AppNotificationSettingsActivity`), confirming the recovery path exposed by the app can reach the OS controls.
+- The approved guest-registration design is now implemented in Android `2.0.55` (`versionCode 157`) and the server. It adds a persistent anonymous installation UUID, a separately flagged guest endpoint, and atomic conversion to the unchanged authenticated token endpoint after sign-in.
+- Supabase staging alone received the new RLS-protected guest token table. Cloud Run staging revision `writon-app-api-staging-00004-wxb` is live with guest registration enabled while all notification delivery, digest, social publishing, Spark automation, behavior ranking, review prompt, and in-process timer switches remain disabled.
+- Hosted staging passed registration, idempotency, replacement, validation, and revocation smoke tests. Server verification passes 195 tests across 18 files; Android JVM tests and debug assembly pass.
+- The full connected suite is not yet green: the Redmi instrumentation process stopped after 6 of 21 tests at the existing avatar-fallback UI test. Physical guest receive → sign-in → no-duplicate delivery remains the Phase 6 exit gate. Production APIs, database, Cloud Run service, schedulers, and Play release were not changed.
+- A clean first-launch run of the staging-connected `2.0.55` debug build reached the correct Google Cloud staging API and remained stable, but Firebase Messaging returned `SERVICE_NOT_AVAILABLE` during topic/token acquisition. Consequently no guest device row was created; this is now the concrete external/device blocker for the physical delivery gate rather than an unverified app assumption.
+- The same device run exposed a missing `story_categories` relation only in the staging database. The existing 18-entry catalog was applied through an environment-locked staging runner, and `/api/v1/tags` now returns HTTP 200. No endpoint shape or production database was changed.
+- Physical profile-photo testing exposed that staging generated media URLs from its Cloud Run request host while `PUBLIC_API_BASE_URL` was unset, causing its own hardened profile validator to reject a freshly uploaded image. Staging revision `writon-app-api-staging-00005-zvb` now declares the canonical staging URL; the production host and validation policy were not changed. Android also omits the avatar field on text-only edits so unchanged legacy URLs cannot block unrelated profile updates.
 
 ### Objective
 
@@ -929,3 +952,29 @@ Suggested primary product outcome: proportion of eligible newcomers who return f
 Track each item as proposed, implemented, tested, device-verified, deployed, or outcome-validated. Attach evidence to each state. Do not mark the entire roadmap complete because tests pass, and do not let a delayed analytics dashboard block an independently verified reliability fix.
 
 The existing thirteen phases remain the detailed work breakdown. These deliveries group them into manageable releases; they do not authorize API changes or set release dates.
+
+
+## 10. GA4 Empirical Growth Directives (September 2026)
+
+**Empirical Evidence Source:** [GA4 Analytics Growth Intelligence Audit (2026-08-11 to 2026-09-07)](file:///d:/VibeCode/WritOn-PowerUp/docs/audits/ga4-analytics-growth-intelligence-2026-09-08.md)  
+**Baseline Health:** 154 active users, 146 new users, 1,233.5s (~20.5m) average engagement time per user, 4,629 total events. Readers entering `reader/{storyId}` read an average of **7.44 stories per active reader** with a low **10.53% bounce rate**.
+
+To translate these engagement signals into scalable reader acquisition, retention loops, and store ranking, three growth directives are established for engineering, marketing, and autonomous AI execution:
+
+### 10.1 Social Outbox UTM Campaign Tagging
+- **Finding:** 96.75% of first-time users arrive categorized as `(direct) / (none)`, obscuring social acquisition performance from active Instagram, Threads, and X publishing drops.
+- **Directive:** Enforce full UTM campaign hygiene across all dispatch links, `/go/:deliveryId` shortlinks, and bio URLs.
+- **Specification:** Append `?utm_source={platform}&utm_medium=social_card&utm_campaign={campaign_name}&utm_content={delivery_id}`.
+- **Implementation Targets:** `campaign/scripts/dispatch-publisher.mjs`, `public/canvas.html`, `server/src/routes/redirects.js`.
+
+### 10.2 FCM Evening Push Habit-Loop ("Tonight's 3-Minute Read")
+- **Finding:** Only 1 session in 28 days came from push notifications (`Firebase / notification`), despite high 20+ minute reading sessions.
+- **Directive:** Automate a daily 20:00 IST habit-loop push notification via FCM topic `writon_daily_digest` and eligible registered tokens targeting the peak evening leisure reading window.
+- **Content:** Highlight one curated 3-minute story with an immediate deep link into `reader/{storyId}`.
+- **Implementation Targets:** `server/src/jobs/daily-digest.js`, `server/src/server.js`, `app/src/main/java/com/ibitvalley/writon/modern/core/notification/DailyDigestTopicSubscription.kt`.
+
+### 10.3 In-App Review Eligibility Timing at 3rd Story Read
+- **Finding:** Readers who open stories exhibit high loyalty (7.44 stories/reader, 10.5% bounce).
+- **Directive:** Trigger the native Google Play `ReviewManager.requestReviewFlow()` immediately upon completion of a reader's 3rd story.
+- **Constraints:** Respect a 90-day cooldown, trigger only on story completion (never during writing or error states), and capitalize on proven organic reader affinity to lift Play Store conversion.
+- **Implementation Targets:** `app/src/main/java/com/ibitvalley/writon/modern/core/review/`, `app/src/main/java/com/ibitvalley/writon/modern/core/telemetry/ReviewPrompter.kt`.
