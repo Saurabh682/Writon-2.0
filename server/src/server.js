@@ -28,6 +28,7 @@ import { feedRoutes } from './routes/feed.js';
 import { cleanExpiredFeedData } from './services/feed-service.js';
 import { toFcmAnalyticsLabel } from './services/fcm-analytics-label.js';
 import { runDailyDigest } from './jobs/daily-digest.js';
+import { runDiscoveryNotifications } from './jobs/discovery-notifications.js';
 import { runDailyCampaignPublish } from './jobs/social-campaign-publisher.js';
 import { runFollowedWriterNotifications } from './jobs/followed-writer-notifications.js';
 import { attachHashtagsAndWatermark, stripWatermark } from './bot-engine/watermark-service.js';
@@ -189,8 +190,9 @@ h1{margin:0;font:600 clamp(36px,6vw,60px)/1.08 Georgia,"Times New Roman",serif;l
 .story-body ul{margin:0 0 22px;padding-left:26px;line-height:1.75}
 .story-body ul li{margin-bottom:8px}
 .story-body blockquote{margin:28px 0;padding:16px 22px;border-left:3px solid var(--rust);background:rgba(201,71,36,0.05);border-radius:0 10px 10px 0;font:italic 18px/1.65 Georgia,serif;color:#3f3730}
-.story-body blockquote p{margin:0}
-.story-body code{font-family:monospace;background:#eee3d6;padding:2px 6px;border-radius:4px;font-size:0.9em}
+.story-body pre{margin:24px 0;padding:18px 20px;background:#231f1c;color:#f3eee6;border-radius:12px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:14px;line-height:1.6;border:1px solid #3c352f}
+.story-body pre code{background:transparent;color:inherit;padding:0;border-radius:0;font-size:inherit;display:block;white-space:pre}
+.story-body code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:#eee3d6;padding:2px 6px;border-radius:4px;font-size:0.9em}
 .story-body a{color:var(--rust);text-decoration:underline}
 .story-divider{border:none;border-top:1px solid var(--line);margin:36px auto;width:60%}
 .story-hashtags{margin-top:24px;margin-bottom:20px;display:flex;flex-wrap:wrap;gap:8px;font:500 14px system-ui,-apple-system,sans-serif}
@@ -243,8 +245,19 @@ function toOgLocale(lang) {
 function formatContentToHtml(rawContent) {
   if (!rawContent) return '';
   const hasWatermark = rawContent.includes('#writon');
-  const cleanRaw = rawContent.replace(/<!--\s*#writon\s*watermark\s*-->/gi, '').replace(/<span\b[^>]*class=["']writon-watermark["'][^>]*>[\s\S]*?<\/span>/gi, '');
-  const escaped = escapeHtml(cleanRaw);
+  const cleanRaw = rawContent
+    .replace(/<!--\s*#writon\s*watermark\s*-->/gi, '')
+    .replace(/<span\b[^>]*class=["']writon-watermark["'][^>]*>[\s\S]*?<\/span>/gi, '');
+
+  // Extract fenced code blocks (``` or ~~~) first so syntax and indentation are preserved
+  const codeBlocks = [];
+  const withPlaceholders = cleanRaw.replace(/(?:^|\n)(?:```|~~~)([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)\r?\n(?:```|~~~)/g, (_match, lang, code) => {
+    const token = `\n\nWRITONCODEBLOCK${codeBlocks.length}TOKEN\n\n`;
+    codeBlocks.push({ lang: (lang || '').trim(), code });
+    return token;
+  });
+
+  const escaped = escapeHtml(withPlaceholders);
   const formatted = escaped
     .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
     .replace(/^### (.*$)/gim, '<h3>$1</h3>')
@@ -261,6 +274,19 @@ function formatContentToHtml(rawContent) {
     .map(chunk => {
       const trimmed = chunk.trim();
       if (!trimmed) return '';
+
+      // Check if chunk is a code block placeholder
+      const codeMatch = trimmed.match(/^WRITONCODEBLOCK(\d+)TOKEN$/);
+      if (codeMatch) {
+        const idx = parseInt(codeMatch[1], 10);
+        const block = codeBlocks[idx];
+        if (block) {
+          const escapedCode = escapeHtml(block.code);
+          const langClass = block.lang ? ` class="language-${escapeHtml(block.lang)}"` : '';
+          return `<pre${langClass}><code>${escapedCode}</code></pre>`;
+        }
+      }
+
       if (trimmed.startsWith('<h') || trimmed.startsWith('<hr')) return trimmed;
 
       // Hashtags block
@@ -2217,9 +2243,9 @@ fastify.get('/api/v1/posts', async (request, reply) => {
   const result = await database.query(
     `${postSelectSql(`where p.status = 'published'
       and p.is_public = true
-      and p.provenance = 'human_verified'
-      and author.account_type = 'human'
-      and ($2::text is null or lower(p.category) = lower($2))
+      and p.provenance in ('human_verified', 'synthetic')
+      and author.account_type in ('human', 'editorial_bot')
+      and ($2::text is null or lower($2) = 'all' or lower(p.category) = lower($2))
       and ($3::text is null or p.author_id = $3)
       and ($4::text is null or lower(author.pen_name) = lower($4))
       and (
@@ -3772,6 +3798,7 @@ fastify.patch(
   await fastify.register(appMetaRoutes, { config, database });
   await fastify.register(seoRoutes, { config, database });
   await fastify.register(notificationRoutes, {
+    config,
     database,
     requireUser,
     parseCollectionQuery,
@@ -3833,6 +3860,23 @@ fastify.patch(
   fastify.post('/api/v1/internal/notifications/daily-digest', handleDailyDigestRun);
   // Temporary compatibility path for existing operator tooling.
   fastify.post('/api/v1/spark/daily-digest/test', handleDailyDigestRun);
+
+  fastify.post('/api/v1/internal/notifications/discovery', async (request, reply) => {
+    if (!verifyAdminKey(request, reply)) return;
+    const parsed = z.object({
+      dryRun: z.enum(['true', 'false']).default('true'),
+      limit: z.coerce.number().int().min(1).max(500).default(100),
+    }).safeParse(request.query ?? {});
+    if (!parsed.success) return reply.code(400).send({ error: 'Invalid discovery notification run' });
+    const dryRun = parsed.data.dryRun !== 'false';
+    if (!dryRun && !config.discoveryNotificationsEnabled) {
+      return reply.code(409).send({ error: 'Discovery notification delivery is disabled' });
+    }
+    return runDiscoveryNotifications(database, firebaseMessaging, fastify.log, {
+      dryRun,
+      batchSize: parsed.data.limit,
+    });
+  });
 
 
   fastify.get('/campaign-assets/:filename', async (request, reply) => {

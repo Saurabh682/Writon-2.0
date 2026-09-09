@@ -130,6 +130,27 @@ describe('SEO, Sitemap & Google Search Indexing Endpoints', () => {
             rowCount: 1
           };
         }
+        if (params?.[0] === 'code-block-story-slug') {
+          return {
+            rows: [
+              {
+                title: 'Code Architecture in TypeScript',
+                slug: 'code-block-story-slug',
+                summary: 'Deterministic backoff logic.',
+                content: 'Here is the implementation:\n\n```typescript\ninterface Config {\n  retryCount: number;\n}\n```\n\nPreserved.',
+                category: 'Tech',
+                language: 'en',
+                coverImage: 'https://images.unsplash.com/photo-1518770660439-4636190af475',
+                publishedAt: new Date('2026-08-31T05:00:00Z'),
+                updatedAt: new Date('2026-08-31T05:00:00Z'),
+                authorName: 'Aarav Mehta',
+                authorPenName: 'aarav_tech',
+                authorAvatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb'
+              }
+            ],
+            rowCount: 1
+          };
+        }
         return { rows: [], rowCount: 0 };
       }
 
@@ -671,6 +692,12 @@ describe('SEO, Sitemap & Google Search Indexing Endpoints', () => {
     expect(res.statusCode).toBe(404);
     expect(res.headers['content-type']).toContain('text/html');
     expect(res.body).toContain('Author not found');
+  });
+
+  it('renders fenced code blocks as syntax-styled pre and code elements on story share page', async () => {
+    const res = await app.inject({ method: 'GET', url: '/stories/code-block-story-slug' });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toContain('<pre class="language-typescript"><code>interface Config {\n  retryCount: number;\n}</code></pre>');
   });
 });
 

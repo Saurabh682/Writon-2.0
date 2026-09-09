@@ -431,16 +431,52 @@ export const StoryReader: React.FC<StoryReaderProps> = ({
             fontSize === 'base' ? 'text-base' : fontSize === 'xl' ? 'text-2xl leading-[2]' : 'text-lg leading-[1.85]'
           }`}
           dangerouslySetInnerHTML={{
-            __html: story.content
-              .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-              .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-              .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-              .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
-              .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-              .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-              .replace(/```([\s\S]*?)```/gim, '<pre><code>$1</code></pre>')
-              .replace(/`([^`]+)`/gim, '<code>$1</code>')
-              .replace(/\n\n/gim, '</p><p>')
+            __html: (() => {
+              const codeBlocks: { lang: string; code: string }[] = [];
+              const raw = (story.content || '')
+                .replace(/<!--\s*#writon\s*watermark\s*-->/gi, '')
+                .replace(/<span\b[^>]*class=["']writon-watermark["'][^>]*>[\s\S]*?<\/span>/gi, '');
+
+              const withPlaceholders = raw.replace(/(?:^|\n)(?:```|~~~)([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)\r?\n(?:```|~~~)/g, (_match, lang, code) => {
+                const token = `\n\nWRITONCODEBLOCK${codeBlocks.length}TOKEN\n\n`;
+                codeBlocks.push({ lang: (lang || '').trim(), code });
+                return token;
+              });
+
+              return withPlaceholders
+                .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
+                .replace(/\*\*\*(.*?)\*\*\*/gim, '<strong><em>$1</em></strong>')
+                .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+                .replace(/`([^`]+)`/gim, '<code>$1</code>')
+                .split(/\n\n+/)
+                .map(chunk => {
+                  const trimmed = chunk.trim();
+                  if (!trimmed) return '';
+                  const codeMatch = trimmed.match(/^WRITONCODEBLOCK(\d+)TOKEN$/);
+                  if (codeMatch) {
+                    const block = codeBlocks[parseInt(codeMatch[1], 10)];
+                    if (block) {
+                      const escaped = block.code
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;');
+                      const langClass = block.lang ? ` class="language-${block.lang}"` : '';
+                      return `<pre${langClass}><code>${escaped}</code></pre>`;
+                    }
+                  }
+                  if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr')) {
+                    return trimmed;
+                  }
+                  return `<p>${trimmed.replace(/\n/g, '<br />')}</p>`;
+                })
+                .filter(Boolean)
+                .join('\n');
+            })()
           }}
         />
 

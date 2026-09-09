@@ -78,15 +78,36 @@ h1 { font-size: clamp(32px, 5.5vw, 50px); font-weight: 600; line-height: 1.15; m
   margin-bottom: 10px;
 }
 
-/* Inline Code & Links */
-.story-content code {
-  font-family: monospace;
+/* Code Blocks & Inline Code */
+.story-content pre, .story-body pre {
+  margin: 24px 0;
+  padding: 18px 20px;
+  background: #231F1C;
+  color: #F3EEE6;
+  border-radius: 12px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  border: 1px solid #3C352F;
+}
+.story-content pre code, .story-body pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+  display: block;
+  white-space: pre;
+}
+.story-content code, .story-body code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   background: #EEE3D6;
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 0.88em;
 }
-.story-content a {
+.story-content a, .story-body a {
   color: var(--primary);
   text-decoration: underline;
 }
