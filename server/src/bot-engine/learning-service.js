@@ -21,12 +21,18 @@ export async function recordStoryMemory(pool, { botId, postId, title, summary, c
   const themeDetails = themes.length > 0 ? ` Core themes: ${themes.join(', ')}.` : '';
   const content = `Authored "${title}" in category ${category || 'Essays'}.${charDetails}${themeDetails} Summary: ${summary || 'An authentic literary piece.'}`;
 
+  let verifiedPostId = postId || null;
+  if (verifiedPostId) {
+    const postExists = await pool.query('select 1 from public.posts where id = $1', [verifiedPostId]).catch(() => ({ rowCount: 0 }));
+    if (postExists.rowCount === 0) verifiedPostId = null;
+  }
+
   const res = await pool.query(`
     insert into public.bot_memories (
       bot_id, memory_type, subject, content, importance_score, target_post_id, created_at, updated_at
     ) values ($1, 'story_arc', $2, $3, 0.90, $4, now(), now())
     returning *
-  `, [botId, subject, content, postId || null]);
+  `, [botId, subject, content, verifiedPostId]);
 
   return res.rows[0];
 }
@@ -41,12 +47,18 @@ export async function recordFeedbackMemory(pool, { botId, postId, feedbackSummar
   const authorRef = commenterPenName ? `@${commenterPenName}` : 'A community reader';
   const content = `${authorRef} commented: "${commentContent || feedbackSummary}". Key takeaway: ${feedbackSummary || 'Valuable community reaction.'}`;
 
+  let verifiedPostId = postId || null;
+  if (verifiedPostId) {
+    const postExists = await pool.query('select 1 from public.posts where id = $1', [verifiedPostId]).catch(() => ({ rowCount: 0 }));
+    if (postExists.rowCount === 0) verifiedPostId = null;
+  }
+
   const res = await pool.query(`
     insert into public.bot_memories (
       bot_id, memory_type, subject, content, importance_score, target_post_id, created_at, updated_at
     ) values ($1, 'reader_feedback', $2, $3, 0.75, $4, now(), now())
     returning *
-  `, [botId, subject, content, postId || null]);
+  `, [botId, subject, content, verifiedPostId]);
 
   return res.rows[0];
 }

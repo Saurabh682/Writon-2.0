@@ -5,7 +5,7 @@ import path from 'node:path';
 /**
  * Escapes XML/SVG special characters safely.
  */
-function escapeXml(unsafe) {
+export function escapeXml(unsafe) {
   if (!unsafe) return '';
   return String(unsafe)
     .replace(/&/g, '&amp;')
@@ -18,7 +18,7 @@ function escapeXml(unsafe) {
 /**
  * Wraps text into lines with a maximum character width.
  */
-function wrapText(text, maxChars = 38) {
+export function wrapText(text, maxChars = 38) {
   if (!text) return [];
   const words = String(text).split(/\s+/).filter(Boolean);
   const lines = [];
@@ -37,7 +37,284 @@ function wrapText(text, maxChars = 38) {
 }
 
 /**
- * Generates an SVG string for a 1080x1350 Carousel Slide.
+ * Generates an SVG string for a 1080x1350 Story Editorial Quote Card.
+ * Designed for Instagram 4:5 portrait, Threads, X multi-image cards.
+ */
+export function buildStoryQuoteCardSvg({
+  title = '',
+  summary = '',
+  quote = '',
+  category = 'Editorial',
+  authorFullName = 'WritOn Author',
+  authorPenName = 'author',
+  readingTimeMin = 3,
+  theme = 'dark',
+}) {
+  const isDark = theme === 'dark';
+  const bg = isDark ? '#131415' : '#FFFDF9';
+  const cardBg = isDark ? '#1C1D1F' : '#F7F3EC';
+  const cardBorder = isDark ? '#2D2E30' : '#E6E0D4';
+  const textPrimary = isDark ? '#EDE8DF' : '#151718';
+  const textSecondary = isDark ? '#A5A096' : '#6D6963';
+  const brandTerracotta = '#E75A2A';
+
+  const badgeText = `WRITON EDITORIAL • ${String(category).toUpperCase()}`;
+
+  // Wrap title (max ~24 chars per line at 56px)
+  const titleLines = wrapText(title, 24).slice(0, 3);
+  let titleTspans = '';
+  let currentY = 320;
+  for (const line of titleLines) {
+    titleTspans += `<tspan x="100" y="${currentY}">${escapeXml(line)}</tspan>\n`;
+    currentY += 68;
+  }
+
+  // Choose excerpt text (quote or summary)
+  const excerpt = quote || summary || '';
+  const excerptLines = wrapText(excerpt, 32).slice(0, 5);
+  let excerptTspans = '';
+  currentY += 40;
+  const quoteStartY = currentY;
+
+  for (const line of excerptLines) {
+    excerptTspans += `<tspan x="140" y="${currentY}">${escapeXml(line)}</tspan>\n`;
+    currentY += 48;
+  }
+
+  const cleanPenName = authorPenName.startsWith('@') ? authorPenName : `@${authorPenName}`;
+
+  return `
+<svg width="1080" height="1350" viewBox="0 0 1080 1350" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="${cardBg}" stop-opacity="1"/>
+      <stop offset="100%" stop-color="${isDark ? '#161718' : '#EFEAE0'}" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1080" height="1350" fill="${bg}"/>
+
+  <!-- Main Inset Card Container -->
+  <rect x="50" y="50" width="980" height="1250" rx="32" fill="url(#cardGrad)" stroke="${cardBorder}" stroke-width="2"/>
+
+  <!-- Top Category Badge -->
+  <rect x="100" y="110" width="${Math.min(badgeText.length * 14 + 40, 480)}" height="46" rx="23" fill="${brandTerracotta}" fill-opacity="0.15"/>
+  <text x="${100 + Math.min(badgeText.length * 14 + 40, 480) / 2}" y="140" fill="${brandTerracotta}" font-family="system-ui, -apple-system, sans-serif" font-size="17" font-weight="700" letter-spacing="1.5" text-anchor="middle">${escapeXml(badgeText)}</text>
+
+  <!-- Brand Mark Top Right -->
+  <text x="960" y="140" fill="${textSecondary}" font-family="Georgia, Cambria, serif" font-size="26" font-weight="700" text-anchor="end">WritOn.</text>
+
+  <!-- Story Title -->
+  <text font-family="'Noto Sans Devanagari', 'Nirmala UI', Georgia, Cambria, 'Times New Roman', serif" font-size="56" font-weight="700" fill="${textPrimary}" letter-spacing="-0.5">
+    ${titleTspans}
+  </text>
+
+  <!-- Accent Divider Bar -->
+  <line x1="100" y1="${titleLines.length > 0 ? 320 + (titleLines.length * 68) - 20 : 360}" x2="220" y2="${titleLines.length > 0 ? 320 + (titleLines.length * 68) - 20 : 360}" stroke="${brandTerracotta}" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Large Decorative Quotation Mark -->
+  <text x="100" y="${quoteStartY + 20}" fill="${brandTerracotta}" font-family="Georgia, serif" font-size="90" font-weight="700" opacity="0.4">“</text>
+
+  <!-- Excerpt / Quote Body -->
+  <text font-family="'Noto Sans Devanagari', 'Nirmala UI', Georgia, Cambria, serif" font-size="32" font-style="italic" fill="${textPrimary}">
+    ${excerptTspans}
+  </text>
+
+  <!-- Author Profile Block -->
+  <g transform="translate(100, 940)">
+    <!-- Author Monogram Avatar -->
+    <circle cx="40" cy="40" r="40" fill="${brandTerracotta}" fill-opacity="0.2" stroke="${brandTerracotta}" stroke-width="2"/>
+    <text x="40" y="49" fill="${brandTerracotta}" font-family="system-ui, sans-serif" font-size="28" font-weight="700" text-anchor="middle">${escapeXml(authorFullName.slice(0, 1).toUpperCase())}</text>
+
+    <!-- Author Name & Pen Name -->
+    <text x="105" y="32" fill="${textPrimary}" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700">${escapeXml(authorFullName)}</text>
+    <text x="105" y="66" fill="${brandTerracotta}" font-family="system-ui, -apple-system, sans-serif" font-size="22" font-weight="600">${escapeXml(cleanPenName)} • <tspan fill="${textSecondary}" font-weight="400">${readingTimeMin} min read</tspan></text>
+  </g>
+
+  <!-- Bottom CTA Banner -->
+  <rect x="100" y="1100" width="880" height="96" rx="20" fill="${brandTerracotta}"/>
+  <text x="540" y="1160" fill="#FFFFFF" font-family="system-ui, -apple-system, sans-serif" font-size="28" font-weight="700" text-anchor="middle">Read Full Story on WritOn ➔</text>
+
+  <!-- Footer Watermark -->
+  <text x="540" y="1250" fill="${textSecondary}" font-family="system-ui, -apple-system, sans-serif" font-size="20" opacity="0.6" text-anchor="middle">writon.cc • Available on Google Play</text>
+</svg>
+`;
+}
+
+/**
+ * Generates an SVG string for a 1080x1080 Square Story Summary Card.
+ * Designed for Instagram Square Feed, Telegram Channel Photo, X Single Card.
+ */
+export function buildStorySummaryCardSvg({
+  title = '',
+  summary = '',
+  category = 'Editorial',
+  authorFullName = 'WritOn Author',
+  authorPenName = 'author',
+  readingTimeMin = 3,
+  theme = 'dark',
+}) {
+  const isDark = theme === 'dark';
+  const bg = isDark ? '#131415' : '#FFFDF9';
+  const cardBg = isDark ? '#1C1D1F' : '#F7F3EC';
+  const cardBorder = isDark ? '#2D2E30' : '#E6E0D4';
+  const textPrimary = isDark ? '#EDE8DF' : '#151718';
+  const textSecondary = isDark ? '#A5A096' : '#6D6963';
+  const brandTerracotta = '#E75A2A';
+
+  const badgeText = `WRITON • ${String(category).toUpperCase()}`;
+
+  // Wrap title (max ~24 chars per line)
+  const titleLines = wrapText(title, 24).slice(0, 3);
+  let titleTspans = '';
+  let currentY = 270;
+  for (const line of titleLines) {
+    titleTspans += `<tspan x="80" y="${currentY}">${escapeXml(line)}</tspan>\n`;
+    currentY += 64;
+  }
+
+  // Wrap summary (max ~32 chars per line)
+  const summaryLines = wrapText(summary, 32).slice(0, 4);
+  let summaryTspans = '';
+  currentY += 36;
+  for (const line of summaryLines) {
+    summaryTspans += `<tspan x="80" y="${currentY}">${escapeXml(line)}</tspan>\n`;
+    currentY += 44;
+  }
+
+  const cleanPenName = authorPenName.startsWith('@') ? authorPenName : `@${authorPenName}`;
+
+  return `
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="squareCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="${cardBg}" stop-opacity="1"/>
+      <stop offset="100%" stop-color="${isDark ? '#161718' : '#EFEAE0'}" stop-opacity="1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1080" height="1080" fill="${bg}"/>
+
+  <!-- Card Container -->
+  <rect x="40" y="40" width="1000" height="1000" rx="28" fill="url(#squareCardGrad)" stroke="${cardBorder}" stroke-width="2"/>
+
+  <!-- Category Badge -->
+  <rect x="80" y="90" width="${Math.min(badgeText.length * 13 + 36, 400)}" height="42" rx="21" fill="${brandTerracotta}" fill-opacity="0.15"/>
+  <text x="${80 + Math.min(badgeText.length * 13 + 36, 400) / 2}" y="117" fill="${brandTerracotta}" font-family="system-ui, sans-serif" font-size="16" font-weight="700" letter-spacing="1.5" text-anchor="middle">${escapeXml(badgeText)}</text>
+
+  <!-- Brand Mark -->
+  <text x="980" y="118" fill="${textSecondary}" font-family="Georgia, serif" font-size="24" font-weight="700" text-anchor="end">WritOn.</text>
+
+  <!-- Story Title -->
+  <text font-family="'Noto Sans Devanagari', 'Nirmala UI', Georgia, serif" font-size="52" font-weight="700" fill="${textPrimary}">
+    ${titleTspans}
+  </text>
+
+  <!-- Accent Divider -->
+  <line x1="80" y1="${270 + (titleLines.length * 64) - 20}" x2="180" y2="${270 + (titleLines.length * 64) - 20}" stroke="${brandTerracotta}" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Summary Body -->
+  <text font-family="'Noto Sans Devanagari', 'Nirmala UI', system-ui, sans-serif" font-size="30" fill="${textSecondary}">
+    ${summaryTspans}
+  </text>
+
+  <!-- Author & Reading Time -->
+  <g transform="translate(80, 800)">
+    <text x="0" y="30" fill="${textPrimary}" font-family="system-ui, sans-serif" font-size="28" font-weight="700">${escapeXml(authorFullName)}</text>
+    <text x="0" y="65" fill="${brandTerracotta}" font-family="system-ui, sans-serif" font-size="22" font-weight="600">${escapeXml(cleanPenName)} • <tspan fill="${textSecondary}" font-weight="400">${readingTimeMin} min read</tspan></text>
+  </g>
+
+  <!-- CTA Banner -->
+  <rect x="80" y="900" width="920" height="84" rx="18" fill="${brandTerracotta}"/>
+  <text x="540" y="953" fill="#FFFFFF" font-family="system-ui, sans-serif" font-size="26" font-weight="700" text-anchor="middle">Read on writon.cc ➔</text>
+</svg>
+`;
+}
+
+/**
+ * Renders an SVG buffer or string to a PNG file on disk or returns buffer.
+ */
+export async function renderSvgToPng(svgString, outputPath = null) {
+  const image = sharp(Buffer.from(svgString)).png({ quality: 95, compressionLevel: 8 });
+  if (outputPath) {
+    const dir = path.dirname(outputPath);
+    await fs.mkdir(dir, { recursive: true });
+    await image.toFile(outputPath);
+    return outputPath;
+  }
+  return await image.toBuffer();
+}
+
+/**
+ * High-level helper: renders a visual card for a published story.
+ *
+ * @param {object} params
+ * @param {object} params.story Story object
+ * @param {string} [params.outputDir] Directory to save PNG to (optional)
+ * @param {'portrait'|'square'} [params.format='portrait'] Format of the card
+ * @param {'dark'|'light'} [params.theme='dark'] Theme
+ * @returns {Promise<{ buffer: Buffer, filePath: string|null, format: string, width: number, height: number }>}
+ */
+export async function renderStorySocialCard({
+  story,
+  outputDir = null,
+  format = 'portrait',
+  theme = 'dark',
+}) {
+  const isSquare = format === 'square';
+  const width = 1080;
+  const height = isSquare ? 1080 : 1350;
+
+  const author = story.author || {};
+  const authorFullName = author.fullName || author.full_name || story.authorFullName || 'WritOn Author';
+  const authorPenName = author.penName || author.pen_name || story.authorPenName || 'author';
+  const readingTimeMin = story.readingTimeMin || story.reading_time_min || 3;
+
+  const svg = isSquare
+    ? buildStorySummaryCardSvg({
+        title: story.title,
+        summary: story.summary || story.content?.slice(0, 200),
+        category: story.category || 'Editorial',
+        authorFullName,
+        authorPenName,
+        readingTimeMin,
+        theme,
+      })
+    : buildStoryQuoteCardSvg({
+        title: story.title,
+        summary: story.summary,
+        quote: story.summary || story.content?.slice(0, 220),
+        category: story.category || 'Editorial',
+        authorFullName,
+        authorPenName,
+        readingTimeMin,
+        theme,
+      });
+
+  const filename = `story_${story.slug || story.id || 'card'}_${format}.png`;
+  const filePath = outputDir ? path.join(outputDir, filename) : null;
+
+  const buffer = await sharp(Buffer.from(svg)).png({ quality: 95, compressionLevel: 8 }).toBuffer();
+
+  if (filePath) {
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, buffer);
+  }
+
+  return {
+    buffer,
+    filePath,
+    format,
+    width,
+    height,
+    filename,
+  };
+}
+
+/**
+ * Generates an SVG string for a 1080x1350 Carousel Slide (for marketing campaigns).
  */
 export function buildCarouselSlideSvg({
   badge = 'WRITON EARLY ACCESS',
@@ -58,7 +335,6 @@ export function buildCarouselSlideSvg({
   const textSecondary = isDark ? '#A5A096' : '#6D6963';
   const brandRed = '#E75A2A';
 
-  // Build headline tspans with auto-wrapping to guarantee no horizontal overflow
   let headlineTspans = '';
   let currentY = 310;
   for (const rawLine of headlineLines) {
@@ -71,7 +347,6 @@ export function buildCarouselSlideSvg({
     }
   }
 
-  // Build body tspans with auto-wrapping (max 36 chars/line for safe margins)
   let bodyTspans = '';
   currentY += 28;
   for (const rawLine of bodyLines) {
@@ -80,10 +355,9 @@ export function buildCarouselSlideSvg({
       bodyTspans += `<tspan x="100" y="${currentY}">${escapeXml(line)}</tspan>\n`;
       currentY += 48;
     }
-    currentY += 14; // Breathing gap between distinct sentences/paragraphs
+    currentY += 14;
   }
 
-  // Build bullets with auto-wrapping
   let bulletElements = '';
   if (bullets && bullets.length > 0) {
     currentY += 16;
@@ -103,7 +377,6 @@ export function buildCarouselSlideSvg({
     }
   }
 
-  // Slide indicator dots
   let indicatorDots = '';
   const dotSpacing = 28;
   const startX = 540 - ((totalSlides - 1) * dotSpacing) / 2;
@@ -121,61 +394,26 @@ export function buildCarouselSlideSvg({
       <stop offset="100%" stop-color="${isDark ? '#161718' : '#EFEAE0'}" stop-opacity="1"/>
     </linearGradient>
   </defs>
-
-  <!-- Background -->
   <rect width="1080" height="1350" fill="${bg}"/>
-
-  <!-- Inset Card -->
   <rect x="50" y="50" width="980" height="1250" rx="32" fill="url(#cardGrad)" stroke="${cardBorder}" stroke-width="2"/>
-
-  <!-- Top Badge -->
   <rect x="100" y="110" width="${badge.length * 14 + 40}" height="46" rx="23" fill="${brandRed}" fill-opacity="0.15"/>
   <text x="${100 + (badge.length * 14 + 40) / 2}" y="140" fill="${brandRed}" font-family="system-ui, -apple-system, sans-serif" font-size="18" font-weight="700" letter-spacing="1.5" text-anchor="middle">${escapeXml(badge)}</text>
-
-  <!-- Brand Mark Top Right -->
   <text x="960" y="140" fill="${textSecondary}" font-family="serif" font-size="24" font-weight="700" text-anchor="end">WritOn.</text>
-
-  <!-- Headline -->
   <text font-family="'Noto Sans Devanagari', 'Nirmala UI', Georgia, Cambria, 'Times New Roman', serif" font-size="64" font-weight="700" letter-spacing="-0.5">
     ${headlineTspans}
   </text>
-
-  <!-- Body -->
   <text font-family="'Noto Sans Devanagari', 'Nirmala UI', system-ui, -apple-system, sans-serif" font-size="30" fill="${textSecondary}" font-weight="400">
     ${bodyTspans}
   </text>
-
-  <!-- Bullets -->
   ${bulletElements}
-
-  <!-- Slide Dots -->
   ${indicatorDots}
-
-  <!-- Bottom CTA Banner -->
   <rect x="100" y="1100" width="880" height="96" rx="20" fill="${brandRed}"/>
   <text x="540" y="1160" fill="#FFFFFF" font-family="system-ui, -apple-system, sans-serif" font-size="30" font-weight="700" text-anchor="middle">${escapeXml(ctaText)}</text>
-
-  <!-- Footer Watermark -->
   <text x="540" y="1250" fill="${textSecondary}" font-family="system-ui, -apple-system, sans-serif" font-size="20" opacity="0.6" text-anchor="middle">writon.cc • Google Play Store</text>
 </svg>
 `;
 }
 
-/**
- * Renders an SVG buffer to a PNG file on disk using sharp.
- */
-export async function renderSvgToPng(svgString, outputPath) {
-  const dir = path.dirname(outputPath);
-  await fs.mkdir(dir, { recursive: true });
-  await sharp(Buffer.from(svgString))
-    .png({ quality: 95, compressionLevel: 8 })
-    .toFile(outputPath);
-  return outputPath;
-}
-
-/**
- * Renders the full 5-Slide Day 1 "The Pen Name Landgrab" Carousel.
- */
 export async function renderDay1Carousel(outputDir) {
   const slides = [
     {

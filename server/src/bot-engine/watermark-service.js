@@ -10,6 +10,8 @@
 export const INVISIBLE_WATERMARK = '\u200B\uFEFF#writon\u200B';
 
 export const CATEGORY_DEFAULT_HASHTAGS = {
+  'Trending': ['#Trending', '#CurrentStories', '#Explained', '#WritOnDiscover'],
+  'Reviews': ['#Reviews', '#Tested', '#BuyerGuide', '#WritOnDiscover'],
   'Tech': ['#Tech', '#Engineering', '#SystemsDesign', '#SoftwareCraft'],
   'Essays': ['#Essays', '#Philosophy', '#SlowReading', '#Reflections'],
   'Poetry': ['#Poetry', '#QuietVerses', '#MidnightMusings', '#WordCraft'],
@@ -226,10 +228,18 @@ export function attachReviewHashtagsAndWatermark(content = '', domain = '', prod
  */
 export function stripWatermark(content = '') {
   if (!content || typeof content !== 'string') return '';
-  return content
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/<span\b[^>]*>[\s\S]*?<\/span>/gi, '')
-    .replace(/<[^>]+>/g, '')
+  const segments = content.split(/(```[\s\S]*?```)/g);
+  return segments
+    .map((segment, index) => {
+      // Markdown code fences may legitimately contain TypeScript generics and
+      // comparison operators. Treating every <...> sequence as HTML corrupts
+      // Promise<Result>, Array<User>, and loops such as i < attempts.
+      if (index % 2 === 1) return segment;
+      return segment
+        .replace(/<!--[\s\S]*?-->/g, '')
+        .replace(/<span\b[^>]*>[\s\S]*?<\/span>/gi, '');
+    })
+    .join('')
     .replace(/[\u200B\uFEFF]#writon[\u200B\uFEFF]?/g, '')
     .replace(/^#writon$/gm, '')
     .trim();

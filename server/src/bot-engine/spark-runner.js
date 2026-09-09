@@ -1,4 +1,3 @@
-import { conductDeepTrendResearch } from './trend-scout-service.js';
 import { randomUUID } from 'node:crypto';
 import { CURATED_BOT_PERSONAS } from './curated-personas.js';
 import { CURATED_READER_PERSONAS } from './reader-personas.js';
@@ -18,6 +17,9 @@ import {
   recordLedgerEntry,
   validateAntiRepetition
 } from './editorial-ledger-service.js';
+import { ensureContextualComment, resolvePublicationCategory, resolveEngagementCategory } from './content-relevance-service.js';
+import { validateGeneratedArticleIntegrity } from './editorial-intelligence-service.js';
+import { enqueueOutboxEvent, enqueueStorySyndication } from './outbox-service.js';
 
 function createSlug(title) {
   const readable = title
@@ -38,195 +40,72 @@ function calculateReadingTime(content) {
 
 async function createNotification(client, { recipientId, actorId, postId = null, commentId = null, kind, message }) {
   if (!recipientId || recipientId === actorId) return;
-  await client.query(
+
+  const inserted = await client.query(
     `insert into public.notifications (recipient_id, actor_id, post_id, comment_id, kind, message)
-     values ($1, $2, $3, $4, $5, $6)`,
+     values ($1, $2, $3, $4, $5, $6)
+     returning id::text as id`,
     [recipientId, actorId, postId, commentId, kind, message]
   );
+
+  try {
+    const preferenceColumn = kind === 'follow' ? 'follows_enabled'
+      : kind === 'editorial' ? 'editorial_enabled'
+        : kind === 'publishing' ? 'publishing_enabled'
+          : 'interactions_enabled';
+    const preference = await client.query(
+      `select ${preferenceColumn} as enabled
+         from public.notification_preferences
+        where profile_id = $1`,
+      [recipientId]
+    );
+    if (preference.rowCount > 0 && preference.rows[0].enabled === false) return;
+
+    if (inserted.rows && inserted.rows.length > 0) {
+      await client.query(
+        `insert into public.notification_delivery_outbox (notification_id, recipient_id)
+         values ($1, $2)
+         on conflict (notification_id) do nothing`,
+        [inserted.rows[0].id, recipientId]
+      );
+    }
+  } catch (error) {
+    if (error?.code === '42P01') {
+      return;
+    }
+    // Retain in-app notification without rolling back applaud
+  }
 }
 
 let tablesEnsured = false;
-export async function ensureBotTables(pool) {
-  if (tablesEnsured) return;
+export async function verifyBotSchemaCompatibility(pool) {
+  if (tablesEnsured) return true;
   try {
-    await pool.query(`
-      create table if not exists public.bot_configs (
-        id text primary key references public.profiles(id) on delete cascade,
-        is_active boolean not null default true,
-        persona_prompt text not null,
-        categories text[] not null default array['Essays', 'Culture'],
-        post_frequency_hours integer not null default 24 check (post_frequency_hours >= 1),
-        like_probability numeric(4,3) not null default 0.850 check (like_probability >= 0 and like_probability <= 1),
-        comment_probability numeric(4,3) not null default 0.700 check (comment_probability >= 0 and comment_probability <= 1),
-        comment_style text not null default 'insightful, encouraging, reflective and authentic',
-        last_posted_at timestamptz,
-        last_interacted_at timestamptz,
-        created_at timestamptz not null default now(),
-        updated_at timestamptz not null default now()
-      );
-
-      create table if not exists public.bot_global_settings (
-        id text primary key default 'global',
-        is_engine_enabled boolean not null default true,
-        spark_automation_mode text not null default 'hybrid' check (spark_automation_mode in ('pulse', 'event_reactive', 'hybrid')),
-        llm_provider text not null default 'gemini',
-        llm_model text not null default 'gemini-2.0-flash',
-        gemini_api_key text,
-        posts_per_day_target integer not null default 4 check (posts_per_day_target >= 0),
-        spark_pulse_interval_minutes integer not null default 15 check (spark_pulse_interval_minutes >= 1),
-        human_post_reaction_rate numeric(4,3) not null default 0.900 check (human_post_reaction_rate >= 0 and human_post_reaction_rate <= 1),
-        reaction_delay_min_minutes integer not null default 2 check (reaction_delay_min_minutes >= 0),
-        reaction_delay_max_minutes integer not null default 20 check (reaction_delay_max_minutes >= reaction_delay_min_minutes),
-        bot_to_bot_interaction_rate numeric(4,3) not null default 0.400 check (bot_to_bot_interaction_rate >= 0 and bot_to_bot_interaction_rate <= 1),
-        updated_at timestamptz not null default now()
-      );
-
-      create table if not exists public.bot_activity_logs (
-        id uuid primary key default gen_random_uuid(),
-        bot_id text not null references public.profiles(id) on delete cascade,
-        action_type text not null check (action_type in ('post', 'comment', 'applaud', 'follow', 'bookmark', 'reply', 'spark_reaction')),
-        target_post_id uuid references public.posts(id) on delete set null,
-        target_user_id text references public.profiles(id) on delete set null,
-        details jsonb not null default '{}'::jsonb,
-        status text not null default 'success' check (status in ('success', 'failed', 'pending')),
-        error_message text,
-        created_at timestamptz not null default now()
-      );
-
-      create table if not exists public.bot_delayed_actions (
-        id uuid primary key default gen_random_uuid(),
-        bot_id text not null references public.bot_configs(id) on delete cascade,
-        action_type text not null check (action_type in ('story', 'applaud', 'comment', 'reply', 'follow')),
-        target_post_id uuid references public.posts(id) on delete cascade,
-        target_comment_id uuid references public.comments(id) on delete cascade,
-        target_user_id text references public.profiles(id) on delete cascade,
-        payload jsonb not null default '{}'::jsonb,
-        scheduled_at timestamptz not null default now(),
-        execute_at timestamptz not null,
-        status text not null default 'pending' check (status in ('pending', 'processing', 'completed', 'failed', 'cancelled')),
-        attempts int not null default 0,
-        last_error text,
-        executed_at timestamptz,
-        created_at timestamptz not null default now(),
-        updated_at timestamptz not null default now()
-      );
+    const res = await pool.query(`
+      select table_name from information_schema.tables
+      where table_schema = 'public' and table_name in (
+        'bot_configs', 'bot_global_settings', 'bot_activity_logs', 'bot_delayed_actions',
+        'bot_memories', 'bot_affinity_graph', 'editorial_ledger_entries',
+        'editorial_anti_repetition', 'editorial_ideas_backlog', 'editorial_research_briefs',
+        'bot_event_outbox', 'bot_idempotency_records'
+      )
     `);
-
-    // Ensure bot_type column exists on bot_configs and settings columns
-    await pool.query(`
-      alter table public.bot_configs add column if not exists bot_type text not null default 'writer';
-      alter table public.bot_global_settings add column if not exists reader_swarm_enabled boolean not null default true;
-      alter table public.bot_global_settings add column if not exists applaud_swarm_intensity text not null default 'healthy';
-      alter table public.bot_global_settings add column if not exists min_swarm_applauds_per_post integer not null default 12;
-      alter table public.bot_global_settings add column if not exists max_swarm_applauds_per_post integer not null default 35;
-      alter table public.bot_global_settings add column if not exists commenter_swarm_enabled boolean not null default true;
-      alter table public.bot_global_settings add column if not exists min_comments_per_post integer not null default 2;
-      alter table public.bot_global_settings add column if not exists max_comments_per_post integer not null default 6;
-    `);
-
-    // Indexes from migration that auto-migration was missing
-    await pool.query(`
-      create index if not exists bot_activity_logs_created_at_idx on public.bot_activity_logs (created_at desc);
-      create index if not exists bot_activity_logs_bot_id_idx on public.bot_activity_logs (bot_id);
-      create index if not exists bot_activity_logs_target_post_id_idx on public.bot_activity_logs (target_post_id) where target_post_id is not null;
-      create index if not exists bot_activity_logs_target_user_id_idx on public.bot_activity_logs (target_user_id) where target_user_id is not null;
-      create index if not exists bot_delayed_actions_polling_idx on public.bot_delayed_actions (status, execute_at) where status = 'pending';
-      create index if not exists bot_delayed_actions_bot_id_idx on public.bot_delayed_actions (bot_id);
-      create index if not exists bot_delayed_actions_target_post_id_idx on public.bot_delayed_actions (target_post_id) where target_post_id is not null;
-      create index if not exists bot_configs_bot_type_idx on public.bot_configs (bot_type, is_active);
-
-      create table if not exists public.bot_memories (
-        id uuid primary key default gen_random_uuid(),
-        bot_id text not null references public.profiles(id) on delete cascade,
-        memory_type text not null check (memory_type in ('story_arc', 'reader_feedback', 'cross_author_interaction', 'philosophical_reflection', 'style_evolution')),
-        subject text not null,
-        content text not null,
-        importance_score numeric(3,2) not null default 1.00 check (importance_score >= 0 and importance_score <= 1.00),
-        target_post_id uuid references public.posts(id) on delete set null,
-        target_user_id text references public.profiles(id) on delete set null,
-        created_at timestamptz not null default now(),
-        updated_at timestamptz not null default now()
-      );
-
-      create table if not exists public.bot_affinity_graph (
-        id uuid primary key default gen_random_uuid(),
-        source_bot_id text not null references public.profiles(id) on delete cascade,
-        target_profile_id text not null references public.profiles(id) on delete cascade,
-        affinity_score numeric(4,3) not null default 0.100 check (affinity_score >= 0 and affinity_score <= 1.00),
-        interaction_count integer not null default 1 check (interaction_count >= 1),
-        last_interaction_type text not null default 'applaud' check (last_interaction_type in ('applaud', 'comment', 'reply', 'follow', 'citation')),
-        last_interacted_at timestamptz not null default now(),
-        constraint bot_affinity_unique_pair unique (source_bot_id, target_profile_id)
-      );
-
-      create table if not exists public.editorial_ledger_entries (
-        id uuid primary key default gen_random_uuid(),
-        edition_date date not null default current_date,
-        status text not null check (status in ('planned', 'executed', 'deferred', 'avoid')),
-        entry_type text not null check (entry_type in ('publication', 'comment_wave', 'applaud_swarm', 'reflection', 'anti_repetition_rule', 'future_idea')),
-        author_id text references public.profiles(id) on delete set null,
-        author_pen_name text,
-        genre text,
-        language_style text default 'English',
-        title text,
-        theme text,
-        approx_word_count integer,
-        details jsonb not null default '{}'::jsonb,
-        avoid_reason text,
-        target_post_id uuid references public.posts(id) on delete set null,
-        created_at timestamptz not null default now(),
-        updated_at timestamptz not null default now()
-      );
-
-      create table if not exists public.editorial_anti_repetition (
-        id uuid primary key default gen_random_uuid(),
-        pattern_type text not null check (pattern_type in ('title_formula', 'opening_phrase', 'overused_theme', 'cliche_phrase', 'interaction_formula')),
-        pattern text not null unique,
-        reason text,
-        status text not null default 'active' check (status in ('active', 'archived')),
-        created_at timestamptz not null default now()
-      );
-
-      create table if not exists public.editorial_ideas_backlog (
-        id uuid primary key default gen_random_uuid(),
-        target_author_pen_name text,
-        genre text,
-        proposed_title text not null,
-        premise text not null,
-        language_style text default 'English',
-        status text not null default 'backlog' check (status in ('backlog', 'planned', 'executed', 'discarded')),
-        created_at timestamptz not null default now(),
-        updated_at timestamptz not null default now()
-      );
-
-      create index if not exists bot_memories_bot_id_idx on public.bot_memories (bot_id, created_at desc);
-      create index if not exists bot_affinity_source_score_idx on public.bot_affinity_graph (source_bot_id, affinity_score desc);
-      create index if not exists editorial_ledger_date_status_idx on public.editorial_ledger_entries (edition_date desc, status);
-      create unique index if not exists editorial_backlog_proposed_title_idx on public.editorial_ideas_backlog (proposed_title);
-
-      -- Enable Row Level Security (RLS) on all bot tables
-      alter table public.bot_global_settings enable row level security;
-      alter table public.bot_configs enable row level security;
-      alter table public.bot_activity_logs enable row level security;
-      alter table public.bot_delayed_actions enable row level security;
-      alter table public.bot_memories enable row level security;
-      alter table public.bot_affinity_graph enable row level security;
-      alter table public.editorial_ledger_entries enable row level security;
-      alter table public.editorial_anti_repetition enable row level security;
-      alter table public.editorial_ideas_backlog enable row level security;
-    `);
-
-    // DB-5: Insert default global settings row if missing
-    await pool.query(`
-      insert into public.bot_global_settings (id, is_engine_enabled)
-      values ('global', true)
-      on conflict (id) do nothing
-    `);
-
+    const found = new Set((res.rows || []).map(r => r.table_name));
+    const required = ['bot_configs', 'bot_global_settings', 'bot_activity_logs'];
+    const missing = required.filter(t => !found.has(t));
+    if (missing.length > 0) {
+      console.warn(`[Bot Engine] Warning: Missing bot tables in database: ${missing.join(', ')}. Run migration 20260905_bot_system_runtime_tables_and_outbox.sql`);
+    }
     tablesEnsured = true;
+    return true;
   } catch (err) {
-    console.warn('[Spark Runner] Auto table check warning:', err.message);
+    console.warn('[Spark Runner] Schema compatibility check warning:', err.message);
+    return false;
   }
+}
+
+export async function ensureBotTables(pool) {
+  return verifyBotSchemaCompatibility(pool);
 }
 
 export async function seedInitialBotNetwork(pool) {
@@ -246,13 +125,13 @@ export async function seedInitialBotNetwork(pool) {
     for (const bot of CURATED_BOT_PERSONAS) {
       await client.query(`
         insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url, account_type)
-        values ($1, $2, $3, $4, $5, $6, 'human')
+        values ($1, $2, $3, $4, $5, $6, 'editorial_bot')
         on conflict (id) do update set
           pen_name = excluded.pen_name,
           full_name = excluded.full_name,
           bio = excluded.bio,
           avatar_url = excluded.avatar_url,
-          account_type = 'human',
+          account_type = 'editorial_bot',
           updated_at = now()
       `, [
         bot.id,
@@ -324,13 +203,13 @@ export async function seedReaderBotNetwork(pool) {
     for (const reader of CURATED_READER_PERSONAS) {
       await client.query(`
         insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url, account_type)
-        values ($1, $2, $3, $4, $5, $6, 'human')
+        values ($1, $2, $3, $4, $5, $6, 'editorial_bot')
         on conflict (id) do update set
           pen_name = excluded.pen_name,
           full_name = excluded.full_name,
           bio = excluded.bio,
           avatar_url = excluded.avatar_url,
-          account_type = 'human',
+          account_type = 'editorial_bot',
           updated_at = now()
       `, [
         reader.id,
@@ -386,13 +265,13 @@ export async function seedCommenterBotNetwork(pool) {
     for (const commenter of CURATED_COMMENTER_PERSONAS) {
       await client.query(`
         insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url, account_type)
-        values ($1, $2, $3, $4, $5, $6, 'human')
+        values ($1, $2, $3, $4, $5, $6, 'editorial_bot')
         on conflict (id) do update set
           pen_name = excluded.pen_name,
           full_name = excluded.full_name,
           bio = excluded.bio,
           avatar_url = excluded.avatar_url,
-          account_type = 'human',
+          account_type = 'editorial_bot',
           updated_at = now()
       `, [
         commenter.id,
@@ -501,7 +380,7 @@ export async function updateGlobalSettings(pool, updates) {
         min_swarm_applauds_per_post = coalesce($15, min_swarm_applauds_per_post),
         max_swarm_applauds_per_post = coalesce($16, max_swarm_applauds_per_post),
         updated_at = now()
-    where id = 'global'
+    where id = $1
     returning *
   `, [
     'global',
@@ -669,27 +548,12 @@ export async function getBotById(pool, botId) {
   return result.rows[0] ?? null;
 }
 
-export async function executePostAction(pool, { botId, category, topicHint, customTitle, customContent }) {
+export async function executePostAction(pool, { botId, category, topicHint, customTitle, customContent, researchDossier }) {
   const bot = await getBotById(pool, botId);
   if (!bot) throw new Error(`Bot persona ${botId} not found`);
 
   const settings = await getGlobalSettings(pool);
   const targetCategory = category || bot.categories[Math.floor(Math.random() * bot.categories.length)] || 'Essays';
-
-  // Anti-vague safeguard: if topic is empty or identical to category, scout live trends
-  let effectiveTopic = topicHint;
-  let liveResearchDossier = null;
-  if (!effectiveTopic || effectiveTopic.trim().toLowerCase() === targetCategory.toLowerCase()) {
-    try {
-      const scoutSample = `Latest ${targetCategory} developments`;
-      liveResearchDossier = await conductDeepTrendResearch(scoutSample, targetCategory).catch(() => null);
-      if (liveResearchDossier?.newsReports?.[0]?.headline) {
-        effectiveTopic = liveResearchDossier.newsReports[0].headline;
-      } else if (liveResearchDossier?.topic) {
-        effectiveTopic = liveResearchDossier.topic;
-      }
-    } catch (_) {}
-  }
 
   // Fetch titles already published by this author to prevent duplicate stories
   const existingRes = await pool.query(
@@ -718,10 +582,10 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
         personaPrompt: bot.personaPrompt
       },
       category: targetCategory,
-      topicHint: effectiveTopic,
-      researchDossier: liveResearchDossier,
+      topicHint,
       excludeTitles: existingTitles,
-      memories: botMemories
+      memories: botMemories,
+      researchDossier
     });
   }
 
@@ -747,11 +611,10 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     const postResult = await client.query(`
       insert into public.posts (
         slug, author_id, title, summary, content, category, cover_image_url,
-        status, is_public, reading_time_min, published_at,
-        provenance, provenance_verified_at, provenance_verified_by
+        status, is_public, reading_time_min, published_at, provenance
       )
-      values ($1, $2, $3, $4, $5, $6, $7, 'published', true, $8, now(), 'human_verified', now(), 'spark_runner')
-      returning id, slug, title, category, published_at
+      values ($1, $2, $3, $4, $5, $6, $7, 'published', true, $8, now(), 'synthetic')
+      returning id, slug, title, summary, content, category, reading_time_min, published_at, author_id, provenance
     `, [
       slug,
       bot.id,
@@ -779,6 +642,50 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       createdPost.id,
       JSON.stringify({ title: createdPost.title, category: targetCategory, slug: createdPost.slug })
     ]);
+
+    // Enqueue transactional outbox events atomically within post-creation transaction
+    await enqueueOutboxEvent(client, {
+      eventType: 'record_memory',
+      payload: {
+        botId: bot.id,
+        postId: createdPost.id,
+        title: createdPost.title,
+        summary: articleData.summary,
+        category: targetCategory
+      }
+    });
+
+    await enqueueOutboxEvent(client, {
+      eventType: 'ledger_entry',
+      payload: {
+        status: 'executed',
+        entryType: 'publication',
+        authorId: bot.id,
+        authorPenName: bot.penName,
+        genre: targetCategory,
+        title: createdPost.title,
+        theme: articleData.themeKeyword || targetCategory,
+        approxWordCount: readingTime * 200,
+        targetPostId: createdPost.id,
+        details: { slug: createdPost.slug, readingTimeMin: readingTime }
+      }
+    });
+
+    await enqueueOutboxEvent(client, {
+      eventType: 'reaction_wave',
+      payload: {
+        postId: createdPost.id,
+        authorId: bot.id,
+        category: targetCategory,
+        title: createdPost.title,
+        summary: articleData.summary
+      }
+    });
+
+    await enqueueStorySyndication(client, createdPost, {
+      fullName: bot.fullName,
+      penName: bot.penName,
+    });
 
     await client.query('commit');
 
@@ -921,6 +828,13 @@ export async function executeInteractAction(pool, { botId, postId, actionType, c
           });
         }
       }
+
+      commentText = ensureContextualComment(commentText, {
+        postTitle: post.title,
+        category: post.category,
+        snippet: post.summary || (post.content || '').slice(0, 300),
+        persona: bot
+      });
 
       const commentInsert = await client.query(`
         insert into public.comments (post_id, author_id, content)
@@ -1226,13 +1140,14 @@ export async function processDueDelayedActions(pool) {
         executed.push({ id: action.id, actionType: action.action_type, botId: action.bot_id, outcome });
       } catch (actionErr) {
         console.error(`[Spark Delayed Action Error] action ${action.id} (${action.action_type}):`, actionErr.message);
+        const isTerminal = actionErr.message?.includes('not found') || (action.attempts >= 3);
         await pool.query(`
           update public.bot_delayed_actions
-          set status = case when attempts >= 3 then 'failed' else 'pending' end,
-              last_error = $2,
+          set status = case when $2::boolean then 'failed' else 'pending' end,
+              last_error = $3,
               updated_at = now()
           where id = $1
-        `, [action.id, actionErr.message]);
+        `, [action.id, isTerminal, actionErr.message]);
       }
     }
   } catch (error) {
@@ -1243,66 +1158,224 @@ export async function processDueDelayedActions(pool) {
 }
 
 /**
- * Organic Reader Swarm Applaud Dispatcher:
- * Staggers 10-35 reader bot applauds across 3 realistic time waves (2m - 36h)
+ * Calculate realistic applaud distribution schedule across D days (10-20 days)
+ * with Day 1 receiving 20-25% of total claps and subsequent days thinning out monotonically.
+ *
+ * @param {Object} options
+ * @param {number} [options.targetClaps] - Total claps X to distribute (default 25)
+ * @param {number} [options.durationDays] - Total campaign duration D in days (10 to 20, default 14)
+ * @param {number} [options.firstDayRatio] - Desired Day 1 fraction (default random between 0.20 and 0.25)
+ * @param {Date} [options.startDate] - Starting timestamp (default now)
+ * @returns {Array<{ dayIndex: number, executeAt: Date, delayMinutes: number }>}
  */
-export async function triggerReaderSwarm(pool, { postId, category = 'Essays', count = null, intensity = null }) {
-  try {
-    const settings = await getGlobalSettings(pool);
-    if (!settings.is_engine_enabled) return { skipped: 'Engine disabled' };
-    if (settings.reader_swarm_enabled === false) return { skipped: 'Reader swarm disabled' };
+export function calculateApplaudDecaySchedule({
+  targetClaps = 25,
+  durationDays = 14,
+  firstDayRatio = null,
+  startDate = new Date()
+} = {}) {
+  const totalClaps = Math.max(1, Math.round(targetClaps));
+  const D = Math.max(10, Math.min(20, Math.round(durationDays || 14)));
 
-    const swarmIntensity = intensity || settings.applaud_swarm_intensity || 'healthy';
-    let targetCount = count;
-    if (!targetCount) {
-      if (swarmIntensity === 'conservative') {
-        targetCount = Math.floor(Math.random() * 8) + 6; // 6-13
-      } else if (swarmIntensity === 'viral') {
-        targetCount = Math.floor(Math.random() * 35) + 40; // 40-74
+  // Pick Day 1 ratio between 0.20 and 0.25 if not explicitly specified
+  const r1 = firstDayRatio != null
+    ? Math.max(0.18, Math.min(0.30, Number(firstDayRatio)))
+    : (0.20 + Math.random() * 0.05); // 0.20 to 0.25
+
+  // Exponential decay parameter: 1 - e^(-lambda) ≈ r1 => lambda ≈ -ln(1 - r1)
+  const lambda = -Math.log(Math.max(0.01, 1 - r1));
+
+  // Compute unnormalized weights w(t) = e^(-lambda * (t - 1)) for t = 1..D
+  const weights = [];
+  let sumWeights = 0;
+  for (let t = 1; t <= D; t++) {
+    const w = Math.exp(-lambda * (t - 1));
+    weights.push(w);
+    sumWeights += w;
+  }
+
+  // Normalized proportions
+  const fractions = weights.map(w => w / sumWeights);
+
+  // Distribute integer claps using Largest Remainder Method (Hare-Niemeyer)
+  // to ensure exact sum matches totalClaps
+  const exactClaps = fractions.map(f => f * totalClaps);
+  const floorClaps = exactClaps.map(Math.floor);
+  let allocated = floorClaps.reduce((acc, v) => acc + v, 0);
+  const remainders = exactClaps.map((v, i) => ({ index: i, rem: v - floorClaps[i] }));
+  remainders.sort((a, b) => b.rem - a.rem);
+
+  let rIdx = 0;
+  while (allocated < totalClaps && rIdx < remainders.length) {
+    floorClaps[remainders[rIdx].index] += 1;
+    allocated++;
+    rIdx++;
+  }
+
+  const schedule = [];
+  const startMs = startDate.getTime();
+
+  for (let day = 0; day < D; day++) {
+    const clapsForDay = floorClaps[day];
+    if (clapsForDay <= 0) continue;
+
+    for (let c = 0; c < clapsForDay; c++) {
+      let delayMinutes;
+      if (day === 0) {
+        // Day 1 (today): distribute from now + 3 min to 14 hours ahead
+        const progress = (c + Math.random() * 0.5) / Math.max(1, clapsForDay);
+        delayMinutes = Math.round(3 + progress * 800 + Math.random() * 15);
       } else {
-        targetCount = Math.floor(Math.random() * 16) + 15; // 15-30
-      }
-    }
-
-    // Find reader bots matching category or general readers
-    const candidates = await pool.query(`
-      select id, categories from public.bot_configs
-      where is_active = true and bot_type = 'reader'
-      order by case when $1 = any(categories) then 0 else 1 end, random()
-      limit $2
-    `, [category, targetCount]);
-
-    if (candidates.rowCount === 0) return { skipped: 'No active reader bots' };
-
-    let scheduledCount = 0;
-    for (let i = 0; i < candidates.rows.length; i++) {
-      const readerId = candidates.rows[i].id;
-
-      // Stagger realistic reader distribution:
-      // Wave 1 (First 15%): 3 - 25 minutes (Early discoverers)
-      // Wave 2 (Middle 60%): 45 minutes - 8 hours (Daytime readers)
-      // Wave 3 (Last 25%): 9 - 36 hours (Catch-up / night readers)
-      const ratio = i / candidates.rows.length;
-      let delayMinutes = 5;
-
-      if (ratio < 0.15) {
-        delayMinutes = Math.floor(Math.random() * 22) + 3;
-      } else if (ratio < 0.75) {
-        delayMinutes = Math.floor(Math.random() * 420) + 45; // 45m to ~7.5h
-      } else {
-        delayMinutes = Math.floor(Math.random() * 1600) + 500; // 8.3h to ~35h
+        // Future days: Base day offset in minutes (day * 24 * 60)
+        // Active reader window: 08:30 to 22:30 IST (approx 14-hour window inside that day)
+        const baseDayMinutes = day * 24 * 60;
+        const dayProgress = (c + Math.random() * 0.7) / Math.max(1, clapsForDay);
+        const intraDayMinute = 510 + Math.round(dayProgress * 840) + Math.round((Math.random() - 0.5) * 45);
+        delayMinutes = baseDayMinutes + Math.max(60, intraDayMinute);
       }
 
-      await scheduleDelayedAction(pool, {
-        botId: readerId,
-        actionType: 'applaud',
-        targetPostId: postId,
-        delayMinutes
+      const executeAt = new Date(startMs + delayMinutes * 60 * 1000);
+      schedule.push({
+        dayIndex: day + 1,
+        delayMinutes,
+        executeAt
       });
-      scheduledCount++;
     }
+  }
 
-    return { success: true, count: scheduledCount, targetPostId: postId, intensity: swarmIntensity };
+  // Sort chronologically by executeAt
+  schedule.sort((a, b) => a.executeAt.getTime() - b.executeAt.getTime());
+  return schedule;
+}
+
+/**
+ * Schedule a realistic, organic Applaud Decay Campaign across 10-20 days:
+ * - 20-25% claps on Day 1 (initial discovery surge)
+ * - Exponential decay curve thinning out across days 2 to D
+ * - Staggered intra-day timing during active daylight reader hours
+ * - Triggers FCM push notifications for each delayed clap via notification_delivery_outbox
+ */
+export async function scheduleDecayApplaudCampaign(pool, {
+  postId,
+  targetClaps = null,
+  durationDays = null,
+  intensity = 'healthy',
+  category = 'Essays',
+  firstDayRatio = null
+}) {
+  const settings = await getGlobalSettings(pool);
+  if (!settings.is_engine_enabled) return { skipped: 'Engine disabled' };
+  if (settings.reader_swarm_enabled === false) return { skipped: 'Reader swarm disabled' };
+
+  // Validate post exists
+  const postRes = await pool.query(
+    `select id, author_id, title, category from public.posts where id = $1 and status = 'published'`,
+    [postId]
+  );
+  if (postRes.rowCount === 0) {
+    throw new Error(`Target story "${postId}" not found or not published`);
+  }
+  const post = postRes.rows[0];
+
+  // Resolve target claps X based on intensity if not explicitly passed
+  let resolvedClaps = targetClaps;
+  if (!resolvedClaps) {
+    if (intensity === 'conservative') {
+      resolvedClaps = Math.floor(Math.random() * 9) + 12; // 12-20
+    } else if (intensity === 'viral') {
+      resolvedClaps = Math.floor(Math.random() * 31) + 40; // 40-70
+    } else {
+      resolvedClaps = Math.floor(Math.random() * 16) + 20; // 20-35
+    }
+  }
+
+  // Resolve duration D (10-20 days, default 12-16 random)
+  const resolvedDuration = durationDays
+    ? Math.max(10, Math.min(20, Number(durationDays)))
+    : (Math.floor(Math.random() * 7) + 12); // 12-18 days
+
+  // Find candidate reader personas who have NOT yet applauded this post
+  // and have NO pending delayed applaud for this post
+  const candidateRes = await pool.query(`
+    select bc.id, bc.categories
+    from public.bot_configs bc
+    where bc.is_active = true and bc.bot_type = 'reader'
+      and bc.id not in (
+        select user_id from public.post_applauds where post_id = $1
+      )
+      and bc.id not in (
+        select bot_id from public.bot_delayed_actions
+        where target_post_id = $1 and action_type = 'applaud' and status = 'pending'
+      )
+    order by case when $2 = any(bc.categories) then 0 else 1 end, random()
+    limit $3
+  `, [postId, post.category || category, resolvedClaps]);
+
+  if (candidateRes.rowCount === 0) {
+    return { skipped: 'No eligible reader bot personas available (all have already applauded or have pending applauds)' };
+  }
+
+  // Bounded by available unique reader bots and resolved target claps
+  const candidateRows = candidateRes.rows.slice(0, resolvedClaps);
+  const actualClaps = candidateRows.length;
+  const schedule = calculateApplaudDecaySchedule({
+    targetClaps: actualClaps,
+    durationDays: resolvedDuration,
+    firstDayRatio
+  });
+
+  const dayCounts = {};
+  let scheduledCount = 0;
+
+  for (let i = 0; i < actualClaps; i++) {
+    const readerId = candidateRows[i].id;
+    const schedItem = schedule[i] || schedule[schedule.length - 1];
+
+    dayCounts[schedItem.dayIndex] = (dayCounts[schedItem.dayIndex] || 0) + 1;
+
+    await scheduleDelayedAction(pool, {
+      botId: readerId,
+      actionType: 'applaud',
+      targetPostId: postId,
+      delayMinutes: schedItem.delayMinutes
+    });
+    scheduledCount++;
+  }
+
+  return {
+    success: true,
+    campaign: {
+      postId,
+      postTitle: post.title,
+      targetClaps: scheduledCount,
+      durationDays: resolvedDuration,
+      firstDayClaps: dayCounts[1] || 0,
+      firstDayPercentage: Math.round(((dayCounts[1] || 0) / scheduledCount) * 100),
+      dayDistribution: dayCounts,
+      finalScheduledDate: schedule[schedule.length - 1]?.executeAt
+    }
+  };
+}
+
+/**
+ * Organic Reader Swarm Applaud Dispatcher:
+ * Schedules an authentic 10-20 day decay campaign (20-25% Day 1, gradual thinning out to Day D)
+ */
+export async function triggerReaderSwarm(pool, {
+  postId,
+  category = 'Essays',
+  count = null,
+  intensity = null,
+  durationDays = null
+}) {
+  try {
+    return await scheduleDecayApplaudCampaign(pool, {
+      postId,
+      targetClaps: count,
+      durationDays: durationDays || 14,
+      intensity: intensity || 'healthy',
+      category
+    });
   } catch (err) {
     console.error('[Spark Reader Swarm Error]', err.message);
     return { error: err.message };
@@ -1320,6 +1393,34 @@ export async function triggerCommenterWave(pool, { postId, category = 'Essays', 
     if (!settings.is_engine_enabled) return { skipped: 'Engine disabled' };
     if (settings.commenter_swarm_enabled === false) return { skipped: 'Commenter swarm disabled' };
 
+    let resolvedCategory = category;
+    let postTitle = title;
+    let postSnippet = snippet;
+
+    if (postId) {
+      const postLookup = await pool.query(
+        `select title, summary, content, category from public.posts where id = $1`,
+        [postId]
+      ).catch(() => ({ rowCount: 0, rows: [] }));
+      if (postLookup.rowCount > 0) {
+        const postRow = postLookup.rows[0];
+        postTitle = postRow.title || postTitle;
+        postSnippet = postRow.summary || postRow.content || postSnippet;
+        const pubCat = resolvePublicationCategory({
+          declaredCategory: postRow.category || resolvedCategory,
+          title: postTitle,
+          summary: postRow.summary,
+          content: postRow.content
+        });
+        resolvedCategory = resolveEngagementCategory({
+          publicationCategory: pubCat,
+          title: postTitle,
+          summary: postRow.summary,
+          content: postRow.content
+        });
+      }
+    }
+
     const targetCount = count || Math.floor(Math.random() * 3) + 2; // 2 to 4 comments by default
 
     // Find commenter bots matching category or general commenters
@@ -1328,9 +1429,10 @@ export async function triggerCommenterWave(pool, { postId, category = 'Essays', 
       from public.bot_configs bc
       inner join public.profiles p on p.id = bc.id
       where bc.is_active = true and bc.bot_type = 'commenter'
-      order by case when $1 = any(bc.categories) then 0 else 1 end, random()
+        and $1 = any(bc.categories)
+      order by random()
       limit $2
-    `, [category, targetCount]);
+    `, [resolvedCategory, targetCount]);
 
     if (candidates.rowCount === 0) return { skipped: 'No active commenter bots' };
 
@@ -1345,9 +1447,9 @@ export async function triggerCommenterWave(pool, { postId, category = 'Essays', 
 
       // Generate authentic comment (65% micro / 25% medium / 10% in-depth)
       const commentText = generateAuthenticComment(personaObj, {
-        postTitle: title,
-        category,
-        snippet,
+        postTitle: postTitle || title,
+        category: resolvedCategory,
+        snippet: postSnippet || snippet,
         depth: 'auto'
       });
 
@@ -1524,7 +1626,16 @@ export async function triggerSparkCommentReaction(pool, { postId, commentId, pos
  * Pulse Heartbeat Execution
  * Uses PostgreSQL advisory transaction lock to ensure only one replica runs a pulse at any given moment.
  */
-export async function runSparkPulse(pool) {
+export async function runSparkPulse(pool, options = {}) {
+  const {
+    topicHint,
+    category: requestedCategory,
+    preferredAuthorPenName,
+    researchDossier,
+    forcePublication = false,
+    automaticPublication = false
+  } = options;
+
   const client = await pool.connect();
   try {
     await client.query('begin');
@@ -1541,7 +1652,7 @@ export async function runSparkPulse(pool) {
       await client.query('rollback');
       return { skipped: 'Engine disabled' };
     }
-    if (settings.spark_automation_mode === 'event_reactive') {
+    if (settings.spark_automation_mode === 'event_reactive' && !forcePublication) {
       await client.query('rollback');
       return { skipped: 'Pulse disabled in event-only mode' };
     }
@@ -1549,33 +1660,80 @@ export async function runSparkPulse(pool) {
     // 1. Process due delayed actions
     const executedDelayed = await processDueDelayedActions(pool);
 
-    // 2. Check daily posting target limit
+    // 2. Check daily posting target limit (bypassed if forcePublication from scheduled slot)
     const maxDaily = Number(settings.posts_per_day_target) || 20;
     const dailyCountRes = await client.query(`
       select count(*)::int as count
       from public.posts
       where status = 'published' and coalesce(published_at, created_at) >= current_date
     `);
-    if ((dailyCountRes.rows[0]?.count || 0) >= maxDaily) {
+    if (!forcePublication && (dailyCountRes.rows[0]?.count || 0) >= maxDaily) {
       await client.query('commit');
       return { skipped: `Daily post limit (${maxDaily}) reached`, executedDelayedCount: executedDelayed.length };
     }
 
-    // 3. Check if any active writer bot is due to publish a story
-    const candidateBots = await client.query(`
-      select id, categories from public.bot_configs
-      where is_active = true and bot_type = 'writer'
-        and (last_posted_at is null or last_posted_at < now() - (post_frequency_hours || ' hours')::interval)
-      order by coalesce(last_posted_at, '1970-01-01'::timestamptz) asc
-      limit 1
-    `);
+    // 3. Resolve writer bot to publish
+    let targetBot = null;
+    if (preferredAuthorPenName) {
+      const preferredRes = await client.query(`
+        select bc.id, bc.categories, p.pen_name as "penName"
+        from public.bot_configs bc
+        inner join public.profiles p on p.id = bc.id
+        where bc.is_active = true and bc.bot_type = 'writer'
+          and lower(p.pen_name) = lower($1)
+        limit 1
+      `, [preferredAuthorPenName]);
+      if (preferredRes.rowCount > 0) {
+        targetBot = preferredRes.rows[0];
+      }
+    }
 
-    if (candidateBots.rowCount > 0) {
-      const bot = candidateBots.rows[0];
-      const category = bot.categories[Math.floor(Math.random() * bot.categories.length)] || 'Essays';
-      const createdPost = await executePostAction(pool, { botId: bot.id, category });
+    if (!targetBot && requestedCategory) {
+      const categoryBotRes = await client.query(`
+        select bc.id, bc.categories, p.pen_name as "penName"
+        from public.bot_configs bc
+        inner join public.profiles p on p.id = bc.id
+        where bc.is_active = true and bc.bot_type = 'writer'
+          and $1 = any(bc.categories)
+        order by coalesce(bc.last_posted_at, '1970-01-01'::timestamptz) asc
+        limit 1
+      `, [requestedCategory]);
+      if (categoryBotRes.rowCount > 0) {
+        targetBot = categoryBotRes.rows[0];
+      }
+    }
+
+    if (!targetBot) {
+      const candidateBots = await client.query(`
+        select bc.id, bc.categories, p.pen_name as "penName"
+        from public.bot_configs bc
+        inner join public.profiles p on p.id = bc.id
+        where bc.is_active = true and bc.bot_type = 'writer'
+          ${forcePublication ? '' : "and (bc.last_posted_at is null or bc.last_posted_at < now() - (bc.post_frequency_hours || ' hours')::interval)"}
+        order by coalesce(bc.last_posted_at, '1970-01-01'::timestamptz) asc
+        limit 1
+      `);
+      if (candidateBots.rowCount > 0) {
+        targetBot = candidateBots.rows[0];
+      }
+    }
+
+    if (targetBot) {
+      const targetCategory = requestedCategory || targetBot.categories[Math.floor(Math.random() * targetBot.categories.length)] || 'Essays';
+      const createdPost = await executePostAction(pool, {
+        botId: targetBot.id,
+        category: targetCategory,
+        topicHint,
+        researchDossier
+      });
       await client.query('commit');
-      return { action: 'published_story', botId: bot.id, postId: createdPost.id, title: createdPost.title, executedDelayedCount: executedDelayed.length };
+      return {
+        action: 'published_story',
+        botId: targetBot.id,
+        postId: createdPost.id,
+        title: createdPost.title,
+        executedDelayedCount: executedDelayed.length
+      };
     }
 
     await client.query('commit');
@@ -1609,149 +1767,569 @@ export function startSparkScheduler(pool, intervalMinutes = 15) {
   };
 }
 
-export function getSparkPromptTemplate() {
-  return `Task: You are the Autonomous Community Manager and Editorial Director for the 'WritOn' publishing platform, managing a diverse network of 100 authentic literary writer personas.
+export const SPARK_SCHEDULE_SLOTS = [
+  { id: 'dawn_digest', hour: 7, minute: 0, type: 'editorial', name: 'Dawn Digest (Poetry/Essays)' },
+  { id: 'morning_tech', hour: 10, minute: 30, type: 'review_mobility', name: 'Morning Tech & Mobility' },
+  { id: 'lunch_satire', hour: 13, minute: 30, type: 'editorial', name: 'Lunch Satire (Humour/Culture)' },
+  { id: 'afternoon_gear', hour: 16, minute: 30, type: 'review_gear', name: 'Afternoon Gear Lab' },
+  { id: 'evening_fiction', hour: 19, minute: 30, type: 'editorial', name: 'Evening Storytelling' },
+  { id: 'prime_screens', hour: 21, minute: 30, type: 'review_screens', name: 'Prime-Time Screen Reviews' },
+  { id: 'midnight_poetry', hour: 23, minute: 0, type: 'editorial', name: 'Midnight Courtyard (Shayari)' },
+  { id: 'housekeeping', hour: 2, minute: 0, type: 'maintenance', name: 'Nightly Housekeeping' }
+];
+
+export async function getEditorialLoopContext(pool, { mode = 'both', now = new Date() } = {}) {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23'
+  }).formatToParts(now);
+  const val = Object.fromEntries(parts.map(p => [p.type, p.value]));
+  const dateStr = `${val.year}-${val.month}-${val.day}`;
+  const hours = Number(val.hour);
+  const minutes = Number(val.minute);
+  const currentMinute = hours * 60 + minutes;
+
+  const currentSlot = SPARK_SCHEDULE_SLOTS.slice().reverse().find(s => (s.hour * 60 + s.minute) <= currentMinute) || SPARK_SCHEDULE_SLOTS[0];
+  const nextSlot = SPARK_SCHEDULE_SLOTS.find(s => (s.hour * 60 + s.minute) > currentMinute) || SPARK_SCHEDULE_SLOTS[0];
+
+  const context = {
+    timestamp: now.toISOString(),
+    platform: {
+      name: 'WritOn',
+      tagline: 'Authentic Literary & Systems Publishing Platform',
+      webUrl: 'https://writon-app-api-canary-rfusi3iwbq-el.a.run.app'
+    },
+    ist: {
+      currentTime: `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')} IST`,
+      date: dateStr,
+      currentSlot: {
+        id: currentSlot.id,
+        name: currentSlot.name,
+        type: currentSlot.type,
+        scheduledTime: `${String(currentSlot.hour).padStart(2, '0')}:${String(currentSlot.minute).padStart(2, '0')} IST`
+      },
+      nextSlot: {
+        id: nextSlot.id,
+        name: nextSlot.name,
+        type: nextSlot.type,
+        scheduledTime: `${String(nextSlot.hour).padStart(2, '0')}:${String(nextSlot.minute).padStart(2, '0')} IST`
+      }
+    }
+  };
+
+  // Opportunistically drain due delayed actions (applauds/reactions) in background
+  processDueDelayedActions(pool).catch(() => {});
+
+  const includeWrite = mode === 'write' || mode === 'both';
+  const includeApplaud = mode === 'applaud' || mode === 'both';
+
+  if (includeWrite) {
+    const dueWritersRes = await pool.query(`
+      select p.id, p.pen_name as "penName", p.full_name as "fullName",
+             bc.categories, bc.persona_prompt as "personaPrompt",
+             bc.comment_style as "commentStyle", bc.last_posted_at as "lastPostedAt",
+             case
+               when bc.last_posted_at is null then 'due_now'
+               when bc.last_posted_at + (coalesce(bc.post_frequency_hours, 24) * interval '1 hour') <= now() then 'due_now'
+               else 'cooling_down'
+             end as "cadenceStatus"
+      from public.bot_configs bc
+      inner join public.profiles p on p.id = bc.id
+      where bc.is_active = true and bc.bot_type = 'writer'
+      order by bc.last_posted_at asc nulls first
+      limit 3
+    `);
+
+    const recentTitlesRes = await pool.query(`
+      select p.id::text, p.title, p.category, p.summary,
+             author.pen_name as "authorPenName",
+             coalesce(p.published_at, p.created_at) as "publishedAt"
+      from public.posts p
+      inner join public.profiles author on author.id = p.author_id
+      where p.status = 'published' and p.is_public = true
+      order by coalesce(p.published_at, p.created_at) desc
+      limit 10
+    `);
+
+    let antiRepRes = { rows: [] };
+    try {
+      antiRepRes = await pool.query(`
+        select pattern_type as "patternType", pattern, reason
+        from public.editorial_anti_repetition
+        where status = 'active'
+        order by pattern_type asc limit 10
+      `);
+    } catch {
+      antiRepRes = { rows: [] };
+    }
+
+    let briefsRes = { rows: [] };
+    try {
+      briefsRes = await pool.query(`
+        select id::text, topic_category as "category",
+               coalesce(headline, topic) as "proposedTitle",
+               coalesce(editorial_angle, topic) as "premise",
+               coalesce(suggested_author_pen_name, '') as "suggestedAuthor"
+        from public.editorial_research_briefs
+        where status in ('approved', 'pending_review')
+        order by created_at desc limit 3
+      `);
+    } catch {
+      briefsRes = { rows: [] };
+    }
+
+    context.writePlan = {
+      objective: 'Research, craft, and publish 1 authentic story/essay/poem for a due persona. ZERO COMMENTS.',
+      duePersonas: dueWritersRes.rows.map(w => ({
+        penName: w.penName,
+        fullName: w.fullName,
+        categories: w.categories,
+        personaPrompt: w.personaPrompt,
+        cadenceStatus: w.cadenceStatus,
+        lastPostedAt: w.lastPostedAt
+      })),
+      primaryRecommendedWriter: dueWritersRes.rows[0] ? {
+        penName: dueWritersRes.rows[0].penName,
+        fullName: dueWritersRes.rows[0].fullName,
+        category: dueWritersRes.rows[0].categories?.[0] || 'Essays',
+        prompt: dueWritersRes.rows[0].personaPrompt
+      } : null,
+      recentTitlesToAvoid: recentTitlesRes.rows.map(r => ({
+        title: r.title,
+        category: r.category,
+        author: r.authorPenName
+      })),
+      bannedCliches: [
+        'delve', 'tapestry', 'beacon', 'in today\'s fast-paced digital world',
+        'a testament to', 'let\'s explore', 'in conclusion', 'it\'s important to remember'
+      ],
+      activeAntiRepetitionRules: antiRepRes.rows,
+      approvedResearchBriefs: briefsRes.rows,
+      standards: {
+        wordCount: '400-800 words',
+        format: 'Polished Markdown with headings, short paragraphs, and visceral sensory opening scene',
+        prohibitions: 'CRITICAL: DO NOT generate, schedule, or submit any comments. This plan is solely for stories.'
+      }
+    };
+  }
+
+  if (includeApplaud) {
+    const storiesRes = await pool.query(`
+      select p.id::text, p.title, p.slug, p.category, p.likes_count as "likesCount",
+             author.pen_name as "authorPenName", author.full_name as "authorFullName",
+             coalesce(p.published_at, p.created_at) as "publishedAt"
+      from public.posts p
+      inner join public.profiles author on author.id = p.author_id
+      where p.status = 'published' and p.is_public = true
+      order by coalesce(p.published_at, p.created_at) desc
+      limit 8
+    `);
+
+    context.applaudPlan = {
+      objective: 'Discover recent published stories and trigger organic clapping swarms across the 100-reader network. ZERO COMMENTS.',
+      readerNetworkSize: 100,
+      storiesToApplaud: storiesRes.rows.map(s => ({
+        id: s.id,
+        slug: s.slug,
+        title: s.title,
+        category: s.category,
+        author: s.authorPenName,
+        currentApplauds: s.likesCount,
+        recommendedSwarmIntensity: Number(s.likesCount) < 10 ? 'healthy' : (Number(s.likesCount) < 30 ? 'conservative' : 'conservative')
+      })),
+      instructions: 'Select 1 to 3 stories and call writon_clapping_swarm(postId: "<id>", intensity: "<healthy|conservative>"). CRITICAL: DO NOT comment.'
+    };
+  }
+
+  return context;
+}
+
+export function getSparkWriterPromptTemplate(baseUrl = 'http://localhost:3001') {
+  return `Task: You are the Autonomous Editorial Director and Master Storyteller for WritOn (https://writon-app-api-canary-rfusi3iwbq-el.a.run.app).
+Your recurring mission is to research, craft, and publish deeply human, visceral, high-craft literary works on a scheduled interval.
+
+CRITICAL DIRECTIVE: DO NOT POST OR SCHEDULE ANY COMMENTS. THIS RECURRING PLAN IS STRICTLY FOR WRITING AND PUBLISHING STORIES.
 
 ---
 ### 🌐 100-WRITER PERSONAS NETWORK:
 WritOn features 100 authentic South Asian and global voices across 6 core genres, including:
-- **Short Stories & Urban Fiction (25 Personas)**: Devansh Roy (@devansh_roy), Arshdeep Singh (@arsh_zee), Shamik Prabhu (@shamik_prabhu), Rahul Mathur (@rahul_mathur), etc.
-- **Poetry & Verses (25 Personas)**: Kavya Nair (@kavya_nair), Shweta Srivastava (@shweta_srivastava_mini), Ananya Deshmukh (@ananya_deshmukh), Shreya Ghosh (@shreya_ghosh_rhyme), etc.
-- **Shayari & Urdu Literature (20 Personas)**: Ishaq Qureshi (@ishaq_qureshi), Zafar Iqbal (@zafar_iqbal_sher), Mirza Tariq (@mirza_tariq_sher), Faizan Peerzada (@faizan_peerzada), Asma Jahan (@asma_jahan), etc.
-- **Essays & Philosophy (15 Personas)**: Dr. Sunita Banerjee (@sunita_banerjee), Devashish Somani (@devashish_s_somani), Radhika Gowda (@radhika_gowda), Jeanne Faith (@jeanne_faith), Swati Tripathi (@swati_tripathi), etc.
-- **Humour & Everyday Satire (10 Personas)**: Rohan Kapoor (@rohan_kapoor), Ashi Srivastava (@ashi_srivastava_shelby), Amal Sri (@amal_sri_batman), Gopal Krishnan (@gopal_krishnan_jokes), etc.
-- **Tech & Systems Craft (5 Personas)**: Aarav Mehta (@aarav_tech), Maya Lin (@maya_lin_craft), Tanya Mehra (@tanya_mehra_dev), Vikram Aditya (@vikram_aditya_kernel), Siddharth Deshpande (@siddharth_deshpande).
+- Tech & Systems Craft: Aarav Mehta (@aarav_tech), Maya Lin (@maya_lin_craft), Tanya Mehra (@tanya_mehra_dev), Vikram Aditya (@vikram_aditya_kernel)
+- Poetry & Verses: Kavya Nair (@kavya_nair), Shreya Ghosh (@shreya_ghosh_rhyme), Ananya Deshmukh (@ananya_deshmukh)
+- Short Stories & Fiction: Devansh Roy (@devansh_roy), Arshdeep Singh (@arsh_zee), Shamik Prabhu (@shamik_prabhu)
+- Philosophy & Essays: Dr. Sunita Banerjee (@sunita_banerjee), Devashish Somani (@devashish_s_somani), Swati Tripathi (@swati_tripathi)
+- Humour & Satire: Rohan Kapoor (@rohan_kapoor), Ashi Srivastava (@ashi_srivastava_shelby), Gopal Krishnan (@gopal_krishnan_jokes)
+- Shayari & Urdu: Ishaq Qureshi (@ishaq_qureshi), Zafar Iqbal (@zafar_iqbal_sher), Asma Jahan (@asma_jahan)
 
 ---
-### 🛡️ STEP 1: FEED INSPECTION & DEDUPLICATION:
-Before generating or publishing any piece:
-1. Always call \`writon_get_feed\` (or inspect existing titles) to see what has been published recently.
-2. Ensure the new story title, thematic focus, and narrative angle are completely distinct from existing platform stories.
-3. If publishing via MCP tool, you can specify a specific pen name OR use \`authorPenName: "auto"\` to automatically route to the author persona who has waited the longest since their previous story.
+### 🔄 STEP-BY-STEP RECURRING EXECUTION FLOW (Every 3-4 Hours):
 
----
-### ✍️ STEP 2: HUMAN-GRADE CONTENT STANDARDS (ZERO AI SLOP):
-- **Visceral Openings**: Start in media res with sensory particulars (the hum of a ceiling fan, the smell of burnt engine oil in rain, cold stainless steel cups).
-- **Variable Sentence Rhythm**: Mix short, punchy fragments with longer, rhythmic sentences. Avoid monotonous syntactic structures.
-- **Controlled Imperfection**: Include real human quirks, hesitation, second-guessing, and lived contradictions.
-- **NEVER Use AI Clichés**: Ban words like: "delve", "tapestry", "beacon", "in today's fast-paced digital world", "a testament to", "let's explore", "in conclusion".
+1. FETCH LIVE EDITORIAL CONTEXT:
+   Call the MCP tool: \`writon_get_editorial_loop_context(mode: "write")\`
+   (Or fetch GET ${baseUrl}/api/v1/spark/editorial-loop-context?mode=write)
+   Review:
+   - Current IST Operational Slot (e.g. Dawn Digest, Morning Tech, Lunch Satire, Afternoon Gear Lab, Evening Storytelling, Prime Screens, Midnight Courtyard).
+   - Primary due writer persona (pen name, voice, cognitive lens, anti-goals).
+   - Recent 10 published titles (to strictly prevent thematic duplication).
+   - Active research briefs or trend dossiers in the backlog.
 
----
-### 📤 MCP TOOLS & BATCH INGEST SCHEMA:
-If using MCP tools:
-1. \`writon_get_feed(limit: 5)\` -> Check recent stories.
-2. \`writon_publish_story(authorPenName: "auto", title: "...", summary: "...", content: "...", category: "...")\` -> Publish new story.
-3. \`writon_clapping_swarm(postId: "latest", count: 15)\` -> Stagger reader applauds over time.
-4. \`writon_commenter_wave(postId: "latest", count: 3)\` -> Trigger authentic discussion comments.
+2. GROUNDED RESEARCH & REASONING:
+   - Use Google Search to explore real-world friction, technical nuances, cultural textures, or emotional truths relevant to the persona's specialty.
+   - Cross-check against the recent titles list to ensure your premise is completely fresh.
 
-If generating a batch JSON payload for \`/api/v1/spark/ingest\`:
-\`\`\`json
-{
-  "stories": [
-    {
-      "authorPenName": "aarav_tech",
-      "title": "The Ghost in the Architecture: Why Codebases Decay in Silence",
-      "summary": "An exploration of software rot as an entropy problem.",
-      "content": "Full markdown story with headings, visceral opening scene, and varied paragraph cadence (400-800 words)...",
-      "category": "Tech"
-    }
-  ],
-  "comments": [
-    {
-      "authorPenName": "sunita_banerjee",
-      "postSlugOrId": "latest",
-      "content": "A specific, thoughtful response citing a particular paragraph."
-    }
-  ],
-  "applauds": [
-    {"authorPenName": "rohan_kapoor", "postSlugOrId": "latest"}
-  ]
+3. WRITE THE PIECE (HUMAN-GRADE, ZERO AI SLOP):
+   - Word count: 400 to 800 words in polished Markdown.
+   - Visceral Openings: Start in media res with sensory particulars (sound, smell, temperature, physical tension).
+   - Dynamic Sentence Rhythm: Balance sharp, 3-word punchy clauses with long, musical, flowing sentences.
+   - Controlled Flaws: Give the narrator genuine hesitation, authentic doubt, or idiosyncratic conviction.
+   - STRICTLY BANNED CLICHÉS: "delve", "tapestry", "beacon", "in today's fast-paced digital world", "a testament to", "let's explore", "in conclusion", "it's important to remember".
+
+4. PUBLISH TO WRITON:
+   Call the MCP tool:
+   \`writon_publish_story(authorPenName: "<due_pen_name>", title: "<compelling_title>", summary: "<1-2 sentence hook>", content: "<markdown_content>", category: "<category>")\`
+
+   Or generate JSON batch payload:
+   \`\`\`json
+   {
+     "stories": [
+       {
+         "authorPenName": "aarav_tech",
+         "title": "The Ghost in the Architecture: Why Codebases Decay in Silence",
+         "summary": "An exploration of software rot as an entropy problem.",
+         "content": "Full markdown story with headings, visceral opening scene, and varied cadence...",
+         "category": "Tech"
+       }
+     ]
+   }
+   \`\`\`
+
+5. LOG COMPLETION:
+   Call \`writon_record_ledger_entry(status: "executed", entryType: "publication", authorPenName: "<pen_name>", title: "<title>", genre: "<category>")\`
+   Note: DO NOT generate or post any comments.`;
 }
-\`\`\``;
+
+export function getSparkApplaudPromptTemplate(baseUrl = 'http://localhost:3001') {
+  return `Task: You are the Autonomous Reader Community Curator for WritOn (https://writon-app-api-canary-rfusi3iwbq-el.a.run.app), guiding an authentic network of 100 passionate reader personas.
+Your recurring mission is to discover exceptional published works on WritOn and orchestrate realistic, organic reader appreciation.
+
+CRITICAL DIRECTIVE: DO NOT POST OR SCHEDULE ANY COMMENTS. THIS RECURRING PLAN IS STRICTLY FOR READER APPLAUDS AND CLAPPING SWARMS.
+
+---
+### 🔄 STEP-BY-STEP RECURRING EXECUTION FLOW (Every 1-2 Hours):
+
+1. FETCH PLATFORM FEED:
+   Call the MCP tool: \`writon_get_editorial_loop_context(mode: "applaud")\`
+   (Or call \`writon_get_feed(limit: 10)\`)
+   Review:
+   - The latest stories published on the platform.
+   - Stories with low applaud counts or newly published pieces needing momentum.
+
+2. SELECT 1 TO 3 STORIES TO SUPPORT:
+   - Pick 1 to 3 distinct stories across different genres (e.g. 1 Tech, 1 Poetry/Essays, 1 Short Story).
+
+3. TRIGGER ORGANIC CLAPPING SWARMS (10-20 DAY DECAY CURVE):
+   For each selected story, call the MCP tool:
+   \`writon_schedule_applaud_curve(postId: "<story_id_or_slug>", intensity: "healthy")\`
+   (Or call \`writon_clapping_swarm(postId: "<story_id_or_slug>", intensity: "healthy")\`)
+   The WritOn engine automatically schedules claps across a 10-20 day decay curve:
+   - Day 1: Receives 20-25% of total claps (initial discovery surge)
+   - Days 2-D: Monotonically thins out across 10-20 days during active hours
+   - Push Notifications: Each clap triggers a real FCM push notification to the author, driving sustained app retention!
+
+4. LOG COMPLETION:
+   Confirm the target story and scheduled applaud campaign. Note: DO NOT generate or post any comments.`;
+}
+
+export function getSparkPromptTemplate(baseUrl = 'http://localhost:3001') {
+  return getSparkWriterPromptTemplate(baseUrl);
 }
 
 export function getSparkPythonAutomationScript(baseUrl = 'http://localhost:3001') {
-  return `# ==============================================================================
-# WRITON AUTONOMOUS BOT NETWORK - GEMINI SPARK RECURRING AUTOMATION SCRIPT
+  return `#!/usr/bin/env python3
 # ==============================================================================
-# You can run this script directly inside Gemini Spark, Google Cloud Run,
-# AWS Lambda, or a local Python cron job on any interval you define.
+# WRITON AUTONOMOUS BOT NETWORK - GEMINI SPARK RECURRING LOOP RUNNER
+# ==============================================================================
+# Executable directly inside Gemini Spark, Google Cloud Shell, local cron,
+# or background process. Supports dual decoupled modes:
+#   --mode write   : Researches, drafts & publishes stories (Zero Comments)
+#   --mode applaud : Discovers stories & triggers reader clapping swarms (Zero Comments)
+#   --mode both    : Runs both writing and applauds on their respective cadences
 #
-# No external dependencies required! (Uses standard library urllib.request)
+# Zero external pip dependencies! (Uses pure Python 3 standard library: urllib.request)
 # ==============================================================================
 
+import argparse
+import hashlib
 import json
-import urllib.request
-import urllib.error
-import random
+import os
+import signal
+import sys
 import time
+import urllib.error
+import urllib.request
+from datetime import datetime, timezone
 
-WRITON_ENDPOINT = "${baseUrl}/api/v1/spark/ingest"
+DEFAULT_API_URL = "${baseUrl}"
+DEFAULT_MODEL = "gemini-2.5-flash"
+BOT_SECRET = os.environ.get("BOT_INGEST_SECRET", "") or (os.environ["BOT_INGEST_SECRET"] if "BOT_INGEST_SECRET" in os.environ else "")
+RUNNING = True
 
-# 6 Pre-configured Curated Personas
-PERSONAS = [
-    {"penName": "aarav_tech", "category": "Tech", "name": "Aarav Mehta"},
-    {"penName": "kavya_nair", "category": "Poetry", "name": "Kavya Nair"},
-    {"penName": "devansh_roy", "category": "Short Stories", "name": "Devansh Roy"},
-    {"penName": "sunita_banerjee", "category": "Philosophy", "name": "Dr. Sunita Banerjee"},
-    {"penName": "rohan_kapoor", "category": "Humour", "name": "Rohan Kapoor"},
-    {"penName": "ishaq_qureshi", "category": "Shayari", "name": "Ishaq Qureshi"}
-]
+# Ensure stdout/stderr handles UTF-8 on Windows consoles
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
 
-def generate_and_dispatch_pulse(stories=None, comments=None, applauds=None, follows=None):
+def handle_shutdown(signum, frame):
+    global RUNNING
+    print("\\n[STOP] [WritOn Spark Runner] Graceful shutdown initiated. Exiting loop cleanly...")
+    RUNNING = False
+
+signal.signal(signal.SIGINT, handle_shutdown)
+signal.signal(signal.SIGTERM, handle_shutdown)
+
+def log(msg, level="INFO"):
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    symbols = {"INFO": "[INFO]", "SUCCESS": "[OK]", "WARN": "[WARN]", "ERROR": "[ERR]", "SPARK": "[SPARK]"}
+    sym = symbols.get(level, f"[{level}]")
+    try:
+        print(f"[{now_str}] {sym} {msg}")
+    except Exception:
+        clean_msg = str(msg).encode("ascii", errors="replace").decode("ascii")
+        print(f"[{now_str}] {sym} {clean_msg}")
+
+def http_get_json(url, headers=None, timeout=30):
+    req_headers = {"User-Agent": "WritOn-Spark-Loop/3.0", "Accept": "application/json"}
+    if headers:
+        req_headers.update(headers)
+    req = urllib.request.Request(url, headers=req_headers, method="GET")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        log(f"HTTP GET failed for {url}: {e}", level="ERROR")
+        return None
+
+def http_post_json(url, payload, headers=None, timeout=30):
+    req_headers = {
+        "User-Agent": "WritOn-Spark-Loop/3.0",
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+    if headers:
+        req_headers.update(headers)
+    data_bytes = json.dumps(payload).encode("utf-8")
+    req = urllib.request.Request(url, data=data_bytes, headers=req_headers, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8")), resp.status
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode("utf-8", errors="replace")
+        log(f"HTTP POST {e.code} error for {url}: {err_body}", level="ERROR")
+        return None, e.code
+    except Exception as e:
+        log(f"HTTP POST network failure for {url}: {e}", level="ERROR")
+        return None, 500
+
+def generate_story_with_gemini(context, api_key, model=DEFAULT_MODEL):
     """
-    Dispatches a complete batch of stories, comments, applauds, and follows to WritOn.
+    Calls Google Gemini REST API to craft an authentic human-grade story.
+    Zero external dependencies required.
     """
-    payload = {
-        "stories": stories or [],
-        "comments": comments or [],
-        "applauds": applauds or [],
-        "follows": follows or []
+    writer = context.get("writePlan", {}).get("primaryRecommendedWriter") or {
+        "penName": "aarav_tech",
+        "fullName": "Aarav Mehta",
+        "category": "Tech",
+        "prompt": "Systems architect writing about architectural decay and digital entropy."
+    }
+    slot = context.get("ist", {}).get("currentSlot", {}).get("name", "Editorial Window")
+    recent_titles = [t.get("title") for t in context.get("writePlan", {}).get("recentTitlesToAvoid", [])]
+    banned = context.get("writePlan", {}).get("bannedCliches", [])
+
+    system_prompt = (
+        f"You are {writer.get('fullName')} (@{writer.get('penName')}), a master essayist on WritOn.\\n"
+        f"Bio/Cognitive Lens: {writer.get('prompt')}\\n"
+        f"Active Editorial Slot: {slot}\\n\\n"
+        f"STANDARDS (STRICT ZERO AI SLOP):\\n"
+        f"1. Visceral Opening: Begin in media res with sensory specifics (tactile friction, sounds, weather, mechanical grit).\\n"
+        f"2. Dynamic Rhythm: Mix short, punchy 3-word fragments with lyrical, flowing sentences.\\n"
+        f"3. Narrative Angle: Personal, nuanced, authentic human doubt or conviction.\\n"
+        f"4. BANNED WORDS: {', '.join(banned)}\\n"
+        f"5. Avoid Repeating These Recent Titles: {', '.join(recent_titles[:6])}\\n\\n"
+        f"CRITICAL: Output ONLY a JSON object with this exact schema:\\n"
+        f'{{\\n'
+        f'  "title": "Compelling Title Under 100 chars",\\n'
+        f'  "summary": "1-2 sentence hook without clichés",\\n'
+        f'  "content": "Full markdown text (500-700 words) with headings and paragraphs",\\n'
+        f'  "category": "{writer.get("category")}"\\n'
+        f'}}\\n'
+    )
+
+    gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    gemini_payload = {
+        "contents": [{"parts": [{"text": system_prompt}]}],
+        "generationConfig": {
+            "temperature": 0.85,
+            "maxOutputTokens": 2048,
+            "responseMimeType": "application/json"
+        }
     }
 
-    req_data = json.dumps(payload).encode('utf-8')
-    req = urllib.request.Request(
-        WRITON_ENDPOINT,
-        data=req_data,
-        headers={"Content-Type": "application/json", "User-Agent": "Gemini-Spark-Agent/2.0"}
-    )
+    log(f"Calling Gemini ({model}) for @{writer.get('penName')} in category '{writer.get('category')}'...", level="SPARK")
+    resp_data, status = http_post_json(gemini_url, gemini_payload, timeout=45)
+    if not resp_data or status != 200:
+        log(f"Gemini API generation failed (status {status})", level="ERROR")
+        return None
 
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            result = json.loads(resp.read().decode('utf-8'))
-            print("✅ [Spark Success]:", result)
-            return result
-    except urllib.error.HTTPError as e:
-        print(f"❌ [Spark HTTP Error {e.code}]:", e.read().decode('utf-8'))
-    except Exception as err:
-        print("❌ [Spark Network Error]:", err)
+        raw_text = resp_data["candidates"][0]["content"]["parts"][0]["text"]
+        story_data = json.loads(raw_text)
+        story_data["authorPenName"] = writer.get("penName")
+        return story_data
+    except Exception as e:
+        log(f"Failed to parse Gemini output JSON: {e}", level="ERROR")
+        return None
 
-# Example one-line execution:
+def run_writer_cycle(api_url, bot_secret, gemini_key, model, dry_run=False):
+    log("=== Running Plan 1: Story Writer Cycle ===", level="INFO")
+    ctx_url = f"{api_url}/api/v1/spark/editorial-loop-context?mode=write"
+    context = http_get_json(ctx_url)
+    if not context:
+        log("Failed to fetch writer editorial loop context.", level="WARN")
+        return False
+
+    writer = context.get("writePlan", {}).get("primaryRecommendedWriter", {})
+    slot_name = context.get("ist", {}).get("currentSlot", {}).get("name", "Active Slot")
+    log(f"Editorial Context: Slot '{slot_name}' | Recommended Writer: @{writer.get('penName')} ({writer.get('fullName')})")
+
+    if not gemini_key:
+        log("No GEMINI_API_KEY found. Generating curated mock article...", level="WARN")
+        story = {
+            "authorPenName": writer.get("penName") or "aarav_tech",
+            "title": f"The Quiet Architecture of {slot_name}",
+            "summary": "Observations on software entropy and mechanical resilience in modern systems.",
+            "content": f"# The Quiet Architecture\\n\\nThe air in the server room smelled of cold ozone and dust filtered through damp mesh...\\n\\nTrue systems do not break with explosions; they yield quietly at the joints.",
+            "category": writer.get("category") or "Tech"
+        }
+    else:
+        story = generate_story_with_gemini(context, gemini_key, model)
+
+    if not story:
+        log("Story generation produced no result.", level="WARN")
+        return False
+
+    if dry_run:
+        log(f"[DRY RUN] Generated story '{story.get('title')}' by @{story.get('authorPenName')} ({len(story.get('content', ''))} chars). Not publishing.", level="SUCCESS")
+        return True
+
+    # Publish to WritOn
+    pub_url = f"{api_url}/api/v1/spark/publish"
+    idemp_key = hashlib.sha256(f"{story.get('title')}-{datetime.now().strftime('%Y%m%d%H')}".encode("utf-8")).hexdigest()
+    headers = {
+        "X-Bot-Secret": BOT_SECRET,
+        "Idempotency-Key": idemp_key
+    }
+    result, code = http_post_json(pub_url, story, headers=headers)
+    if code in (200, 201) and result:
+        created = result.get("story") or {}
+        log(f"Story published successfully! Title: \\"{created.get('title')}\\" (Slug: {created.get('slug')})", level="SUCCESS")
+        return True
+    else:
+        log(f"Publishing failed with status code {code}", level="ERROR")
+        return False
+
+def run_applaud_cycle(api_url, bot_secret, dry_run=False):
+    log("=== Running Plan 2: Reader Applaud Swarm Cycle ===", level="INFO")
+    ctx_url = f"{api_url}/api/v1/spark/editorial-loop-context?mode=applaud"
+    context = http_get_json(ctx_url)
+    if not context:
+        log("Failed to fetch applaud loop context.", level="WARN")
+        return False
+
+    stories = context.get("applaudPlan", {}).get("storiesToApplaud", [])
+    if not stories:
+        log("No recent stories found to applaud.", level="INFO")
+        return True
+
+    selected_stories = stories[:2]
+    for st in selected_stories:
+        post_id = st.get("id") or st.get("slug")
+        intensity = st.get("recommendedSwarmIntensity", "healthy")
+        log(f"Targeting story \\"{st.get('title')}\\" by @{st.get('author')} (current likes: {st.get('currentApplauds')}) with intensity '{intensity}'")
+
+        if dry_run:
+            log(f"[DRY RUN] Would trigger swarm for post {post_id} with intensity {intensity}.", level="SUCCESS")
+            continue
+
+        swarm_url = f"{api_url}/api/v1/spark/swarm/applaud"
+        headers = {"X-Bot-Secret": BOT_SECRET}
+        payload = {"postId": post_id, "intensity": intensity}
+        res, code = http_post_json(swarm_url, payload, headers=headers)
+        if code in (200, 201):
+            log(f"Applaud swarm queued successfully for '{st.get('title')}'!", level="SUCCESS")
+        else:
+            log(f"Failed to queue swarm for post {post_id} (code {code})", level="WARN")
+
+    return True
+
+def main():
+    parser = argparse.ArgumentParser(description="WritOn Autonomous Gemini Spark Recurring Loop Runner")
+    parser.add_argument("--mode", choices=["write", "applaud", "both"], default="write", help="Plan mode to execute")
+    parser.add_argument("--interval-hours", type=float, default=None, help="Loop interval in hours")
+    parser.add_argument("--interval-minutes", type=float, default=None, help="Loop interval in minutes")
+    parser.add_argument("--slot-mode", action="store_true", help="Sync write cadence with 8 IST operational slots")
+    parser.add_argument("--once", action="store_true", help="Run one cycle and exit")
+    parser.add_argument("--dry-run", action="store_true", help="Simulate without publishing mutations")
+    parser.add_argument("--api-url", default=os.environ.get("WRITON_API_URL", DEFAULT_API_URL), help="WritOn API Base URL")
+    parser.add_argument("--gemini-api-key", default=os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", ""), help="Gemini API Key")
+    parser.add_argument("--bot-secret", default=os.environ.get("BOT_INGEST_SECRET", ""), help="WritOn Bot Secret")
+    parser.add_argument("--model", default=os.environ.get("GEMINI_MODEL", DEFAULT_MODEL), help="Gemini Model Name")
+    args = parser.parse_args()
+
+    api_url = args.api_url.rstrip("/")
+    mode = args.mode
+    interval_sec = 4 * 3600
+    if args.interval_minutes:
+        interval_sec = max(60, int(args.interval_minutes * 60))
+    elif args.interval_hours:
+        interval_sec = max(60, int(args.interval_hours * 3600))
+    elif mode == "applaud":
+        interval_sec = 2 * 3600
+
+    log(f"Starting WritOn Autonomous Loop Runner on {api_url}", level="INFO")
+    log(f"Mode: {mode.upper()} | Once: {args.once} | Dry-Run: {args.dry_run} | Interval: {interval_sec}s", level="INFO")
+
+    cycle_count = 0
+    while RUNNING:
+        cycle_count += 1
+        log(f"--- Starting Autonomous Cycle #{cycle_count} ---", level="INFO")
+
+        if mode in ("write", "both"):
+            run_writer_cycle(api_url, args.bot_secret, args.gemini_api_key, args.model, dry_run=args.dry_run)
+
+        if mode in ("applaud", "both"):
+            run_applaud_cycle(api_url, args.bot_secret, dry_run=args.dry_run)
+
+        if args.once or not RUNNING:
+            log("Single cycle execution complete. Exiting.", level="SUCCESS")
+            break
+
+        log(f"Cycle #{cycle_count} complete. Sleeping for {interval_sec}s until next interval...", level="INFO")
+        for _ in range(int(interval_sec)):
+            if not RUNNING:
+                break
+            time.sleep(1)
+
+    log("WritOn Autonomous Runner terminated cleanly.", level="INFO")
+
 if __name__ == "__main__":
-    print("🚀 Running WritOn Autonomous Community Pulse...")
-    # Dispatch batch
-    generate_and_dispatch_pulse(
-        stories=[
-            {
-                "authorPenName": "aarav_tech",
-                "title": "The Evolution of Cognitive Systems in 2026",
-                "summary": "Exploring the shift from reactive models to goal-oriented agentic workflows.",
-                "content": "# The Next Paradigm\\n\\nIn modern software systems, agents are moving from prompts to autonomous execution loops...",
-                "category": "Tech"
-            }
-        ],
-        comments=[
-            {
-                "authorPenName": "sunita_banerjee",
-                "postSlugOrId": "latest",
-                "content": "A deeply perceptive overview of autonomous agency and its ethical boundaries."
-            }
-        ],
-        applauds=[
-            {"authorPenName": "kavya_nair", "postSlugOrId": "latest"},
-            {"authorPenName": "rohan_kapoor", "postSlugOrId": "latest"}
-        ]
-    )
+    main()
 `;
 }
 
@@ -1840,9 +2418,29 @@ export async function ingestSparkBatch(pool, rawPayload) {
       const cleanContent = (govCheck.sanitizedContent || story.content || '').trim();
       const cleanSummary = (govCheck.sanitizedSummary || story.summary || '').trim() || null;
 
+      // Category resolution: content and subject evidence outranks an incorrect generic declared category
+      const resolvedCategory = resolvePublicationCategory({
+        declaredCategory: story.category || 'Essays',
+        title: cleanTitle,
+        summary: cleanSummary,
+        content: cleanContent
+      });
+
+      // Integrity gate validation: syntax preservation, fence balance, type safety
+      const integrityCheck = validateGeneratedArticleIntegrity({
+        title: cleanTitle,
+        content: cleanContent,
+        category: resolvedCategory
+      });
+      // Ingest/publish API payloads may include concise test articles or micro-essays; ignore minimum word count constraint on direct ingest
+      const fatalErrors = integrityCheck.reasons.filter(r => !r.includes('must contain at least'));
+      if (fatalErrors.length > 0) {
+        throw new Error(`integrity gate rejected: ${fatalErrors.join('; ')}`);
+      }
+
       const penName = (story.authorPenName || story.author || story.penName || '').toLowerCase().trim();
       const botId = botMap.get(penName) || defaultBotId;
-      const category = story.category || 'Essays';
+      const category = resolvedCategory;
       const coverImage = story.coverImage || story.cover_image_url || getCoverImageForCategory(category);
       const readingTime = calculateReadingTime(cleanContent);
       const slug = createSlug(cleanTitle);
@@ -1850,11 +2448,10 @@ export async function ingestSparkBatch(pool, rawPayload) {
       const res = await client.query(`
         insert into public.posts (
           slug, author_id, title, summary, content, category, cover_image_url,
-          status, is_public, reading_time_min, published_at,
-          provenance, provenance_verified_at, provenance_verified_by
+          status, is_public, reading_time_min, published_at, provenance
         )
-        values ($1, $2, $3, $4, $5, $6, $7, 'published', true, $8, now(), 'human_verified', now(), 'spark_runner')
-        returning id, slug, title, category, published_at
+        values ($1, $2, $3, $4, $5, $6, $7, 'published', true, $8, now(), 'synthetic')
+        returning id, slug, title, summary, content, category, reading_time_min, published_at, author_id, provenance
       `, [
         slug,
         botId,
@@ -2028,6 +2625,37 @@ export async function ingestSparkBatch(pool, rawPayload) {
           followsCreated.push({ followerId: botId, followingId: targetUserId });
         }
       }
+    }
+
+    // Enqueue atomic outbox events for every created story in batch
+    for (const created of storiesCreated) {
+      await enqueueOutboxEvent(client, {
+        eventType: 'record_memory',
+        payload: {
+          botId: created.author_id || defaultBotId,
+          postId: created.id,
+          title: created.title,
+          summary: created.summary,
+          category: created.category
+        }
+      });
+
+      await enqueueOutboxEvent(client, {
+        eventType: 'reaction_wave',
+        payload: {
+          postId: created.id,
+          authorId: created.author_id || defaultBotId,
+          category: created.category,
+          title: created.title,
+          summary: created.summary
+        }
+      });
+
+      const bot = bots.find(b => b.id === (created.author_id || defaultBotId));
+      await enqueueStorySyndication(client, created, {
+        fullName: bot?.fullName || created.author_full_name || created.authorPenName || 'WritOn Author',
+        penName: bot?.penName || created.author_pen_name || created.authorPenName || 'author',
+      });
     }
 
     await client.query('commit');
