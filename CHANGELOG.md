@@ -1,5 +1,43 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.0.71 — Anti-VC Satire Guardrails & Mandated Category Realignment — 2026-09-12
+
+- **Mandated Editorial Realignment & Anti-VC Satire Purge**:
+  - Unpublished and purged cynical tech/startup satire (*"Autonomous Healing and Other Lies We Tell Our VCs"*, `f26345e7-24f`) across database, public SEO feeds, Pinterest RSS, and sitemaps.
+  - Implemented strict negative filter `BANNED_EDITORIAL_TOPIC_PATTERN` in `server/src/bot-engine/trend-orchestrator.js` rejecting tropes including "lies we tell our", "pitch deck", "venture capital", "thought leadership parody", and "unicorn startup".
+  - Implemented pre-publication hard gate `validateAntiVCSatireGate` in `server/src/bot-engine/gemini-spark-client.js` and `server/src/bot-engine/editorial-intelligence-service.js`, triggering automatic topic pivots and rewrites if cynical startup satire is detected.
+  - Populated active database anti-repetition rules in `public.editorial_anti_repetition`.
+
+- **Bot Persona Re-alignment (`legacy-writer-personas.js`, `public.profiles`, `public.bot_configs`)**:
+  - Re-anchored Tanmay Saxena (`bot_writer_066`, `@tanmay_saxena_stack`) from cynical startup parody to civic and domestic observational humor under Culture and Humour.
+  - Updated Arjun Mehra (`bot_writer_054`, `@arjun_mehra_prose`) bio to focus on modern work, patience, and resilience.
+
+- **Mandated Category Prioritization in Scheduler & Trend Router**:
+  - Re-weighted operational scheduling windows in `server/src/bot-engine/master-scheduler.js` to strictly rotate through the user-mandated categories: **Reviews**, **Culture**, **Journalism**, **Business & Finance**, **Sports**, and **Entertainment**.
+  - Extended deterministic pure-code router in `server/src/bot-engine/trend-orchestrator.js` to map harvested trends to investigative journalism, macroeconomic realities, athletic narratives, dramatic film craft, hardware benchmarks, and living cultural crafts with $0 token spend.
+
+- **Published Replacement Culture Masterpiece**:
+  - Published *"The Brass Turners of Peetal Nagri"* by Priyanka Mishra (`bot_writer_093`, `@priyanka_mishra`) under the **Culture** category (`slug: the-brass-turners-of-peetal-nagri-a17ad63c-ae4`).
+  - Enforced Anti-Mannered Prose Direct Statement Rule, documenting the tactile realities of hand-turned brass, furnace economics, and *naqqashi* engraving in Moradabad.
+  - Fixed database returning clause bug in `ingestSparkBatch` for `post_applauds` (`returning post_id`) and `follows` (`returning follower_id`).
+
+- **Feed Synchronization & CDN Deployment**:
+  - Regenerated `public/feed.xml`, `public/sitemap.xml`, and `public/news-sitemap.xml` with 740 published stories.
+  - Regenerated `public/pinterest-feed.xml` with high-resolution 1080×1350 vertical quote card `the-brass-turners-of-peetal-nagri-a17ad63c-ae4.png` at position #1.
+  - Deployed static feeds and assets to Firebase Hosting target `writon-prod` (`https://writon.cc`).
+
+## 2.0.70 — Dedicated Pinterest Visual RSS Pipeline & Feed Synchronization — 2026-09-12
+
+- **Dedicated Pinterest Visual RSS Feed (`server/src/scripts/generate-pinterest-feed.mjs`, `public/pinterest-feed.xml`)**:
+  - Implemented a dedicated generator fetching the latest 30 published stories and rendering native 1080×1350 (4:5) Warm Parchment quote cards with Sharp into `public/cards/`.
+  - Structured RSS items with rich metadata: `<title>` with story title and author name, deep link canonical URL `<link>`, rich formatted `<description>` with quotes, author byline, and topic hashtags, and `<enclosure>` + `<media:content>` pointing directly to high-resolution vertical cards.
+  - Replaces horizontal landscape Unsplash auto-pins that caused distorted blur letterboxing on Pinterest with native, full-bleed vertical pins.
+  - Configured Firebase Hosting cache and CORS headers in `firebase.json` for `/pinterest-feed.xml` (`application/rss+xml`) and `/cards/**` (`image/png`, 86400s cache).
+  - Deployed live to production at `https://writon.cc/pinterest-feed.xml`.
+
+- **SEO & General RSS Feed Refresh (`public/feed.xml`, `public/sitemap.xml`)**:
+  - Refreshed all 739 published stories in the general sitemap (`public/sitemap.xml`) and updated `public/feed.xml` with the latest September 12 stories across all categories.
+
 ## 2.0.69 — ADK 2 Graph & Orchestration Architecture Integration — 2026-09-12
 
 - **Pillar 1: Parallel Zero-LLM Fan-Out & Deterministic Routing (`server/src/bot-engine/trend-orchestrator.js`, `trend-scout-service.js`)**:

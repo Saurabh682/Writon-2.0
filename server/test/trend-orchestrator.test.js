@@ -115,5 +115,47 @@ describe('ADK 2 Pillar 1: Trend Orchestrator', () => {
       expect(routing.slotId).toBe('evening_fiction');
       expect(routing.recommendedAuthor.fullName).toBeDefined();
     });
+
+    it('routes investigative and civic reporting to Journalism category', () => {
+      const routing = routeTopicToEditorialSlot('Municipal water audit in Bengaluru', 'Public report reveals groundwater contamination');
+      expect(routing.category).toBe('Journalism');
+      expect(routing.slotId).toBe('morning_tech');
+      expect(routing.recommendedAuthor.penName).toBeDefined();
+      expect(routing.editorialAngle).toContain('public records');
+    });
+
+    it('routes macroeconomic and commodity trends to Business & Finance category', () => {
+      const routing = routeTopicToEditorialSlot('RBI repo rate decision', 'Inflation targets and wholesale commodity prices');
+      expect(routing.category).toBe('Business & Finance');
+      expect(routing.slotId).toBe('lunch_satire');
+      expect(routing.recommendedAuthor.penName).toBe('karan_bajwa');
+    });
+
+    it('routes athletic tournaments and cricket matches to Sports category', () => {
+      const routing = routeTopicToEditorialSlot('India vs Australia Test Match', 'Day 3 wicket breakdown and bowling spell');
+      expect(routing.category).toBe('Sports');
+      expect(routing.slotId).toBe('evening_fiction');
+      expect(routing.recommendedAuthor.penName).toBe('sameer_deshpande');
+    });
+
+    it('routes cinema, trailers, and screenwriting to Entertainment category', () => {
+      const routing = routeTopicToEditorialSlot('Cannes Palme d\'Or winning cinema', 'Director discusses cinematic pacing and sound design');
+      expect(routing.category).toBe('Entertainment');
+      expect(routing.slotId).toBe('prime_screens');
+      expect(routing.recommendedAuthor.penName).toBe('pravin_piku');
+    });
+
+    it('filters out banned cynical VC and startup tropes in aggregator', () => {
+      const items = [
+        { topic: 'Autonomous Healing and Other Lies We Tell Our VCs', headline: 'Indiranagar pitch deck satire', approxTraffic: '10K', geo: 'IN' },
+        { topic: 'Unicorn startup seed round funding', headline: 'VCs invest in generative pitch deck', approxTraffic: '20K', geo: 'IN' },
+        { topic: 'Handloom weaving revival in Varanasi', headline: 'Master weavers preserve silk traditions', approxTraffic: '30K', geo: 'IN' }
+      ];
+      const bundle = aggregateTrendBundle(items);
+      expect(bundle.activeCandidates).toHaveLength(1);
+      expect(bundle.activeCandidates[0].topic).toBe('Handloom weaving revival in Varanasi');
+      expect(bundle.activeCandidates[0].category).toBe('Culture');
+    });
   });
 });
+

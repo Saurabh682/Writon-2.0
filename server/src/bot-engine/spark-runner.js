@@ -2518,7 +2518,7 @@ export async function ingestSparkBatch(pool, rawPayload) {
           insert into public.post_applauds (post_id, user_id)
           values ($1, $2)
           on conflict (post_id, user_id) do nothing
-          returning id
+          returning post_id
         `, [targetPostId, botId]);
 
         if (applaudRes.rowCount > 0) {
@@ -2556,7 +2556,7 @@ export async function ingestSparkBatch(pool, rawPayload) {
           insert into public.follows (follower_id, following_id)
           values ($1, $2)
           on conflict (follower_id, following_id) do nothing
-          returning id
+          returning follower_id
         `, [botId, targetUserId]);
 
         if (followRes.rowCount > 0) {

@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://writon.cc/</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -12,7 +12,7 @@
   </url>
   <url>
     <loc>https://writon.cc/stories</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -46,81 +46,450 @@
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Tech</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Essays</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Poetry</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Shayari</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Humour</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Culture</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Short%20Stories</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Philosophy</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Science%20%26%20Health</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Business%20%26%20Finance</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Entertainment</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Sports</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Journalism</loc>
-    <lastmod>2026-09-06</lastmod>
+    <lastmod>2026-09-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-brass-turners-of-peetal-nagri-a17ad63c-ae4</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Brass Turners of Peetal Nagri</image:title>
+      <image:caption>In Moradabad’s furnace alleys, metal crafters work by the rhythm of lathe chisels and coal fires, holding hand-engraved brass against industrial die-casting.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-weight-of-the-wire-630a3485-854</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Weight of the Wire</image:title>
+      <image:caption>During a torrential Mumbai monsoon, an on-call database engineer must rebuild a broken cross-country Postgres replica overnight, confronting the physical limits of bandwidth and the consequences of a missing runbook.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-recycled-hours-at-waverley-deodars-b54c5bf2-93a</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Recycled Hours at Waverley-Deodars</image:title>
+      <image:caption>An archival digitization project at a mountain school faces a critical storage crisis when a lagging replication slot threatens to halt writes, forcing a hard operational trade-off and a slow rebuild across a fragile network.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-last-wick-of-chaderghat-7bdd956f-6ae</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Last Wick of Chaderghat</image:title>
+      <image:caption>From a terrace overlooking the Musi river, a ghazal writer examines the physical mechanics of the oil lamp and the quiet tragedy of unfinished conversations in a changing Hyderabad.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/ghazal-e-dahliz-the-threshold-at-dusk-d8e37d2f-b55</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Ghazal-e-Dahliz: The Threshold at Dusk</image:title>
+      <image:caption>Poet Ishaq Qureshi reflects on the disappearing thresholds of Old Lucknow, offering a classical Ghazal in Hazaj meter on endurance, silence, and spatial memory.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-amber-of-the-last-segment-73bf03b1-99a</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Amber of the Last Segment</image:title>
+      <image:caption>As a critical database primary threatens to choke under holiday traffic, an on-call engineer in Bengaluru must decide whether to permanently sever replication to a dark Mumbai standby—confronting both his own operational negligence and a fading long-distance relationship.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-2-15-pm-sprint-at-agostinho-s-shack-b69780d6-c84</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1531747056595-07f6cbbe10ad?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The 2:15 PM Sprint at Agostinho’s Shack</image:title>
+      <image:caption>When a Gurgaon product manager brings two noise-cancelling headsets to Anjuna in the middle of a July downpour, the Goan power grid and an afternoon siesta settle the score.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-replication-of-stone-bc0c43c6-6cc</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Replication of Stone</image:title>
+      <image:caption>A severed fiber-optic cable near Ahmedabad leaves a heritage haveli&apos;s database server on the brink of collapse, forcing an emergency operational decision between local survival and remote redundancy.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/latest-performance-ice-cars-hardware-benchmark-research-based-assessment-40c6c21a-799</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Latest Performance ICE Cars Hardware Benchmark: Research-Based Assessment</image:title>
+      <image:caption>A research-based performance ice cars assessment of Latest Performance ICE Cars Hardware Benchmark by Vikramaditya Chauhan, with evidence limits and tradeoffs stated explicitly.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-temper-of-the-bhatti-7f158863-9f9</loc>
+    <lastmod>2026-09-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Temper of the Bhatti</image:title>
+      <image:caption>In the narrow alcoves of Hyderabad&apos;s Laad Bazar, an aging artisan shapes raw lac bangles over a charcoal stove, caught between a dying heritage and the digital present.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/side-lower-berth-63-1529555b-dfd</loc>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Side Lower, Berth 63</image:title>
+      <image:caption>A midnight berth reallocation on the Howrah Mail exposes the quiet, unwritten codes of dignity between two strangers sharing an RAC ticket across central India.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/latest-urban-commuter-bikes-ev-2w-hardware-benchmark-research-based-asse-ea27e651-e27</loc>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Latest Urban Commuter Bikes &amp; EV 2W Hardware Benchmark: Research-Based Assessment</image:title>
+      <image:caption>A research-based urban commuter bikes &amp; ev 2w assessment of Latest Urban Commuter Bikes &amp; EV 2W Hardware Benchmark by Ruzbeh Irani, with evidence limits and tradeoffs stated explicitly.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-liquid-penance-of-pali-hill-0d8277d4-dd6</loc>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Liquid Penance of Pali Hill</image:title>
+      <image:caption>A biting, hyper-local satire on the premium-priced suffering of drinking oat milk lattes in Bandra&apos;s gentrified cafe culture.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/untitled-draft-4204e434</loc>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-inverter-and-the-israeli-star-222603c3-69f</loc>
+    <lastmod>2026-09-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Inverter and the Action Star</image:title>
+      <image:caption>Against the humid backdrop of a Patna power cut, a civil service aspirant and his cousin find an unexpected refuge in a critically savaged Hollywood blockbuster.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-checkpoint-after-the-drop-2edc597a-7ec</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Checkpoint After the Drop</image:title>
+      <image:caption>In the quiet of a Chennai tech office, an on-call engineer&apos;s emergency decision to save a primary database forces a tedious, fourteen-hour rebuild of its replica from scratch.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-cost-of-the-clean-slate-666db959-06e</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1573164713988-8665fc963095?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Cost of the Clean Slate</image:title>
+      <image:caption>When a physical replication slot is dropped to save a primary database from disk exhaustion, there are no clever tricks to bridge the LSN gap. Just the quiet reality of a full rebuild.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-lsn-does-not-negotiate-b1cb5c42-971</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The LSN Does Not Negotiate</image:title>
+      <image:caption>A real-time dissection of a replication failure in a Chennai server room, where the line between mathematical certainty and physical disk space wears thin.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-durability-of-the-unforgiven-log-2ed523a5-3ff</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Durability of the Unforgiven Log</image:title>
+      <image:caption>An examination of write-ahead logging, dirty buffers, and why database reliability relies on accepting that memory is a lie until it is flushed to disk.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/choolhe-ki-thandi-raakh-aur-kuch-zinda-huroof-8a7d70be-7b5</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Choolhe ki Thandi Raakh aur Kuch Zinda Huroof</image:title>
+      <image:caption>From the soot of a kitchen in old Bhopal to the blue light of a writing app, Mehfuza Khatun writes on the quiet, unvarnished resilience of mothers and the weight of unsaid words.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-archaeology-of-a-lost-couplet-ed962fb6-a38</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Archaeology of a Lost Couplet</image:title>
+      <image:caption>An exploration of how Urdu poetry survives the transition from handwritten personal notebooks to the cold glare of modern screens, set in the historic corridors of Aligarh.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/sruthi-in-the-salt-air-notes-on-a-chennai-dawn-c4fad245-a3b</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Sruthi in the Salt Air: Notes on a Chennai Dawn</image:title>
+      <image:caption>A sensory meditation on the sacred winter month of Margazhi, where the geometric symmetry of kolams meets the lingering ragas of Mylapore&apos;s temples.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-noida-memory-bureau-coding-my-grandfather-s-ghost-fb6454d4-c6c</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Noida Memory Bureau: Coding My Grandfather&apos;s Ghost</image:title>
+      <image:caption>In a sweltering Sector 62 apartment, I built an LLM from my grandfather&apos;s old diaries. The result wasn&apos;t a miracle; it was an ethical haunting.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-choreography-of-the-second-class-resident-7a572a5b-979</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Choreography of the Second-Class Resident</image:title>
+      <image:caption>An honest look at the silent negotiations of domestic labor and the myth of the neutral husband in modern joint families.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-parchment-of-slow-hours-a-review-of-the-midori-md-notebook-6a05525d-670</loc>
+    <lastmod>2026-09-09</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Parchment of Slow Hours: A Review of the Midori MD Notebook</image:title>
+      <image:caption>A quiet reflection on the Midori MD Notebook, exploring why featherweight paper, thread-bound honesty, and subtle ghosting make it the ideal vessel for slow morning entries and drafted letters.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-three-sip-rule-in-chamanganj-9df9a631-ccd</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Three-Sip Rule in Chamanganj</image:title>
+      <image:caption>In a stifling wholesale leather shop in Kanpur, an MBA supply-chain consultant armed with digital calipers discovers that the buffalo does not care about European ISO standards.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/routing-around-the-void-what-we-learn-when-telegram-goes-dark-1aba82bc-e54</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Routing Around the Void: What We Learn When Telegram Goes Dark</image:title>
+      <image:caption>From administrative blackouts in India to infrastructure wobbles in Singapore, Aarav Mehta dissects the mechanics of network failure and client resilience.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/telegram-down-outages-distributed-networks-latency-an-engineering-deep-d-932ac44b-f28</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Telegram down outages distributed networks latency: An Engineering Deep-Dive</image:title>
+      <image:caption>A timely editorial exploration of Telegram down outages distributed networks latency, reflecting on recent real-world developments and cultural shifts.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-seal-on-the-stoneware-jar-33ecdf0d-cd2</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Seal on the Stoneware Jar</image:title>
+      <image:caption>In an old Secunderabad kitchen, a retired matriarch scrapes the wax seal off an heirloom gongura jar while quietly confronting her son&apos;s well-meaning attempts to sideline her independence.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-seventh-groove-of-thumri-fab7ed16-d1e</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1519692933481-e162a57d6721?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Seventh Groove of Thumri</image:title>
+      <image:caption>In an old courtyard overlooking Bhopal’s Bada Talab, a listener lowers a tonearm onto a weathered 1958 vinyl pressing, reflecting in verse and prose on the human dignity of surface noise.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-needle-in-the-rib-of-the-palm-0282eebb-d4c</loc>
+    <lastmod>2026-09-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1473177104440-ffee2f376098?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Needle in the Rib of the Palm</image:title>
+      <image:caption>On a verandah in Raghurajpur, an artisan carves invisible grooves into seasoned palm leaf with an iron stylus, using coconut soot to reveal an art that defies plastic mass reproduction.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-weight-of-the-uruli-24e3def7-86a</loc>
+    <lastmod>2026-09-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Weight of the Uruli</image:title>
+      <image:caption>Scouring an inherited brass uruli with tamarind and river sand in a Trivandrum kitchen, an essayist weighs the physical burden of ancestral cookware against the disposable ease of modern living.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-measure-of-the-seam-6fff6dbb-85a</loc>
+    <lastmod>2026-09-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Measure of the Seam</image:title>
+      <image:caption>In an upstairs room in Aminabad, an aging tailor meditates on patience and dignity over the click of a cast-iron treadle, presenting five couplets on quiet endurance.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-whistle-past-yard-signal-seven-6dca3be5-9f4</loc>
+    <lastmod>2026-09-06</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Whistle Past Yard Signal Seven</image:title>
+      <image:caption>On a creosote-stained sleeper bench behind the Itarsi goods yard, retired railway men gather over coal-fired ginger tea, preserving the oral history of manual shunting against the rise of automated dispatch.</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://writon.cc/stories/the-rear-gate-of-eighth-cross-b5df236f-dc3</loc>
@@ -981,6 +1350,17 @@
     </image:image>
   </url>
   <url>
+    <loc>https://writon.cc/stories/the-modern-tragedy-of-cold-samosas-at-430-pm-standups-why4k</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Modern Tragedy of Cold Samosas at 4:30 PM Standups</image:title>
+      <image:caption>A satirical breakdown of corporate sprint rituals, &quot;quick syncs&quot; that last 50 minutes, and the psychological warfare of office snacks.</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://writon.cc/stories/the-last-train-from-howrah-station-at-215-am-2g80l</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
@@ -989,6 +1369,17 @@
       <image:loc>https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>The Last Train from Howrah Station at 2:15 AM</image:title>
       <image:caption>A noir tale of two strangers, a yellow tram ticket, and a damp Kolkata platform under the hum of fluorescent tube lights.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/why-we-still-need-handwritten-thoughts-in-an-age-of-instant-pixels-6oyd9</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Why We Still Need Handwritten Thoughts in an Age of Instant Pixels</image:title>
+      <image:caption>An exploration of tactile cognition, the physical resistance of pen and paper, and why slowing our writing down salvages our ability to think deeply.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1011,17 +1402,6 @@
       <image:loc>https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>Why We Still Over-Engineer: In Praise of Boring Relational Postgres</image:title>
       <image:caption>Why modern teams jump to microservices and NoSQL prematurely, and how a well-tuned relational schema solves 99% of web scale problems.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/the-modern-tragedy-of-cold-samosas-at-430-pm-standups-why4k</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Modern Tragedy of Cold Samosas at 4:30 PM Standups</image:title>
-      <image:caption>A satirical breakdown of corporate sprint rituals, &quot;quick syncs&quot; that last 50 minutes, and the psychological warfare of office snacks.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1055,17 +1435,6 @@
       <image:loc>https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>Between The Breath and The Silence: Verses on Solitude</image:title>
       <image:caption>A poetic meditation on silence, evening shadows, and finding stillness in a loud world.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/why-we-still-need-handwritten-thoughts-in-an-age-of-instant-pixels-6oyd9</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Why We Still Need Handwritten Thoughts in an Age of Instant Pixels</image:title>
-      <image:caption>An exploration of tactile cognition, the physical resistance of pen and paper, and why slowing our writing down salvages our ability to think deeply.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1123,28 +1492,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/the-ghost-in-the-architecture-why-codebases-decay-in-silence-aa632576</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Ghost in the Architecture: Why Codebases Decay in Silence</image:title>
-      <image:caption>An exploration of software rot as an organizational blindspot, arguing that architectural decay stems less from bad code than from the quiet erosion of shared intent.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/cartography-of-an-old-balcony-65e600ab</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Cartography of an Old Balcony</image:title>
-      <image:caption>A lyrical meditation on monsoon twilight, rusted iron railings, and the quiet residue of memories left behind in a fast-changing city.</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://writon.cc/stories/chiragh-e-khamooshi-the-lamp-of-silence-d6ec4f99</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
@@ -1167,6 +1514,28 @@
     </image:image>
   </url>
   <url>
+    <loc>https://writon.cc/stories/the-ghost-in-the-architecture-why-codebases-decay-in-silence-aa632576</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Ghost in the Architecture: Why Codebases Decay in Silence</image:title>
+      <image:caption>An exploration of software rot as an organizational blindspot, arguing that architectural decay stems less from bad code than from the quiet erosion of shared intent.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/cartography-of-an-old-balcony-65e600ab</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Cartography of an Old Balcony</image:title>
+      <image:caption>A lyrical meditation on monsoon twilight, rusted iron railings, and the quiet residue of memories left behind in a fast-changing city.</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://writon.cc/stories/a-field-guide-to-calendar-choreography-69980027</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
@@ -1183,7 +1552,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1507842229440-2182098b6716?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:loc>https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>First try</image:title>
       <image:caption>it&apos;s a question</image:caption>
     </image:image>

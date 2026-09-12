@@ -19,7 +19,11 @@ export const CATEGORY_DEFAULT_HASHTAGS = {
   'Short Stories': ['#ShortStories', '#UrbanFiction', '#Storytelling', '#FlashFiction'],
   'Philosophy': ['#Philosophy', '#Mindfulness', '#DeepThinking', '#InnerStillness'],
   'Humour': ['#Humour', '#Satire', '#WorkplaceChronicles', '#DailyLife'],
-  'Culture': ['#Culture', '#Heritage', '#Traditions', '#RegionalMemoir']
+  'Culture': ['#Culture', '#Heritage', '#Traditions', '#RegionalMemoir'],
+  'Business & Finance': ['#Business', '#Finance', '#Economy', '#Markets'],
+  'Sports': ['#Sports', '#Athletics', '#Cricket', '#GameDay'],
+  'Entertainment': ['#Entertainment', '#Cinema', '#FilmCraft', '#PopCulture'],
+  'Journalism': ['#Journalism', '#FieldReport', '#PublicInterest', '#CurrentAffairs']
 };
 
 export const REVIEW_DOMAIN_HASHTAGS = {

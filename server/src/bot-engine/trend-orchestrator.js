@@ -14,6 +14,8 @@ import { fetchGoogleNewsResearch, fetchWikipediaSummary } from './trend-scout-se
 
 const SENSITIVE_TOPIC_PATTERN = /\b(?:election|polling|politic(?:s|al)?|parliament|government|minister|president|prime\s+minister|war|military|missile|attack|terror(?:ism|ist)?|hostage|invasion|conflict|death|dead|killed|murder|suicide|assault|abuse|minor|child|rape|sexual|medical|medicine|health|disease|diagnosis|treatment|vaccine|drug|therapy|investment|investing|stock|share\s+price|crypto|loan|mortgage|bankruptcy|financial\s+advice|court|lawsuit|legal|crime|arrest|charged|allegation|fraud|scam|communal|riot|religion|caste|protest|sanction|disaster|earthquake|flood|wildfire)\b/i;
 
+export const BANNED_EDITORIAL_TOPIC_PATTERN = /\b(vc|vcs|venture capital|pitch deck|seed round|series [a-d]|angel investor|unicorn|disrupt|startup hype|thought leadership parody|lies we tell our vcs|10x engineer|founder mode|pre-seed|fundraise)\b/i;
+
 function fetchHttps(url, customHeaders = {}, timeoutMs = 6000) {
   return new Promise((resolve, reject) => {
     const req = https.get(url, {
@@ -134,6 +136,11 @@ export function aggregateTrendBundle(harvestedItems = [], { antiRepetitionList =
       continue;
     }
 
+    // 2b. Banned cynical startup/VC topics filter (strict editorial standard)
+    if (BANNED_EDITORIAL_TOPIC_PATTERN.test(`${item.topic} ${item.headline || ''}`)) {
+      continue;
+    }
+
     // 3. Editorial anti-repetition check
     let isRepetitive = false;
     for (const recent of antiRepetitionNormalized) {
@@ -173,7 +180,97 @@ export function aggregateTrendBundle(harvestedItems = [], { antiRepetitionList =
 export function routeTopicToEditorialSlot(topic = '', contextText = '') {
   const text = `${topic} ${contextText}`.toLowerCase();
 
-  // 1. Reviews detection (Hardware benchmarks, comparative tests, buyer guides)
+  // 0. Strict negative guard against cynical startup tropes / VC cynicism
+  if (BANNED_EDITORIAL_TOPIC_PATTERN.test(text)) {
+    const journalismPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Journalism'));
+    const author = journalismPersonas[0] || {
+      penName: 'riya_chakraborty',
+      fullName: 'Dr. Riya Chakraborty'
+    };
+    return {
+      category: 'Journalism',
+      slotId: 'morning_tech',
+      recommendedAuthor: {
+        penName: author.penName,
+        fullName: author.fullName
+      },
+      editorialAngle: `Examine the tangible ground realities, public records, and civic accountability around ${topic}. Avoid all startup jargon and focus on verifiable human facts.`
+    };
+  }
+
+  // 1. Journalism & Public Affairs (Ground reporting, investigative inquiries, civic reality)
+  if (/\b(investigation|expose|scam|court verdict|supreme court|high court|parliament|bill passed|election commission|probe|inquiry|whistleblower|custody|bail|police raid|arrested|cbi|ed raid|policy reform|public report|audit|municipal|civic|infrastructure|sanitation|hospital|healthcare|pollution|ground report|rti)\b/i.test(text)) {
+    const journalismPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Journalism'));
+    const author = journalismPersonas[Math.floor(Math.random() * journalismPersonas.length)] || {
+      penName: 'riya_chakraborty',
+      fullName: 'Dr. Riya Chakraborty'
+    };
+    return {
+      category: 'Journalism',
+      slotId: 'morning_tech',
+      recommendedAuthor: {
+        penName: author.penName,
+        fullName: author.fullName
+      },
+      editorialAngle: `Ground human reporting, public records, institutional accountability, and frontline civic reality around ${topic}. Avoid abstract commentary and document verifiable details.`
+    };
+  }
+
+  // 2. Business & Finance (Real economy, markets, commodity prices, wholesale trade, fiscal balance sheets)
+  if (/\b(market|markets|share price|shares|sensex|nifty|ipo|stocks|stock|economy|economic|inflation|bank|banking|rupee|invest|investing|finance|financial|gdp|fiscal|rbi|sebi|earnings|revenue|quarterly profit|mutual fund|gold price|silver price|crude oil|trade deficit|commodity|wholesale|supply chain|manufacturing|msme|gst)\b/i.test(text)) {
+    const bizPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Business & Finance') || p.categories.includes('Essays'));
+    const author = bizPersonas.find(p => p.penName === 'karan_bajwa') || {
+      penName: 'karan_bajwa',
+      fullName: 'Karan Bajwa'
+    };
+    return {
+      category: 'Business & Finance',
+      slotId: 'lunch_satire',
+      recommendedAuthor: {
+        penName: author.penName,
+        fullName: author.fullName
+      },
+      editorialAngle: `Analyze the balance sheet reality, commodity dynamics, working capital cycles, and commercial trade pressures of ${topic}. Ground analysis in real economic mechanics.`
+    };
+  }
+
+  // 3. Sports & Athletic Craft
+  if (/\b(cricket|tennis|olympics|football|soccer|match|cup|winner|sport|sports|tournament|ipl|bcci|fifa|wimbledon|wicket|badminton|hockey|wrestling|akhada|athletics|f1|formula 1|grand prix|marathon|chess|grandmaster|test match|century|bowler|batsman)\b/i.test(text)) {
+    const sportsPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Sports'));
+    const author = sportsPersonas[0] || {
+      penName: 'sameer_deshpande',
+      fullName: 'Sameer Deshpande'
+    };
+    return {
+      category: 'Sports',
+      slotId: 'evening_fiction',
+      recommendedAuthor: {
+        penName: author.penName,
+        fullName: author.fullName
+      },
+      editorialAngle: `Explore the physical discipline, competitive tension, tactile arena atmosphere, and athletic perseverance in ${topic}.`
+    };
+  }
+
+  // 4. Entertainment, Cinema & Dramatic Craft
+  if (/\b(movie|movies|film|films|trailer|teaser|box office|actor|actress|director|cinema|bollywood|hollywood|kollywood|tollywood|ott|netflix|prime video|hotstar|album|song|soundtrack|concert|grammy|oscar|emmy|cannes|celebrity|series|theatre|screenplay|cinematography|sound design)\b/i.test(text)) {
+    const entPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Entertainment') || p.categories.includes('Short Stories'));
+    const author = entPersonas.find(p => p.penName === 'pravin_piku') || {
+      penName: 'pravin_piku',
+      fullName: 'Pravin Kumar (Piku)'
+    };
+    return {
+      category: 'Entertainment',
+      slotId: 'prime_screens',
+      recommendedAuthor: {
+        penName: author.penName,
+        fullName: author.fullName
+      },
+      editorialAngle: `Analyze dramatic pacing, performance subtext, cinematic staging, and screenwriting craft in ${topic}.`
+    };
+  }
+
+  // 5. Reviews detection (Hardware benchmarks, comparative tests, buyer guides)
   if (/\b(review|reviewed|buyer guide|buying guide|hands-on review|camera test|range test|drop test|unboxing|teardown)\b/i.test(text) ||
       (/\b(vs|comparison|benchmark|specs|verdict)\b/i.test(text) && /\b(phone|laptop|headphone|earbud|car|bike|suv|camera|keyboard|gpu|gadget|console|pixel|iphone|samsung|sony|bose)\b/i.test(text))) {
     const reviewer = REVIEW_PERSONAS[Math.floor(Math.random() * REVIEW_PERSONAS.length)] || {
@@ -193,61 +290,7 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
     };
   }
 
-  // 2. Tech & Distributed Systems
-  if (/\b(ai|openai|anthropic|gemini|llm|model|models|transformer|latency|gpu|software|cloud|code|coding|tech|technology|chip|chips|nvidia|google|apple|meta|microsoft|crypto|database|postgres|kernel|app|startup|server|api|cyber|cybersecurity|linux)\b/i.test(text)) {
-    const techPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Tech'));
-    const author = techPersonas[Math.floor(Math.random() * techPersonas.length)] || {
-      penName: 'aarav_tech',
-      fullName: 'Aarav Mehta'
-    };
-    return {
-      category: 'Tech',
-      slotId: 'morning_tech',
-      recommendedAuthor: {
-        penName: author.penName,
-        fullName: author.fullName
-      },
-      editorialAngle: `Analyze the architectural trade-offs, operational failure modes, or systems engineering realities behind ${topic}. Prioritize mechanical sympathy over industry hype.`
-    };
-  }
-
-  // 3. Humour & Workplace Satire
-  if (/\b(funny|joke|viral|meme|traffic|office|delay|flight|boss|meeting|corporate|samosa|hilarious|comedy|satire|workplace|hr\b|appraisal|standup)\b/i.test(text)) {
-    const humourPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Humour'));
-    const author = humourPersonas[Math.floor(Math.random() * humourPersonas.length)] || {
-      penName: 'rohan_kapoor',
-      fullName: 'Rohan Kapoor'
-    };
-    return {
-      category: 'Humour',
-      slotId: 'lunch_satire',
-      recommendedAuthor: {
-        penName: author.penName,
-        fullName: author.fullName
-      },
-      editorialAngle: `Observe the quiet absurdities, administrative rituals, and unspoken workplace ironies surrounding ${topic}. Avoid slapstick; focus on relatable social observation.`
-    };
-  }
-
-  // 4. Poetry & Seasonal Meditations
-  if (/\b(rain|flood|floods|river|weather|monsoon|autumn|hills|season|nature|dawn|night|frost|clouds|mist|solitude|winter)\b/i.test(text)) {
-    const poetryPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Poetry'));
-    const author = poetryPersonas[Math.floor(Math.random() * poetryPersonas.length)] || {
-      penName: 'kavya_nair',
-      fullName: 'Kavya Nair'
-    };
-    return {
-      category: 'Poetry',
-      slotId: 'dawn_digest',
-      recommendedAuthor: {
-        penName: author.penName,
-        fullName: author.fullName
-      },
-      editorialAngle: `Ground poetic verse in physical geography, seasonal transitions, and quiet sensory observations inspired by ${topic}.`
-    };
-  }
-
-  // 5. Shayari & Classical Urdu / Hindustani Poetry
+  // 6. Shayari & Classical Urdu / Hindustani Poetry
   if (/\b(ghazal|shayari|urdu|nazm|ishq|dastak|dahliz|shaam|mehfil|tehzeeb|tarannum)\b/i.test(text)) {
     const shayariPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Shayari'));
     const author = shayariPersonas[Math.floor(Math.random() * shayariPersonas.length)] || {
@@ -265,8 +308,26 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
     };
   }
 
-  // 6. Culture, Heritage & Craft
-  if (/\b(history|heritage|book|books|author|festival|music|tradition|traditions|temple|museum|art|craft|dance|ghat|folk|classical|vernacular|monument|culinary|recipe|spice)\b/i.test(text)) {
+  // 7. Poetry & Seasonal Meditations
+  if (/\b(rain|flood|floods|river|weather|monsoon|autumn|hills|season|nature|dawn|night|frost|clouds|mist|solitude|winter)\b/i.test(text)) {
+    const poetryPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Poetry'));
+    const author = poetryPersonas[Math.floor(Math.random() * poetryPersonas.length)] || {
+      penName: 'kavya_nair',
+      fullName: 'Kavya Nair'
+    };
+    return {
+      category: 'Poetry',
+      slotId: 'dawn_digest',
+      recommendedAuthor: {
+        penName: author.penName,
+        fullName: author.fullName
+      },
+      editorialAngle: `Ground poetic verse in physical geography, seasonal transitions, and quiet sensory observations inspired by ${topic}.`
+    };
+  }
+
+  // 8. Culture, Heritage & Craft
+  if (/\b(history|heritage|book|books|author|festival|music|tradition|traditions|temple|museum|art|craft|dance|ghat|folk|classical|vernacular|monument|culinary|recipe|spice|architecture|weaving|handloom|pottery)\b/i.test(text)) {
     const culturePersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Culture'));
     const author = culturePersonas[Math.floor(Math.random() * culturePersonas.length)] || {
       penName: 'kelly_miracle_art',
@@ -283,20 +344,56 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
     };
   }
 
-  // 7. Short Stories & Narrative Fiction (Default fallback)
-  const fictionPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Short Stories'));
-  const author = fictionPersonas[Math.floor(Math.random() * fictionPersonas.length)] || {
-    penName: 'devansh_roy',
-    fullName: 'Devansh Roy'
+  // 9. Humour & Domestic / Civic Observation (Strictly non-tech)
+  if (/\b(funny|joke|viral|meme|traffic|parking|neighbor|society|notice board|water tank|delay|train|commute|samosa|hilarious|comedy|civic)\b/i.test(text)) {
+    const humourPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Humour'));
+    const author = humourPersonas[Math.floor(Math.random() * humourPersonas.length)] || {
+      penName: 'rohan_kapoor',
+      fullName: 'Rohan Kapoor'
+    };
+    return {
+      category: 'Humour',
+      slotId: 'lunch_satire',
+      recommendedAuthor: {
+        penName: author.penName,
+        fullName: author.fullName
+      },
+      editorialAngle: `Observe the quiet absurdities, administrative rituals, and unspoken neighborhood ironies surrounding ${topic}. Avoid slapstick; focus on relatable social observation.`
+    };
+  }
+
+  // 10. Tech Systems Craft (Pure infrastructure / engineering only, zero VC cynicism)
+  if (/\b(gpu|nvidia|chip|chips|ai|llm|transformer|latency|postgres|postgresql|database|kernel|linux|concurrency|distributed systems|architecture|wal\b|lsn\b|memory leak|cache invalidation)\b/i.test(text)) {
+    const techPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Tech'));
+    const author = techPersonas[Math.floor(Math.random() * techPersonas.length)] || {
+      penName: 'aarav_tech',
+      fullName: 'Aarav Mehta'
+    };
+    return {
+      category: 'Tech',
+      slotId: 'morning_tech',
+      recommendedAuthor: {
+        penName: author.penName,
+        fullName: author.fullName
+      },
+      editorialAngle: `Analyze systems architecture and mechanical sympathy behind ${topic}. Strictly avoid startup tropes, pitch decks, or venture capital satire.`
+    };
+  }
+
+  // 11. Culture / Short Stories Fallback (Default)
+  const culturePersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Culture'));
+  const author = culturePersonas[0] || {
+    penName: 'priyanka_mishra',
+    fullName: 'Priyanka Mishra'
   };
   return {
-    category: 'Short Stories',
-    slotId: 'evening_fiction',
+    category: 'Culture',
+    slotId: 'dawn_digest',
     recommendedAuthor: {
       penName: author.penName,
       fullName: author.fullName
     },
-    editorialAngle: `Dramatize the human consequences, unstated relationships, and atmospheric setting around ${topic}. Put scene before summary.`
+    editorialAngle: `Explore the human dimensions, generational memory, and cultural continuity evoked by ${topic}.`
   };
 }
 

@@ -242,6 +242,90 @@ export async function getLedgerEntries(pool, { date = null, status = null, limit
   };
 }
 
+export class CanvasRevisionConflict extends Error {
+  constructor(currentRevision) {
+    super(`Canvas revision conflict: current revision is ${currentRevision}`);
+    this.name = 'CanvasRevisionConflict';
+    this.currentRevision = currentRevision;
+  }
+}
+
+export async function getEditorialCanvas(pool, documentId) {
+  const result = await pool.query(`
+    select document_id as "documentId", revision, state, updated_by as "updatedBy", updated_at as "updatedAt"
+    from public.editorial_canvas_documents
+    where document_id = $1
+  `, [documentId]);
+
+  if (result.rows.length === 0) {
+    return {
+      documentId,
+      revision: 0,
+      state: {},
+      updatedBy: null,
+      updatedAt: null
+    };
+  }
+
+  return result.rows[0];
+}
+
+export async function getEditorialCanvasHistory(pool, documentId, limit = 20) {
+  const boundedLimit = Math.min(50, Math.max(1, Number(limit) || 20));
+  const result = await pool.query(`
+    select revision, changed_by as "changedBy", created_at as "createdAt"
+    from public.editorial_canvas_revisions
+    where document_id = $1
+    order by revision desc
+    limit $2
+  `, [documentId, boundedLimit]);
+  return result.rows;
+}
+
+export async function saveEditorialCanvas(pool, { documentId, expectedRevision, state, changedBy }) {
+  const client = await pool.connect();
+  try {
+    await client.query('begin');
+    await client.query('select pg_advisory_xact_lock(hashtext($1))', [`canvas:${documentId}`]);
+
+    const existing = await client.query(`
+      select revision from public.editorial_canvas_documents
+      where document_id = $1
+      for update
+    `, [documentId]);
+
+    const currentRevision = existing.rows[0]?.revision ?? 0;
+    if (currentRevision !== expectedRevision) {
+      throw new CanvasRevisionConflict(currentRevision);
+    }
+
+    const nextRevision = currentRevision + 1;
+    const saveRes = await client.query(`
+      insert into public.editorial_canvas_documents (document_id, revision, state, updated_by, updated_at)
+      values ($1, $2, $3::jsonb, $4, now())
+      on conflict (document_id) do update set
+        revision = excluded.revision,
+        state = excluded.state,
+        updated_by = excluded.updated_by,
+        updated_at = now()
+      returning document_id as "documentId", revision, state, updated_by as "updatedBy", updated_at as "updatedAt"
+    `, [documentId, nextRevision, JSON.stringify(state), changedBy]);
+
+    await client.query(`
+      insert into public.editorial_canvas_revisions (document_id, revision, changed_by, state, created_at)
+      values ($1, $2, $3, $4::jsonb, now())
+    `, [documentId, nextRevision, changedBy, JSON.stringify(state)]);
+
+    await client.query('commit');
+    return saveRes.rows[0];
+  } catch (error) {
+    await client.query('rollback').catch(() => {});
+    throw error;
+  } finally {
+    client.release?.();
+  }
+}
+
 /**
  * Add a pitch or premise to the story ideas backlog.
  */

@@ -9,7 +9,14 @@ export const PUBLICATION_CATEGORIES = new Set([
   'Culture',
   'Reviews',
   'Trending',
-  'Journalism'
+  'Journalism',
+  'Business & Finance',
+  'Sports',
+  'Entertainment',
+  'Science & Health',
+  'Journal',
+  'Satire',
+  'Fiction'
 ]);
 
 export const CATEGORY_ALIASES = {
@@ -18,7 +25,17 @@ export const CATEGORY_ALIASES = {
   'humor': 'Humour',
   'stories': 'Short Stories',
   'poems': 'Poetry',
-  'technology': 'Tech'
+  'technology': 'Tech',
+  'business': 'Business & Finance',
+  'finance': 'Business & Finance',
+  'business and finance': 'Business & Finance',
+  'business & finance': 'Business & Finance',
+  'sport': 'Sports',
+  'movie': 'Entertainment',
+  'movies': 'Entertainment',
+  'cinema': 'Entertainment',
+  'science': 'Science & Health',
+  'health': 'Science & Health'
 };
 
 export function normalizeCategoryName(cat) {

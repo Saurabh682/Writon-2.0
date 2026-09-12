@@ -71,6 +71,9 @@ export function validateGeneratedArticleIntegrity({ title = '', content = '', ca
   if (['Tech', 'Trending', 'Reviews'].includes(category) && UNSUPPORTED_FIRST_PERSON_TECHNICAL_EVIDENCE.test(cleanContent)) {
     reasons.push('Bot article makes an unsupported first-person testing or measurement claim');
   }
+  if (/\b(lies we tell our vcs|pitch deck|venture capitalist|venture capital|series [a-d] funding|unicorn startup|seed round|pre-seed|angel investor|disrupting the space|thought leadership parody)\b/i.test(`${cleanTitle} ${cleanContent}`)) {
+    reasons.push('Article contains banned cynical VC/startup tropes, which violate WritOn editorial policy');
+  }
 
   for (const block of fencedCodeBlocks(cleanContent)) {
     if (!['ts', 'tsx', 'typescript'].includes(block.language)) continue;

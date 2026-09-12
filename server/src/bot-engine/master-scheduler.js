@@ -120,13 +120,13 @@ export const DOMAIN_PRODUCT_CANDIDATES = {
 
 // 8 Defined Operational Windows in Indian Standard Time (IST = UTC + 5:30)
 export const SCHEDULE_SLOTS = [
-  { id: 'dawn_digest', hour: 7, minute: 0, type: 'editorial', name: 'Dawn Digest (Poetry/Essays)' },
-  { id: 'morning_tech', hour: 10, minute: 30, type: 'review_mobility', name: 'Morning Tech & Mobility' },
-  { id: 'lunch_satire', hour: 13, minute: 30, type: 'editorial', name: 'Lunch Satire (Humour/Culture)' },
-  { id: 'afternoon_gear', hour: 16, minute: 30, type: 'review_gear', name: 'Afternoon Gear Lab' },
-  { id: 'evening_fiction', hour: 19, minute: 30, type: 'editorial', name: 'Evening Storytelling' },
-  { id: 'prime_screens', hour: 21, minute: 30, type: 'review_screens', name: 'Prime-Time Screen Reviews' },
-  { id: 'midnight_poetry', hour: 23, minute: 0, type: 'editorial', name: 'Midnight Courtyard (Shayari)' },
+  { id: 'dawn_digest', hour: 7, minute: 0, type: 'editorial', name: 'Dawn Digest (Culture/Essays)' },
+  { id: 'morning_tech', hour: 10, minute: 30, type: 'review_mobility', name: 'Morning Review (Mobility & Hardware)' },
+  { id: 'lunch_satire', hour: 13, minute: 30, type: 'editorial', name: 'Midday Economics (Business & Finance)' },
+  { id: 'afternoon_gear', hour: 16, minute: 30, type: 'review_gear', name: 'Afternoon Gear Lab (Measured Reviews)' },
+  { id: 'evening_fiction', hour: 19, minute: 30, type: 'editorial', name: 'Evening Dispatch (Journalism & Public Truth)' },
+  { id: 'prime_screens', hour: 21, minute: 30, type: 'review_screens', name: 'Prime-Time Screens (Entertainment Reviews)' },
+  { id: 'midnight_poetry', hour: 23, minute: 0, type: 'editorial', name: 'Midnight Courtyard (Poetry/Shayari)' },
   { id: 'housekeeping', hour: 2, minute: 0, type: 'maintenance', name: 'Nightly Housekeeping' }
 ];
 
@@ -325,8 +325,11 @@ export async function executeScheduledSlot(pool, slot, {
       .findIndex(candidate => candidate.id === slot.id);
     const slotCategories = {
       dawn_digest: 'Essays',
-      lunch_satire: 'Humour',
-      evening_fiction: 'Short Stories',
+      morning_tech: 'Journalism',
+      lunch_satire: 'Business & Finance',
+      afternoon_gear: 'Reviews',
+      evening_fiction: 'Culture',
+      prime_screens: 'Entertainment',
       midnight_poetry: 'Poetry'
     };
     const fallbackCategory = slotCategories[slot.id] || 'Essays';
