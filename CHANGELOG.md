@@ -1,5 +1,16 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.0.68 — Production Database Schema Synchronization & Web Feed Resilience — 2026-09-12
+
+- **Production Database Schema Alignment (`server/src/scripts/apply-owned-content-edits-production.mjs`)**:
+  - Applied missing `20260911_owned_content_edits.sql` migration to the production PostgreSQL database (`rrxaitxeirykmiihgiqj`), adding `posts.content_updated_at` (timestamptz) and `comments.updated_at` (timestamptz).
+  - Resolved HTTP 500 error (`column p.content_updated_at does not exist`) in `GET /api/v1/posts` SQL query.
+
+- **Web Client Story Deck Resilience (`public/app.js`, `public/app.v5.js`)**:
+  - Hardened frontend fetch handlers with explicit HTTP error checks (`if (!res.ok) throw new Error(...)`), preventing failed or non-200 API responses from falsely collapsing into the "You have explored all the latest stories" empty state.
+  - Deployed updated web assets to Firebase Hosting targets `writon-prod` (`https://writon.cc`) and `writon-canvas-staging` (`https://writon-canvas-staging.web.app`).
+  - Verified live homepage story feeds across all 8 editorial categories (`All`, `Essays`, `Short Stories`, `Poetry`, `Shayari`, `Culture`, `Tech`, `Humour`) displaying active story cards seamlessly.
+
 ## 2.0.67 — Cloud Run Autonomous Publishing Resilience & Topic Pivot Rewrite — 2026-09-12
 
 - **Autonomous Bot Publishing Clock & Scheduler Route (`server/src/routes/admin-bots.js`)**:
@@ -40,6 +51,7 @@
   - Authored comprehensive Vitest unit test suite `server/test/pinterest-client.test.js` covering 10 scenarios: configuration status, static access token, refresh token exchange, authorized requests, 401 retry, 429 backoff, `image_url` Pin creation, `image_base64` Pin creation, error categorization, and analytics retrieval (all 10 tests passed).
   - Authored architecture and AI operations manual [`PINTEREST_BOTS.md`](file:///d:/VibeCode/WritOn-PowerUp/PINTEREST_BOTS.md), operational standards guide [`rules_pinterest.md`](file:///d:/VibeCode/WritOn-PowerUp/rules_pinterest.md), and complete endpoint catalogue [`pinterest_api_reference.md`](file:///d:/VibeCode/WritOn-PowerUp/pinterest_api_reference.md). Linked in [`AGENTS.md`](file:///d:/VibeCode/WritOn-PowerUp/AGENTS.md).
   - Synchronized [`campaign/SOCIAL_STRATEGY.md`](file:///d:/VibeCode/WritOn-PowerUp/campaign/SOCIAL_STRATEGY.md) assigning Pinterest to the 09:00 IST morning slot for Warm Parchment visual card discovery, documenting hashtag governance (3-5 tags), adding CLI execution commands, and logging active Pinterest Developer Platform App Intake status under review.
+  - Integrated [Pinterest Trends](https://trends.pinterest.com/) into Section 5 and Section 8 of `campaign/SOCIAL_STRATEGY.md` as our long-horizon visual search radar to harvest surging writing prompts, poetry aesthetic terms, and literary queries for Pin descriptions and Editorial Canvas planning.
 
 ## 2.0.65 — Story Control & Reader Continuity — 2026-09-12
 
