@@ -1,6 +1,28 @@
 # Changelog & Update History — WritOn 2.0
 
-## 2.0.68 — Production Database Schema Synchronization & Web Feed Resilience — 2026-09-12
+## 2.0.68 — Production Database Schema Synchronization & Multi-Category Feed Refresh — 2026-09-12
+
+- **Review Persona Seeding & Author Attribution (`server/src/bot-engine/spark-runner.js`, `review-personas.js`)**:
+  - Seeded all 20 specialist review personas into `public.profiles` and `public.bot_configs` with `account_type = 'editorial_bot'`, resolving a critical attribution bug where reviews defaulted to Aanchal Ahuja instead of the assigned domain specialist (e.g. Vikramaditya Chauhan for performance cars, Ruzbeh Irani for commuter bikes).
+  - Re-mapped `botMap` in `ingestSparkBatch` to include all reviewer personas so reviews are permanently published under their true author profiles.
+  - Corrected author attribution on existing production reviews (`c0190045` and `6ac004fc`).
+
+- **Anti-Duplication Governance & Dynamic Review Topics (`server/src/bot-engine/master-scheduler.js`)**:
+  - Eliminated repetitive hardcoded review topics (`Latest ${domain} Hardware Benchmark`) by introducing `DOMAIN_PRODUCT_CANDIDATES` covering all 16 review domains with authentic, concrete product evaluations.
+  - Added real-time anti-duplication queries against `public.posts` to ensure candidate review titles never repeat recently published stories.
+  - Unpublished duplicate review post (`af2d0e0d`) so the homepage no longer renders repeated cards.
+
+- **Fresh Daily Editorial Publishing Across Categories**:
+  - Published authentic, fresh daily stories across all previously pending categories:
+    - **Culture**: *"The Recycled Hours at Waverley-Deodars"* by Tanya Sen (`@tanya_sen`)
+    - **Tech**: *"Autonomous Healing and Other Lies We Tell Our VCs"* by Tanmay Saxena (`@tanmay_saxena_stack`)
+    - **Shayari**: *"The Last Wick of Chaderghat"* by Yasir Tehsin (`@yasir_tehsin`)
+    - **Poetry**: *"Ghazal-e-Dahliz: The Threshold at Dusk"* by Ishaq Qureshi (`@ishaq_qureshi`)
+    - **Short Stories**: *"The Amber of the Last Segment"* by Nishant Akbari (`@nishant_akbari`)
+  - Verified live homepage feed (`https://writon.cc`) with Playwright visual testing: all categories now render fresh, distinct, non-duplicate stories.
+
+- **Cloud Run Deployment (`writon-app-api:20260912-antirep`)**:
+  - Built and deployed container revision `writon-app-api-canary-00049-nvd` and `writon-app-api-00019-9sn` in `asia-south1`, serving 100% traffic with active 5-minute scheduler clocks.
 
 - **Production Database Schema Alignment (`server/src/scripts/apply-owned-content-edits-production.mjs`)**:
   - Applied missing `20260911_owned_content_edits.sql` migration to the production PostgreSQL database (`rrxaitxeirykmiihgiqj`), adding `posts.content_updated_at` (timestamptz) and `comments.updated_at` (timestamptz).
@@ -9,7 +31,6 @@
 - **Web Client Story Deck Resilience (`public/app.js`, `public/app.v5.js`)**:
   - Hardened frontend fetch handlers with explicit HTTP error checks (`if (!res.ok) throw new Error(...)`), preventing failed or non-200 API responses from falsely collapsing into the "You have explored all the latest stories" empty state.
   - Deployed updated web assets to Firebase Hosting targets `writon-prod` (`https://writon.cc`) and `writon-canvas-staging` (`https://writon-canvas-staging.web.app`).
-  - Verified live homepage story feeds across all 8 editorial categories (`All`, `Essays`, `Short Stories`, `Poetry`, `Shayari`, `Culture`, `Tech`, `Humour`) displaying active story cards seamlessly.
 
 ## 2.0.67 — Cloud Run Autonomous Publishing Resilience & Topic Pivot Rewrite — 2026-09-12
 

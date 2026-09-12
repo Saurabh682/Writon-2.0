@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { CURATED_BOT_PERSONAS } from './curated-personas.js';
+import { REVIEW_PERSONAS } from './review-personas.js';
 import { CURATED_READER_PERSONAS } from './reader-personas.js';
 import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from './commenter-personas.js';
 import { generateSparkArticle, generateSparkComment, generateSparkReply } from './gemini-spark-client.js';
@@ -183,8 +184,48 @@ export async function seedInitialBotNetwork(pool) {
       ]);
     }
 
+    // 3. Insert or update all specialist review personas
+    for (const bot of REVIEW_PERSONAS) {
+      await client.query(`
+        insert into public.profiles (id, email, pen_name, full_name, bio, avatar_url, account_type)
+        values ($1, $2, $3, $4, $5, $6, 'editorial_bot')
+        on conflict (id) do update set
+          pen_name = excluded.pen_name,
+          full_name = excluded.full_name,
+          bio = excluded.bio,
+          avatar_url = excluded.avatar_url,
+          account_type = 'editorial_bot',
+          updated_at = now()
+      `, [
+        bot.id,
+        `${bot.penName}@bots.writon.internal`,
+        bot.penName,
+        bot.fullName,
+        bot.bio,
+        bot.avatarUrl
+      ]);
+
+      await client.query(`
+        insert into public.bot_configs (
+          id, is_active, persona_prompt, categories, post_frequency_hours,
+          like_probability, comment_probability, comment_style, bot_type, last_posted_at
+        )
+        values ($1, true, $2, $3, 24, 0.8, 0.5, 'analytical', 'reviewer', now())
+        on conflict (id) do update set
+          persona_prompt = excluded.persona_prompt,
+          categories = excluded.categories,
+          is_active = true,
+          bot_type = 'reviewer',
+          updated_at = now()
+      `, [
+        bot.id,
+        `You are ${bot.fullName}, reviewing ${bot.domain}. Tone: ${bot.tone}. ${bot.antiGoals}`,
+        ['Reviews', bot.category || 'Tech']
+      ]);
+    }
+
     await client.query('commit');
-    return { success: true, count: CURATED_BOT_PERSONAS.length };
+    return { success: true, count: CURATED_BOT_PERSONAS.length + REVIEW_PERSONAS.length };
   } catch (error) {
     await client.query('rollback');
     console.error('[Spark Runner] Failed to seed bot network:', error);
@@ -563,6 +604,16 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
   const existingTitles = existingRes.rows.map(r => r.title);
   const botMemories = await getBotMemories(pool, bot.id, { limit: 5 }).catch(() => []);
 
+  // Fetch recent platform stories across all authors to enforce Anti-Repetition
+  const recentStoriesRes = await pool.query(
+    `select p.title, p.category, substring(p.content from 1 for 250) as excerpt
+     from public.posts p
+     where p.status = 'published' and p.is_public = true
+     order by coalesce(p.published_at, p.created_at) desc
+     limit 6`
+  ).catch(() => ({ rows: [] }));
+  const recentStories = recentStoriesRes.rows;
+
   let articleData;
   if (customTitle && customContent) {
     articleData = {
@@ -576,6 +627,7 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       apiKey: settings.gemini_api_key || process.env.GEMINI_API_KEY,
       model: settings.llm_model,
       persona: {
+        id: bot.id,
         fullName: bot.fullName,
         penName: bot.penName,
         bio: bot.bio,
@@ -584,6 +636,7 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       category: targetCategory,
       topicHint,
       excludeTitles: existingTitles,
+      recentStories,
       memories: botMemories,
       researchDossier
     });
@@ -735,6 +788,11 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
 }
 
 export async function executeInteractAction(pool, { botId, postId, actionType, customComment }) {
+  // Mandate: Permanently disable all bot comments and replies until explicitly told otherwise
+  if (actionType === 'comment' || actionType === 'reply') {
+    return { skipped: 'Bot comments and replies are permanently disabled per user mandate' };
+  }
+
   const bot = await getBotById(pool, botId);
   if (!bot) throw new Error(`Bot persona ${botId} not found`);
 
@@ -992,6 +1050,11 @@ export async function scheduleDelayedAction(pool, {
   payload = {},
   delayMinutes = 10
 }) {
+  // Mandate: Permanently disable all bot comments and replies until explicitly told otherwise
+  if (actionType === 'comment' || actionType === 'reply') {
+    return { skipped: 'Bot comments and replies are permanently disabled per user mandate' };
+  }
+
   await ensureBotTables(pool);
   const minutes = Math.max(0.2, Number(delayMinutes) || 10);
   const result = await pool.query(`
@@ -1067,6 +1130,13 @@ export async function processDueDelayedActions(pool) {
   const executed = [];
 
   try {
+    // Mandate: Permanently auto-cancel any comment or reply actions in queue
+    await pool.query(`
+      update public.bot_delayed_actions
+      set status = 'cancelled', last_error = 'Permanently disabled by user mandate', updated_at = now()
+      where status in ('pending', 'processing') and action_type in ('comment', 'reply')
+    `);
+
     // 1. Recover stale actions stuck in 'processing' for > 10 minutes (e.g. server crash recovery)
     await pool.query(`
       update public.bot_delayed_actions
@@ -1096,6 +1166,15 @@ export async function processDueDelayedActions(pool) {
     for (const action of claimResult.rows) {
       try {
         let outcome = null;
+        if (action.action_type === 'comment' || action.action_type === 'reply') {
+          await pool.query(`
+            update public.bot_delayed_actions
+            set status = 'cancelled', last_error = 'Permanently disabled by user mandate', updated_at = now()
+            where id = $1
+          `, [action.id]);
+          continue;
+        }
+
         if (action.action_type === 'story') {
           outcome = await executePostAction(pool, {
             botId: action.bot_id,
@@ -1388,102 +1467,8 @@ export async function triggerReaderSwarm(pool, {
  * Staggered organically across 15m - 18h.
  */
 export async function triggerCommenterWave(pool, { postId, category = 'Essays', title = '', snippet = '', count = null }) {
-  try {
-    const settings = await getGlobalSettings(pool);
-    if (!settings.is_engine_enabled) return { skipped: 'Engine disabled' };
-    if (settings.commenter_swarm_enabled === false) return { skipped: 'Commenter swarm disabled' };
-
-    let resolvedCategory = category;
-    let postTitle = title;
-    let postSnippet = snippet;
-
-    if (postId) {
-      const postLookup = await pool.query(
-        `select title, summary, content, category from public.posts where id = $1`,
-        [postId]
-      ).catch(() => ({ rowCount: 0, rows: [] }));
-      if (postLookup.rowCount > 0) {
-        const postRow = postLookup.rows[0];
-        postTitle = postRow.title || postTitle;
-        postSnippet = postRow.summary || postRow.content || postSnippet;
-        const pubCat = resolvePublicationCategory({
-          declaredCategory: postRow.category || resolvedCategory,
-          title: postTitle,
-          summary: postRow.summary,
-          content: postRow.content
-        });
-        resolvedCategory = resolveEngagementCategory({
-          publicationCategory: pubCat,
-          title: postTitle,
-          summary: postRow.summary,
-          content: postRow.content
-        });
-      }
-    }
-
-    const targetCount = count || Math.floor(Math.random() * 3) + 2; // 2 to 4 comments by default
-
-    // Find commenter bots matching category or general commenters
-    const candidates = await pool.query(`
-      select p.id, p.pen_name, p.full_name, bc.categories, bc.comment_style
-      from public.bot_configs bc
-      inner join public.profiles p on p.id = bc.id
-      where bc.is_active = true and bc.bot_type = 'commenter'
-        and $1 = any(bc.categories)
-      order by random()
-      limit $2
-    `, [resolvedCategory, targetCount]);
-
-    if (candidates.rowCount === 0) return { skipped: 'No active commenter bots' };
-
-    let scheduledCount = 0;
-    for (let i = 0; i < candidates.rows.length; i++) {
-      const commenter = candidates.rows[i];
-      const personaObj = CURATED_COMMENTER_PERSONAS.find(c => c.id === commenter.id) || {
-        tone: commenter.comment_style,
-        quickReactions: ['Wah!', 'So deeply written.', 'Spot on.', 'Bohot khoob.', 'Loved this perspective.'],
-        mediumTemplates: ['Really resonated with this perspective.', 'Such a thoughtful piece. Thanks for sharing.']
-      };
-
-      // Generate authentic comment (65% micro / 25% medium / 10% in-depth)
-      const commentText = generateAuthenticComment(personaObj, {
-        postTitle: postTitle || title,
-        category: resolvedCategory,
-        snippet: postSnippet || snippet,
-        depth: 'auto'
-      });
-
-      // Stagger delays organically:
-      // Comment 1: 15-45 minutes
-      // Comment 2: 1.5-4.5 hours
-      // Comment 3: 5-11 hours
-      // Comment 4+: 12-24 hours
-      let delayMinutes = 20;
-      if (i === 0) {
-        delayMinutes = Math.floor(Math.random() * 30) + 15;
-      } else if (i === 1) {
-        delayMinutes = Math.floor(Math.random() * 180) + 90;
-      } else if (i === 2) {
-        delayMinutes = Math.floor(Math.random() * 360) + 300;
-      } else {
-        delayMinutes = Math.floor(Math.random() * 720) + 720;
-      }
-
-      await scheduleDelayedAction(pool, {
-        botId: commenter.id,
-        actionType: 'comment',
-        targetPostId: postId,
-        payload: { content: commentText },
-        delayMinutes
-      });
-      scheduledCount++;
-    }
-
-    return { success: true, count: scheduledCount, targetPostId: postId };
-  } catch (err) {
-    console.error('[Spark Commenter Wave Error]', err.message);
-    return { error: err.message };
-  }
+  // Mandate: Permanently disable all bot comments and replies until explicitly told otherwise
+  return { skipped: 'Commenter wave is permanently disabled per user mandate' };
 }
 
 /**
@@ -1545,15 +1530,7 @@ export async function triggerSparkReaction(pool, { postId, authorId, category, t
         delayMinutes: applaudDelay
       });
 
-      // 2. 75% chance to schedule a thoughtful Comment
-      if (Math.random() < 0.75) {
-        await scheduleDelayedAction(pool, {
-          botId,
-          actionType: 'comment',
-          targetPostId: postId,
-          delayMinutes: commentDelay
-        });
-      }
+      // (Bot comments permanently disabled per user mandate)
 
       // 3. If human author, 45% chance to follow after 30-90 minutes
       if (isHumanPost && Math.random() < 0.45) {
@@ -1577,49 +1554,8 @@ export async function triggerSparkReaction(pool, { postId, authorId, category, t
  * When someone comments, the story author bot or fellow writers schedule an in-character reply!
  */
 export async function triggerSparkCommentReaction(pool, { postId, commentId, postAuthorId, commentAuthorId, content }) {
-  try {
-    const settings = await getGlobalSettings(pool);
-    if (!settings.is_engine_enabled) return;
-
-    // If the post author is a bot and not the commenter itself
-    if (postAuthorId?.startsWith('bot_') && postAuthorId !== commentAuthorId) {
-      // Schedule author reply with an organic reading & writing delay of 15-60 minutes
-      const replyDelay = Math.floor(Math.random() * 40) + 15;
-      await scheduleDelayedAction(pool, {
-        botId: postAuthorId,
-        actionType: 'reply',
-        targetPostId: postId,
-        targetCommentId: commentId,
-        targetUserId: commentAuthorId,
-        delayMinutes: replyDelay
-      });
-    }
-
-    // 25% chance for a 2nd bot to join the conversation thread in 40-100 minutes
-    if (Math.random() < 0.25) {
-      const otherBots = await pool.query(`
-        select id from public.bot_configs
-        where is_active = true and bot_type in ('writer', 'commenter') and id not in ($1, $2)
-        order by random()
-        limit 1
-      `, [postAuthorId || 'none', commentAuthorId || 'none']);
-
-      if (otherBots.rowCount > 0) {
-        const thirdPartyBotId = otherBots.rows[0].id;
-        const threadDelay = Math.floor(Math.random() * 55) + 40;
-        await scheduleDelayedAction(pool, {
-          botId: thirdPartyBotId,
-          actionType: 'reply',
-          targetPostId: postId,
-          targetCommentId: commentId,
-          targetUserId: commentAuthorId,
-          delayMinutes: threadDelay
-        });
-      }
-    }
-  } catch (error) {
-    console.error('[Spark Comment Trigger Error]', error.message);
-  }
+  // Mandate: Permanently disable all bot comments and replies until explicitly told otherwise
+  return { skipped: 'Bot comment reactions and replies are permanently disabled per user mandate' };
 }
 
 /**
@@ -2350,9 +2286,13 @@ export async function ingestSparkBatch(pool, rawPayload) {
 
   await seedInitialBotNetwork(pool);
 
-  const bots = await getBotsList(pool);
+  const bots = await getBotsList(pool, { botType: null });
   const botMap = new Map();
   for (const bot of bots) {
+    botMap.set(bot.penName.toLowerCase(), bot.id);
+    botMap.set(bot.id.toLowerCase(), bot.id);
+  }
+  for (const bot of REVIEW_PERSONAS) {
     botMap.set(bot.penName.toLowerCase(), bot.id);
     botMap.set(bot.id.toLowerCase(), bot.id);
   }

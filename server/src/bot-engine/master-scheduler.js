@@ -34,6 +34,89 @@ import {
   reevaluateAutomaticEditorialBrief
 } from './editorial-intelligence-service.js';
 
+// Domain-specific product candidates for specialist reviews
+export const DOMAIN_PRODUCT_CANDIDATES = {
+  'EVs & Battery Tech': [
+    'Tata Curvv EV 55kWh Real-World Highway Range & Thermal Stress Test',
+    'Mahindra BE 6e Fast-Charging Curve & BMS Thermal Analysis',
+    'BYD Seal Performance Battery Degradation at 20,000 km Assessment',
+    'MG Windsor EV Battery-as-a-Service Real Cost Assessment',
+    'Hyundai Ioniq 5 Highway Efficiency in Extreme Heat'
+  ],
+  'Performance ICE Cars': [
+    'Hyundai Verna 1.5 Turbo DCT Track Assessment & Chassis Balance',
+    'Skoda Slavia 1.5 TSI Manual Steering Feedback on Indian Tarmac',
+    'BMW M340i LCI Mechanical Feedback & Dual-Clutch Latency',
+    'Volkswagen Virtus GT DSG Heat Management in Stop-Go Traffic',
+    'Mahindra Thar Earth Edition Highway Ride Quality & NVH'
+  ],
+  'Urban Commuter Bikes & EV 2W': [
+    'Ather 450X Apex vs Ola S1 Pro Gen 2 City Pothole & Suspension Benchmark',
+    'TVS iQube ST Real-World Commute Heat & Range Test',
+    'Royal Enfield Guerrilla 450 Pillion Ergonomics & City Heat Assessment',
+    'Hero Vida V1 Pro Removable Battery Durability in Monsoon Traffic',
+    'Bajaj Freedom 125 CNG vs Petrol City Cost-per-Kilometer'
+  ],
+  '4x4 Off-Roaders & Expedition SUVs': [
+    'Mahindra Thar Roxx 4x4 Axle Articulation & Transfer Case Crawl Ratio',
+    'Force Gurkha 5-Door Mechanical Diff Lock Performance on Mountain Slopes',
+    'Maruti Suzuki Jimny Alpha Low-Range Crawl in Riverbed Rock'
+  ],
+  'Flagship Smartphones': [
+    'Vivo X100 Pro vs Xiaomi 14 Ultra Periscope Telephoto Compression',
+    'Pixel 9 Pro Tensor G4 Thermal Throttling Under Continuous 4K 60fps',
+    'Samsung Galaxy S24 Ultra Anti-Reflective Display & Battery Longevity'
+  ],
+  'Laptops, Silicon & Chips': [
+    'Apple M3 Pro vs Snapdragon X Elite Sustained Thermal Dissipation',
+    'Framework Laptop 16 Modular GPU Performance & Linux Compatibility',
+    'ThinkPad T14s Gen 5 Battery Life Under Real Developer Workloads'
+  ],
+  'Custom Mechanical Keyboards': [
+    'Keychron Q1 Max Gasket Mount Acoustics & Wireless Latency',
+    'Mode Sonnet Top Mount FR4 Plate Typing Feel & Flex',
+    'Neo65 Tri-Mode Aluminum Case Sound Profile with Oil King Switches'
+  ],
+  'Coffee Gear & Espresso Tech': [
+    'Timemore Sculptor 078s vs DF64 Gen 2 Particle Distribution & Fines',
+    'Flair 58+ Manual Lever Thermal Stability on Light Roasts',
+    'Fellow Ode Gen 2 SSP Cast Burrs Extraction Clarity'
+  ],
+  'EDC Gear & Rugged Tools': [
+    'Leatherman ARC MagnaCut Blade Edge Retention & One-Handed Deployment',
+    'Quiet Carry Drift Vanax SuperClean Corrosion Resistance in Coastal Humidity'
+  ],
+  'Headphones, IEMs & Audio Gear': [
+    'Sennheiser HD 600 vs HiFiMAN Edition XS Timbre Accuracy with OTL Tube Amp',
+    'Moondrop Blessing 3 Hybrid Tuning & Treble Extension',
+    'Sony WH-1000XM5 ANC Cabin Pressure vs Bose QuietComfort Ultra'
+  ],
+  'Cameras, Prime Lenses & Optics': [
+    'Fujifilm X100VI 40MP Sensor Corner Sharpness & IBIS Effectiveness',
+    'Sony 35mm f/1.4 GM Chromatic Aberration & Focus Breathing Test'
+  ],
+  'Shonen Anime & Sakuga Animation': [
+    'Jujutsu Kaisen Season 2 Shibuya Arc Action Direction & Spatial Coherence',
+    'Demon Slayer Hashira Training Arc Digital Compositing Analysis'
+  ],
+  'Seinen & Psychological Anime': [
+    'Vinland Saga Season 2 Pacing and Existential Character Depth',
+    'Pluto Visual Stillness and Atmospheric Background Art'
+  ],
+  'Prestige TV & Streaming Series': [
+    'Severance Season 1 Production Design and Corporate Alienation',
+    'Succession Season 4 Handheld Camerawork and Ensemble Blocking'
+  ],
+  'Hollywood Blockbusters & Sci-Fi Cinema': [
+    'Dune Part Two 70mm IMAX Framing and Practical Sound Mix Dynamics',
+    'Oppenheimer Non-Linear Sound Design and Contrast Dynamics'
+  ],
+  'Gaming Handhelds & Consoles': [
+    'Steam Deck OLED 90Hz Display and Battery Efficiency Under 15W TDP',
+    'ASUS ROG Ally X Ergonomics and VRR Implementation'
+  ]
+};
+
 // 8 Defined Operational Windows in Indian Standard Time (IST = UTC + 5:30)
 export const SCHEDULE_SLOTS = [
   { id: 'dawn_digest', hour: 7, minute: 0, type: 'editorial', name: 'Dawn Digest (Poetry/Essays)' },
@@ -378,7 +461,27 @@ export async function executeScheduledSlot(pool, slot, {
     const reviewer = eligible[Math.floor(Math.random() * eligible.length)] || REVIEW_PERSONAS[0];
     const reviewCategory = resolveReviewCategory(reviewer.domain, reviewer.category);
 
-    const sampleTopic = `Latest ${reviewer.domain} Hardware Benchmark`;
+    // Fetch recent review post titles to enforce strict anti-duplication
+    const recentPostsRes = await pool.query(
+      `select title from public.posts where category = 'Reviews' order by created_at desc limit 50`
+    ).catch(() => ({ rows: [] }));
+    const recentTitles = new Set((recentPostsRes.rows || []).map(r => (r.title || '').toLowerCase()));
+
+    const candidates = DOMAIN_PRODUCT_CANDIDATES[reviewer.domain] || [
+      `Latest ${reviewer.domain} Hardware Benchmark`
+    ];
+
+    // Pick a candidate topic that has not been recently published
+    let sampleTopic = candidates.find(c => {
+      const targetTitle = `${c}: Research-Based Assessment`.toLowerCase();
+      return !recentTitles.has(targetTitle) && !recentTitles.has(c.toLowerCase());
+    });
+
+    if (!sampleTopic) {
+      const dateTag = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(new Date());
+      sampleTopic = `${candidates[Math.floor(Math.random() * candidates.length)]} (${dateTag} Assessment)`;
+    }
+
     const dossier = await researchTopic(sampleTopic, reviewCategory).catch(() => null);
 
     const reviewBrief = buildEditorialBrief({
