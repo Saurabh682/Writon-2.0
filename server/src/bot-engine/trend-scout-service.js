@@ -60,22 +60,41 @@ function parseGoogleTrendsRss(xml, geo = 'IN') {
 export function classifyTrendCategory(topic = '', headline = '') {
   const text = `${topic} ${headline}`.toLowerCase();
 
+  // Sports / Athletics / Tournaments (e.g. India vs Australia cricket test match)
+  if (/\b(cricket|tennis|olympics|football|soccer|match|cup|winner|sport|sports|tournament|ipl|bcci|fifa|wimbledon|wicket|badminton|hockey|wrestling|akhada|athletics|f1|formula 1|grand prix)\b/i.test(text)) {
+    return 'Sports';
+  }
+  // Entertainment / Pop Culture / Cinema / TV
+  if (/\b(movie|movies|film|films|trailer|teaser|box office|actor|actress|director|cinema|bollywood|hollywood|kollywood|tollywood|ott|netflix|prime video|hotstar|album|song|soundtrack|concert|grammy|oscar|emmy|cannes|celebrity|series|season \d|episode)\b/i.test(text)) {
+    return 'Entertainment';
+  }
+  // Journalism / Investigative / Field Reports / Breaking Public Affairs
+  if (/\b(investigation|expose|scam|court verdict|supreme court|high court|parliament|bill passed|election commission|probe|inquiry|whistleblower|custody|bail|police raid|arrested|cbi|ed raid|policy reform|public report)\b/i.test(text)) {
+    return 'Journalism';
+  }
+  // Business & Finance / Economy / Stocks
+  if (/\b(market|markets|share price|shares|sensex|nifty|ipo|stocks|stock|economy|economic|inflation|bank|banking|rupee|invest|investing|investor|finance|financial|gdp|fiscal|rbi|sebi|earnings|revenue|quarterly profit|mutual fund|gold price|silver price|crude oil|trade deficit)\b/i.test(text)) {
+    return 'Business & Finance';
+  }
+  // Reviews detection (buyer guides, product comparisons, teardowns, hardware benchmarks)
+  if (/\b(review|reviewed|buyer guide|buying guide|hands-on review|camera test|range test|drop test|unboxing|teardown)\b/i.test(text) ||
+      (/\b(vs|comparison|benchmark|specs|verdict)\b/i.test(text) && /\b(phone|laptop|headphone|earbud|car|bike|suv|camera|keyboard|gpu|gadget|console|pixel|iphone|samsung|sony|bose)\b/i.test(text))) {
+    return 'Reviews';
+  }
+  // Tech & Engineering
   if (/\b(ai|openai|anthropic|gemini|llm|model|models|transformer|latency|gpu|software|cloud|code|coding|tech|technology|chip|chips|nvidia|google|apple|meta|microsoft|crypto|database|postgres|kernel|app|startup|server|api|cyber|cybersecurity|linux)\b/i.test(text)) {
     return 'Tech';
   }
-  if (/\b(market|share price|sensex|nifty|ipo|stocks|economy|inflation|bank|rupee|invest|investing|finance|gdp)\b/i.test(text)) {
-    return 'Essays';
-  }
-  if (/\b(cricket|tennis|olympics|football|match|cup|score|winner|sport|race|tournament)\b/i.test(text)) {
-    return 'Essays';
-  }
-  if (/\b(funny|joke|viral|meme|traffic|office|delay|flight|boss|meeting|corporate|samosa|hilarious|comedy)\b/i.test(text)) {
+  // Humour / Satire / Daily Ironies
+  if (/\b(funny|joke|viral|meme|traffic|office|delay|flight|boss|meeting|corporate|samosa|hilarious|comedy|satire)\b/i.test(text)) {
     return 'Humour';
   }
-  if (/\b(rain|flood|floods|river|weather|monsoon|autumn|hills|season|nature|dawn|night|frost|clouds)\b/i.test(text)) {
+  // Weather / Nature / Poetry
+  if (/\b(rain|flood|floods|river|weather|monsoon|autumn|hills|season|nature|dawn|night|frost|clouds|monsoon)\b/i.test(text)) {
     return 'Poetry';
   }
-  if (/\b(history|heritage|book|author|festival|music|tradition|temple|museum|art|craft|dance)\b/i.test(text)) {
+  // Culture / Heritage / Art / Traditions
+  if (/\b(history|heritage|book|books|author|festival|music|tradition|traditions|temple|museum|art|craft|dance|ghat|folk|classical|vernacular|monument|culinary|recipe|spice)\b/i.test(text)) {
     return 'Culture';
   }
   return 'Short Stories';
@@ -138,35 +157,40 @@ export async function fetchWikipediaSummary(topic) {
         extract: json.extract
       };
     }
+    return null;
   } catch (err) {
-    // Non-fatal if specific page not found
+    console.warn(`[Trend Scout] Wikipedia summary failed for "${topic}": ${err.message}`);
+    return null;
   }
-  return null;
 }
 
 /**
- * Conduct Deep Trend Research to Build a Comprehensive Dossier
+ * Conduct Deep Live Trend Research combining Google News, Wiki, and Algorithmic Analysis
  */
-export async function conductDeepTrendResearch(topic, category = 'Essays', geo = 'IN') {
-  const [newsReports, wikiKnowledge] = await Promise.all([
+export async function conductDeepTrendResearch(topic, category, geo = 'IN') {
+  const [newsReports, knowledgeSummary] = await Promise.all([
     fetchGoogleNewsResearch(topic, geo),
     fetchWikipediaSummary(topic)
   ]);
 
-  const verifiedHighlights = newsReports.map(r => `- "${r.headline}" (${r.source}, ${r.pubDate})`).join('\n');
+  const verifiedContext = [
+    `Trending Subject: "${topic}" (Category: ${category})`,
+    newsReports.length ? `Latest Real-World Headlines:\n${newsReports.map(n => `- [${n.source}] "${n.headline}" (${n.pubDate})`).join('\n')}` : '',
+    knowledgeSummary ? `Contextual Knowledge:\n"${knowledgeSummary.extract}"` : ''
+  ].filter(Boolean).join('\n\n');
 
   return {
     topic,
     category,
     newsReports,
-    knowledgeSummary: wikiKnowledge,
-    verifiedContext: verifiedHighlights || `Live public discussion and cultural discourse around ${topic}.`,
+    knowledgeSummary,
+    verifiedContext,
     researchedAt: new Date().toISOString()
   };
 }
 
 /**
- * Recommended Persona Matching for a Given Category
+ * Map Trending Categories & Topics to Curated Writer Personas with Specific Angles
  */
 export function getRecommendedAuthorForTrend(category, topic = '') {
   const recommendations = {
@@ -175,6 +199,29 @@ export function getRecommendedAuthorForTrend(category, topic = '') {
       { penName: 'maya_lin_craft', name: 'Maya Lin', angle: 'Product design, human-computer interaction, and UX philosophy' },
       { penName: 'tanya_mehra_dev', name: 'Tanya Mehra', angle: 'Fullstack developer realities, terminal tooling, and open source culture' }
     ],
+    'Business & Finance': [
+      { penName: 'karan_bajwa', name: 'Karan Bajwa', angle: 'Cross-generational family businesses, industrial realities, and enterprise dynamics' },
+      { penName: 'mohit_agarwal', name: 'Mohit Agarwal', angle: 'Market deal-making, merchant psychology, and commercial street realities' },
+      { penName: 'sameer_wadhwa_witty', name: 'Sameer Wadhwa', angle: 'Corporate economies, commercial consumer culture, and executive rituals' }
+    ],
+    'Sports': [
+      { penName: 'sameer_deshpande', name: 'Sameer Deshpande', angle: 'Weekend cricket dreams, stadium atmosphere, and sporting aspirations' },
+      { penName: 'rohit_kulkarni', name: 'Rohit Kulkarni', angle: 'Physical discipline, traditional akhada wrestling, and athletic perseverance' }
+    ],
+    'Entertainment': [
+      { penName: 'pravin_piku', name: 'Pravin Kumar (Piku)', angle: 'Cinema craft, dramatic pacing, performance subtext, and screen culture' },
+      { penName: 'mona_sen', name: 'Mona Sen', angle: 'Theatrical performance, narrative staging, and artistic heritage' },
+      { penName: 'devansh_roy', name: 'Devansh Roy', angle: 'Nocturnal storytelling, cinematic narrative framing, and character observation' }
+    ],
+    'Journalism': [
+      { penName: 'riya_chakraborty', name: 'Dr. Riya Chakraborty', angle: 'Grounded human reporting, institutional realities, and frontline public interest' },
+      { penName: 'sunita_banerjee', name: 'Dr. Sunita Banerjee', angle: 'In-depth investigative perspective, institutional history, and critical analysis' },
+      { penName: 'sourabh_das', name: 'Sourabh Das', angle: 'Field reporting from regional hubs, labor realities, and ground-level documentation' }
+    ],
+    'Reviews': [
+      { penName: 'pravin_piku', name: 'Pravin Kumar (Piku)', angle: 'Deep-dive critique, technical and aesthetic trade-offs, and critical appraisal' },
+      { penName: 'jeanne_faith', name: 'Jeanne Faith', angle: 'Carefully measured comparative review, everyday ergonomics, and buyer value' }
+    ],
     'Humour': [
       { penName: 'rohan_kapoor', name: 'Rohan Kapoor', angle: 'Corporate absurdity, whiteboard satire, and middle-management rituals' },
       { penName: 'chirag_churan', name: 'Chirag Churan', angle: 'Observational humor on urban bureaucracy and daily domestic chaos' },
@@ -182,7 +229,6 @@ export function getRecommendedAuthorForTrend(category, topic = '') {
     ],
     'Essays': [
       { penName: 'sunita_banerjee', name: 'Dr. Sunita Banerjee', angle: 'Sociological depth, history of ideas, and contemplative modern life' },
-      { penName: 'radhika_gowda', name: 'Radhika Gowda', angle: 'Economic philosophy, urban expansion, and human behavior' },
       { penName: 'priyanka_mishra', name: 'Priyanka Mishra', angle: 'Cultural continuity, everyday rituals, and regional memory' }
     ],
     'Poetry': [
@@ -205,7 +251,7 @@ export function getRecommendedAuthorForTrend(category, topic = '') {
     ]
   };
 
-  const pool = recommendations[category] || recommendations['Short Stories'];
+  const pool = recommendations[category] || recommendations['Essays'] || recommendations['Short Stories'];
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -220,25 +266,23 @@ export async function getLiveDailyTrends({ deepResearch = true } = {}) {
     curatedStoryAngles: []
   };
 
-  try {
-    const inXml = await fetchHttps('https://trends.google.com/trending/rss?geo=IN');
-    results.indiaTrends = parseGoogleTrendsRss(inXml, 'IN').slice(0, 15);
-  } catch (err) {
-    console.error('[Trend Scout] India RSS failed:', err.message);
-  }
+  // Parallel Zero-LLM Fan-Out for RSS feeds
+  const [inResult, usResult] = await Promise.allSettled([
+    fetchHttps('https://trends.google.com/trending/rss?geo=IN').then(xml => parseGoogleTrendsRss(xml, 'IN').slice(0, 15)),
+    fetchHttps('https://trends.google.com/trending/rss?geo=US').then(xml => parseGoogleTrendsRss(xml, 'US').slice(0, 10))
+  ]);
 
-  try {
-    const usXml = await fetchHttps('https://trends.google.com/trending/rss?geo=US');
-    results.globalTrends = parseGoogleTrendsRss(usXml, 'US').slice(0, 10);
-  } catch (err) {
-    console.error('[Trend Scout] US RSS failed:', err.message);
-  }
+  if (inResult.status === 'fulfilled') results.indiaTrends = inResult.value;
+  else console.warn('[Trend Scout] India RSS failed:', inResult.reason?.message);
 
-  // Generate verified research dossiers and literary angles for top trends
+  if (usResult.status === 'fulfilled') results.globalTrends = usResult.value;
+  else console.warn('[Trend Scout] US RSS failed:', usResult.reason?.message);
+
+  // Generate verified research dossiers and literary angles for top trends in parallel
   const combined = [...results.indiaTrends, ...results.globalTrends];
   const topTrends = combined.slice(0, 10);
 
-  for (const item of topTrends) {
+  const anglePromises = topTrends.map(async (item) => {
     const author = getRecommendedAuthorForTrend(item.category, item.topic);
     let researchDossier = null;
 
@@ -246,18 +290,25 @@ export async function getLiveDailyTrends({ deepResearch = true } = {}) {
       researchDossier = await conductDeepTrendResearch(item.topic, item.category, item.geo).catch(() => null);
     }
 
-    results.curatedStoryAngles.push({
+    return {
       trendingTopic: item.topic,
       traffic: item.approxTraffic,
       headline: item.headline,
       source: item.source,
+      category: item.category,
       genre: item.category,
+      authorName: author.name,
       recommendedAuthor: author.name,
       authorPenName: author.penName,
       researchDossier,
       editorialAngle: `Transform "${item.topic}" into an authentic literary ${item.category.toLowerCase()} exploring ${author.angle}. Ground the piece in real-world facts from verified news reports without dry reportage—focus on lived sensory details, emotional resonance, and timeless human perspective.`
-    });
-  }
+    };
+  });
+
+  const anglesSettled = await Promise.allSettled(anglePromises);
+  results.curatedStoryAngles = anglesSettled
+    .filter(r => r.status === 'fulfilled')
+    .map(r => r.value);
 
   return results;
 }

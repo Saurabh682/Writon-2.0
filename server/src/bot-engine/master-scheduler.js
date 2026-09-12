@@ -17,6 +17,7 @@ import { processOutboxEvents } from './outbox-service.js';
 import { REVIEW_PERSONAS } from './review-personas.js';
 import { generateStructuredReview } from './review-generator.js';
 import { conductDeepTrendResearch, getLiveDailyTrends } from './trend-scout-service.js';
+import { orchestrateTrendPipeline, routeTopicToEditorialSlot } from './trend-orchestrator.js';
 import { ingestSparkBatch } from './spark-runner.js';
 import { getProductCoverImage } from './image-service.js';
 import { resolveReviewCategory } from './content-relevance-service.js';

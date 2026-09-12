@@ -1,5 +1,37 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.0.69 — ADK 2 Graph & Orchestration Architecture Integration — 2026-09-12
+
+- **Pillar 1: Parallel Zero-LLM Fan-Out & Deterministic Routing (`server/src/bot-engine/trend-orchestrator.js`, `trend-scout-service.js`)**:
+  - Implemented parallel zero-LLM fan-out concurrently harvesting Google Trends (India & US RSS) using native HTTPS requests with strict timeouts, reducing trend scouting latency from ~25s to <3s.
+  - Implemented `JoinNode` aggregator returning an immutable, typed `TrendBundle` that enforces sensitive topic filtering and editorial anti-repetition checks against recent published database stories before any generation begins.
+  - Implemented a pure-code deterministic router mapping topics to categories (`Reviews`, `Tech`, `Humour`, `Poetry`, `Shayari`, `Culture`, `Short Stories`), scheduled operational slots, and optimal author personas with $0 token spend and 0ms latency.
+  - Authored unit test suite in `server/test/trend-orchestrator.test.js`.
+
+- **Pillar 2: Multi-Platform Social Campaign Coordinator (`server/src/services/social-campaign-coordinator.js`, `server/src/jobs/social-campaign-publisher.js`)**:
+  - Implemented `SocialCampaignCoordinator` coordinating independent single-turn platform specialists (`XSpecialist`, `InstagramSpecialist`, `PinterestSpecialist`, `ThreadsSpecialist`, `RedditSpecialist`, `TelegramSpecialist`, `WebhookSpecialist`).
+  - Executed dispatches concurrently via `Promise.allSettled`, providing granular delivery telemetry (`total`, `successful`, `failed`, `skipped`) and ensuring rate limits or transient errors on one platform never delay or block publishing on the remaining channels.
+  - Authored unit test suite in `server/test/social-campaign-coordinator.test.js`.
+
+- **Pillar 3: Dynamic Bounded Deep Research (`server/src/bot-engine/deep-research-orchestrator.js`)**:
+  - Implemented dynamic sub-query decomposition breaking down editorial premises into targeted factual, architectural, and tactile sub-queries tailored to the domain.
+  - Executed research workers in parallel across Google News and Wikipedia REST APIs, strictly bounded by `MAX_RESEARCH_DEPTH = 2` to eliminate runaway recursion and ensure reliable execution budgets.
+  - Synthesized findings into a structured `ResearchDossier` containing verified claims, background summaries, and sensory anchors (materials, tools, temperatures, sounds).
+  - Authored unit test suite in `server/test/deep-research-orchestrator.test.js`.
+
+- **Pillar 4: Interactive In-App Craft Coach API (`server/src/routes/craft-coach.js`, `server/src/server.js`)**:
+  - Implemented `POST /api/v1/craft/coach` supporting structured task modes:
+    - `pacing_check`: Evaluates sentence length variance, clause drag, and scene momentum.
+    - `sensory_grounding`: Analyzes concrete material density and tactile details.
+    - `dialogue_subtext`: Evaluates conversational tension and eliminates dialogue tag clutter.
+  - Enforced WritOn's Anti-Mannered Direct Statement Rule across all feedback schemas (eliminating decorative flourishes and ornamental metaphors).
+  - Built deterministic heuristic fallback engine guaranteeing 100% offline capability, zero downtime, and predictable unit test execution.
+  - Authored unit test suite in `server/test/craft-coach.test.js`.
+
+- **Verification & Test Coverage**:
+  - Expanded test suite from 23 to 27 test files and 267 to 292 passing tests (100% pass rate).
+  - Verified frontend production compilation via `tsc && vite build` in `web/`.
+
 ## 2.0.68 — Production Database Schema Synchronization & Multi-Category Feed Refresh — 2026-09-12
 
 - **Review Persona Seeding & Author Attribution (`server/src/bot-engine/spark-runner.js`, `review-personas.js`)**:

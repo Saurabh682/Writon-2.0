@@ -11,6 +11,7 @@ import sharp from 'sharp';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getMessaging } from 'firebase-admin/messaging';
+import { getStorage } from 'firebase-admin/storage';
 import { z } from 'zod';
 import { loadFirebaseServiceAccount, loadRuntimeConfig } from './config.js';
 import { adminBotsRoutes } from './routes/admin-bots.js';
@@ -23,6 +24,7 @@ import { triggerSparkReaction, triggerSparkCommentReaction, startSparkScheduler 
 import { startMasterDailyScheduler } from './bot-engine/master-scheduler.js';
 import { mcpRoutes } from './routes/mcp-server.js';
 import { milestoneRoutes } from './routes/milestones.js';
+import { craftCoachRoutes } from './routes/craft-coach.js';
 import { campaignRedirectRoutes } from './routes/campaign-redirect.js';
 import { feedRoutes } from './routes/feed.js';
 import { cleanExpiredFeedData } from './services/feed-service.js';
@@ -125,6 +127,10 @@ const commentInputSchema = z.object({
   content: z.string().trim().min(1).max(5_000),
   parentId: z.string().uuid().nullable().optional(),
   clientMutationId: z.string().uuid().nullable().optional(),
+});
+
+const commentPatchSchema = z.object({
+  content: z.string().trim().min(1).max(5_000),
 });
 
 const relationStateInputSchema = z.object({
@@ -538,7 +544,7 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
 </html>`;
 }
 
-export async function buildServer({ runtimeConfig, pool, auth, messaging } = {}) {
+export async function buildServer({ runtimeConfig, pool, auth, messaging, storageBucket } = {}) {
 const fastify = Fastify({ logger: true });
 const config = runtimeConfig ?? loadRuntimeConfig();
 const serviceAccount = auth ? null : await loadFirebaseServiceAccount(config);
@@ -553,6 +559,10 @@ const firebaseAuth = auth ?? (firebaseApp ? getAuth(firebaseApp) : null);
 // On Google Cloud, Firebase Admin uses Application Default Credentials from the
 // Cloud Run service identity. Render can continue supplying an explicit key.
 const firebaseMessaging = messaging ?? (firebaseApp ? getMessaging(firebaseApp) : null);
+const googleCloudStorageBucket = storageBucket
+  ?? (config.googleCloudStorageBucket && firebaseApp
+    ? getStorage(firebaseApp).bucket(config.googleCloudStorageBucket)
+    : null);
 
 const database = pool ?? new Pool({
   connectionString: config.databaseUrl,
@@ -1213,7 +1223,7 @@ function normalizeAvatarInput(value) {
 }
 
 function assertStorageConfigured(reply) {
-  if (!config.supabaseUrl || !config.supabaseServiceRoleKey) {
+  if (!googleCloudStorageBucket && (!config.supabaseUrl || !config.supabaseServiceRoleKey)) {
     reply.code(503).send({ error: 'Media uploads are not configured yet.' });
     return false;
   }
@@ -1247,6 +1257,19 @@ function requiresAuthenticatedMediaProxy(key) {
 }
 
 async function fetchAuthenticatedMedia(key) {
+  if (googleCloudStorageBucket) {
+    try {
+      const file = googleCloudStorageBucket.file(key);
+      const [[metadata], [content]] = await Promise.all([file.getMetadata(), file.download()]);
+      return new Response(content, {
+        status: 200,
+        headers: { 'Content-Type': metadata.contentType || 'image/webp' },
+      });
+    } catch (error) {
+      if (Number(error?.code) === 404) return new Response(null, { status: 404 });
+      throw error;
+    }
+  }
   return fetch(
     `${config.supabaseUrl}/storage/v1/object/authenticated/${encodeURIComponent(config.supabaseStorageBucket)}/${mediaObjectPath(key)}`,
     { headers: supabaseStorageHeaders(config.supabaseServiceRoleKey) }
@@ -1256,6 +1279,10 @@ async function fetchAuthenticatedMedia(key) {
 async function deleteMediaKeys(keys) {
   const validKeys = [...new Set(keys.filter((key) => profileMediaKeyPattern.test(key)))];
   if (validKeys.length === 0) return;
+  if (googleCloudStorageBucket) {
+    await Promise.all(validKeys.map((key) => googleCloudStorageBucket.file(key).delete({ ignoreNotFound: true })));
+    return;
+  }
   const response = await fetch(
     `${config.supabaseUrl}/storage/v1/object/${encodeURIComponent(config.supabaseStorageBucket)}`,
     {
@@ -1270,12 +1297,17 @@ async function deleteMediaKeys(keys) {
 }
 
 async function deleteProfileMedia(profileId) {
-  if (!config.supabaseUrl || !config.supabaseServiceRoleKey) return;
+  if (!googleCloudStorageBucket && (!config.supabaseUrl || !config.supabaseServiceRoleKey)) return;
   if (!/^[A-Za-z0-9:_-]+$/.test(profileId)) {
     throw new Error('Profile identifier cannot be mapped to a storage prefix.');
   }
   const prefix = `profiles/${profileId}/`;
   const pageSize = 1_000;
+  if (googleCloudStorageBucket) {
+    const [files] = await googleCloudStorageBucket.getFiles({ prefix });
+    await Promise.all(files.map((file) => file.delete({ ignoreNotFound: true })));
+    return;
+  }
   const keys = [];
   for (let offset = 0; ; offset += pageSize) {
     const response = await fetch(
@@ -1371,7 +1403,8 @@ function postSelectSql(whereClause, extraColumns = '', includeContent = true) {
     p.likes_count as "likesCnt",
     (select count(*)::int from public.comments c where c.post_id = p.id) as "commentsCnt",
     p.bookmarks_count as "bookmarksCnt",
-    coalesce(p.published_at, p.created_at) as "createdAt"
+    coalesce(p.published_at, p.created_at) as "createdAt",
+    p.content_updated_at as "contentUpdatedAt"
     ${extraColumns},
     json_build_object(
       'id', author.id,
@@ -2533,7 +2566,7 @@ fastify.put(
       category: prior.category,
       coverImage: prior.cover_image_url,
       isPublished: prior.status === 'published',
-      clientDraftId: prior.client_draft_id,
+      clientDraftId: prior.client_draft_id ?? undefined,
       languageCode: prior.language_code,
       ...patch.data,
     });
@@ -2541,6 +2574,9 @@ fastify.put(
       return reply.code(400).send({ error: 'Invalid story update', details: merged.error.flatten().fieldErrors });
     }
     const story = merged.data;
+    const storedContent = prior.status === 'published'
+      ? attachHashtagsAndWatermark(story.content, story.category, null)
+      : story.content;
     const result = await database.query(
       `update public.posts
        set title = $3, summary = $4, content = $5, category = $6, cover_image_url = $7,
@@ -2558,11 +2594,12 @@ fastify.put(
            provenance_verified_by = case
              when (select account_type from public.profiles where id = $2) = 'human'
              then $2 else provenance_verified_by end,
+           content_updated_at = case when status = 'published' then now() else content_updated_at end,
            updated_at = now()
        where id = $1 and author_id = $2
        returning id`,
-      [postId, request.profileId, story.title, story.summary ?? null, story.content, story.category,
-        story.coverImage ?? null, story.clientDraftId ?? null, calculateReadingTime(story.content),
+      [postId, request.profileId, story.title, story.summary ?? null, storedContent, story.category,
+        story.coverImage ?? null, story.clientDraftId ?? null, calculateReadingTime(storedContent),
         story.isPublished, story.languageCode]
     );
     const postResult = await database.query(`${postSelectSql('where p.id = $2')}`, [request.profileId, result.rows[0].id]);
@@ -2637,20 +2674,32 @@ fastify.post(
       return reply.code(400).send({ error: 'The selected image could not be processed.' });
     }
     const key = `profiles/${request.profileId}/${randomUUID()}.webp`;
-    const upload = await fetch(
-      `${config.supabaseUrl}/storage/v1/object/${encodeURIComponent(config.supabaseStorageBucket)}/${mediaObjectPath(key)}`,
-      {
-        method: 'POST',
-        headers: supabaseStorageHeaders(config.supabaseServiceRoleKey, {
-          'Content-Type': 'image/webp',
-          'x-upsert': 'false',
-        }),
-        body: webp,
+    if (googleCloudStorageBucket) {
+      try {
+        await googleCloudStorageBucket.file(key).save(webp, {
+          resumable: false,
+          metadata: { contentType: 'image/webp', cacheControl: 'public, max-age=300, stale-while-revalidate=86400' },
+        });
+      } catch (error) {
+        request.log.error({ err: error }, 'Google Cloud Storage rejected image upload');
+        return reply.code(502).send({ error: 'Image upload failed. Please try again.' });
       }
-    );
-    if (!upload.ok) {
-      request.log.error({ statusCode: upload.status }, 'Supabase Storage rejected image upload');
-      return reply.code(502).send({ error: 'Image upload failed. Please try again.' });
+    } else {
+      const upload = await fetch(
+        `${config.supabaseUrl}/storage/v1/object/${encodeURIComponent(config.supabaseStorageBucket)}/${mediaObjectPath(key)}`,
+        {
+          method: 'POST',
+          headers: supabaseStorageHeaders(config.supabaseServiceRoleKey, {
+            'Content-Type': 'image/webp',
+            'x-upsert': 'false',
+          }),
+          body: webp,
+        }
+      );
+      if (!upload.ok) {
+        request.log.error({ statusCode: upload.status }, 'Supabase Storage rejected image upload');
+        return reply.code(502).send({ error: 'Image upload failed. Please try again.' });
+      }
     }
     return reply.code(201).send({ key, url: publicMediaUrl(request, key) });
   }
@@ -2663,7 +2712,7 @@ fastify.get('/api/v1/media/*', async (request, reply) => {
     return reply.code(404).send({ error: 'Media not found' });
   }
   try {
-    if (requiresAuthenticatedMediaProxy(key)) {
+    if (googleCloudStorageBucket || requiresAuthenticatedMediaProxy(key)) {
       const media = await fetchAuthenticatedMedia(key);
       if (media.status === 404) return reply.code(404).send({ error: 'Media not found' });
       if (!media.ok) throw new Error(`Supabase Storage download failed (${media.status})`);
@@ -3008,6 +3057,7 @@ fastify.get('/api/v1/comments/:postId', async (request, reply) => {
   const postId = parsePostId(request, reply);
   if (!postId) return;
 
+  const viewer = await optionalUser(request);
   const result = await database.query(
     `select
       comment.id::text as id,
@@ -3016,6 +3066,8 @@ fastify.get('/api/v1/comments/:postId', async (request, reply) => {
       coalesce(comment.parent_comment_id::text, link.legacy_parent_id) as "parentId",
       comment.content,
       comment.created_at as "createdAt",
+      comment.updated_at as "updatedAt",
+      (comment.author_id = $2) as "isMine",
       json_build_object(
         'id', author.id,
         'penName', author.pen_name,
@@ -3035,7 +3087,7 @@ fastify.get('/api/v1/comments/:postId', async (request, reply) => {
     where comment.post_id = $1 and post.status = 'published' and post.is_public = true
     order by comment.created_at asc`,
 
-    [postId]
+    [postId, viewer?.profileId ?? null]
   );
 
   return { comments: result.rows.map(toReaderComment), total: result.rowCount };
@@ -3150,10 +3202,77 @@ fastify.post(
           parentId: comment.parent_comment_id,
           content: comment.content,
           createdAt: comment.created_at,
+          updatedAt: null,
+          isMine: true,
           author: toAuthor(author.rows[0]),
           replies: [],
         },
       });
+    } catch (error) {
+      await client.query('rollback');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+);
+
+fastify.patch(
+  '/api/v1/comments/:commentId',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const commentId = z.string().uuid().safeParse(request.params.commentId);
+    if (!commentId.success) return reply.code(400).send({ error: 'Invalid comment id' });
+    const parsed = commentPatchSchema.safeParse(request.body);
+    if (!parsed.success) {
+      return reply.code(400).send({
+        error: 'Invalid comment data',
+        details: parsed.error.flatten().fieldErrors,
+      });
+    }
+
+    const result = await database.query(
+      `update public.comments
+       set content = $3, updated_at = now()
+       where id = $1 and author_id = $2
+       returning id::text as id, post_id::text as "postId", author_id as "authorId",
+                 parent_comment_id::text as "parentId", content,
+                 created_at as "createdAt", updated_at as "updatedAt"`,
+      [commentId.data, request.profileId, parsed.data.content]
+    );
+    if (result.rowCount === 0) return reply.code(404).send({ error: 'Comment not found' });
+    return { comment: { ...result.rows[0], isMine: true } };
+  }
+);
+
+fastify.delete(
+  '/api/v1/comments/:commentId',
+  { preHandler: requireUser },
+  async (request, reply) => {
+    const commentId = z.string().uuid().safeParse(request.params.commentId);
+    if (!commentId.success) return reply.code(400).send({ error: 'Invalid comment id' });
+
+    const client = await database.connect();
+    try {
+      await client.query('begin');
+      const removed = await client.query(
+        `delete from public.comments
+         where id = $1 and author_id = $2
+         returning post_id`,
+        [commentId.data, request.profileId]
+      );
+      if (removed.rowCount === 0) {
+        await client.query('rollback');
+        return reply.code(404).send({ error: 'Comment not found' });
+      }
+      await client.query(
+        `update public.posts
+         set comments_count = (select count(*)::int from public.comments where post_id = $1)
+         where id = $1`,
+        [removed.rows[0].post_id]
+      );
+      await client.query('commit');
+      return reply.code(204).send();
     } catch (error) {
       await client.query('rollback');
       throw error;
@@ -3821,6 +3940,7 @@ fastify.patch(
   await fastify.register(adminReviewsRoutes, { pool: database });
   await fastify.register(mcpRoutes, { pool: database });
   await fastify.register(campaignRedirectRoutes, { config, database });
+  await fastify.register(craftCoachRoutes, { pool: database });
 
   fastify.decorate('deliverPushNotifications', deliverPendingPushNotifications);
 
@@ -3854,7 +3974,11 @@ fastify.patch(
 
   const handleDailyDigestRun = async (request, reply) => {
     if (!verifyAdminKey(request, reply)) return;
-    const outcome = await runDailyDigest(database, firebaseMessaging, fastify.log);
+    const slot = request.query?.slot === 'morning' || request.query?.slot === 'evening'
+      ? request.query.slot
+      : undefined;
+    const forceBypass = request.query?.force === 'true' || request.query?.forceBypass === 'true';
+    const outcome = await runDailyDigest(database, firebaseMessaging, fastify.log, { slot, forceBypass });
     return outcome;
   };
   fastify.post('/api/v1/internal/notifications/daily-digest', handleDailyDigestRun);
@@ -3950,25 +4074,29 @@ if (isEntrypoint) {
         setInterval(() => { void runPublicationFanout(); }, runtimeConfig.pushDeliveryPollIntervalMs).unref();
       }
       if (runtimeConfig.dailyDigestEnabled) {
-        const scheduleDailyDigest = () => {
+        const scheduleSlotTimer = (slotName, hourUtc, minuteUtc) => {
           const now = new Date();
           const target = new Date(now);
-          target.setUTCHours(runtimeConfig.dailyDigestHourUtc, runtimeConfig.dailyDigestMinuteUtc, 0, 0);
+          target.setUTCHours(hourUtc, minuteUtc, 0, 0);
           if (target <= now) target.setDate(target.getDate() + 1);
           const delayMs = target.getTime() - now.getTime();
-          fastify.log.info({ nextRunAt: target.toISOString(), delayMs }, 'Daily digest notification scheduled');
+          fastify.log.info({ slot: slotName, nextRunAt: target.toISOString(), delayMs }, 'Daily digest slot notification scheduled');
           setTimeout(async () => {
             try {
               const firebaseMessaging = getMessaging(getApps()[0]);
-              const outcome = await runDailyDigest(database, firebaseMessaging, fastify.log);
-              fastify.log.info(outcome, 'Daily digest completed');
+              const outcome = await runDailyDigest(database, firebaseMessaging, fastify.log, { slot: slotName });
+              fastify.log.info({ ...outcome, slot: slotName }, 'Daily digest completed');
             } catch (error) {
-              fastify.log.error({ err: error }, 'Daily digest failed');
+              fastify.log.error({ err: error, slot: slotName }, 'Daily digest failed');
             }
-            scheduleDailyDigest();
+            scheduleSlotTimer(slotName, hourUtc, minuteUtc);
           }, delayMs).unref();
         };
-        scheduleDailyDigest();
+
+        // Morning: Latest trending story (09:00 IST / 03:30 UTC default)
+        scheduleSlotTimer('morning', runtimeConfig.dailyDigestMorningHourUtc, runtimeConfig.dailyDigestMorningMinuteUtc);
+        // Evening: Top human-written story (18:00 IST / 12:30 UTC default)
+        scheduleSlotTimer('evening', runtimeConfig.dailyDigestEveningHourUtc, runtimeConfig.dailyDigestEveningMinuteUtc);
       }
       if (runtimeConfig.socialAutoPublishEnabled) {
         const scheduleSocialCampaign = () => {

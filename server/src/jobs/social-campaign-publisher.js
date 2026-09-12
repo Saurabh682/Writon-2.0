@@ -1,6 +1,7 @@
 import { generateAllCampaignAssets } from '../services/social-card-generator.js';
 import { getDailyCampaignPayload, dispatchToWebhook } from '../services/campaign-dispatcher.js';
-import { postToX, postToInstagramCarousel, postToThreads, postToTelegram } from '../services/social-poster.js';
+import { postToX, postToInstagramCarousel, postToThreads, postToTelegram, postToReddit, postToPinterest } from '../services/social-poster.js';
+import { SocialCampaignCoordinator } from '../services/social-campaign-coordinator.js';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -61,53 +62,38 @@ export async function runDailyCampaignPublish({ day = 1, force = false, config =
     path.resolve(renderedAssetsDir, asset)
   );
 
+  // Steps 3-9: Coordinate concurrent publishing across platform specialists (ADK 2 Pillar 2)
+  const coordination = await SocialCampaignCoordinator.coordinatePublish({
+    payload,
+    localSlidePaths,
+    config,
+    log
+  });
+
   const results = {
-    day: payload.day,
-    theme: payload.theme,
-    shortlink: payload.shortlink,
-    timestamp: new Date().toISOString(),
-    x: { status: 'skipped' },
-    instagram: { status: 'skipped' },
-    threads: { status: 'skipped' },
-    webhook: { status: 'skipped' },
-    telegram: { status: 'skipped' },
+    day: coordination.day,
+    theme: coordination.theme,
+    shortlink: coordination.shortlink,
+    timestamp: coordination.timestamp,
+    summary: coordination.summary,
+    x: coordination.platforms.x || { status: 'skipped' },
+    instagram: coordination.platforms.instagram || { status: 'skipped' },
+    threads: coordination.platforms.threads || { status: 'skipped' },
+    reddit: coordination.platforms.reddit || { status: 'skipped' },
+    pinterest: coordination.platforms.pinterest || { status: 'skipped' },
+    webhook: coordination.platforms.webhook || { status: 'skipped' },
+    telegram: coordination.platforms.telegram || { status: 'skipped' }
   };
 
-  // Step 3: Publish to X (Twitter) with attached image cards and high-discovery hashtags
-  const defaultHashtags = '#writon #writingcommunity #writersoftwitter #poetry #storytelling #books #creators #amwriting';
-  const xText = `${payload.hook}\n\nTake that note out of the dark. Publish on WritOn today:\n📲 ${payload.shortlink}\n\n${defaultHashtags}`;
-  results.x = await postToX({ text: xText, localImagePaths: localSlidePaths, config, log });
-
-  // Step 4: Publish to Instagram Carousel with local file auto-upload
-  results.instagram = await postToInstagramCarousel({
-    localImagePaths: localSlidePaths,
-    caption: payload.captions.en,
-    config,
-    log,
-  });
-
-  // Step 5: Publish to Threads
-  results.threads = await postToThreads({
-    text: payload.captions.en,
-    localImagePaths: localSlidePaths,
-    config,
-    log,
-  });
-
-  // Step 6: Dispatch to Discord / Custom Webhook if set
-  if (config.discordWebhookUrl || process.env.DISCORD_WEBHOOK_URL) {
-    const webhookUrl = config.discordWebhookUrl || process.env.DISCORD_WEBHOOK_URL;
-    results.webhook = await dispatchToWebhook(payload, webhookUrl);
+  if (results.reddit?.success && results.reddit?.postId) {
+    results.redditFullname = results.reddit.postId;
+  }
+  if (results.pinterest?.success && results.pinterest?.postId) {
+    results.pinterestPinId = results.pinterest.postId;
   }
 
-  // Step 7: Dispatch to Telegram if set
-  if (config.telegramBotToken || process.env.TELEGRAM_BOT_TOKEN) {
-    const tgCaption = `<b>🚀 WritOn Day ${payload.day}: ${payload.theme}</b>\n\n${payload.captions.en}\n\n📲 <a href="${payload.shortlink}">Claim Your Pen Name</a>`;
-    results.telegram = await postToTelegram({ caption: tgCaption });
-  }
-
-  // Step 8: Record history to guarantee idempotency
-  if (results.instagram.success || results.x.success || results.threads.success) {
+  // Step 10: Record history to guarantee idempotency
+  if (results.instagram.success || results.x.success || results.threads.success || results.reddit.success || results.pinterest.success) {
     history.publishedDays[day] = results;
     await savePublishHistory(history);
   }
