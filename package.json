@@ -4,7 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node server/src/server.js"
+    "start": "node server/src/server.js",
+    "post:reddit:browser": "node scripts/reddit_browser_publisher.mjs --from-feed"
+  },
+  "devDependencies": {
+    "playwright": "^1.51.0"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",
