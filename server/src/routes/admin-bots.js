@@ -33,6 +33,10 @@ import {
 import {
   getEditorialBriefing,
   getEditorialState,
+  getEditorialCanvas,
+  getEditorialCanvasHistory,
+  saveEditorialCanvas,
+  CanvasRevisionConflict,
   recordLedgerEntry,
   updateLedgerEntryStatus,
   getLedgerEntries,
@@ -43,6 +47,8 @@ import {
 import { CURATED_BOT_PERSONAS } from '../bot-engine/curated-personas.js';
 import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from '../bot-engine/commenter-personas.js';
 import { getLiveDailyTrends, seedDailyTrendsToBacklog } from '../bot-engine/trend-scout-service.js';
+import { runMasterSchedulerTick } from '../bot-engine/master-scheduler.js';
+import { processOutboxEvents } from '../bot-engine/outbox-service.js';
 
 const botUpdateSchema = z.object({
   isActive: z.boolean().optional(),
@@ -179,6 +185,46 @@ const antiRepetitionRuleSchema = z.object({
   patternType: z.enum(['title_formula', 'opening_phrase', 'overused_theme', 'cliche_phrase', 'interaction_formula']).default('cliche_phrase'),
   pattern: z.string().trim().min(1).max(300),
   reason: z.string().trim().max(500).optional(),
+});
+
+const canvasDocumentIdSchema = z.string().regex(/^[a-z0-9][a-z0-9-]{0,63}$/);
+const canvasEvidenceResultSchema = z.enum(['pending', 'passed', 'not_applicable']);
+const canvasEvidenceSchema = z.object({
+  rights: canvasEvidenceResultSchema,
+  localization: canvasEvidenceResultSchema,
+  asset: canvasEvidenceResultSchema,
+  link: canvasEvidenceResultSchema,
+  qa: canvasEvidenceResultSchema,
+});
+const governedCanvasStatuses = new Set(['approved', 'scheduled', 'published', 'measured']);
+const canvasSlotSchema = z.union([
+  z.string().max(10_000), // Legacy caption-only local state.
+  z.object({
+    caption: z.string().max(10_000).optional(),
+    status: z.enum([
+      'idea', 'planned_draft', 'ready', 'sourced', 'rights_verified', 'copy_ready',
+      'localized', 'designed', 'qa_passed', 'approved', 'scheduled', 'published',
+      'measured', 'blocked'
+    ]).optional(),
+    postedUrl: z.union([z.string().url().max(2_000), z.literal('')]).optional(),
+    owner: z.string().trim().max(100).optional(),
+    nextAction: z.string().trim().max(500).optional(),
+    blockerReason: z.string().trim().max(1_000).optional(),
+    evidence: canvasEvidenceSchema.optional(),
+  }).passthrough().superRefine((slot, context) => {
+    if (slot.status === 'blocked' && !slot.blockerReason) {
+      context.addIssue({ code: z.ZodIssueCode.custom, message: 'Blocked deliveries require a reason.', path: ['blockerReason'] });
+    }
+    if (governedCanvasStatuses.has(slot.status)) {
+      if (!slot.evidence || Object.values(slot.evidence).some(result => result === 'pending')) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: 'Approval requires resolved evidence.', path: ['evidence'] });
+      }
+    }
+  }),
+]);
+const canvasSaveSchema = z.object({
+  expectedRevision: z.number().int().min(0),
+  state: z.record(canvasSlotSchema).refine(value => Object.keys(value).length <= 250, 'Canvas contains too many entries'),
 });
 
 export async function adminBotsRoutes(fastify, options) {
@@ -763,7 +809,7 @@ export async function adminBotsRoutes(fastify, options) {
       from public.posts p
       inner join public.profiles author on author.id = p.author_id
       where p.status = 'published' and p.is_public = true
-        and ($1::text is null or lower(p.category) = lower($1))
+        and ($1::text is null or lower($1) = 'all' or lower(p.category) = lower($1))
       order by coalesce(p.published_at, p.created_at) desc
       limit $2
     `, [category, limit]);
@@ -974,6 +1020,57 @@ export async function adminBotsRoutes(fastify, options) {
     return reply.code(401).send({ error: 'Authentication required. Provide valid X-Admin-Key, X-Bot-Secret, or Bearer token.' });
   };
 
+  const requireCanvasAdmin = async (request, reply) => {
+    if (process.env.NODE_ENV === 'development' && !request.headers.authorization && !request.headers['x-admin-key']) return;
+    const adminSecret = process.env.ADMIN_SECRET_KEY;
+    const bearer = request.headers.authorization?.startsWith('Bearer ')
+      ? request.headers.authorization.substring(7)
+      : null;
+    if (adminSecret && (request.headers['x-admin-key'] === adminSecret || bearer === adminSecret)) return;
+    return reply.code(401).send({ error: 'Admin authentication required.' });
+  };
+
+  fastify.get('/api/v1/admin/editorial/canvas/:documentId', { preHandler: requireCanvasAdmin }, async (request, reply) => {
+    const parsedId = canvasDocumentIdSchema.safeParse(request.params.documentId);
+    if (!parsedId.success) return reply.code(400).send({ error: 'Invalid canvas document ID.' });
+    try {
+      return await getEditorialCanvas(pool, parsedId.data);
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to load editorial canvas.' });
+    }
+  });
+
+  fastify.put('/api/v1/admin/editorial/canvas/:documentId', { preHandler: requireCanvasAdmin }, async (request, reply) => {
+    const parsedId = canvasDocumentIdSchema.safeParse(request.params.documentId);
+    const parsedBody = canvasSaveSchema.safeParse(request.body || {});
+    if (!parsedId.success || !parsedBody.success) return reply.code(400).send({ error: 'Invalid canvas state.' });
+    try {
+      return await saveEditorialCanvas(pool, {
+        documentId: parsedId.data,
+        ...parsedBody.data,
+        changedBy: request.user?.email || request.user?.uid || 'admin-secret',
+      });
+    } catch (error) {
+      if (error instanceof CanvasRevisionConflict) {
+        return reply.code(409).send({ error: error.message, currentRevision: error.currentRevision });
+      }
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to save editorial canvas.' });
+    }
+  });
+
+  fastify.get('/api/v1/admin/editorial/canvas/:documentId/history', { preHandler: requireCanvasAdmin }, async (request, reply) => {
+    const parsedId = canvasDocumentIdSchema.safeParse(request.params.documentId);
+    if (!parsedId.success) return reply.code(400).send({ error: 'Invalid canvas document ID.' });
+    try {
+      return { revisions: await getEditorialCanvasHistory(pool, parsedId.data, request.query?.limit) };
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Failed to load canvas history.' });
+    }
+  });
+
   // 1. Editorial Briefing (Public GET)
   fastify.get('/api/v1/spark/ledger/briefing', async (request, reply) => {
     try {
@@ -1170,4 +1267,16 @@ export async function adminBotsRoutes(fastify, options) {
 
   fastify.post('/api/v1/editorial/state', { preHandler: requireAdminOrBotSecret }, handlePostEditorialState);
   fastify.post('/api/v1/spark/editorial/state', { preHandler: requireAdminOrBotSecret }, handlePostEditorialState);
+
+  // Durable wake-up endpoint for Cloud Scheduler, cron, or another external invoker.
+  fastify.post('/api/v1/spark/scheduler/tick', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    try {
+      const outcome = await runMasterSchedulerTick(pool);
+      const outbox = await processOutboxEvents(pool).catch(() => ({ processed: 0, succeeded: 0, failed: 0 }));
+      return reply.code(200).send({ success: true, outcome, outbox });
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.code(500).send({ error: 'Scheduler tick failed. Please check server logs.', message: error.message });
+    }
+  });
 }

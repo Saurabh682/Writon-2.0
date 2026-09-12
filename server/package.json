@@ -10,8 +10,16 @@
     "db:import-legacy-postgres": "node src/db/import-legacy-postgres.mjs --dry-run",
     "db:daily-digest-ledger": "node src/scripts/apply-daily-digest-ledger.mjs",
     "db:staging:engagement-preferences": "node src/scripts/apply-engagement-preferences-staging.mjs",
+    "db:staging:editorial-canvas": "node src/scripts/apply-editorial-canvas-staging.mjs",
+    "db:staging:guest-push": "node src/scripts/apply-guest-push-registration-staging.mjs",
+    "db:staging:story-categories": "node src/scripts/apply-story-categories-staging.mjs",
+    "db:staging:owned-content-edits": "node src/scripts/apply-owned-content-edits-staging.mjs",
+    "db:staging:milestones": "node src/scripts/apply-milestones-staging.mjs",
+    "db:staging:notification-pipeline": "node src/scripts/apply-notification-pipeline-staging.mjs",
+    "db:production:notification-kind-contract": "node src/scripts/apply-notification-kind-contract.mjs --production",
+    "verify:staging:notification-pipeline": "node src/scripts/verify-notification-pipeline-staging.mjs",
     "verify:staging:engagement-preferences": "node src/scripts/verify-engagement-preferences-api-staging.mjs",
-    "test": "vitest run --no-file-parallelism test/fastify.contract.test.js test/spark-bot-engine.test.js test/trend-scout.test.js test/seo-sitemap.test.js test/milestone-service.test.js test/campaign-redirect.test.js test/feed-ranking.test.js test/feed-route.test.js test/watermark-service.test.js test/social-card-generator.test.js test/daily-digest.test.js test/fcm-analytics-label.test.js test/story-categories.test.js test/engagement-preferences.test.js test/staging-database-guard.test.js"
+    "test": "vitest run --no-file-parallelism test/editorial-canvas.test.js test/fastify.contract.test.js test/guest-push-migration.test.js test/spark-bot-engine.test.js test/trend-scout.test.js test/seo-sitemap.test.js test/milestone-service.test.js test/campaign-redirect.test.js test/feed-ranking.test.js test/feed-route.test.js test/watermark-service.test.js test/social-card-generator.test.js test/daily-digest.test.js test/fcm-analytics-label.test.js test/story-categories.test.js test/engagement-preferences.test.js test/staging-database-guard.test.js test/followed-writer-notifications.test.js test/discovery-notifications.test.js test/master-scheduler-resilience.test.js"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",

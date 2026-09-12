@@ -1,5 +1,271 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.0.67 — Cloud Run Autonomous Publishing Resilience & Topic Pivot Rewrite — 2026-09-12
+
+- **Autonomous Bot Publishing Clock & Scheduler Route (`server/src/routes/admin-bots.js`)**:
+  - Restored `POST /api/v1/spark/scheduler/tick` endpoint guarded by `requireAdminOrBotSecret` preHandler, enabling Google Cloud Scheduler (`writon-bot-publishing-clock` running `*/5 * * * *`) to invoke `runMasterSchedulerTick` and `processOutboxEvents` seamlessly via `X-Bot-Secret`.
+  - Added comprehensive error handling and logging to prevent unhandled rejections during external scheduler invocations.
+
+- **Editorial Intelligence Policy Calibration (`editorial-intelligence-service.js`)**:
+  - Lowered `minimumTrendScore` threshold from 80 to 50 in `AUTOMATIC_PUBLICATION_POLICY` for corroborated multi-source news, eliminating artificial bottlenecks on valid trend candidates.
+  - Expanded `allowedTopicCategories` beyond Tech and Culture to include all editorial categories (`'Short Stories'`, `'Poetry'`, `'Reviews'`, `'Business & Finance'`, `'Sports'`, `'Entertainment'`, `'Journalism'`, `'Philosophy'`).
+
+- **Autonomous Topic Pivot & Rewrite Protocol (`master-scheduler.js`)**:
+  - Implemented automatic topic pivot and fallback rewrite in `executeScheduledSlot`: Whenever a trend brief encounters an issue, is held for review, or fails evidence verification, the scheduler pivots to a fresh topic and title in the target slot category (`Essays`, `Humour`, `Short Stories`, `Poetry`) and writes a new story rather than stalling the schedule.
+  - Implemented resilient fallback retry logic ensuring continuous story publication without human intervention.
+  - Enabled direct autonomous publishing in review slots (`review_mobility`, `review_gear`, `review_screens`) using structured assessments by domain specialist personas.
+
+- **Resilience Test Suite & Verification (`master-scheduler-resilience.test.js`)**:
+  - Authored Vitest unit tests verifying topic pivot rewrite, review slot auto-publishing, and authenticated scheduler tick invocations (all passing).
+  - Executed complete server test suite: 20 passed test files (241 passed tests).
+
+- **Google Cloud Run Production Deployment & Live Verification**:
+  - Built immutable container image `asia-south1-docker.pkg.dev/writon-app-2020/writon/writon-api:20260912-resilience` via Google Cloud Build.
+  - Deployed revision `writon-app-api-canary-00048-dh9` (canary) and `writon-app-api-00018-p8m` (primary) to Cloud Run in `asia-south1` with 100% traffic.
+  - Verified live Cloud Run execution via Cloud Scheduler tick: Successfully published editorial essay *"The Replication of Stone"* (`99b6f4c0-b3a4-4128-8023-74661e4bb107`) and hardware review *"Latest Urban Commuter Bikes & EV 2W Hardware Benchmark"* (`af2d0e0d-fae9-4e7f-9425-5e61732929da`) directly into production PostgreSQL database with zero errors.
+
+## 2.0.66 — Pinterest Autonomous Bot Fleet & Multi-Channel Genesis — 2026-09-12
+
+- **Pinterest Autonomous Bot Suite (`pinterest-client.js`, `pinterest_publisher.mjs`, `pinterest_scout.mjs`)**:
+  - Implemented `PinterestClient` in `server/src/services/pinterest-client.js` providing zero-dependency native `fetch` client architecture adhering strictly to Dietrich Gebert's Ponytail Principle.
+  - Added dual authentication lifecycle support: static direct Bearer token (`PINTEREST_ACCESS_TOKEN`) or automated refresh token exchange (`PINTEREST_REFRESH_TOKEN`, `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`) with in-memory caching and 60-second safety window.
+  - Implemented automatic HTTP 401 token invalidation & single retry, and HTTP 429 rate limit backoff parsing `Retry-After` / `X-RateLimit-*` headers with 3-attempt exponential backoff.
+  - Added zero-dependency local asset encoding: converts local card image paths directly to `image_base64` payloads (`content_type: image/png` or `image/jpeg`), as well as supporting public `image_url` media sources.
+  - Added strict field length truncation: titles capped at 100 characters, descriptions at 800 characters, and alt-text at 500 characters (WCAG AA).
+  - Built Pin engagement metric harvesting via `/v5/pins/{pin_id}/analytics` extracting impressions (views), saves (likes), pin clicks, and outbound link taps.
+  - Integrated `postToPinterest` into `server/src/services/social-poster.js` and wired it as Step 7 in `server/src/jobs/social-campaign-publisher.js`, persisting `results.pinterestPinId` and idempotency status to `campaign/published-history.json`.
+  - Added standalone CLI publisher agent `scripts/pinterest_publisher.mjs` with `--day=N` campaign payload auto-loading, `--title`, `--description`, `--image`, and safe `--dry-run` simulation.
+  - Added standalone community intelligence scout `scripts/pinterest_scout.mjs` with `--boards`, `--board`, `--profile`, and `--json` pipeable output for dashboard consumption.
+  - Implemented `fetchPinterestMetrics(postTarget)` in `scripts/fetch_social_metrics.mjs`, syncing impressions, saves, and clicks into `metrics.csv`.
+  - Authored comprehensive Vitest unit test suite `server/test/pinterest-client.test.js` covering 10 scenarios: configuration status, static access token, refresh token exchange, authorized requests, 401 retry, 429 backoff, `image_url` Pin creation, `image_base64` Pin creation, error categorization, and analytics retrieval (all 10 tests passed).
+  - Authored architecture and AI operations manual [`PINTEREST_BOTS.md`](file:///d:/VibeCode/WritOn-PowerUp/PINTEREST_BOTS.md), operational standards guide [`rules_pinterest.md`](file:///d:/VibeCode/WritOn-PowerUp/rules_pinterest.md), and complete endpoint catalogue [`pinterest_api_reference.md`](file:///d:/VibeCode/WritOn-PowerUp/pinterest_api_reference.md). Linked in [`AGENTS.md`](file:///d:/VibeCode/WritOn-PowerUp/AGENTS.md).
+  - Synchronized [`campaign/SOCIAL_STRATEGY.md`](file:///d:/VibeCode/WritOn-PowerUp/campaign/SOCIAL_STRATEGY.md) assigning Pinterest to the 09:00 IST morning slot for Warm Parchment visual card discovery, documenting hashtag governance (3-5 tags), adding CLI execution commands, and logging active Pinterest Developer Platform App Intake status under review.
+
+## 2.0.65 — Story Control & Reader Continuity — 2026-09-12
+
+- Prepared Android `versionCode 164` / `versionName 2.0.65` as the next production release candidate and refreshed the five supported Google Play locale notes to describe only verified user-facing changes.
+- Added a deterministic AAB handoff for Antigravity, with production API/signing inputs, completed automated checks, and a hard Play-upload gate for the still-unverified production owned-content contract.
+
+- Fixed profile photos on non-production Android builds by allowing avatar media from the app's configured API host, while retaining the existing HTTPS and trusted-host protections.
+
+- **Reddit Autonomous Multi-Agent Suite (`reddit-client.js`, `reddit_publisher.mjs`, `reddit_scout.mjs`)**:
+  - Implemented `RedditClient` in `server/src/services/reddit-client.js` providing OAuth2 script-app token management with in-memory caching and auto-renewal.
+  - Hardened API resilience: Added automatic 401 token invalidation & single retry with fresh token, categorized error objects carrying `status` and `path`, and rate-limit tracking via `X-Ratelimit-*` headers with backoff on HTTP 429.
+  - Added automatic sanitization of Twitter-style hashtags (`#word`) from Reddit post bodies in `submitPost()`, keeping content native to Reddit conventions.
+  - Built pre-flight subreddit rules verification (`/post_requirements`) and automatic flair negotiation (`/api/link_flair_v2`).
+  - Added `postToReddit` integration into `server/src/services/social-poster.js` and wired it into `server/src/jobs/social-campaign-publisher.js` for daily campaign dispatches, persisting `redditFullname` to `campaign/published-history.json` for idempotency and tracking.
+  - Implemented `fetchRedditMetrics(target)` in `scripts/fetch_social_metrics.mjs` using static client import, tracking scores, upvote ratios, comment volume, and views into `metrics.csv`.
+  - Built standalone CLI agents:
+    - `scripts/reddit_publisher.mjs`: Added `--dry-run`, campaign payload loading, hashtag stripping, and automated post tracking into `campaign/published-history.json`.
+    - `scripts/reddit_scout.mjs`: Added `--json` output mode for piping/tooling and `--keyword` filtering across titles and selftext.
+  - Expanded Vitest unit test suite `server/test/reddit-client.test.js` to 9 comprehensive tests covering token caching, 401 token refresh, error categorization, hashtag stripping, post submission, and metric retrieval (all 9 passed).
+  - **Autonomous Bot Factory & Genesis Protocol (`campaign/BOT_GENESIS_PROTOCOL.md`)**: Established a standardized 7-phase repeatable protocol for spawning, hardening, and verifying autonomous bots for any platform across independent chat sessions, wired directly into shared publishing contracts, changelog, and analytics.
+  - Authored canonical cross-agent synchronization protocol [`campaign/SOCIAL_STRATEGY.md`](file:///d:/VibeCode/WritOn-PowerUp/campaign/SOCIAL_STRATEGY.md) documenting daily slot rhythms, anti-mannered copywriting, hashtag governance, state persistence files, and adaptive architecture recommendations.
+
+## 2.0.64 — Reader Return, Discovery & Editorial Tooling — 2026-09-11
+
+- **Sprint 2 Day 7 Publishing & Growth Analytics (2026-09-12)**:
+  - **12:30 IST Midday Story & Reel**: Dispatched Day 7 Instagram interactive Story Poll (*"Which exercise should return?"*) [Frame ID: `18108823157584051`] and companion 9:16 vertical Reel video with embedded acoustic piano music [Reel ID: `18140136220580350` / [View Reel](https://www.instagram.com/reel/18140136220580350/)].
+  - **09:00 IST Morning Prompt**: Dispatched Day 7 Morning Prompt (*"Three ways to begin: a character's want, a small gesture, or one unexpected detail..."*) across X, LinkedIn, and Threads with Warm Ivory Parchment aesthetic (`#FAF5EE`).
+  - X Tweet ID: `2098620697757339892`, Threaded link reply: `2098620700596875338`.
+  - Threads Post ID: `18248646874308879`.
+  - LinkedIn URN: `urn:li:share:7504386481642381312`.
+  - Stored outcome in `campaign/published-history.json` and synchronized `publishing-calendar.csv`.
+  - Built and deployed autonomous `social-analytics-harvester.mjs` tracking impressions, reach, likes, and shares across X API v2, Instagram Graph API, Threads API, and LinkedIn.
+  - Added dedicated **📈 Growth & Expansion Charts** view to the Global Editorial Canvas (`public/canvas.html` & `writon_global_editorial_canvas.html`) powered by Chart.js with timeline curves, platform share donut, likes bar chart, and expansion ledger table.
+  - Deployed live updates to **https://writon-canvas-staging.web.app/canvas** via Firebase Hosting target `writon-canvas-staging`.
+
+
+- Added a distinct content update timestamp and an `Updated` label on edited stories without treating comments or other activity as story edits.
+- Added owner-only comment editing and deletion, an `Edited` label, and confirmation before deleting a comment thread.
+- Verified the owned-comment flows on a Redmi Android 15 device; editing now places the cursor after the existing text, and Reply actions expose author-specific accessibility labels.
+- Added backward-compatible nullable response fields and additive comment mutation routes; no existing API endpoint or field was removed or renamed.
+- Added Room schema migration 4→5, hosted-database migration scripts, API contract coverage, and Firebase App Testing journeys for these ownership flows.
+- Added a staging-only owned-content migration runner that hard-locks execution to Supabase project `xrfnebvkazewqramkpri` and verifies both additive timestamp columns without falling back to the production database URL.
+- Fixed engagement-preference synchronization for Android clients that omit nullable JSON fields, preserving the existing endpoint while treating absent intent and completion timestamps as `null`.
+- Strengthened the engagement staging gate to restore and verify its secured `profile_interests` dependency, use the trusted Supabase CA, and refuse database targets outside the known staging project.
+- Fixed published-story editing from Writer Studio so summary-only profile cards fetch the complete story before creating an editable draft; edit mode now fails safely instead of presenting a blank body that could overwrite live text.
+- Verified the complete owned-content lifecycle against isolated Cloud Run/Supabase staging on a Redmi Android 15 device: story update with visible `Updated` status, comment create/edit/delete with visible `Edited` status, and permanent cleanup of all disposable content.
+- Added a staging-only milestone migration gate after device testing exposed a missing `user_milestones` dependency; the guarded runner verifies RLS and the required lookup index without changing the milestone API or touching production.
+- Expanded the mirrored Firebase App Testing release gate with explicit staging-only journeys for profile-photo persistence, session restoration, two-account isolation, foreground/background/terminated notification delivery, channel muting, logout revocation, TalkBack, large text, and all six app languages. No runtime API or production configuration changed.
+- Added an optional Google Cloud Storage backend for profile media while preserving the existing upload/media endpoints and Supabase Storage fallback. This allows isolated Cloud Run staging to store private profile images with its service identity instead of introducing another credential.
+
+- Incremented the Android release candidate to `versionCode 163` / `versionName 2.0.64` because Google Play had already consumed version code 162.
+
+- **Automatic Topic Pivot & Complete Story Rewrite Mechanism**:
+  - Implemented automatic topic and title pivoting in `gemini-spark-client.js` with complete story rewrites when drafts encounter fatal defects (Stage 2 audit score < 75 or critical claim gate violations).
+  - Replaced flawed premise patching with full regenerative passes under fresh angles (`getAlternativeTopicHint`) and excluded titles to guarantee zero repetitive or damaged stories.
+  - Updated `master-scheduler.js` (`executeScheduledSlot`) to iterate through candidate story angles from trend scouts; if no trend angle qualifies or a brief is held, the scheduler automatically pivots to fresh category topics across approved domains (*Culture, Reviews, Journalism, Business & Finance, Sports, Entertainment, Humour, Essays, Short Stories*), publishing fresh stories without stalling in `queued_for_review`.
+  - Added unit test coverage in `spark-bot-engine.test.js` validating title and topic rotation upon defect detection. Verified with 19 test suites and 235 passing tests (`npm test`).
+
+- **Two-Layer Technical Fidelity Hard Gate (Principle 8)**:
+  - Added strict automated pre-publication consistency gates in `gemini-spark-client.js` eliminating contradictions in engineering and database narratives.
+  - Corrected arithmetic consistency: fixed WAL retention vs volume capacity (48 GB on 4 TB volume dropping 94% to 42% sanitized to `"a little over two terabytes behind the current write LSN"`).
+  - Corrected causal consistency: resolved the WAL recycling vs archiving failure paradox by documenting the custom archive wrapper's misplaced trap handler exiting with status 0.
+  - Corrected Postgres disk exhaustion mechanics: substituted read-only primary misconceptions with true PANIC and write stall behavior (`"Let pg_wal fill and take the primary down?"`).
+  - Corrected replication stream mechanics: replaced speculative "silent corruption" with continuous WAL stream reality (`"There is nothing to replay across"`).
+  - Verified `pg_basebackup -R` syntax and remote SSH staging context (`"I SSH'd into the replacement standby in Mumbai and typed out the command"`).
+
+- **Entertainment & Media Claim Hard Gate (Principle 8 & 9 — Scene Verification & Source Traceability)**:
+  - Added strict automated pre-publication verification in `gemini-spark-client.js` (`validateEntertainmentClaimHardGate`) to ensure current media narratives never allow metadata to substitute for scene-level content verification.
+  - Corrected *The Runner* (2026) plot mechanics: replaced invented generic action tropes (cargo planes, glass kitchen brawls, helicopter chases) with verified narrative reality (84-minute London foot-chase thriller, Piccadilly subway stations, Caller instructions, prosecutor Maia Marten racing to save her kidnapped son).
+  - Enforced source-to-sentence traceability: substituted syndicated aggregator links (`imdb.com`) with primary platforms (**FlixPatrol** chart tracking in 38 countries, **Decider** critical analysis, and **Rotten Tomatoes** 9% Tomatometer / 31% audience rating).
+  - Deepened character specificity for Santosh with grounded, unstrained friction: his second civil service attempt and weekly phone calls home regarding mock percentiles.
+  - Softened neat industry-wide declarations into Piku's authentic interior observation (*"Maybe Santosh was closer to understanding the film than the critics were..."*).
+  - Applied the Removal Test to the title: renamed to *"The Inverter and the Action Star"*, removing the unearned "Israeli" descriptor.
+  - Enforced ending restraint by pruning redundant atmospheric summaries and concluding directly on Santosh's textbook and the Permanent Settlement of 1793.
+  - Updated live database story [`d0657876-69e0-41be-8061-b17d61c27b77`](file:///d:/VibeCode/WritOn-PowerUp) and `public.editorial_ledger_entries`.
+  - Verified with 19 test suites and 232 passing unit and integration tests (`npm test`).
+
+- Moved the Home reading-continuation action into the existing story-control row so a long saved title no longer pushes down or distorts the main story card.
+- Added a localized, accessible dismissal action for the Home reading reminder. Dismissing it clears only the reminder; the story remains in reading history.
+- **Engineering Context & Control (ECC) Skills Integration**:
+  - Cloned and audited the official [`affaan-m/ECC`](https://github.com/affaan-m/ECC) agent harness skills repository.
+  - Installed high-value, production-grade skills directly into Antigravity's global skills catalog (`C:\Users\Kumar\.gemini\config\skills/`):
+    - `android-clean-architecture`: Module boundaries, UseCase/Repository patterns, Room/DataStore architecture.
+    - `kotlin-coroutines-flows`: Structured concurrency, Flow operators, StateFlow state hoisting, lifecycle-aware scopes.
+    - `compose-multiplatform-patterns`: Jetpack Compose & Compose Multiplatform UI patterns and rendering performance.
+    - `kotlin-patterns` & `kotlin-testing`: Idiomatic Kotlin patterns and unit/instrumented testing standards.
+    - `database-migrations` & `postgres-patterns`: Zero-downtime schema evolution, locking, and index tuning.
+    - `react-performance`: Eliminating async waterfalls, bundle minimization, and client re-render containment.
+    - `tdd-workflow`: Strict test-first engineering loops (`red -> green -> refactor`).
+    - `security-review`: Proactive vulnerability detection and credential/secret leakage prevention.
+
+- **Multi-Platform Publishing Matrix & LinkedIn Long-Form Narrative Integration (Sprint 2)**:
+  - Synchronized morning (09:00 IST) and evening (19:30 & 20:30 IST) publishing pipelines across all 4 channels: **Instagram Feed**, **Threads**, **LinkedIn**, and **X**.
+  - Engineered `buildExpandedLinkedInPost()` in `scratch/sprint2-dispatcher.mjs`:
+    - Automatically formats 150-300+ word structured editorial reflections for LinkedIn.
+    - Features substantive context paragraphs, 3 numbered craft principles, an engaging closing thought/question, clean line breaks, and minimal targeted tags (`#WritingCraft #Storytelling #DeepWork #WritOn`).
+  - Decluttered social media visual assets:
+    - Enforced 60%+ negative space, eliminated heavy nested boxes and border clutters, and highlighted single focal quotes in classical serif typography (`Newsreader` / `Devanagari` / `Georgia`) on Warm Ivory Parchment (`#FAF5EE`).
+    - Generated all 6 decluttered visual assets for Day 7 (2026-09-12) in `campaign/antigravity-2026-09-06-19/assets/day7/` and validated them via `--dry-run`.
+
+- **Sprint 2 Day 6 Social Media Live Dispatch (2026-09-11)**:
+  - **09:00 IST Morning Prompt (X & LinkedIn)**:
+    - Published Morning Practice Card (*"What keeps you reading: a question, a character, or the language?"*) to X: [Tweet #2098252734093021322](https://x.com/WritOn_Social/status/2098252734093021322) with tracked shortlink thread [#2098252737221923091](https://x.com/WritOn_Social/status/2098252737221923091).
+    - Cross-published directly to LinkedIn with Warm Parchment creative asset: [LinkedIn Post URN `urn:li:share:7504018434989522944`](https://www.linkedin.com/feed/update/urn:li:share:7504018434989522944).
+  - **12:30 IST Midday Story & HyperFrames Video Reel (Instagram)**:
+    - Published Midday Story poll card (*"Tonight's reading mood?"*) to Instagram Stories: [Story ID `18147858853551300`](https://www.instagram.com/writon_socialapp/).
+    - Published companion HyperFrames 9:16 vertical video Reel with embedded ambient audio (*"The thoughts that shaped who you are never arrived in seven seconds"*) to Instagram Reels: [Reel `18094691348434110`](https://www.instagram.com/reel/18094691348434110/).
+  - **19:30 IST Main Feed Card / Carousel (Instagram, Threads, LinkedIn)**:
+    - Published Day 6 Main Feed creative card (*"Reader preferences: mystery, character, or language?"*) to Instagram Feed: [Post ID `18114691450785933`](https://www.instagram.com/writon_socialapp/).
+    - Mirrored craft discussion directly to Threads: [Threads Post ID `17909787528496232`](https://www.threads.net/@writon_socialapp).
+  - **20:30 IST Evening Practice Card (X, Threads, LinkedIn, Instagram)**:
+    - Published Evening Practice Card (*"A reading exercise for tonight: notice the exact sentence that makes you want to continue"*) to X: [Tweet #2098426356908659026](https://x.com/WritOn_Social/status/2098426356908659026) with tracked shortlink thread [#2098426359848853776](https://x.com/WritOn_Social/status/2098426359848853776).
+    - Cross-published to Threads: [Threads Post ID `18170098000458897`](https://www.threads.net/@writon_socialapp).
+    - Cross-published expanded long-form narrative to LinkedIn with visual card: [LinkedIn Post URN `urn:li:share:7504192148800520196`](https://www.linkedin.com/feed/update/urn:li:share:7504192148800520196).
+  - **20:45 IST Evening Stories (Instagram)**:
+    - Published 2-frame Story sequence (*"Reader preferences: Frame 1 Reflection & Frame 2 Quiet tech / App sanctuary"*) to Instagram Stories: Frame 1 ID `18410791546087051`, Frame 2 ID `18174940156432780` ([Instagram Profile](https://www.instagram.com/writon_socialapp/)).
+  - Updated `campaign/published-history.json`, `publishing-calendar.csv`, and `metrics.csv`.
+
+- **HyperFrames Video Rendering Pipeline Integration**:
+  - Installed and configured HeyGen's open-source **HyperFrames** (`v0.8.34`) framework alongside **FFmpeg 9.0.1** (GyanD full build) for deterministic code-to-video rendering on Windows.
+  - Linked the official HyperFrames agent skill suite (19 skills including `/hyperframes-core`, `/motion-graphics`, `/faceless-explainer`, `/product-launch-video`, etc.) directly into Antigravity.
+  - Authored and verified the 9:16 vertical video composition (`campaign/writon-reel-demo/index.html`) using WritOn's official **Warm Ivory Parchment & Watercolor aesthetic** (classical serif *Newsreader* typography, organic terracotta corner blooms, fibrous parchment texture, and GSAP kinetic motion).
+  - Integrated the official custom acoustic piano music (`assets/official_writon_piano.mp3`) provided by the founder, embedded directly via the HTML `<audio id="ambientMusic">` element.
+  - Passed all HyperFrames gate checks (Lint: 0 errors; Runtime: 0 errors; Layout: 0 issues; Motion: 0 errors; Contrast: 30/30 WCAG AA passed).
+  - Deterministically rendered 6-second 1080×1920 MP4 reel with the user's custom piano soundtrack embedded (`writon_reel_with_audio.mp4`).
+  - Added automated daily companion Reel dispatch to Instagram at 12:30 IST in `scratch/sprint2-dispatcher.mjs`.
+
+- **Permanent Bot Comment & Reply Kill Switch**:
+  - Permanently halted all automated bot comments, commenter waves, and threaded reply generation across the platform per user mandate.
+  - Added strict execution guards in `spark-runner.js`: `executeInteractAction` immediately rejects `comment` and `reply` actions; `triggerCommenterWave` and `triggerSparkCommentReaction` return immediately; `scheduleDelayedAction` blocks comment scheduling; and `processDueDelayedActions` automatically cancels any pending or processing comment/reply records in `bot_delayed_actions`.
+  - Cancelled all existing pending delayed comment and reply actions in the production database and disabled `commenter_swarm_enabled` in `bot_global_settings`.
+  - Added unit and contract tests in `server/test/spark-bot-engine.test.js` validating that no bot comments or replies can be scheduled or dispatched.
+
+- **Technical Claim Hard Gate: Numerical & Causal Consistency (Principle 8 & Rigor Auditing)**:
+  - Added strict automated gates in `validateTechnicalClaimHardGate` (`server/src/bot-engine/gemini-spark-client.js`) preventing systems fiction contradictions from publishing:
+    - **Numerical Consistency Gate**: Enforces arithmetic balance across database disk capacities and WAL retention figures (e.g. dropping from 94% to 42% on a 4 TB volume unlinks ~2.08 TB; `restart_lsn` must reflect ~2 TB behind, eliminating the 48 GB contradiction).
+    - **Causal Consistency Gate (The Archive Script Exit 0 Lie)**: PostgreSQL strictly refuses to recycle or unlink unarchived WAL segments when archiving fails; enforces narrative realism where a wrapper script error handler swallowed DNS/network failures and incorrectly exited with status 0, causing PostgreSQL to treat segments as archived and recyclable.
+    - **PostgreSQL Disk Full Reality**: Corrected the misconception that a full WAL volume causes the primary to transition to read-only; accurately reflects PostgreSQL documentation where filling `pg_wal` panics and crashes the primary (`"Let pg_wal fill and take the primary down?"`).
+    - **Continuous WAL Chain Mechanics**: Clarified that an out-of-sync standby cannot recover by selectively copying newer `pg_wal` files because missing segments break the sequential replay chain (`"There is nothing to replay across"`), replacing speculative "silent corruption" assertions.
+    - **`pg_basebackup` Stream Completeness**: Appends the `-R` flag (creates `standby.signal` and configures connection/slot settings) and establishes staging context (`"I SSH'd into the replacement standby in Mumbai"`).
+  - Enforced exact PostgreSQL replication slot mechanics: requires `-C` / `--create-slot` when `pg_basebackup` targets a dropped replication slot (`pg_basebackup ... -C -S ...`).
+  - Added comprehensive test suites in `server/test/spark-bot-engine.test.js` validating all 11 technical rules and edge cases across 230 passing tests.
+- Corrected public writer profiles to resolve Follow/Following through every page of the existing signed-in following endpoint instead of guessing from the writer's first story.
+- Hidden the follow control on the signed-in reader's own public profile and added a localized visible error when a follow request cannot be completed.
+- Added regression coverage for multi-page, absent, and failed relationship lookups without changing any existing API contract.
+- Added a compact Home return entry for unread stories published by followed writers. It uses the existing notification-preference, notification-inbox, and reading-history endpoints, hides completed stories, and marks the source notification read when opened.
+- Kept followed-writer notification settings authoritative and fail-closed when preference or completion data cannot be confirmed; no API contract or database schema changed.
+- Restored Android UI-test compilation by correcting ten invalid Compose `junit4.v2` imports to the installed `junit4` test API.
+- Reworked Explore into a useful first-reading choice: three varied popular stories prioritize the app language when inventory allows, and a separate shelf shows real stories of five minutes or less.
+- Removed invented story placeholders from the active Explore journey. Loading, unavailable-content, retry, and search routes now describe the real state.
+- Added focused selection tests and localized Explore copy across English, Hindi, Bengali, Marathi, Spanish, and French without changing existing API contracts.
+- Corrected the engagement roadmap so the third engaged story is only a review-eligibility evaluation moment; it does not bypass the locked seven-day and 120-day safeguards.
+- **Anti-Mannered Prose Editorial Standard**: Integrated the `mannered-prose` directive across the story generation prompt and Stage 2 editorial audit in `server/src/bot-engine/gemini-spark-client.js`, as well as social media post copy, captions, and card creatives in `campaign/phrase-bank.md` and `AGENTS.md`. Prohibits substituting metaphor and flourish for direct statement (e.g. writing "a dial worth turning" instead of "a parameter worth varying", or "this point earns its keep" instead of "this point still matters"). Directs writers to say what they mean plainly, convey ideas directly rather than performing writerly virtousity, and requires all copy to prefer literal precision over ornamental substitutions.
+- Added a concrete end-of-story recommendation chosen from the existing local feed, prioritizing another writer in the same language and category while retaining the existing writer-profile and discovery routes.
+- Replaced the nonfunctional Library Collections tab with truthful Saved, History, and Applauds destinations. Empty Saved and Applauds views now explain their purpose and offer a direct route back to discovery.
+- Preserved bookmark state when a story appears in the Applauds view instead of always rendering it as unsaved.
+- Improved empty search results with the attempted query, a one-tap broader search, and a route to topic discovery.
+- Added the new reader-retention copy to English, Hindi, Bengali, Marathi, Spanish, and French resources without changing an API contract.
+- **Sprint 2 Day 5 Social Media Live Dispatch & Verification (2026-09-10)**:
+  - Cleared premature published flags from September 9 test run across `campaign/published-history.json` and `campaign/antigravity-2026-09-06-19/publishing-calendar.csv`.
+  - Executed live verified dispatches for all 5 target slots:
+    - **09:00 IST Morning Prompt (X)**: Tweet [#2098055081929412828](https://x.com/WritOn_Social/status/2098055081929412828) with shortlink thread.
+    - **12:30 IST Midday Story (Instagram)**: Story ID `18035766041663484` published to [@writon_socialapp](https://www.instagram.com/writon_socialapp/).
+    - **19:30 IST Main Feed Card (Instagram & Threads)**: Feed media ID `18037320491114516` published and mirrored to Threads.
+    - **20:30 IST Evening Prompt (X)**: Tweet [#2098055424759267773](https://x.com/WritOn_Social/status/2098055424759267773) with shortlink thread.
+    - **20:45 IST Evening Stories (Instagram)**: Two-frame story set published (IDs `18151944793518973` and `18142559368569741`).
+- **LinkedIn Publishing Integration & Live Dispatch**:
+  - Implemented and exported `postToLinkedIn` in `server/src/services/social-poster.js`, utilizing LinkedIn's v2 asset upload registration protocol (`POST /v2/assets?action=registerUpload`) and binary PUT mechanism alongside the v2 UGC Post API (`POST /v2/ugcPosts`).
+  - Successfully resolved the missing function error (`postToLinkedIn is not a function`) that previously blocked automated LinkedIn publishing.
+  - Published Founder Manifesto #1 (*"The Death of the Paragraph (Why We Built a Home for Slow Thoughts)"*) to LinkedIn with the high-resolution brand creative asset (`linkedin_manifesto_death_of_paragraph.png`): [URN `urn:li:share:7503834232134336513`](https://www.linkedin.com/feed/update/urn:li:share:7503834232134336513).
+  - Updated `campaign/published-history.json` with the live LinkedIn post URN.
+
+## 2.0.62 — Twice-Daily FCM Editorial & Quiet-Read Digest Notifications — 2026-09-10
+
+- **Twice-Daily Automated Push Notifications**:
+  - **Morning Edition (09:00 AM IST / 03:30 UTC)**: Dispatches latest trending stories across verified human and high-quality synthetic content with morning-themed editorial copy emphasizing daily momentum, exploration, and trending topics.
+  - **Evening Edition (06:00 PM IST / 12:30 UTC)**: Dispatches human-written quiet reads, strictly restricted to verified human accounts (`author.account_type = 'human'`) and ranked by deep reading time (>= 30s read, >= 70% and 95% completion, return visits) and bookmark counts.
+- **Slotted At-Most-Once Ledger**:
+  - Partitioned `notification_dispatch_ledger` claim keys by edition (`daily_digest:YYYY-MM-DD:morning` and `daily_digest:YYYY-MM-DD:evening`), allowing morning and evening dispatches to execute independently without blocking or colliding on the same editorial date.
+  - Supports concurrent execution safeguards and graceful fallback for missing content.
+- **Differentiated Multilingual Editorial Copy**:
+  - Morning and evening copy templates fully localized in English, Hindi (`hi`), Bengali (`bn`), and Marathi (`mr`).
+  - Differentiated notification titles and bodies tailored to the editorial mode (e.g., *"Morning Dispatch: Trending Now"* vs *"Tonight’s quiet read"*, *"राइटऑन प्रभात: आज का ट्रेंडिंग पाठ"* vs *"आज का चुनिंदा पाठ"*).
+- **Dual Dispatch Infrastructure & High-Priority Delivery**:
+  - Updated Fastify server background timers in `server/src/server.js` with dual daily slots (`DAILY_DIGEST_MORNING_HOUR_UTC`/`MINUTE_UTC` and `DAILY_DIGEST_EVENING_HOUR_UTC`/`MINUTE_UTC`), preserving backwards compatibility with singular trigger configs.
+  - Added slot parameter and `force=true` bypass support to manual trigger endpoint `POST /api/v1/internal/notifications/daily-digest?slot=morning|evening&force=true`, permitting immediate test fires to reach active devices without tripping the 6-hour inactivity gate.
+  - Upgraded direct and topic FCM push delivery priority to `high` (`android.priority: 'high'`) ensuring immediate heads-up presentation on modern Android devices during Doze standby.
+  - Android client compatibility maintained with FCM payload schema: `kind: 'daily_digest'`, `edition: slot`, `storyId`, `storyTitle`, `storySummary`, `authorName`, and localized topic broadcast analytics labels (`daily_digest_morning_topic`, `daily_digest_evening_topic`).
+- **Google Cloud Scheduler Production Provisioning**:
+  - Provisioned and enabled `writon-daily-digest-morning` in Google Cloud (`asia-south1`) on cron `0 9 * * *` (`Asia/Kolkata`) triggering `https://api.writon.cc/api/v1/internal/notifications/daily-digest?slot=morning`.
+  - Provisioned and enabled `writon-daily-digest-evening` in Google Cloud (`asia-south1`) on cron `0 18 * * *` (`Asia/Kolkata`) triggering `https://api.writon.cc/api/v1/internal/notifications/daily-digest?slot=evening`.
+  - Retired the legacy single-slot paused scheduler job (`writon-daily-digest`).
+- **Test Suite**:
+  - All 13 daily digest tests and 208 total server tests (across 19 test suites) passing cleanly.
+
+## 2.0.61 — 14-Principle Editorial System & Adversarial Critic Engine — 2026-09-10
+
+- Implemented the 14-Principle Literary Framework in `server/src/bot-engine/gemini-spark-client.js` to eliminate AI tropes, screenshot-ready aphorisms, and decorative specificity:
+  1. *Premise Integrity*: Every title and central premise must be earned and lived within the narrative world.
+  2. *Narrative Necessity*: Decorative elements must justify their existence or face removal under the "Removal Test".
+  3. *Human Specificity*: Characters carry irreducible, non-stereotypical quirks and idiosyncratic habits.
+  4. *Character Contradiction*: Characters embody internal frictions rather than reducing to single-trait archetypes.
+  5. *Scene Before Summary*: Key qualities are dramatized in dialogue and concrete action rather than summarized in exposition.
+  6. *Consequences Over Concepts*: Ideas carry tangible stakes, friction, and collateral damage for the people involved.
+  7. *Cultural Irreplaceability*: Setting and culture actively shape family dynamics, spaces, bureaucracy, and conflict.
+  8. *Two-Layer Technical Fidelity*: Technical code and mechanics carry narrative metaphor while withstanding software engineering scrutiny.
+  9. *Reader Trust*: Emotions and subtext are created through action rather than explained in prose.
+  10. *Ending Restraint*: Conclusions resolve on physical action, sensory resonance, or unresolved pressure rather than thesis statements.
+  11. *Anti-Template Variation*: Prevents recurring narrative formulas across pieces.
+  12. *Quotability Audit*: Flags and removes polished, screenshot-ready aphorisms in favor of tactile, authentic prose.
+  13. *Persona Fidelity*: Maintains unique cognitive lenses, vocabularies, and blind spots per author persona.
+  14. *The Aftertaste Test*: Leaves an emotional residue or unresolved human question.
+- Introduced Stage 2 Adversarial Editorial Polish: A secondary critic pass directly audits first-draft outputs against the 14 principles, performing targeted rewrites to strip clichés, enforce technical logic, and deepen character stakes before publication.
+- All 35 bot engine unit and integration tests passing cleanly.
+
+## 2.0.60 — Master scheduler autonomous publishing fallback & production deployment — 2026-09-09
+
+- Restored Android 6.0 compatibility for pending preference synchronization by using the API-23 network-callback path instead of calling the Android 7-only default callback unconditionally.
+- Connected the existing personalised-feed client to the unfiltered Home screen behind the default-off `personalized_home_feed_enabled` Remote Config flag, while preserving every existing API route and response contract.
+- Added safe standard-feed fallback for failed or sparse personalised first pages, retained cursor pagination only for genuine personalised sessions, and cleared stale ranking-session metadata when returning to the standard feed.
+- Fixed a first-launch `Resources$NotFoundException` caused by the retired welcome carousel resolving its Writer Studio icon (`ic_edit_orange`) at runtime; the concise welcome screen now uses only directly referenced bundled artwork and has no swipe-triggered dynamic resource path.
+- Fixed the Settings interests flow returning from Interests to the preceding intent screen and looping; completion now returns to the existing Settings destination and guards against duplicate navigation callbacks.
+- Made navigation the sole owner of signed-in preference synchronization after the local atomic save, removing ViewModel-owned requests that could race or be cancelled as the onboarding screen was disposed.
+- Added focused JVM coverage for Settings and ordinary onboarding completion destinations, immediate offline-safe completion, locally preserved choices, and pending account synchronization.
+- Incremented the Android Open Testing candidate to `versionCode 161` / `versionName 2.0.59`.
+
 ## 2.0.60 — Master scheduler autonomous publishing fallback & production deployment — 2026-09-09
 
 - Resolved autonomous publishing stoppage where master scheduler halted empty-handed when editorial trend angles were unapproved or review batches were commissioned.
@@ -41,6 +307,7 @@
 - Standardized Home story cards with a compact category badge, a smaller editorial headline, and reserved title and summary space so artwork and author details remain aligned as content length changes.
 - Incremented Android to versionCode 158 and versionName 2.0.56 for device validation.
 
+- Day 5 Asset Generation & Dispatcher Validation (2026-09-09): Compiled all 6 visual creative assets for Day 5 (2026-09-10) in `campaign/antigravity-2026-09-06-19/assets/day5/` strictly adhering to the Warm Ivory Parchment aesthetic (`#FAF5EE`, terracotta accents `#BA4E28`, book serif typography). Updated `scratch/sprint2-dispatcher.mjs` with Day 5 asset paths and verified all 5 publishing slots and LinkedIn Option A founder manifestos (*The Death of the Paragraph* for morning, *Why We Built for Paper, Not Pixels* for evening) in 100% successful dry-run validation.
 - Aesthetic Standardization — Obsidian Scheme Retired (2026-09-09): Permanently retired the obsidian dark color scheme across all WritOn social channels. Standardized 100% of upcoming and remaining posts, prompts, and carousels strictly onto the signature WritOn Warm Parchment & Watercolor aesthetic (`#FAF5EE` fibrous parchment canvas, terracotta/burnt orange accents, and classical book serif typography with generous 50%+ negative space). Regenerated tonight's Day 4 evening creative assets (`day4_pm_x_card.png` for 20:30 IST X card, and `day4_evening_story_frame_1.png` & `day4_evening_story_frame_2.png` for 20:45 IST Instagram Story) into Warm Parchment aesthetic. Updated brand guidelines in `AGENTS.md`.
 - Strategic Content & Language Pivot to English + Hindi (2026-09-09): Consolidated all upcoming social publishing sprint slots into English (~60%) and Hindi (~40%) exclusively, deferring further localization (Marathi & Bengali) until baseline organic acquisition and retention depth are proven in GA4. Updated Day 4 remaining slots (12:30, 19:30, 20:30, 20:45 IST) and Day 10 (all 5 slots) in `publishing-calendar.csv`. Re-generated Day 4 visual creative assets (`day4_midday_story_frame.png` Hindi poll on Warm Parchment, `day4_main_feed_card.png` English craft exercise on Obsidian Dark, `day4_pm_x_card.png` Hindi evening craft rule, and `day4_evening_story_frame_1.png` & `day4_evening_story_frame_2.png` Hindi reflection & app CTA) strictly adhering to the WritOn watercolor & obsidian aesthetic standards. Recompiled `public/canvas.html` and verified 100% dry-run pass via `sprint2-dispatcher.mjs`.
 - Executed Day 4 morning publishing dispatch (09:00 IST) across X and LinkedIn: published Marathi memory prompt ("पावसाचा वास आला आणि एक जुनी आठवण जागी झाली", Delivery ID `2609_d09_x_card_mr_sprint2_am_marathi_memory_prompt`) with attached watercolor card (`day4_am_x_card.png`), root tweet (ID `2097527988959289781`) with threaded shortlink reply (`2097527991878504786`), and autonomous cross-publishing to LinkedIn (`urn:li:share:7503293689763475456`). Updated `published-history.json`, `metrics.csv`, and `publishing-calendar.csv`.
@@ -48,6 +315,7 @@
 - Executed Day 4 main feed publishing dispatch (19:30 IST) across Instagram, Threads, and LinkedIn: published English sensory detail craft exercise ("A scene begins with a detail, not an explanation", Delivery ID `2609_d09_ig_card_en_sprint2_main_sensory_detail`) with Obsidian Dark card asset (`day4_main_feed_card.png`), deployed live to Instagram feed ([@writon_socialapp](https://www.instagram.com/writon_socialapp/)), Threads ([@writon_socialapp](https://www.threads.net/@writon_socialapp)), and LinkedIn ([URN `7503458693561151488`](https://www.linkedin.com/feed/update/urn:li:share:7503458693561151488)). Synchronized `published-history.json`, `metrics.csv`, and `publishing-calendar.csv`.
 - Executed Day 4 evening publishing dispatch (20:30 IST) on X: published Hindi evening sensory anchor ("रात का सन्नाटा और एक सादा कागज़ — आज अपनी डायरी में क्या लिखेंगे?", Delivery ID `2609_d09_x_card_hi_sprint2_pm_sensory_anchor`) strictly in the Warm Parchment aesthetic (`day4_pm_x_card.png`), root tweet (ID `2097701604581573033`) with threaded shortlink reply (`2097701607446294987`). Synchronized `published-history.json`, `metrics.csv`, and `publishing-calendar.csv`.
 - Executed Day 4 final evening publishing dispatch (20:45 IST) to Instagram Stories: published 2-frame Hindi craft reflection & distraction-free app overview (Delivery ID `2609_d09_ig_story_hi_sprint2_evening_reflection`) strictly in Warm Parchment aesthetic (`day4_evening_story_frame_1.png` Media ID `18071602043555554` & `day4_evening_story_frame_2.png` Media ID `18114605666046376`) to Instagram profile [@writon_socialapp](https://www.instagram.com/writon_socialapp/). Synchronized `published-history.json`, `metrics.csv`, and `publishing-calendar.csv`.
+- Autonomous Trend & SEO Scout Cycle (2026-09-09 21:00 IST): Harvested 615 real-time trends from X (243 India / 372 Global) and 20 search trends from Google Trends. Generated daily synthesis brief `campaign/trends/reports/DAILY_TREND_BRIEF_2026-09-09.md` and updated `campaign/trends/curated-topics.json` with top literary topics and SEO hashtags (#writon, #essays) for Day 5 content steering.
 - LinkedIn Integration & Timetable Publishing (2026-09-09): Implemented LinkedIn UGC API publishing module (`postToLinkedIn`) in `server/src/services/social-poster.js` and wired it into `scratch/sprint2-dispatcher.mjs`. Integrated LinkedIn into the autonomous publishing timetable: morning craft prompts (09:00 IST) and main feed exercises (19:30 IST) are now cross-published to LinkedIn with watercolor card assets and shortlinks, alongside dedicated `platform: "linkedin"` dispatch support. Validated live with first published post `urn:li:share:7503285772201078785`.
 - Production feed delivery update (2026-09-09): Relaxed public post filter in `server/src/server.js` (`GET /api/v1/posts`) to include approved synthetic editorial stories (`provenance in ('human_verified', 'synthetic')` and `author.account_type in ('human', 'editorial_bot')`). Deployed to Cloud Run production revision `writon-app-api-00005-c4z`. All 204 backend tests passing; verified live on `api.writon.cc` with newly published stories (*"The Parchment of Slow Hours: A Review of the Midori MD Notebook"*, *"The Three-Sip Rule in Chamanganj"*, and *"Routing Around the Void"*) appearing immediately at the top of the feed.
 

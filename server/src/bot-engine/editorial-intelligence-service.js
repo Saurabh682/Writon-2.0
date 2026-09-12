@@ -1,11 +1,24 @@
 import { extractTopicHashtags } from './watermark-service.js';
 
 const AUTOMATIC_PUBLICATION_POLICY = Object.freeze({
-  minimumTrendScore: 80,
+  minimumTrendScore: 50,
   minimumIndependentSources: 3,
   maximumSourceAgeHours: 48,
   maximumFutureClockSkewMinutes: 15,
-  allowedTopicCategories: new Set(['Tech', 'Culture', 'Essays', 'Humour'])
+  allowedTopicCategories: new Set([
+    'Tech',
+    'Culture',
+    'Essays',
+    'Humour',
+    'Short Stories',
+    'Poetry',
+    'Reviews',
+    'Business & Finance',
+    'Sports',
+    'Entertainment',
+    'Journalism',
+    'Philosophy'
+  ])
 });
 
 const SENSITIVE_TOPIC_PATTERN = /\b(?:election|polling|politic(?:s|al)?|parliament|government|minister|president|prime\s+minister|war|military|missile|attack|terror(?:ism|ist)?|hostage|invasion|conflict|death|dead|killed|murder|suicide|assault|abuse|minor|child|rape|sexual|medical|medicine|health|disease|diagnosis|treatment|vaccine|drug|therapy|investment|investing|stock|share\s+price|crypto|loan|mortgage|bankruptcy|financial\s+advice|court|lawsuit|legal|crime|arrest|charged|allegation|fraud|scam|communal|riot|religion|caste|protest|sanction|disaster|earthquake|flood|wildfire)\b/i;
@@ -15,7 +28,13 @@ const CATEGORY_HASHTAGS = {
   Essays: ['#Explainers', '#Ideas'],
   Humour: ['#Humour', '#Satire'],
   Poetry: ['#Poetry', '#WritingCommunity'],
-  'Short Stories': ['#ShortStories', '#Storytelling']
+  'Short Stories': ['#ShortStories', '#Storytelling'],
+  Reviews: ['#Reviews', '#TechReviews'],
+  'Business & Finance': ['#Business', '#Finance'],
+  Sports: ['#Sports', '#Athletics'],
+  Entertainment: ['#Entertainment', '#PopCulture'],
+  Journalism: ['#Journalism', '#CurrentAffairs'],
+  Philosophy: ['#Philosophy', '#DeepThinking']
 };
 
 const MINIMUM_PROSE_WORDS = Object.freeze({

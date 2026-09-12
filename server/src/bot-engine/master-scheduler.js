@@ -197,39 +197,40 @@ export async function executeScheduledSlot(pool, slot, {
     const approvedBrief = await getApprovedBrief(pool, { category: 'Trending' });
     if (approvedBrief) {
       const claimedBrief = await claimBrief(pool, approvedBrief.id);
-      if (!claimedBrief) return { action: 'brief_already_claimed', researchBriefId: approvedBrief.id };
-      try {
-        if (claimedBrief.approval_mode === 'automatic_low_risk') {
-          const reevaluation = reevaluateAutomaticEditorialBrief(claimedBrief);
-          if (reevaluation.approval.status !== 'approved') {
-            await holdBrief(pool, claimedBrief.id, reevaluation.approval.reasons.join('; '));
-            return {
-              action: 'held_for_review',
-              researchBriefId: claimedBrief.id,
-              reasons: reevaluation.approval.reasons
-            };
+      if (claimedBrief) {
+        try {
+          let canPublish = true;
+          if (claimedBrief.approval_mode === 'automatic_low_risk') {
+            const reevaluation = reevaluateAutomaticEditorialBrief(claimedBrief);
+            if (reevaluation.approval.status !== 'approved') {
+              await holdBrief(pool, claimedBrief.id, reevaluation.approval.reasons.join('; '));
+              canPublish = false;
+            }
           }
+          if (canPublish) {
+            const result = await runPulse(pool, {
+              topicHint: claimedBrief.topic,
+              category: claimedBrief.topic_category || claimedBrief.category,
+              preferredAuthorPenName: claimedBrief.suggested_author_pen_name,
+              researchDossier: {
+                ...(claimedBrief.research_dossier || {}),
+                topicCategory: claimedBrief.topic_category,
+                verification: claimedBrief.verification,
+                hashtagIntelligence: claimedBrief.hashtag_intelligence
+              },
+              automaticPublication: claimedBrief.approval_mode === 'automatic_low_risk',
+              forcePublication: true
+            });
+            if (!result?.error && result?.postId) {
+              await markBriefPublished(pool, { id: claimedBrief.id, postId: result.postId });
+              return { ...result, researchBriefId: claimedBrief.id };
+            }
+            await holdBrief(pool, claimedBrief.id, result?.error || 'Publishing did not return a post ID');
+          }
+        } catch (error) {
+          console.warn(`[Master Scheduler] Publication for brief ${claimedBrief.id} failed: ${error.message}. Proceeding to topic pivot.`);
+          await releaseBriefClaim(pool, claimedBrief.id, `Scheduled publication failed: ${error.message}`);
         }
-        const result = await runPulse(pool, {
-          topicHint: claimedBrief.topic,
-          category: claimedBrief.topic_category || claimedBrief.category,
-          preferredAuthorPenName: claimedBrief.suggested_author_pen_name,
-          researchDossier: {
-            ...(claimedBrief.research_dossier || {}),
-            topicCategory: claimedBrief.topic_category,
-            verification: claimedBrief.verification,
-            hashtagIntelligence: claimedBrief.hashtag_intelligence
-          },
-          automaticPublication: claimedBrief.approval_mode === 'automatic_low_risk',
-          forcePublication: true
-        });
-        if (result?.error) throw new Error(result.error);
-        if (!result?.postId) throw new Error('Publishing engine returned without a post id');
-        await markBriefPublished(pool, { id: claimedBrief.id, postId: result.postId });
-        return { ...result, researchBriefId: claimedBrief.id };
-      } catch (error) {
-        await releaseBriefClaim(pool, claimedBrief.id, `Scheduled publication failed: ${error.message}`);
-        throw error;
       }
     }
 
@@ -238,9 +239,6 @@ export async function executeScheduledSlot(pool, slot, {
     const editorialSlotIndex = SCHEDULE_SLOTS
       .filter(candidate => candidate.type === 'editorial')
       .findIndex(candidate => candidate.id === slot.id);
-    const angle = angles.length > 0
-      ? angles[Math.max(0, editorialSlotIndex) % angles.length]
-      : null;
     const slotCategories = {
       dawn_digest: 'Essays',
       lunch_satire: 'Humour',
@@ -248,81 +246,91 @@ export async function executeScheduledSlot(pool, slot, {
       midnight_poetry: 'Poetry'
     };
     const fallbackCategory = slotCategories[slot.id] || 'Essays';
+    let selectedAngle = null;
+    let selectedQueuedBrief = null;
 
-    if (!angle?.researchBrief) {
-      const fallbackResult = await runPulse(pool, {
-        category: fallbackCategory,
-        forcePublication: true,
-        automaticPublication: true
-      });
-      return {
-        ...fallbackResult,
-        action: fallbackResult?.postId ? 'published_story' : 'held_for_review',
-        fallback: true,
-        reason: 'No source-backed trend brief was available; executed fallback editorial story'
-      };
-    }
-    const queued = await queueBrief(pool, {
-      ...angle.researchBrief,
-      suggestedAuthorPenName: angle.authorPenName,
-      editorialAngle: angle.editorialAngle
-    });
-    if (queued.status !== 'approved') {
-      const slotCategories = {
-        dawn_digest: 'Essays',
-        lunch_satire: 'Humour',
-        evening_fiction: 'Short Stories',
-        midnight_poetry: 'Poetry'
-      };
-      const fallbackCategory = slotCategories[slot.id] || 'Essays';
-      const fallbackResult = await runPulse(pool, {
-        category: fallbackCategory,
-        forcePublication: true,
-        automaticPublication: true
-      });
-      return {
-        ...fallbackResult,
-        action: fallbackResult?.postId ? 'published_story' : 'queued_for_review',
-        fallback: true,
-        unapprovedBriefId: queued.id,
-        trendScore: queued.trend_score,
-        verification: queued.verification
-      };
-    }
+    if (angles.length > 0) {
+      // Find the first viable angle starting from this slot's index
+      const startIndex = Math.max(0, editorialSlotIndex) % angles.length;
+      for (let i = 0; i < angles.length; i++) {
+        const candidateAngle = angles[(startIndex + i) % angles.length];
+        if (!candidateAngle?.researchBrief) continue;
 
-    const claimedBrief = await claimBrief(pool, queued.id);
-    if (!claimedBrief) return { action: 'brief_already_claimed', researchBriefId: queued.id };
-    try {
-      const reevaluation = reevaluateAutomaticEditorialBrief(claimedBrief);
-      if (reevaluation.approval.status !== 'approved') {
-        await holdBrief(pool, claimedBrief.id, reevaluation.approval.reasons.join('; '));
-        return {
-          action: 'held_for_review',
-          researchBriefId: claimedBrief.id,
-          reasons: reevaluation.approval.reasons
-        };
+        const queued = await queueBrief(pool, {
+          ...candidateAngle.researchBrief,
+          suggestedAuthorPenName: candidateAngle.authorPenName,
+          editorialAngle: candidateAngle.editorialAngle
+        });
+
+        if (queued.status === 'approved') {
+          selectedAngle = candidateAngle;
+          selectedQueuedBrief = queued;
+          break;
+        }
       }
-      const result = await runPulse(pool, {
-        topicHint: claimedBrief.topic,
-        category: claimedBrief.topic_category || claimedBrief.category,
-        preferredAuthorPenName: claimedBrief.suggested_author_pen_name,
-        researchDossier: {
-          ...(claimedBrief.research_dossier || {}),
-          topicCategory: claimedBrief.topic_category,
-          verification: reevaluation.verification,
-          hashtagIntelligence: claimedBrief.hashtag_intelligence
-        },
-        automaticPublication: true,
-        forcePublication: true
-      });
-      if (result?.error) throw new Error(result.error);
-      if (!result?.postId) throw new Error('Publishing engine returned without a post id');
-      await markBriefPublished(pool, { id: claimedBrief.id, postId: result.postId });
-      return { ...result, researchBriefId: claimedBrief.id };
-    } catch (error) {
-      await releaseBriefClaim(pool, claimedBrief.id, `Scheduled publication failed: ${error.message}`);
-      throw error;
     }
+
+    // If an approved trend brief was found from angles, attempt publishing it
+    if (selectedQueuedBrief) {
+      const claimedBrief = await claimBrief(pool, selectedQueuedBrief.id);
+      if (claimedBrief) {
+        try {
+          const reevaluation = reevaluateAutomaticEditorialBrief(claimedBrief);
+          if (reevaluation.approval.status === 'approved') {
+            const result = await runPulse(pool, {
+              topicHint: claimedBrief.topic,
+              category: claimedBrief.topic_category || claimedBrief.category,
+              preferredAuthorPenName: claimedBrief.suggested_author_pen_name,
+              researchDossier: {
+                ...(claimedBrief.research_dossier || {}),
+                topicCategory: claimedBrief.topic_category,
+                verification: reevaluation.verification,
+                hashtagIntelligence: claimedBrief.hashtag_intelligence
+              },
+              automaticPublication: true,
+              forcePublication: true
+            });
+            if (!result?.error && result?.postId) {
+              await markBriefPublished(pool, { id: claimedBrief.id, postId: result.postId });
+              return { ...result, researchBriefId: claimedBrief.id };
+            }
+          } else {
+            await holdBrief(pool, claimedBrief.id, reevaluation.approval.reasons.join('; '));
+          }
+        } catch (error) {
+          await releaseBriefClaim(pool, claimedBrief.id, `Scheduled publication failed: ${error.message}`);
+        }
+      }
+    }
+
+    // TOPIC PIVOT & REWRITE:
+    // When no trend angle qualified or the brief encountered an issue, pivot to a fresh topic & title
+    // in the target category and rewrite a new story rather than stalling the schedule or forcing flawed premises.
+    const chosenCategory = fallbackCategory || 'Essays';
+    let fallbackResult = null;
+    try {
+      fallbackResult = await runPulse(pool, {
+        category: chosenCategory,
+        forcePublication: true,
+        automaticPublication: true
+      });
+    } catch (err) {
+      console.warn(`[Master Scheduler] Fallback pulse failed for ${chosenCategory}: ${err.message}. Retrying with Essays.`);
+      fallbackResult = await runPulse(pool, {
+        category: 'Essays',
+        forcePublication: true,
+        automaticPublication: true
+      }).catch(e => ({ error: e.message }));
+    }
+
+    return {
+      ...fallbackResult,
+      action: fallbackResult?.postId ? 'published_story' : 'held_for_review',
+      fallback: true,
+      topicPivoted: true,
+      category: chosenCategory,
+      reason: selectedQueuedBrief ? 'Trend brief was held or re-evaluated; pivoted to fresh category story rewrite' : 'No source-backed trend angle qualified; pivoted topic and executed fresh category story'
+    };
   }
 
   if (slot.type.startsWith('review_')) {
