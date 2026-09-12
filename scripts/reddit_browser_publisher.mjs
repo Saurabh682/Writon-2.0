@@ -125,6 +125,7 @@ async function saveSessionCookie(rawCookie) {
     if (match) cookieVal = match[1];
   }
   await fs.mkdir(path.dirname(AUTH_STATE_FILE), { recursive: true });
+  const expires = Math.floor(Date.now() / 1000) + (180 * 24 * 3600);
   const storageState = {
     cookies: [
       {
@@ -132,7 +133,27 @@ async function saveSessionCookie(rawCookie) {
         value: cookieVal,
         domain: '.reddit.com',
         path: '/',
-        expires: Math.floor(Date.now() / 1000) + (180 * 24 * 3600),
+        expires,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+      },
+      {
+        name: 'token',
+        value: cookieVal,
+        domain: '.reddit.com',
+        path: '/',
+        expires,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+      },
+      {
+        name: 'token_v2',
+        value: cookieVal,
+        domain: '.reddit.com',
+        path: '/',
+        expires,
         httpOnly: true,
         secure: true,
         sameSite: 'None',
@@ -259,6 +280,13 @@ async function publishPost({ title, body, subreddit = 'writon', headless = true,
   if (dryRun) {
     console.log('🔍 DRY RUN: Submission skipped. Content is valid.');
     return { success: true, dryRun: true };
+  }
+
+  if (!existsSync(AUTH_STATE_FILE)) {
+    const envCookie = process.env.REDDIT_SESSION_COOKIE;
+    if (envCookie) {
+      await saveSessionCookie(envCookie);
+    }
   }
 
   if (!existsSync(AUTH_STATE_FILE)) {
