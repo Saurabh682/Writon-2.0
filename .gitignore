@@ -68,3 +68,10 @@ data-exports/json/
 
 # Uploads (served locally, not committed)
 server/uploads/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+
+# Browser Automation Sessions & Playwright States
+.auth/
+*.storage_state.json

@@ -4,7 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node server/src/server.js"
+    "start": "node server/src/server.js",
+    "campaign:check": "node campaign/scripts/validate-readiness.js",
+    "lint:voice": "node scripts/human_voice_linter.mjs",
+    "study:corpus": "node scripts/study_human_corpus.mjs",
+    "feed:reddit": "node server/src/scripts/generate-reddit-feed.mjs",
+    "post:reddit:login": "node scripts/reddit_browser_publisher.mjs --login",
+    "post:reddit:browser": "node scripts/reddit_browser_publisher.mjs --from-feed",
+    "app:distribute:debug": "gradlew assembleDebug appDistributionUploadDebug",
+    "app:distribute:release": "gradlew assembleRelease appDistributionUploadRelease"
   },
   "dependencies": {
     "@fastify/cors": "^11.3.0",
@@ -18,5 +26,8 @@
     "sharp": "^0.35.3",
     "slugify": "^1.6.6",
     "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
   }
 }

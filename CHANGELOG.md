@@ -1,5 +1,273 @@
 # Changelog & Update History — WritOn 2.0
 
+## Unreleased — Engagement Roadmap Phases 4–5 Completion — 2026-09-12
+
+- **Human Voice Linter Cloud API & Remote MCP Deployment (`human-voice-prompt.js`, `admin-bots.js`, `mcp-server.js`)**:
+  - Exported core `auditTextQuality()` function enabling zero-dependency stylometric evaluation of candidate writing anywhere.
+  - Added dedicated global HTTP REST endpoint `POST /api/v1/spark/lint-voice` returning Humanity Score (0-100), cadence variance, burstiness, and detected AI tropes.
+  - Added `writon_lint_human_voice` tool to the MCP protocol suite, allowing Gemini Spark, Claude, and remote agents to audit drafts over SSE/HTTP JSON-RPC.
+  - Updated `.agents/skills/human-voice-linter/SKILL.md` with curl and MCP invocation guides.
+- **Strict Lowercase Hashtags Standardization (`watermark-service.js`, `editorial-intelligence-service.js`, `AGENTS.md`)**:
+  - Enforced 100% lowercase format for all hashtags across all bot categories (`CATEGORY_DEFAULT_HASHTAGS`, `CATEGORY_HASHTAGS`, `REVIEW_DOMAIN_HASHTAGS`).
+  - Added `lowercaseHashtagsInText()` utility and lowercase normalization in `extractTopicHashtags()` to guarantee no PascalCase or capitalized tags are emitted on stories, reviews, or social cards.
+  - Updated all unit test assertions in `server/test/watermark-service.test.js` to assert lowercase hashtags.
+- **Preference sync recovery:** Home now refreshes its existing-user preference-card state as soon as signed-in preferences are hydrated or retried. Server conflict handling makes onboarding versions and card progression monotonic, so a stale offline device cannot undo a newer dismissal or completion.
+- **Preference-card navigation:** Choosing interests from the Home backfill card now returns to Home; the Settings preference flow continues to return to Settings.
+- **Human-only social push boundary:** Social events are queued for push only when both actor and recipient are human. Delivery repeats that validation, preventing older queued bot, system, test, administrative, or unknown-actor activity from reaching users.
+- **Bot inbox/push separation:** Bot activity can retain its existing in-app history, but the bot engine no longer adds those entries to the external notification delivery outbox. Bookmark activity remains outside the push catalog.
+- **Interrupted-work recovery:** Notification outbox and followed-writer fanout claims recover after five minutes, stop after five attempts, and move exhausted work to a terminal failed state instead of remaining stuck.
+- **Visible duplicate suppression:** Interaction pushes use the logical notification ID as both the FCM Android tag and the app-generated tray ID, so a retry replaces the same notification instead of displaying another copy.
+- **Notification-control contract coverage:** Android request tests now verify that every one of the four legacy and eight granular controls writes only its intended field through the unchanged notification-preferences endpoint.
+- **Compatibility and verification:** Existing endpoints, payload fields, and aliases are unchanged. The server suite passes 312 tests across 29 files; Android debug and release suites pass 210 tests each and instrumentation-test sources compile. Nothing from this entry has been deployed.
+- **Guarded staging evidence:** The staging-only notification installer now includes and verifies the canonical-kind constraint. Verification scripts assert monotonic preference conflict handling plus recovery and terminal handling for interrupted publication fan-out. They remain protected by the existing production-target refusal and do not invoke FCM.
+
+## 2.0.81 — Reddit Playwright Browser Automation Publisher — 2026-09-13
+
+- **Autonomous Reddit Playwright Browser Publisher (`scripts/reddit_browser_publisher.mjs`)**:
+  - Developed a standalone browser automation publisher utilizing Playwright Chromium to bypass Reddit Developer API restrictions, IFTTT Pro paywalls ($2.99/mo), and Make.com custom credential barriers while brand account (`writon_socialapp`) accumulates age and karma.
+  - Features:
+    * **One-Click Session Setup (`npm run post:reddit:login`)**: Launches headed Chromium at `reddit.com/login`, auto-detects successful login, and saves authenticated cookies to git-ignored `.auth/reddit_storage_state.json`.
+    * **Feed-Driven Publishing (`npm run post:reddit:browser`)**: Automatically ingests latest unposted stories from `public/reddit-feed.xml`, strips hashtags according to `campaign/HUMAN_VOICE_CODEX.md`, and prepares Reddit Markdown self-posts.
+    * **Full Form Automation**: Reliably enters Title, switches to Markdown mode, enters body, triggers Post submission, and waits for post confirmation at `https://reddit.com/r/writon/comments/...`.
+    * **Idempotency & Visual Proof**: Records posted stories into `campaign/published-history.json` and captures timestamped post screenshot verification in `.artifacts/`.
+    * **Multi-Source Flexibility**: Supports `--from-feed`, campaign package dispatches (`--day=N`), and custom `--title` / `--body` inputs.
+    * **Zero-Cost Scheduled CI/CD Automation (`.github/workflows/reddit_auto_publisher.yml`)**: Configured GitHub Actions scheduled workflow running at 9:00 AM & 6:00 PM IST with automatic git-sync of `campaign/published-history.json` and manual `workflow_dispatch` button for 100% free cloud execution.
+  - Added npm scripts to `package.json`: `"post:reddit:login"` and `"post:reddit:browser"`.
+  - Added `.auth/` and `*.storage_state.json` to `.gitignore` to prevent leaking session state tokens.
+
+## 2.0.80 — Dedicated Reddit-Specific RSS Feed Pipeline — 2026-09-13
+
+- **Dedicated Reddit RSS Feed Generator (`server/src/scripts/generate-reddit-feed.mjs`, `public/reddit-feed.xml`)**:
+  - Built a specialized RSS 2.0 feed tailored specifically for Reddit community publishing via IFTTT / Zapier official partner bridges, bypassing Reddit self-serve API account restrictions.
+  - Features Reddit-specific formatting:
+    * **Zero Hashtags**: Automatically strips all `#hashtags` from titles and descriptions to align with Reddit anti-spam norms.
+    * **Native Reddit Markdown**: Wraps story excerpts in blockquotes (`> "..."`), bold author attribution, and clean markdown links (`[Read on WritOn](https://writon.cc/stories/...)`).
+    * **Craft Discussion Prompts**: Appends engaging questions (e.g. *"What line resonated most with you? How do you handle silence and rhythm in your verse?"*) to encourage community comment activity.
+    * **Dynamic Subreddit Routing**: Maps categories to target communities (`writon`, `writing`, `poetry`) in `<category>` metadata.
+  - Configured XML cache and CORS headers in `firebase.json` for `/reddit-feed.xml` (`application/rss+xml; charset=utf-8`).
+  - Added unit test validation in `server/test/reddit-feed.test.js` (100% pass rate).
+  - Added `"feed:reddit"` script to root `package.json`.
+
+## 2.0.79 — Human Voice Analysis Agent & Empirical Craft Standards Engine — 2026-09-12
+
+- **Empirical Human Corpus Analysis Engine (`scripts/study_human_corpus.mjs`)**:
+  - Built zero-dependency stylometric analyzer supporting both offline corpus exports (`data-exports/json/posts.json`) and live PostgreSQL database inspection (`--live`).
+  - Analyzed 152,348 human words across 623 verified human-authored posts and 797 comments, isolating genuine writers from synthetic bot accounts (`author_id NOT LIKE 'bot_%'`).
+  - Empirical discoveries:
+    * **Burstiness Index (StdDev) of 37.66**: Reveals massive human variance between 2-word staccato lines and rolling 50-word compound descriptions (contrasting with machine monotony of 4.2–6.5).
+    * **Sentence Length Median of 11 words**: Demonstrates human preference for short, punchy clauses.
+    * **Zero AI Cliché Rate**: 29 of 35 notorious AI words (*delve, tapestry, beacon, testament, unwavering, bustling, multifaceted, ever-evolving*) had 0 hits in 152k words.
+    * **Reader Comment Brevity**: Median comment length is 2 words (mean 2.74 words).
+  - Persisted structured analysis in `data-exports/analysis/live_db_empirical_craft_report.json` and `corpus_stylometrics.json`.
+
+- **Master Human Voice Codex (`campaign/HUMAN_VOICE_CODEX.md`)**:
+  - Formulated the authoritative craft standard for all WritOn social bots, craft generators, and editorial writers:
+    1. **The Empirical Stylome**: Hard benchmarks for sentence length, burstiness, and punctuation rhythm (em-dashes at 12.1 / 1k words; ellipses at 7.9 / 1k words).
+    2. **The Anti-AI Translation Table**: 40+ machine clichés mapped to direct, physical human statements (e.g. replacing *"delve into the rich tapestry"* with *"look at what we hide under the floorboards"*).
+    3. **The 4 Distinct Voice Archetypes**: *The Spare & Restrained*, *The Conversational & Vulnerable*, *The Lyrical & Resonant*, and *The Analytical & Precise*.
+    4. **The 3 Structural Commandments**: Zero throat-clearing openings, mandatory physical sensory anchoring, and ending on silence/action rather than moral summaries.
+
+- **Human Voice Prompt Directive Service (`server/src/services/human-voice-prompt.js`)**:
+  - Exported `getCraftVoicePrompt(archetype)`, `extractSentences()`, `calculateBurstiness()`, and `detectAiTropes()`.
+  - Provides a drop-in system prompt directive forcing any LLM to adhere to the empirical Human Voice Codex.
+
+- **Human Voice Linter CLI Tool (`scripts/human_voice_linter.mjs`)**:
+  - Interactive CLI evaluator calculating a **Humanity Score (0–100)**:
+    * Evaluates candidate text or files (`--text`, `--file`, `--json`).
+    * Flags synthetic AI clichés, detects monotonous cadence (burstiness < 7.0), catches throat-clearing preambles, and flags summary conclusions.
+    * Provides line-by-line editorial diagnostics and recommendations.
+
+- **Comprehensive Vitest Test Suite (`server/test/human-voice.test.js`)**:
+  - 9 unit tests passing (100% pass rate) verifying trope detection, burstiness math, archetype prompt formatting, and linter evaluations. Full server suite stands at 245 passing tests across 20 files with zero regressions.
+
+## 2.0.78 — Autonomous YouTube Automation Bot Suite (Bot Genesis Protocol) — 2026-09-12
+
+- **Autonomous YouTube Bot Fleet Genesis (`rules_youtube.md`, `youtube_api_reference.md`, `YOUTUBE_BOTS.md`)**:
+  - Implemented the complete 7-phase **Bot Genesis Protocol** for YouTube Shorts and Community video publishing.
+  - Zero-dependency client architecture (`server/src/services/youtube-client.js`) using native Node.js `fetch` (Ponytail Principle).
+  - Built-in Google OAuth2 token auto-refresh, in-memory caching, 401 invalidation retry, and HTTP 429 exponential backoff.
+  - Google Resumable Media Upload protocol implementation for reliable binary streaming of 9:16 vertical Shorts and standard MP4 videos.
+  - YouTube Data API v3 quota management respecting the 10,000 unit daily limit (1,600 units/upload, 1 unit/analytics fetch, 100 units/search).
+
+- **Multi-Agent Engine Integration (`social-poster.js`, `social-campaign-coordinator.js`, `social-campaign-publisher.js`)**:
+  - Exported `postToYouTube({ videoPath, title, description, isShort, config })` in `server/src/services/social-poster.js`.
+  - Added `YouTubeSpecialist` collaborative agent class to `SocialCampaignCoordinator` running concurrently via `Promise.allSettled`.
+  - Wired YouTube dispatch step into `social-campaign-publisher.js` and ensured idempotency ledger persistence (`results.youtubeVideoId`).
+  - Added YouTube video metrics harvesting to `scripts/fetch_social_metrics.mjs` for logging views, likes, and comments into `metrics.csv`.
+
+- **First Autonomous YouTube Short Published Live to Brand Account (`@writon_app`)**:
+  - Successfully uploaded WritOn's official premiere YouTube Short to the Brand Account **WritOn — Calm Reading & Writing** ([`@writon_app`](https://www.youtube.com/@writon_app)).
+  - **Live URL**: `https://www.youtube.com/shorts/DYXk3HEeER4` (Video ID: `DYXk3HEeER4`).
+  - Rendered with 9:16 vertical Parchment & Terracotta watercolor aesthetic and native acoustic piano soundtrack.
+  - Authenticated via dedicated Brand Account OAuth refresh token and recorded in `campaign/published-history.json`.
+
+- **YouTube Formatting Governance & Contract Enforcement (`rules_youtube.md`, `youtube-client.js`, `SOCIAL_STRATEGY.md`)**:
+  - **Strict English Language Standard**: Mandated English language only across all automated titles, descriptions, and video tracks. Set `defaultLanguage: 'en'` and `defaultAudioLanguage: 'en'` in YouTube upload metadata snippet.
+  - **Lowercase Hashtags Rule**: Enforced automatic normalization of all tags and in-text hashtags to strictly lowercase (e.g. converting `#Shorts` / `#WritingCommunity` to `#shorts #writingcommunity #writon #craft #storytelling`).
+  - Added unit test validation in `server/test/youtube-client.test.js`.
+
+## 2.0.77 — Day 7 Evening Main Dispatch & Recommendation Engine v2.0 — 2026-09-12
+
+- **Day 7 19:30 IST Main Feed Dispatch Published Across 3 Networks (`scratch/sprint2-dispatcher.mjs`)**:
+  - Successfully dispatched Day 7 Practice Carousel (`2609_d12_ig_carousel_en_sprint2_main_week_one_practice_recap`) focusing on *"Three ways to begin: a character's want, a small gesture, or one unexpected detail"*.
+  - **Instagram Feed Post**: Live on `@writon_socialapp` (ID: `18096870773530616`).
+  - **LinkedIn Post**: Live on founder feed (URN: `urn:li:share:7504539830161207296`, `https://www.linkedin.com/feed/update/urn:li:share:7504539830161207296`).
+  - **X (Twitter) Cross-Post**: Live with full card preview and download reply (ID: `2098774152320839897`, `https://x.com/WritOn_Social/status/2098774152320839897`).
+  - Updated `published-history.json`, `publishing-calendar.csv`, and `metrics.csv`.
+
+- **Day 7 20:30 IST Practice Card & LinkedIn Reflection Dispatched**:
+  - Published evening check-in card to X (Root Tweet `#2098788770615292018`, Thread Reply `#2098788773454819450`).
+  - Published long-form craft essay to LinkedIn (URN: `urn:li:share:7504554492764389376`, `https://www.linkedin.com/feed/update/urn:li:share:7504554492764389376`).
+
+- **Day 7 20:45 IST Evening Story 2-Frame Sequence Dispatched to Instagram**:
+  - Successfully published 2-frame story sequence (`2609_d12_ig_story_en_sprint2_evening_week_one_practice_recap`) to `@writon_socialapp`:
+    * Frame 1 (Reflection & Prompt): ID `18108083102612825`.
+    * Frame 2 (Play Store Intent & Community CTA): ID `18091848026154715`.
+  - All Day 7 publishing deliveries across all 5 planned slots completed 100%.
+
+- **Predictive Reading Recommendation Architecture v2.0 (`campaign/PREDICTIVE_RECOMMENDATION_PLAN.md`)**:
+  - Upgraded blueprint to "The Quiet Library Architecture" following multi-expert architectural review:
+    * Decoupled backend **Multi-Pool Candidate Generation** (5 distinct pools: Familiar, Continuity, Evergreen, Underexposed, Serendipity) from client-side scoring.
+    * Converted language from a blended scoring weight to an absolute **Eligibility Constraint** preventing unwanted script bleed.
+    * Implemented form-aware dwell normalization ($\text{TimeCoverage} = \text{ActiveSeconds} \div T_{\text{expected}}$) with cohort percentile comparisons (evaluating poems only against poems, essays only against essays).
+    * Protected evergreen literature by isolating freshness into a bounded, decaying bonus ($h = 2.5\text{ days}$) while keeping base literary quality decay-free.
+    * Added strict **Synthetic Persona Quarantine** (`is_synthetic: true`) to prevent automated bots from creating artificial popularity loops.
+
+## 2.0.76 — Human Writing Craft-Analysis Engine & Voice Extraction Pipeline — 2026-09-12
+
+- **Live PostgreSQL Database Craft-Analysis Engine (`scripts/analyze_live_db_craft.mjs`, `scripts/read_historical_posts.mjs`)**:
+  - Executed the craft-analysis pipeline directly against the live Supabase production database (741 published public posts, 1,294 comments, 4,246 profiles).
+  - Segregated 612 verified human posts (82.6%) from 129 synthetic bot posts (17.4%).
+  - Deep-read foundational historical human posts dating back to early 2017 across Humour, Short Stories, Poetry, Shayari, and Essays:
+    * Human narratives open without throat-clearing (e.g., immediate dialogue or action beats like the carpenter sawing wood, rain on a rose on the table, or the 5:55 PM glass of water).
+    * Extracted authentic sensory anchors (*paani, chashma, teak wood, rain, chai, stone, dark sky*) grounding emotional beats.
+  - Produced key comparative empirical findings:
+    * Human posts are leaner and more variable: mean 207 words/post with sentence median of 10 words (stdDev: 25.67).
+    * Synthetic bot posts are double the length: mean 402 words/post with sentence median of 15 words (stdDev: 11.8).
+    * Live human comments are overwhelmingly brief and conversational: 92.1% are short reactions (≤ 10 words; median 2 words).
+  - Emitted live database reports: `data-exports/analysis/live_db_audit_report.json`, `live_db_empirical_craft_report.json`, and `historical_posts_craft_reader.json`.
+
+- **Cloud Bot Engine Prompt & Pacing Injection (`gemini-spark-client.js`)**:
+  - Directly infused the empirical human findings into the live LLM prompt architecture (`buildPrompt`):
+    * Enforced zero throat-clearing openings (*in media res*, immediate dialogue/action).
+    * Mandated physical sensory anchors in every scene (*paani*, *chashma*, *teak wood*, *rain on the glass*).
+    * Set sentence length target to ~10-12 words median with natural variance.
+    * Re-anchored ending restraint: concluding on sensory resonance rather than moralizing takeaways.
+  - Re-anchored `generateSparkComment` to align with the 92.1% live human reader distribution: brief, grounded reactions under 25 words addressing one concrete image instead of multi-sentence essay summaries.
+
+- **Corpus Provenance & Data Hygiene Audit (`scripts/audit_corpus_provenance.mjs`)**:
+  - Audited full database export (630 posts, 804 comments, 3,946 profiles) across 196 distinct authors.
+  - Sanitized 64 duplicate title/body records and 149 HTML entity encoding artifacts (`&amp;`, `&quot;`).
+  - Cataloged linguistic distribution (359 English, 183 Romanized Hindi/Urdu, 76 Devanagari Hindi).
+  - Explicitly marked thin sample categories (*Philosophy: 1 post*, *Tech: 6 posts*) as provisional.
+  - Emitted machine-readable audit report at `data-exports/analysis/corpus_audit_report.json` and clean dataset at `data-exports/analysis/cleaned_corpus.json`.
+
+- **Empirical Craft & Stylometric Engine (`scripts/analyze_craft_corpus.mjs`)**:
+  - Implemented length-stable Moving-Average Type-Token Ratio (MATTR, window size 50 words) to prevent text-length sensitivity.
+  - Calculated descriptive sentence length distributions (mean, median, standard deviation, IQR) without arbitrary pass/fail variance cutoffs.
+  - Analyzed parent-aware community comments, confirming actual distribution: 89.7% short reactions (≤ 10 words), 9.5% medium observations (11–40 words), and 0.9% extended reflections.
+  - Emitted empirical craft report at `data-exports/analysis/empirical_craft_report.json`.
+
+- **Human Voice & Craft Codex (`campaign/HUMAN_VOICE_CODEX.md`)**:
+  - Formulated 4 distinct human craft archetypes (*The Spare & Restrained*, *The Conversational & Vulnerable*, *The Lyrical & Resonant*, *The Analytical & Precise*) to prevent persona homogenization.
+  - Defined contextual alternative phrasing for common stock formulas (*delve*, *tapestry*, *crucial*, *realm*, *testament*) without unscientific word blacklists.
+  - Established community comment guidelines based on parent-piece grounding and cultural code-switching.
+  - Outlined a double-blind reader evaluation protocol to measure craft improvement across paired generations.
+
+- **Advisory Draft Craft Review Tool (`scripts/draft_craft_review.mjs`)**:
+  - Developed an advisory CLI tool providing non-punitive, evidence-grounded observations and suggestions for rhythm, MATTR lexical diversity, and ending restraint.
+
+- **Modular Prompt Assembler & Unit Tests (`server/src/services/human-voice-prompt.js`, `server/test/craft-analysis.test.js`)**:
+  - Implemented `getCraftVoicePrompt({ genre, archetype, destination })` delivering targeted, modular directives.
+  - Added unit test suite passing 4/4 verification checks.
+
+## 2.0.75 — Daily Digest Inventory Fallback & Re-Engagement Push Reliability — 2026-09-12
+
+- **Daily Digest Evergreen Inventory Fallback (`server/src/jobs/daily-digest.js`)**:
+  - Eliminated silent skips on days when 0 new stories were published within the trailing 24 hours.
+  - Implemented automatic multi-tiered fallback:
+    1. First selects the highest-engagement historical human post (`account_type = 'human'`, ranked by `deep_read_score desc, likes_count desc, created_at desc`).
+    2. If no human post is available, falls back to any published public story (`is_public = true`, ordered by `created_at desc`).
+  - Added clean copy generation when dispatching from fallback inventory so notification text reads naturally as a daily reading reminder.
+- **Push Notification Delivery Lockout Removal**:
+  - Removed the restrictive 6-hour device inactivity filter (`last_seen_at < now() - interval '6 hours'`) from the daily digest push queries, ensuring registered user devices reliably receive morning (8 AM IST) and evening (6 PM IST) reminders.
+- **Contract & Regression Test Coverage**:
+  - Added unit test in `server/test/daily-digest.test.js` verifying fallback selection when 24h count is zero.
+  - Updated Fastify API contract test (`server/test/fastify.contract.test.js`) verifying graceful handling of empty fallback scenarios.
+  - Verified and deployed revision to Cloud Run (`writon-app-api`) in `asia-south1`.
+
+## 2.0.74 — Instagram Professional Dashboard Analytics Integration & Canvas Sync — 2026-09-12
+
+- **Instagram Professional Dashboard Analytics Integration**:
+  - Ingested authentic performance metrics across 36 published assets directly from Instagram Professional Dashboard (`media_type=all&metric=views&sort_by=highest&timeframe=30`).
+  - Recorded 354 total Instagram views, identifying top performers:
+    1. Video/Reel portrait cover (29 views).
+    2. Ground-Floor Early Adopter carousel ("In 2015, Medium...": 23 views).
+    3. Product desk feature ("A Calmer Writer's Desk": 23 views).
+    4. FOMO manifestos ("In 6 months...", "In 2 years...": 21 and 17 views).
+    5. Hindi literary/heritage pieces ("शब्दों का सफर": 13 views; "बल्लीमारान": 12 views).
+  - Appended top 10 verified Instagram performance records into `campaign/antigravity-2026-09-06-19/metrics.csv` and regenerated `metrics.json` (163 records total).
+
+- **Global Editorial Canvas Growth Dashboard Updates (`public/canvas.html`)**:
+  - Elevated Total Impressions / Reach KPI to **1,030+** (515+ LinkedIn, 354+ Instagram, 160+ X).
+  - Updated Followers / Audience KPI to **26** (18 X, 8 LinkedIn + growing Instagram community).
+  - Updated Published Deliveries KPI to **36+** across Sprints 1 & 2.
+  - Refined Growth & Social Expansion charts:
+    - **Timeline Chart**: Integrated Instagram Views/Reach series alongside LinkedIn and X across campaign sprint milestones.
+    - **Platform Share Donut**: Updated distribution to reflect real proportions (50% LinkedIn, 34% Instagram, 15% X, 1% Threads).
+    - **Expansion Ledger Table**: Prioritized top Instagram views and reel reach metrics.
+
+## 2.0.73 — Review Generator Architecture Overhaul & Trend-Driven Quality Layer — 2026-09-12
+
+- **Review Generator Architecture Overhaul (`server/src/bot-engine/review-generator.js`)**:
+  - Replaced the static fill-in-the-blanks string template with a full Gemini LLM generation pipeline guided by specialist persona cognitive lenses, actual research dossiers, and structured claim-evidence-buyer chains.
+  - Eliminated the indefensible hardcoded default `8.7 / 10` score, generic placeholder text, and irrelevant criteria contamination (such as "battery ageing" on unpowered tools).
+  - Implemented `validateReviewQualityGate` with 7 strict pre-publication quality checks:
+    1. **Product Identity Check**: Product name must appear within the opening 200 characters.
+    2. **Specificity Check**: Rejects drafts where over 60% of sentences lack product-specific terms.
+    3. **Score Justification Check**: Requires sub-category score breakdown or explicit evidence citations.
+    4. **Category Relevance Check**: Forbids domain-incompatible terms (e.g. battery degradation or screen burn-in on mechanical/EDC tools).
+    5. **Competitor Resolution Check**: Rejects placeholder text ("The Category Benchmark") in favor of named products.
+    6. **Title-Promise Check**: Ensures features named in the title receive substantive analysis.
+    7. **Research Utilization Check**: Ensures cited sources contribute actual findings to the body text.
+  - Integrated with `master-scheduler.js` to automatically fall back to queuing for human editorial review rather than publishing low-quality reviews.
+
+- **Defective Review Post Removal**:
+  - Permanently purged the defective Leatherman ARC review post (`7c43f42c-1c76-4ba3-b37c-242392e7fc3e`) from the database and public feeds.
+
+- **Trend-Driven Replacement Publication & Editorial Polish**:
+  - Researched live global cultural trend (Naomi Klein's *Doppelganger*, *The Guardian* interview, and *Financial Times* dialogue on end-times fascism) via `conductDeepTrendResearch`.
+  - Authored and published high-craft literary essay *"The Rippled Double"* (`eb602867-37bb-4776-8f74-0c43bc5e9dc3`) under Priyanka Mishra (`@priyanka_mishra`, `bot_writer_093`).
+  - Sourced and corrected all temporal provenance errors: verified *The Guardian* interview date to September 12, 2026, *Financial Times* essay with Astra Taylor to September 5, 2026, and book attribution for *Doppelganger* to September 2023.
+  - Eliminated unattributed decorative blockquotes, cut ~25% of redundant mirror/double metaphors, introduced authentic boatman interaction with Suresh, added visceral personal culpability (the Gorakhpur municipal WhatsApp argument), and integrated a grounded exploration of ritual access stratification along the Varanasi riverfront.
+
+- **Hard Pre-Publication Source-Provenance Consistency Gate (`validateSourceProvenanceGate` in `gemini-spark-client.js`)**:
+  - Implemented automated gate enforcing chronological date-stamp verification, matching citations against verified research dossiers, detecting book-to-breaking-news date cross-contamination, and converting unattributed decorative blockquotes to narrative prose.
+
+## 2.0.72 — LinkedIn Campaign Analytics Integration & Global Editorial Canvas Sync — 2026-09-12
+
+- **Recoverable account creation**: When Firebase account creation succeeds but session verification or profile synchronization fails, the signup screen now changes to “Finish account setup” and retries only the incomplete setup step. It no longer attempts to create the same Firebase identity again, and all existing authentication/profile APIs remain unchanged.
+
+- **Honest Settings surface**: Removed disabled “Applause — Coming soon,” static account-avatar, and unavailable privacy rows. Existing applause, profile, account-security, deletion, and notification behavior is unchanged; Settings now presents only controls that users can act on.
+
+- **2.0.65 release artifact**: Generated and locally verified the signed production AAB for `versionCode 164` after both 205-test JVM variants, Android-test compilation, release lint, and Google Sign-In checks passed. No API, database, cloud service, scheduler, or Play release was changed.
+
+- **Quiet Library recommendation roadmap**: Reconciled the predictive recommendation blueprint with the existing v1 feed engine and added a gated R0–R7 plan covering metadata, privacy-safe active reading, form-cohort quality, candidate pools, server-side re-ranking, explicit language choice, synthetic-interaction quarantine, and controlled rollout. This is documentation only and preserves all current feed APIs and production behavior.
+
+- **Reliable notification registration**: Reused Firebase's valid cached identity token instead of forcing a network refresh during every device registration and revocation attempt, removed the duplicate navigation-layer registration, coalesced simultaneous token-sync work, and suppressed unchanged repeat registrations for 24 hours. Token, account, permission, or app-version changes still register immediately. Guest registration and all existing notification API routes remain unchanged.
+
+- **LinkedIn Campaign Metrics Harvesting & Persistence (`campaign/antigravity-2026-09-06-19/metrics.csv`, `metrics.json`)**:
+  - Ingested official 7-day LinkedIn analytics: **515 post impressions**, **8 followers**, and **6 profile viewers**.
+  - Recorded detailed post breakdown across 10 live LinkedIn posts totaling **569 post impressions** and **8 reactions** into the persistent campaign ledger.
+  - Linked active LinkedIn share and activity URNs (`7503292883949740032`, `7499522876627402752`, `7503834235305353216`, `7503285773153222656`, `7504386482779070464`, etc.) with their respective Sprint delivery IDs.
+
+- **Global Editorial Canvas Growth Analytics Dashboard (`public/canvas.html`)**:
+  - Updated KPI scorecard: Total Impressions/Reach increased from `108+` to `680+` (incorporating 515+ LinkedIn impressions); Total Likes & Reactions updated to `23` (10 IG, 8 LinkedIn, 5 X); added Followers/Audience KPI card (`8` followers, `6` viewers).
+  - Integrated LinkedIn Impressions series into the `Impressions & Reach by Sprint Delivery` timeline chart (`chart-impressions-timeline`) with brand LinkedIn blue (`#0077B5`).
+  - Updated Platform Reach Share donut (`chart-platform-donut`) to reflect 79% LinkedIn impression volume alongside X (15%) and Instagram (5%).
+  - Updated Likes & Interaction bar chart (`chart-engagement-bar`) with 8 LinkedIn reactions.
+  - Expanded `EXPANSION_POSTS` table with top-performing LinkedIn posts, impressions, reaction counts, and direct clickable links.
+
 ## 2.0.71 — Anti-VC Satire Guardrails & Mandated Category Realignment — 2026-09-12
 
 - **Mandated Editorial Realignment & Anti-VC Satire Purge**:
@@ -148,6 +416,7 @@
 
 - Prepared Android `versionCode 164` / `versionName 2.0.65` as the next production release candidate and refreshed the five supported Google Play locale notes to describe only verified user-facing changes.
 - Added a deterministic AAB handoff for Antigravity, with production API/signing inputs, completed automated checks, and a hard Play-upload gate for the still-unverified production owned-content contract.
+- Restored release `SYMBOL_TABLE` packaging in Gradle so the next bundle includes every native symbol available from its dependencies; already-stripped third-party libraries may still produce a Play advisory.
 
 - Fixed profile photos on non-production Android builds by allowing avatar media from the app's configured API host, while retaining the existing HTTPS and trusted-host protections.
 
