@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L3H0RQ5ZQY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L3H0RQ5ZQY', { send_page_view: true });
+  </script>
+
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title id="page-title">Story Preview — WritOn</title>
@@ -13,8 +22,8 @@
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260913_thicker" />
+  <link rel="shortcut icon" href="/favicon.ico?v=20260913_thicker" />
 
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
   <link id="canonical-link" rel="canonical" href="https://writon.cc/stories" />
@@ -44,7 +53,8 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" media="print" onload="this.media='all'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap"></noscript>
-  <link rel="stylesheet" href="/stories/share.css?v=20260909_2" />
+  <link rel="stylesheet" href="/stories/share.css?v=20260913_format" />
+  <script src="/assets/marked.min.js"></script>
 
   <!-- Schema.org FAQPage Structured Data for Generative AI & Google Search Rich Snippets -->
   <script type="application/ld+json">
@@ -96,9 +106,7 @@
 
     <article id="story-article" style="display:none;">
       <header class="story-header" data-nosnippet>
-        <a href="/" class="brand-badge">
-          <span>✒ WritOn</span>
-        </a>
+        <a href="/" class="brand-badge" aria-label="WritOn home"><img src="/assets/writon-nav-logo.webp?v=20260913_thicker" alt="WritOn" width="22" height="22" style="border-radius:50%; object-fit:cover; vertical-align:middle; display:inline-block;" /><span>WritOn</span></a>
         <h1 id="story-title"></h1>
         <div class="story-meta-row">
           <div id="author-avatar-wrap"></div>
@@ -112,6 +120,17 @@
       <div id="cover-wrap"></div>
 
       <div id="story-content" class="story-content"></div>
+
+      <div id="next-story-card" class="next-story-card" style="display:none;" data-nosnippet>
+        <span class="next-story-badge">Next 5-Minute Read</span>
+        <a id="next-story-link" href="#" class="next-story-title"></a>
+        <div class="next-story-meta">
+          <span id="next-story-author"></span>
+          <span>•</span>
+          <span id="next-story-time">5 min read</span>
+        </div>
+        <a id="next-story-btn" href="#" class="next-story-btn">Read Next Story →</a>
+      </div>
 
       <div class="app-cta-card" data-nosnippet>
         <h3>Continue Reading in WritOn</h3>
@@ -142,88 +161,207 @@
         .replace(/'/g, '&#39;');
     }
 
-    function formatMarkdownToHtml(rawText) {
-      if (!rawText) return '';
-
-      // Strip watermarks
-      let clean = String(rawText)
-        .replace(/<!--\s*#writon\s*watermark\s*-->/gi, '')
-        .replace(/<span\b[^>]*class=["']writon-watermark["'][^>]*>[\s\S]*?<\/span>/gi, '')
-        .trim();
-
-      // Extract fenced code blocks (``` or ~~~) first so syntax and indentation are preserved
+    function parseMarkdownFallback(clean) {
+      // Extract fenced code blocks
       const codeBlocks = [];
-      const withPlaceholders = clean.replace(/(?:^|\n)(?:```|~~~)([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)\r?\n(?:```|~~~)/g, (_match, lang, code) => {
+      let text = clean.replace(/(?:^|\n)(?:```|~~~)([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)\r?\n(?:```|~~~)/g, (_match, lang, code) => {
         const token = `\n\nWRITONCODEBLOCK${codeBlocks.length}TOKEN\n\n`;
         codeBlocks.push({ lang: (lang || '').trim(), code });
         return token;
       });
 
-      // Escape HTML
-      let text = escapeHtmlClient(withPlaceholders);
+      function formatInline(str) {
+        return str
+          .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/g, '<em>$1</em>')
+          .replace(/_(.*?)_/g, '<em>$1</em>')
+          .replace(/`([^`]+)`/g, '<code>$1</code>')
+          .replace(/\[(.*?)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      }
 
-      // Markdown formatting
-      text = text
-        .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
-        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-        .replace(/^(?:---|___|\*\*\*)$/gim, '<hr class="story-divider">')
-        .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/_(.*?)_/g, '<em>$1</em>')
-        .replace(/`([^`]+)`/g, '<code>$1</code>')
-        .replace(/\[(.*?)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+      // Extract and render markdown tables
+      text = text.replace(/(?:^|\n)(\|[^\n]+\|\r?\n\|[-:\s|]+\|\r?\n(?:\|[^\n]+\|\r?\n?)+)/g, (_match, tableBlock) => {
+        const rows = tableBlock.trim().split(/\r?\n/).map(r => r.trim());
+        if (rows.length < 2) return tableBlock;
 
-      const chunks = text.split(/\n\n+/).filter(Boolean);
+        const parseCells = (row) => {
+          return row.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+        };
 
-      return chunks.map(chunk => {
+        const headerCells = parseCells(rows[0]);
+        const alignCells = parseCells(rows[1]).map(a => {
+          const left = a.startsWith(':');
+          const right = a.endsWith(':');
+          if (left && right) return 'center';
+          if (right) return 'right';
+          return 'left';
+        });
+
+        let tableHtml = '<div class="story-table-wrap"><table><thead><tr>';
+        headerCells.forEach((c, idx) => {
+          const align = alignCells[idx] ? ` style="text-align:${alignCells[idx]}"` : '';
+          tableHtml += `<th${align}>${formatInline(escapeHtmlClient(c))}</th>`;
+        });
+        tableHtml += '</tr></thead><tbody>';
+
+        for (let i = 2; i < rows.length; i++) {
+          const cells = parseCells(rows[i]);
+          tableHtml += '<tr>';
+          cells.forEach((c, idx) => {
+            const align = alignCells[idx] ? ` style="text-align:${alignCells[idx]}"` : '';
+            tableHtml += `<td${align}>${formatInline(escapeHtmlClient(c))}</td>`;
+          });
+          tableHtml += '</tr>';
+        }
+        tableHtml += '</tbody></table></div>';
+        return `\n\n${tableHtml}\n\n`;
+      });
+
+      // Split into block chunks by 2+ newlines
+      const rawChunks = text.split(/\n\n+/).filter(Boolean);
+      const outputBlocks = [];
+
+      for (const chunk of rawChunks) {
         const trimmed = chunk.trim();
-        if (!trimmed) return '';
+        if (!trimmed) continue;
 
-        // Check if chunk is a code block placeholder
+        // Already rendered table
+        if (trimmed.startsWith('<div class="story-table-wrap">')) {
+          outputBlocks.push(trimmed);
+          continue;
+        }
+
+        // Code block placeholder
         const codeMatch = trimmed.match(/^WRITONCODEBLOCK(\d+)TOKEN$/);
         if (codeMatch) {
           const idx = parseInt(codeMatch[1], 10);
           const block = codeBlocks[idx];
           if (block) {
             const escapedCode = escapeHtmlClient(block.code);
-            const langClass = block.lang ? ` class="language-${escapeHtmlClient(block.lang)}"` : '';
-            return `<pre${langClass}><code>${escapedCode}</code></pre>`;
+            outputBlocks.push(`<pre><code>${escapedCode}</code></pre>`);
+          }
+          continue;
+        }
+
+        // Horizontal Rule
+        if (/^(?:---|___|\*\*\*)$/.test(trimmed)) {
+          outputBlocks.push('<hr class="story-divider">');
+          continue;
+        }
+
+        // Process line by line within chunk to handle headings, lists, and quotes seamlessly
+        const lines = trimmed.split(/\r?\n/);
+        let currentListType = null; // 'ul' or 'ol'
+        let currentListItems = [];
+
+        function flushList() {
+          if (currentListType && currentListItems.length > 0) {
+            const tag = currentListType;
+            outputBlocks.push(`<${tag}>${currentListItems.map(li => `<li>${formatInline(li)}</li>`).join('')}</${tag}>`);
+            currentListType = null;
+            currentListItems = [];
           }
         }
 
-        if (trimmed.startsWith('<h') || trimmed.startsWith('<hr')) return trimmed;
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          const trimmedLine = line.trim();
+          if (!trimmedLine) continue;
 
-        // Hashtags
-        if (/^#[a-zA-Z0-9_]+(?:\s+#[a-zA-Z0-9_]+)*$/.test(trimmed)) {
-          const tags = trimmed.split(/\s+/).map(t => `<span class="hashtag">${t}</span>`).join(' ');
-          return `<div class="story-hashtags">${tags}</div>`;
+          // Heading 1-6
+          const headingMatch = trimmedLine.match(/^(#{1,6})\s+(.+)$/);
+          if (headingMatch) {
+            flushList();
+            const level = headingMatch[1].length;
+            const hText = formatInline(escapeHtmlClient(headingMatch[2]));
+            outputBlocks.push(`<h${level}>${hText}</h${level}>`);
+            continue;
+          }
+
+          // Blockquote
+          if (/^(?:&gt;|>)/.test(trimmedLine)) {
+            flushList();
+            const quoteText = formatInline(escapeHtmlClient(trimmedLine.replace(/^(?:&gt;|>)\s*/, '')));
+            outputBlocks.push(`<blockquote><p>${quoteText}</p></blockquote>`);
+            continue;
+          }
+
+          // Unordered list item (- , * , + , •)
+          const ulMatch = trimmedLine.match(/^(?:[-*+•]|&bull;)\s+(.+)$/);
+          if (ulMatch) {
+            if (currentListType && currentListType !== 'ul') flushList();
+            currentListType = 'ul';
+            currentListItems.push(escapeHtmlClient(ulMatch[1]));
+            continue;
+          }
+
+          // Ordered list item (1. , 2. )
+          const olMatch = trimmedLine.match(/^\d+\.\s+(.+)$/);
+          if (olMatch) {
+            if (currentListType && currentListType !== 'ol') flushList();
+            currentListType = 'ol';
+            currentListItems.push(escapeHtmlClient(olMatch[1]));
+            continue;
+          }
+
+          // Plain paragraph line
+          flushList();
+          outputBlocks.push(`<p>${formatInline(escapeHtmlClient(trimmedLine))}</p>`);
         }
 
-        const lines = trimmed.split(/\n/);
+        flushList();
+      }
 
-        // Blockquotes
-        if (lines.every(l => /^(?:&gt;|>)/.test(l.trim()))) {
-          const quoteContent = lines.map(l => l.trim().replace(/^(?:&gt;|>)\s*/, '')).join('<br>');
-          return `<blockquote><p>${quoteContent}</p></blockquote>`;
+      return outputBlocks.join('\n');
+    }
+
+    function formatMarkdownToHtml(rawText) {
+      if (!rawText) return '';
+
+      // Normalize linebreaks defensively
+      const normalized = String(rawText)
+        .replace(/\\r\\n/g, '\n')
+        .replace(/\\n/g, '\n')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n');
+
+      // Strip watermarks
+      let clean = normalized
+        .replace(/<!--\s*#writon\s*watermark\s*-->/gi, '')
+        .replace(/<span\b[^>]*class=["']writon-watermark["'][^>]*>[\s\S]*?<\/span>/gi, '')
+        .trim();
+
+      // Extract trailing hashtags before markdown parsing if present
+      let hashtagsHtml = '';
+      clean = clean.replace(/(?:^|\n)(#[a-zA-Z0-9_]+(?:\s+#[a-zA-Z0-9_]+)*)\s*$/, (_match, tagLine) => {
+        const tags = tagLine.trim().split(/\s+/).map(t => `<span class="hashtag">${escapeHtmlClient(t)}</span>`).join(' ');
+        hashtagsHtml = `\n<div class="story-hashtags">${tags}</div>`;
+        return '';
+      }).trim();
+
+      if (window.marked && typeof window.marked.parse === 'function') {
+        try {
+          window.marked.setOptions({
+            gfm: true,
+            breaks: false
+          });
+          let html = window.marked.parse(clean);
+
+          // Wrap <table> in responsive scrolling container
+          html = html.replace(/<table>([\s\S]*?)<\/table>/gi, '<div class="story-table-wrap"><table>$1</table></div>');
+
+          // Ensure external links open safely in new tab
+          html = html.replace(/<a\s+href="(https?:\/\/[^"]+)"(?![^>]*target=)/gi, '<a href="$1" target="_blank" rel="noopener"');
+
+          return html + hashtagsHtml;
+        } catch (e) {
+          console.warn('marked parsing error, falling back to built-in parser', e);
         }
+      }
 
-        // Numbered Lists (1. , 2. )
-        if (lines.every(l => /^\d+\.\s+/.test(l.trim()))) {
-          const items = lines.map(l => `<li>${l.trim().replace(/^\d+\.\s+/, '')}</li>`).join('');
-          return `<ol>${items}</ol>`;
-        }
-
-        // Unordered Lists (- , * , • )
-        if (lines.every(l => /^(?:[-*•]|&bull;)\s+/.test(l.trim()))) {
-          const items = lines.map(l => `<li>${l.trim().replace(/^(?:[-*•]|&bull;)\s+/, '')}</li>`).join('');
-          return `<ul>${items}</ul>`;
-        }
-
-        return `<p>${trimmed.replace(/\n/g, '<br>')}</p>`;
-      }).filter(Boolean).join('\n');
+      // Robust Built-In Fallback Parser
+      return parseMarkdownFallback(clean) + hashtagsHtml;
     }
 
     async function loadStory() {
@@ -231,7 +369,7 @@
       const slug = pathParts[pathParts.length - 1];
 
       if (!slug || slug === 'stories') {
-        window.location.href = '/#explore';
+        window.location.href = '/explore';
         return;
       }
 
@@ -364,12 +502,125 @@
         document.getElementById('loading').style.display = 'none';
         document.getElementById('story-article').style.display = 'block';
 
+        // Telemetry: Story Opened
+        if (typeof gtag === 'function') {
+          gtag('event', 'story_opened', {
+            story_id: post.id || slug,
+            story_title: post.title,
+            author: authorName,
+            reading_time_min: readingTime,
+            utm_source: urlParams.get('utm_source') || 'direct',
+            utm_medium: urlParams.get('utm_medium') || 'none',
+            utm_campaign: urlParams.get('utm_campaign') || 'none'
+          });
+        }
+
+        // Telemetry: Story Completed (read through to end with dwell)
+        let storyCompletedFired = false;
+        const dwellStartTime = Date.now();
+        const nextCard = document.getElementById('next-story-card');
+
+        function triggerStoryCompleted() {
+          if (storyCompletedFired) return;
+          const elapsed = Math.round((Date.now() - dwellStartTime) / 1000);
+          if (elapsed >= 15) {
+            storyCompletedFired = true;
+            if (typeof gtag === 'function') {
+              gtag('event', 'story_completed', {
+                story_id: post.id || slug,
+                story_title: post.title,
+                author: authorName,
+                dwell_seconds: elapsed,
+                reading_time_min: readingTime,
+                platform: 'web'
+              });
+            }
+          }
+        }
+
+        if ('IntersectionObserver' in window && nextCard) {
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                triggerStoryCompleted();
+              }
+            });
+          }, { threshold: 0.2 });
+          observer.observe(nextCard);
+        }
+
+        window.addEventListener('scroll', () => {
+          if (storyCompletedFired) return;
+          const scrollPos = window.scrollY || window.pageYOffset;
+          const winHeight = window.innerHeight || document.documentElement.clientHeight;
+          const docHeight = document.documentElement.scrollHeight;
+          if ((scrollPos + winHeight) / (docHeight || 1) >= 0.8) {
+            triggerStoryCompleted();
+          }
+        }, { passive: true });
+
+        // Load Next 5-Minute Read recommendation
+        loadNextRecommendation(slug, post.id, post.category);
+
       } catch (err) {
         document.getElementById('loading').innerHTML = `
           <h2>Story Not Found</h2>
           <p style="margin: 16px 0;">This story may have been moved or removed.</p>
           <a href="/" style="color: #B5442A; font-weight: 600; text-decoration: none;">← Back to WritOn Home</a>
         `;
+      }
+    }
+
+    async function loadNextRecommendation(currentSlug, currentPostId, currentCategory) {
+      try {
+        let recRes = await fetch(`${API_BASE}/api/v1/posts?limit=15`).catch(() => null);
+        if (!recRes || !recRes.ok) {
+          recRes = await fetch(`${FALLBACK_API_BASE}/api/v1/posts?limit=15`).catch(() => null);
+        }
+        if (!recRes || !recRes.ok) return;
+        const recData = await recRes.json();
+        const posts = Array.isArray(recData) ? recData : (recData.posts || recData.data || []);
+        const candidate = posts.find(p => {
+          const pSlug = p.slug || p.id;
+          return pSlug && pSlug !== currentSlug && p.id !== currentPostId && p.title;
+        });
+        if (!candidate) return;
+
+        const candSlug = candidate.slug || candidate.id;
+        const candTitle = candidate.title;
+        const candAuthor = candidate.author?.penName || candidate.author?.fullName || candidate.authorName || 'WritOn Author';
+        const candTime = candidate.readingTimeMin || candidate.readingTimeMinutes || 5;
+        const candUrl = `/stories/${encodeURIComponent(candSlug)}?utm_source=web_reader&utm_medium=next_story&utm_campaign=writon_growth_2026_09`;
+
+        const nextCard = document.getElementById('next-story-card');
+        const nextLink = document.getElementById('next-story-link');
+        const nextBtn = document.getElementById('next-story-btn');
+        const nextAuthor = document.getElementById('next-story-author');
+        const nextTime = document.getElementById('next-story-time');
+
+        if (nextCard && nextLink && nextBtn) {
+          nextLink.href = candUrl;
+          nextLink.textContent = candTitle;
+          nextBtn.href = candUrl;
+          if (nextAuthor) nextAuthor.textContent = candAuthor;
+          if (nextTime) nextTime.textContent = `${candTime} min read`;
+
+          const onNextClick = () => {
+            if (typeof gtag === 'function') {
+              gtag('event', 'next_story_tapped', {
+                from_story_id: currentPostId || currentSlug,
+                to_story_id: candidate.id || candSlug,
+                platform: 'web'
+              });
+            }
+          };
+          nextLink.addEventListener('click', onNextClick);
+          nextBtn.addEventListener('click', onNextClick);
+
+          nextCard.style.display = 'flex';
+        }
+      } catch (recErr) {
+        console.warn('Could not load next recommendation:', recErr);
       }
     }
 

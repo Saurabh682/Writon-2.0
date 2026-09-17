@@ -719,7 +719,79 @@ NASCAR's jar makes a different sound altogether: the electric hum of a brand tha
       expect(res.violations.some(v => v.rule === 'ABSTRACT_CULTURE_WITHOUT_OBJECT_FAIL')).toBe(true);
     });
   });
+
+  describe('22. FIRST_PERSON_WITNESS_CLAIM_FAIL', () => {
+    it('flags invented first-person eyewitness reportage and scene descriptions in non-fiction culture commentary', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'When Streaming Memory Enters the Cinema Hall',
+        content: 'The projector lamp at the single-screen theatre in Gorakhpur hums for five minutes before the beam touches the white curtain. In the balcony rows, two hundred men are waiting for a character they already watched bleed to death.',
+        category: 'Culture',
+        persona: { penName: 'meera_varma', fullName: 'Meera Varma' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'FIRST_PERSON_WITNESS_CLAIM_FAIL')).toBe(true);
+    });
+  });
+
+  describe('23. UNVERIFIED_INDUSTRY_FIRST_FAIL', () => {
+    it('flags unverified sweeping historical claims of an industry-wide first', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'When Streaming Memory Enters the Cinema Hall',
+        content: 'The release on September 4 marks the first time an Indian streaming franchise has been turned backward into cinemas.',
+        category: 'Culture',
+        persona: { penName: 'meera_varma', fullName: 'Meera Varma' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'UNVERIFIED_INDUSTRY_FIRST_FAIL')).toBe(true);
+    });
+  });
+
+  describe('24. FICTIONAL_PRECISION_FAIL', () => {
+    it('flags synthetic technical precision metrics in cultural non-fiction commentary', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'When Streaming Memory Enters the Cinema Hall',
+        content: 'The sound is amplified through fifty-kilowatt surround horns until the acoustic vibration rattles the concrete floor.',
+        category: 'Culture',
+        persona: { penName: 'meera_varma', fullName: 'Meera Varma' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'FICTIONAL_PRECISION_FAIL')).toBe(true);
+    });
+  });
+
+  describe('Full Calibrated Rewrite Verification: "When Streaming Memory Enters the Cinema Hall"', () => {
+    it('passes cleanly with zero violations on the rewritten calibrated essay', () => {
+      const calibratedContent = `When the creators of *Mirzapur* announced a theatrical film set between episodes six and seven of the first season, they described the transition as a deliberate wager on community viewing. Over three seasons, the fiction had lived on personal screens—propped on pillows, carried through commutes on local trains, paused at will, or replayed alone in fragments. Moving that world onto a fifty-foot cinema screen was framed not merely as an expansion, but as a test of whether an audience that built an intimate relationship with a streaming series would gather in the dark to watch it together.
+
+The initial commercial outcome answered that practical question directly: the film recorded a ₹132 crore worldwide opening weekend, establishing that streaming familiarity could indeed be converted into box-office footfall. But the creative problem underpinning the production remains far more delicate than the revenue figures suggest.
+
+The film is structured as an untold chapter set inside the timeline of the 2018 debut season. That temporal placement allows the production to resurrect Munna Tripathi, played by Divyendu Sharma, alongside Pankaj Tripathi's Akhandanand and Ali Fazal's Guddu Pandit. Commercially, the maneuver carries an obvious advantage: it restores widely celebrated characters to the screen without untangling the narrative knots of subsequent seasons. Yet the director, Gurmmeet Singh, acknowledged the choice as a significant gamble, precisely because the audience enters the cinema hall carrying complete foreknowledge of where these trajectories lead.
+
+In classical dramatic tradition, foreknowledge intensifies dread. When an audience watches Oedipus inquire into the murder of Laius, or Karna prepare his chariot, the tension springs from knowing the catastrophe is already sealed. The drama derives its force from watching a protagonist advance toward an outcome the viewer cannot alter.
+
+In modern franchise cinema, however, foreknowledge operates in reverse. It does not heighten tragic dread; it deepens audience affection. Viewers who bought tickets to *Mirzapur: The Movie* did not sit in the dark dreading Munna's fate because they already watched what waits for him in the Season 2 finale. Instead, their familiarity functions as an invitation to complicity. They watch him handle a country-made pistol, strut through provincial corridors, and issue reckless ultimatums with the particular pleasure of seeing a favourite performance re-enacted within safe temporal boundaries. The story does not have to surprise them with mortality; it only has to satisfy their recollection of an attitude.
+
+Streaming allowed *Mirzapur* to become an unusually private possession: paused, skipped, replayed, watched alone or in fragments. The coarse idiom of Purvanchal—the dry courtesies, the unhurried cadences of regional dominance, the abrupt domestic violence—became digital currency, clipped into short video fragments and shared across messaging apps. In a cinema hall, that private vocabulary is amplified through a theatre sound system and projected across a packed auditorium. The experience shifts from solitary consumption to collective ritual, where the audience anticipates punchlines and catches familiar cadences before the actors finish delivering them.
+
+The transition from phone screen to cinema hall proves that streaming loyalty can fill auditoriums. But it also reveals how franchise nostalgia works: it offers viewers the comfort of a world whose endings have already been settled, inviting them to pay for the privilege of remembering what they once watched alone.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'When Streaming Memory Enters the Cinema Hall',
+        content: calibratedContent,
+        category: 'Culture',
+        persona: { penName: 'meera_varma', fullName: 'Meera Varma' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(true);
+      expect(res.violations).toHaveLength(0);
+    });
+  });
 });
+
 
 
 

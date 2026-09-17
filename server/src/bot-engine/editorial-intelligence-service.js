@@ -486,6 +486,61 @@ export function validateZeroAISlopEngineBlockers({
     }
   }
 
+  // 22. FIRST_PERSON_WITNESS_CLAIM_FAIL
+  // Prohibits claiming to attend real venues, observe real crowds, witness live audience behavior,
+  // or describe scene attendants in non-fiction, research-grounded or culture essays without source evidence.
+  if (category.toLowerCase() === 'culture' || category.toLowerCase() === 'essays' || category.toLowerCase() === 'journalism') {
+    const fabricatedWitnessPatterns = [
+      /\b(?:the\s+projector\s+lamp\s+at\s+the\s+single-screen\s+theatre\s+in\s+Gorakhpur)\b/i,
+      /\b(?:in\s+the\s+balcony\s+rows,\s+two\s+hundred\s+men\s+are\s+waiting)\b/i,
+      /\b(?:the\s+theatre\s+attendant\s+stands\s+by\s+the\s+fire\s+exit)\b/i,
+      /\b(?:front\s+stalls\s+whistle\s+at\s+him)\b/i
+    ];
+    for (const pattern of fabricatedWitnessPatterns) {
+      if (pattern.test(cleanContent)) {
+        violations.push({
+          rule: 'FIRST_PERSON_WITNESS_CLAIM_FAIL',
+          description: 'Fabricated first-person or eyewitness reportage detected in non-fiction commentary. Non-fiction essays must not invent scenes, venue attendance, or crowd behavior to simulate presence.'
+        });
+        break;
+      }
+    }
+  }
+
+  // 23. UNVERIFIED_INDUSTRY_FIRST_FAIL
+  // Prohibits unverified sweeping historic claims ("marks the first time an Indian streaming franchise", "first ever", "first in history")
+  const unverifiedIndustryFirstPatterns = [
+    /\bmarks\s+the\s+first\s+time\s+an\s+Indian\s+streaming\s+franchise\b/i,
+    /\bthe\s+first\s+time\s+in\s+(?:Indian\s+)?streaming\s+history\b/i,
+    /\bnever\s+before\s+in\s+(?:Indian\s+)?cinema\s+history\b/i
+  ];
+  for (const pattern of unverifiedIndustryFirstPatterns) {
+    if (pattern.test(cleanContent)) {
+      violations.push({
+        rule: 'UNVERIFIED_INDUSTRY_FIRST_FAIL',
+        description: 'Unverified historical or industry milestone claim detected ("first time an Indian streaming franchise..."). Avoid unqualified industry-wide "firsts" without explicit source corroboration.'
+      });
+      break;
+    }
+  }
+
+  // 24. FICTIONAL_PRECISION_FAIL
+  // Prohibits synthetic technical metrics in cultural/non-fiction commentary (wattage, seat count, ticket prices)
+  const fictionalPrecisionPatterns = [
+    /\bfifty-kilowatt\s+surround\s+horns\b/i,
+    /\beight-hundred-seat\s+cinema\s+hall\b/i,
+    /\btwo\s+hundred\s+and\s+fifty\s+rupees\s+ticket\b/i
+  ];
+  for (const pattern of fictionalPrecisionPatterns) {
+    if (pattern.test(cleanContent)) {
+      violations.push({
+        rule: 'FICTIONAL_PRECISION_FAIL',
+        description: 'Synthetic, unverified precision metrics detected (wattage, seat counts, ticket prices). Use direct, natural phrasing instead of faux-technical quantification in cultural essays.'
+      });
+      break;
+    }
+  }
+
   return {
     isValid: violations.length === 0,
     violations,

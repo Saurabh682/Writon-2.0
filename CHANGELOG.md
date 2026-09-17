@@ -1,5 +1,57 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.1.77 — Non-Fiction Reportage Integrity, Eyewitness Guardrails & Meera Varma Cultural Calibration — 2026-09-17
+
+- **Think Brain Rule Implementation (Rules 22, 23, 24)**:
+  - Added `FIRST_PERSON_WITNESS_CLAIM_FAIL` (Rule 22) in `editorial-intelligence-service.js`: Prohibits claiming to attend real venues, observe real crowds, witness live audience behavior, or describe scene attendants in non-fiction, research-grounded, or culture essays without verified source evidence.
+  - Added `UNVERIFIED_INDUSTRY_FIRST_FAIL` (Rule 23) in `editorial-intelligence-service.js`: Prohibits unqualified sweeping historic claims ("marks the first time an Indian streaming franchise", "first ever", "first in history") without explicit primary source corroboration.
+  - Added `FICTIONAL_PRECISION_FAIL` (Rule 24) in `editorial-intelligence-service.js`: Prohibits synthetic technical metrics (wattage, seat count, ticket prices) in cultural commentary.
+  - Updated `EDITORIAL_BRAIN.json` in both `server/src/services/` and `campaign/` to reflect all 24 Zero AI Slop hard gates.
+  - Added unit and regression tests in `server/test/zero-ai-slop-blockers.test.js` (now 44 tests passing). Total test suite at 519/519 passing across 53 test files.
+- **Meera Varma Essay Calibration (*When Streaming Memory Enters the Cinema Hall*)**:
+  - Rewrote the essay (Post ID: `bcaf3f60-0538-478a-9c4d-731a62d6d233`, author: `bot_writer_021` Meera Varma) to completely eliminate fabricated first-person eyewitness reportage (removed invented Gorakhpur theatre projector lamp, fictional 200-man crowd, fire exit attendant, and whistling stalls).
+  - Restructured the opening around documented filmmaker evidence: Pankaj Tripathi and the creators conceiving *Mirzapur: The Movie* as a deliberate wager on community viewing versus private phone/TV consumption.
+  - Nuanced the franchise structure: framed as an untold chapter set between episodes 6 and 7 of Season 1, noting director Gurmmeet Singh's acknowledgment of it as a "significant gamble" with returning characters (Munna Tripathi, Akhandanand, Guddu Pandit).
+  - Corrected factual framing: cited the ₹132 crore worldwide opening weekend confirming theatrical conversion, replaced tragic foreknowledge (dread) vs franchise foreknowledge (affection/pleasure), and eliminated synthetic precision metrics.
+  - Synchronized PostgreSQL (`public.posts`, `public.editorial_failure_patterns`, `public.editorial_narrative_fingerprints`), regenerated all RSS/sitemap feeds (`feed.xml`, `rss.xml`, `sitemap.xml`, `reddit-feed.xml`, `pinterest-feed.xml`), and updated pre-rendered static story HTML in `public/stories/`.
+
+## 2.1.76 — Founding Writer Invitation Editorial Refinement & 'Open Your Writing Desk' CTA — 2026-09-17
+
+- **Editorial Copy Calibration (`server/src/email/render/founding-writers-invitation.js`)**:
+  - **Tightened Opening**: Condensed the opening by ~20% directly to the emotional core: *"You wrote on WritOn before this version existed. That history still matters here. Over the past few months, we’ve rebuilt WritOn around a stubborn conviction: writing shouldn’t have to perform for an algorithm before someone gets the chance to read it."*
+  - **Sharpened Privilege Box Hierarchy**: Made privilege titles (*Permanent Founding Writer Badge*, *Priority Human Curation*, *A Quieter Writing Space*) visually distinct with bold 15px typography and high-contrast styling (`#2A221B`), keeping descriptive copy subordinate (13.5px, `#5A4F44`).
+  - **Editorial Note Branding**: Rebranded the craft truth card into *"From the WritOn desk"* with an italicized editorial thought: *“Write the opening sentence last. Find the piece first, then sharpen the door into it.”*
+  - **Warm, Textured Library Proof**: Rephrased the inventory statement to prioritize literary texture: *"While you were away, the library grew to 766 stories, poems, essays and reflections across 15 writing categories, from Urdu ghazals to investigative technology."*
+  - **Product-Native Primary CTA**: Adopted the understated, product-native CTA button: **“Open your writing desk”** (`#9C3E1D`, 16px font-weight 600, mobile 100% full-width), pointing to the personalized verification portal.
+  - **Quiet Sign-Off**: Added an authentic, low-volume editorial sign-off (*With warm regards, / The Editors at WritOn*).
+  - **Clean Footer & Dot Elimination**: Replaced character bullets and dots with clean text dividers (`Manage preferences | Unsubscribe`) to eliminate any chance of threading truncation artifacts in Gmail.
+  - **Test Verification**: Unit tests passing (`test/email-foundation.test.js`); live sample 5 dispatched and confirmed in `saurabh.682@gmail.com` (Resend Message ID: `01a0aff8-95eb-7508-aaa6-4298c9206a87`).
+
+## 2.1.75 — Gemini Spark Trend Intelligence Ingestion & Editorial Gate Airlock — 2026-09-17
+
+- **Decoupled Architecture (Spark as Radar, WritOn as Source of Truth)**:
+  - Gemini Spark is strictly positioned as the research and observation layer; it **never** directly generates or publishes stories.
+  - Implemented the master ingestion endpoint `POST /api/v1/trends/ingest` (with alias `POST /api/trends/ingest`) guarded by dedicated credential `TREND_INGEST_SECRET` (fail-closed in production, non-overloaded `Authorization: Bearer` and `x-trend-secret`).
+  - Added full idempotency with SHA-256 payload hashing (`payload_hash`), unique partial index on `(source, external_run_id)`, and a unique constraint on `(source, payload_hash)`. Returns 200 OK for completed duplicates, 202 Accepted for in-flight processing, and 409 Conflict for run ID mismatches.
+
+- **PostgreSQL Trend Intelligence Subsystem (`server/migrations/20260918_trend_intelligence.sql`)**:
+  - `public.trend_reports`: Historical payload archive with explicit processing state machine (`received`, `processing`, `processed`, `partially_processed`, `failed`), `observed_at`, and processing breakdown telemetry.
+  - `public.trend_signals`: Normalized canonical trend entities with `slug`, `canonical_topic`, `aliases[]`, `normalized_keywords[]`, dual lifecycle statuses (`source_status` vs `computed_status`), peak scores, and velocity tracking.
+  - `public.trend_signal_snapshots`: Per-report snapshots linked via `unique(signal_id, report_id)` recording `observed_at`, `score_delta`, `elapsed_hours`, and normalized `velocity_per_day` clamped against a minimum 6-hour window.
+  - `public.trend_opportunities` (**The Airlock Table**): Sits between raw signals and the creative backlog, decoupled via `unique(signal_id, report_id)` to qualify trends into `candidate`, `qualified`, `watchlist`, `rejected`, and `seeded` without manufacturing premature premises.
+  - `public.editorial_ideas_backlog`: Extended with clean unidirectional foreign keys (`source_trend_opportunity_id`, `source_trend_signal_id`, `source_trend_report_id`, `source_type`, `trend_score`).
+
+- **Independent WritOn Intelligence & Editorial Governance**:
+  - **Zero-SSRF Syntactic Evidence Scorer**: Analyzes source diversity, recognized reputable domains (Google, Reuters, The Verge, arXiv, GitHub, etc.), and protocol syntax while strictly blocking private IP ranges (`127.0.0.1`, `10.*`, `192.168.*`, `localhost`) without making synchronous HTTP requests during ingestion.
+  - **Policy-Based Sensitivity Classification**: Categorizes topics into `safe`, `sensitive`, `political`, `breaking_news`, `crime`, `health`, `financial`, `unverified_claim`, and `reputation_risk`. Blocks unverified claims and reputation risks; routes political/breaking news to review-only watchlists.
+  - **Multi-Factor Opportunity Scoring & Persona Ranking**: Computes composite opportunity scores balancing momentum, domain relevance, 60-day novelty, evidence confidence, and persona fit minus risk penalties. Ranks top candidate personas from `LEGACY_WRITER_PERSONAS` with affinity scores, deferring author assignment to the editorial state machine.
+  - **Backlog Seeding Gate**: Checks active cooldowns (`editorial_cooldowns` via `editorial-memory-service.js`) and existing premises before seeding qualified ideas.
+
+- **Fastify Radar Routes & Developer Documentation**:
+  - Added query endpoints `GET /api/v1/trends/opportunities`, `GET /api/v1/trends/signals`, and `GET /api/v1/trends/reports`.
+  - Authored `docs/SPARK_TREND_SYNC_GUIDE.md` detailing the `# WritOn Sync` command, Schema 1.0.0, and HTTP dispatch contracts.
+  - Verified with 20 Vitest unit and integration tests passing (`server/test/trend-intelligence.test.js`).
+
 ## 2.1.74 — Planning-State Leakage Elimination, 21 Zero AI Slop Gates & Meera Varma Calibration — 2026-09-17
 
 - **Meera Varma Cultural Essay Rebuild — *"When Streaming Memory Enters the Cinema Hall"* (`bcaf3f60-0538-478a-9c4d-731a62d6d233`)**:

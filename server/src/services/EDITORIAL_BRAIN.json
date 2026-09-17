@@ -8,7 +8,7 @@
     "0:00 Cut Hook: Put the strongest, sharpest sentence at the very top (in video 0:00-0:02; on social in the first 80 characters above the fold).",
     "Sensory Anchors: Ground abstractions in physical objects (tea cooling at 5:55 PM, folded receipts, chipping clay cups).",
     "Cadence & Spacing: Avoid self-competition by enforcing at least 48h separation between identical proposition archetypes.",
-    "Zero AI Slop Hard Gates: All generators must pass the 21 engine blockers (TRENDING_KEYWORD_AS_TITLE_FAIL, TOPIC_SUBSTITUTION_FAIL, CURRENT_TOPIC_STALE_SOURCE_FAIL, ABSTRACT_CONCLUSION_WITHOUT_CAUSAL_BRIDGE_FAIL, PERSONA_ERASURE_FAIL, GENERIC_APHORISM_FAIL, DECORATIVE_CODE_FAIL, METAPHOR_AS_CODE_FAIL, BROKEN_SENTENCE_FAIL, SCRAPED_DEFINITION_FAIL, TRUNCATED_SOURCE_FAIL, EMPTY_QUOTE_FAIL, GENERIC_REFLECTION_TEMPLATE_FAIL, PERSONA_ABSENCE_FAIL, PRECISE_TECH_DETAIL_WITHOUT_SOURCE_FAIL, UNEARNED_TITLE_OCCUPATION_FAIL, FABRICATED_SOURCE_DETAIL_FAIL, PLANNER_TEXT_LEAK_FAIL, TITLE_NATURALNESS_CHECK, UNATTRIBUTED_APHORISM_FAIL, ABSTRACT_CULTURE_WITHOUT_OBJECT_FAIL) before any candidate text touches disk or queue."
+    "Zero AI Slop Hard Gates: All generators must pass the 24 engine blockers (TRENDING_KEYWORD_AS_TITLE_FAIL, TOPIC_SUBSTITUTION_FAIL, CURRENT_TOPIC_STALE_SOURCE_FAIL, ABSTRACT_CONCLUSION_WITHOUT_CAUSAL_BRIDGE_FAIL, PERSONA_ERASURE_FAIL, GENERIC_APHORISM_FAIL, DECORATIVE_CODE_FAIL, METAPHOR_AS_CODE_FAIL, BROKEN_SENTENCE_FAIL, SCRAPED_DEFINITION_FAIL, TRUNCATED_SOURCE_FAIL, EMPTY_QUOTE_FAIL, GENERIC_REFLECTION_TEMPLATE_FAIL, PERSONA_ABSENCE_FAIL, PRECISE_TECH_DETAIL_WITHOUT_SOURCE_FAIL, UNEARNED_TITLE_OCCUPATION_FAIL, FABRICATED_SOURCE_DETAIL_FAIL, PLANNER_TEXT_LEAK_FAIL, TITLE_NATURALNESS_CHECK, UNATTRIBUTED_APHORISM_FAIL, ABSTRACT_CULTURE_WITHOUT_OBJECT_FAIL, FIRST_PERSON_WITNESS_CLAIM_FAIL, UNVERIFIED_INDUSTRY_FIRST_FAIL, FICTIONAL_PRECISION_FAIL) before any candidate text touches disk or queue."
   ],
   "proposition_archetypes": {
     "contrarian_rule": {
@@ -95,6 +95,18 @@
       {
         "code": "PRECISE_TECH_DETAIL_WITHOUT_SOURCE_FAIL",
         "description": "Flags hyper-specific synthetic numbers (frequencies, coordinates, temperatures, voltages, speeds, model numbers, timestamps) generated merely to simulate technical authority without verifiable grounding in primary sources."
+      },
+      {
+        "code": "FIRST_PERSON_WITNESS_CLAIM_FAIL",
+        "description": "Prohibits claiming to attend real venues, observe real crowds, witness live audience behavior, or describe scene attendants in non-fiction, research-grounded or culture essays without source evidence."
+      },
+      {
+        "code": "UNVERIFIED_INDUSTRY_FIRST_FAIL",
+        "description": "Prohibits claiming 'first ever', 'first Indian', 'first in history' or sweeping industry milestones without explicit primary source corroboration."
+      },
+      {
+        "code": "FICTIONAL_PRECISION_FAIL",
+        "description": "Prohibits synthetic technical precision metrics (wattage, seat counts, ticket prices) in cultural essays and non-fiction commentary."
       }
     ],
     "anti_repetition_doctrine": [
