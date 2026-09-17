@@ -18,8 +18,20 @@ import {
   recordLedgerEntry,
   validateAntiRepetition
 } from './editorial-ledger-service.js';
+import { queryInsights } from '../services/editorial-brain.js';
 import { ensureContextualComment, resolvePublicationCategory, resolveEngagementCategory } from './content-relevance-service.js';
 import { validateGeneratedArticleIntegrity } from './editorial-intelligence-service.js';
+import {
+  getRecentFingerprints,
+  getActiveCooldowns,
+  buildPremiseCard,
+  validatePremiseOriginality,
+  extractNarrativeFingerprint,
+  storeNarrativeFingerprint,
+  setCooldowns,
+  registerFailurePattern,
+  formatCooldownsForPrompt
+} from './editorial-memory-service.js';
 import { enqueueOutboxEvent, enqueueStorySyndication } from './outbox-service.js';
 
 function createSlug(title) {
@@ -42,40 +54,12 @@ function calculateReadingTime(content) {
 async function createNotification(client, { recipientId, actorId, postId = null, commentId = null, kind, message }) {
   if (!recipientId || recipientId === actorId) return;
 
-  const inserted = await client.query(
+  await client.query(
     `insert into public.notifications (recipient_id, actor_id, post_id, comment_id, kind, message)
      values ($1, $2, $3, $4, $5, $6)
      returning id::text as id`,
     [recipientId, actorId, postId, commentId, kind, message]
   );
-
-  try {
-    const preferenceColumn = kind === 'follow' ? 'follows_enabled'
-      : kind === 'editorial' ? 'editorial_enabled'
-        : kind === 'publishing' ? 'publishing_enabled'
-          : 'interactions_enabled';
-    const preference = await client.query(
-      `select ${preferenceColumn} as enabled
-         from public.notification_preferences
-        where profile_id = $1`,
-      [recipientId]
-    );
-    if (preference.rowCount > 0 && preference.rows[0].enabled === false) return;
-
-    if (inserted.rows && inserted.rows.length > 0) {
-      await client.query(
-        `insert into public.notification_delivery_outbox (notification_id, recipient_id)
-         values ($1, $2)
-         on conflict (notification_id) do nothing`,
-        [inserted.rows[0].id, recipientId]
-      );
-    }
-  } catch (error) {
-    if (error?.code === '42P01') {
-      return;
-    }
-    // Retain in-app notification without rolling back applaud
-  }
 }
 
 let tablesEnsured = false;
@@ -179,7 +163,7 @@ export async function seedInitialBotNetwork(pool) {
         bot.postFrequencyHours,
         bot.likeProbability,
         bot.commentProbability,
-        bot.commentStyle,
+        bot.commentStyle || 'Reflective, grounded, and literary.',
         initialLastPostedAt
       ]);
     }
@@ -614,6 +598,24 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
   ).catch(() => ({ rows: [] }));
   const recentStories = recentStoriesRes.rows;
 
+  // ── Narrative Memory: Pre-Generation Hooks ──
+  const recentFingerprints = await getRecentFingerprints(pool, {
+    authorId: bot.id, limit: 15, globalLimit: 30
+  }).catch(() => ({ persona: [], platform: [] }));
+  const activeCooldowns = await getActiveCooldowns(pool, bot.id).catch(() => []);
+  const cooldownBlock = formatCooldownsForPrompt(activeCooldowns);
+
+  // Build premise card and validate before committing to a full draft
+  const premiseCard = buildPremiseCard(bot, topicHint, targetCategory, researchDossier);
+  if (premiseCard.topic_hint !== topicHint) {
+    topicHint = premiseCard.topic_hint;
+  }
+  const premiseCheck = validatePremiseOriginality(premiseCard, recentFingerprints, activeCooldowns);
+  if (!premiseCheck.passed) {
+    console.warn(`[Spark Runner] Premise originality FAILED for "${bot.fullName}": ${premiseCheck.violations.join('; ')}. Pivoting topic.`);
+    topicHint = premiseCheck.suggestedPivot || `Choose a completely fresh, original topic in ${targetCategory} that you have never written about.`;
+  }
+
   let articleData;
   if (customTitle && customContent) {
     articleData = {
@@ -638,7 +640,8 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       excludeTitles: existingTitles,
       recentStories,
       memories: botMemories,
-      researchDossier
+      researchDossier,
+      cooldownBlock
     });
   }
 
@@ -649,9 +652,12 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     content: articleData.content
   }).catch(() => ({ isValid: true, sanitizedTitle: articleData.title, sanitizedContent: articleData.content, sanitizedSummary: articleData.summary }));
 
-  if (govCheck.sanitizedTitle) articleData.title = govCheck.sanitizedTitle;
-  if (govCheck.sanitizedContent) articleData.content = govCheck.sanitizedContent;
-  if (govCheck.sanitizedSummary) articleData.summary = govCheck.sanitizedSummary;
+  if (!govCheck.isValid) {
+    const violationSummary = govCheck.violations?.map(v => `"${v.pattern}" (${v.reason})`).join(', ');
+    console.warn(`[Spark Runner] Anti-Repetition gate FAILED for "${articleData.title}": ${violationSummary}`);
+    await registerFailurePattern(pool, null, bot.id, 'ANTI_REPETITION_FAIL', violationSummary, articleData.title).catch(() => {});
+    throw new Error(`Anti-Repetition gate rejected publication: ${violationSummary}`);
+  }
 
   const coverImage = getCoverImageForCategory(targetCategory);
   const readingTime = calculateReadingTime(articleData.content);
@@ -764,6 +770,24 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       targetPostId: createdPost.id,
       details: { slug: createdPost.slug, readingTimeMin: readingTime }
     }).catch(err => console.warn('[Spark Runner] Ledger record warning:', err.message));
+
+    // Extract and store narrative fingerprint + active cooldowns
+    (async () => {
+      try {
+        const fp = await extractNarrativeFingerprint(
+          createdPost.title,
+          articleData.content,
+          bot,
+          targetCategory,
+          settings.gemini_api_key || process.env.GEMINI_API_KEY
+        );
+        await storeNarrativeFingerprint(pool, createdPost.id, fp);
+        await setCooldowns(pool, fp, createdPost.id);
+        console.log(`[Spark Runner] Narrative fingerprint & cooldowns stored for "${createdPost.title}" (${createdPost.id})`);
+      } catch (fpErr) {
+        console.warn('[Spark Runner] Narrative fingerprint storage warning:', fpErr.message);
+      }
+    })().catch(() => {});
 
     // Auto-trigger reader applaud wave and commenter reflections in background
     triggerSparkReaction(pool, {
@@ -1656,10 +1680,26 @@ export async function runSparkPulse(pool, options = {}) {
 
     if (targetBot) {
       const targetCategory = requestedCategory || targetBot.categories[Math.floor(Math.random() * targetBot.categories.length)] || 'Essays';
+
+      // Seed high-tension craft proposition from Editorial Brain when no explicit topic is provided
+      let resolvedTopicHint = topicHint;
+      if (!resolvedTopicHint) {
+        try {
+          const availableInsights = queryInsights({ availableOnly: true });
+          if (availableInsights.length > 0) {
+            const picked = availableInsights[Math.floor(Math.random() * Math.min(availableInsights.length, 5))];
+            resolvedTopicHint = picked.hook_0_sec || picked.body_core || picked.title;
+            console.log(`[Spark Pulse] Editorial Brain seeded topic: "${resolvedTopicHint}" (insight ${picked.id})`);
+          }
+        } catch (e) {
+          console.warn(`[Spark Pulse] Editorial Brain query failed (${e.message}), proceeding without seed.`);
+        }
+      }
+
       const createdPost = await executePostAction(pool, {
         botId: targetBot.id,
         category: targetCategory,
-        topicHint,
+        topicHint: resolvedTopicHint,
         researchDossier
       });
       await client.query('commit');

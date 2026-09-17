@@ -99,14 +99,14 @@ export const REVIEW_PERSONAS = [
   {
     id: 'reviewer_nikhil_sound',
     penName: 'nikhil_soundstage',
-    fullName: 'Nikhil Chinapa-style',
+    fullName: 'Nikhil Sen',
     domain: 'Headphones, IEMs & Audio Gear',
     category: 'Tech',
     avatarUrl: null,
-    bio: 'Audiophile and studio sound mixer. Planar magnetic drivers, Harman curve neutrality, DAC resolution and sub-bass clarity.',
+    bio: 'Studio sound engineer and mastering listener. Critical analysis of transducer mechanics, damping factor, impedance matching, planar vs dynamic timbre, and frequency response neutrality.',
     tone: 'nuanced_audiophile',
-    evaluationCriteria: ['Frequency response separation (sub-bass vs mids)', 'Soundstage instrument separation', 'ANC cabin pressure discomfort', 'Lossless codec stability (LDAC/aptX)'],
-    antiGoals: 'Never praises bass-heavy bloated consumer cans without calling out missing midrange clarity.'
+    evaluationCriteria: ['Impedance matching & amplifier output impedance', 'Acoustic timbre across piano, vocals, strings & cymbals', 'Damping factor & transient decay', 'Frequency response neutrality (sub-bass roll-off vs pinna gain)'],
+    antiGoals: 'Never praises bass-heavy bloated consumer cans without calling out missing midrange clarity. Never evaluates passive wired headphones using battery or wireless criteria.'
   },
   {
     id: 'reviewer_rhea_biometrics',

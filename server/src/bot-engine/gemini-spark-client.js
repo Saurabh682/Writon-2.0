@@ -2,6 +2,8 @@ import { getAuthenticFallbackArticle } from './curated-articles.js';
 import { formatMemoriesForPrompt } from './learning-service.js';
 import { attachHashtagsAndWatermark } from './watermark-service.js';
 import { buildContextualComment, ensureContextualComment } from './content-relevance-service.js';
+import { GENRE_CRAFT_GUIDANCE, getCraftVoicePrompt, VOICE_ARCHETYPES, auditTextQuality } from '../services/human-voice-prompt.js';
+import { validateZeroAISlopEngineBlockers } from './editorial-intelligence-service.js';
 
 /**
  * Gemini Spark Client
@@ -51,19 +53,40 @@ export function validateContentSafety(content, title = '') {
 
 /**
  * Hard Pre-Publication Gate for Technical & Systems Pieces (Principle 8).
- * Ensures consistency between narrative events and commands/SQL/system mechanisms.
+ * Ensures consistency between narrative events and commands/SQL/system mechanisms,
+ * and detects overused narrative skeletons structurally to force topic pivot.
  */
 export function validateTechnicalClaimHardGate(content, category = '') {
   if (!content || typeof content !== 'string') return { isValid: true, sanitizedContent: content };
   let sanitized = content;
   const violations = [];
 
-  const isTech = category.toLowerCase() === 'tech' || /postgresql|postgres|database|wal\b|lsn\b|replica/i.test(content);
+  const isTech = category.toLowerCase() === 'tech';
   if (!isTech) return { isValid: true, sanitizedContent: content, violations };
+
+  // Structural detection: if content matches the PostgreSQL WAL/replication-slot skeleton,
+  // flag structural reject — pivot topic.
+  const walSkeletonSignals = [
+    /pg_drop_replication_slot/i,
+    /pg_basebackup/i,
+    /restart_lsn/i,
+    /pg_wal/i,
+    /replication\s+slot/i,
+    /standby\.signal/i,
+    /checkpoint.*recycl/i,
+    /WAL\s+segment/i
+  ];
+  const matchCount = walSkeletonSignals.filter(p => p.test(content)).length;
+  if (matchCount >= 4) {
+    violations.push({
+      rule: 'structural_wal_skeleton',
+      description: `Content matches the PostgreSQL WAL/replication-slot narrative skeleton (${matchCount}/8 signals). Structural reject — pivot topic.`
+    });
+  }
 
   // Rule 1: Code & State Consistency
   // If a replication slot is dropped in the text, any subsequent pg_basebackup with that slot MUST create it
-  const droppedSlotMatch = content.match(/pg_drop_replication_slot\(\s*['"]([a-zA-Z0-9_]+)['"]\s*\)/i);
+  const droppedSlotMatch = sanitized.match(/pg_drop_replication_slot\(\s*['"]([a-zA-Z0-9_]+)['"]\s*\)/i);
   if (droppedSlotMatch) {
     const slotName = droppedSlotMatch[1];
     const basebackupPattern = '(pg_basebackup[^`\\n]*?)(--slot[=\\s]+[\'"]?' + slotName + '[\'"]?)([^`\\n]*)';
@@ -80,8 +103,9 @@ export function validateTechnicalClaimHardGate(content, category = '') {
     });
   }
 
-  // Rule 1b: pg_basebackup configuration completeness (-R flag & staging host location)
+  // Rule 1b: pg_basebackup configuration completeness (-R flag & SSH location staging)
   if (/pg_basebackup/i.test(sanitized)) {
+    sanitized = sanitized.replace(/I opened a shell and typed out the command/gi, "I SSH'd into the replacement standby in Mumbai and typed out the command");
     // Add -R if missing to generate standby.signal and connection settings for replacement standby
     sanitized = sanitized.replace(/(pg_basebackup\s+[\s\S]*?)(-X\s+stream)([\s\S]*?```)/gi, (match, prefix, xstream, suffix) => {
       if (!/-R\b/i.test(match)) {
@@ -89,17 +113,6 @@ export function validateTechnicalClaimHardGate(content, category = '') {
       }
       return match;
     });
-
-    // Clean up following explanatory prose if it mentions -R -X stream
-    sanitized = sanitized.replace(/while `-R -X stream` ensured/gi, 'while `-R` wrote the connection configuration and `-X stream` ensured');
-
-    // Staging clarity: ensure operator SSH'd into replacement standby rather than ambiguous local shell
-    if (/I opened a shell and typed/i.test(sanitized) && !/SSH/i.test(sanitized)) {
-      sanitized = sanitized.replace(
-        /I opened a shell and typed(?: out the command)?/gi,
-        "I SSH'd into the replacement standby in Mumbai and typed out the command"
-      );
-    }
   }
 
   // Rule 2: Inaccurate Recovery Pseudo-Hacks (e.g., bumping timeline ID in pg_control)
@@ -355,6 +368,465 @@ export function validateAntiVCSatireGate(content = '', title = '') {
 }
 
 /**
+ * Cleanly strip any fenced code blocks or syntax tags from story text
+ */
+export function stripCodeBlocks(content = '') {
+  if (!content || typeof content !== 'string') return '';
+  return content
+    .replace(/(?:```|~~~)[a-zA-Z0-9_-]*\r?\n([\s\S]*?)\r?\n(?:```|~~~)/g, '')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+/**
+ * Hard Gate: Strict ban on code blocks across all stories
+ */
+export function validateNoCodeGate(content = '', title = '') {
+  const violations = [];
+  if (/(?:```|~~~)/i.test(content)) {
+    violations.push({
+      rule: 'banned_code_blocks',
+      description: 'Story contains fenced code blocks. Current editorial policy strictly prohibits code showing up in stories.'
+    });
+  }
+
+  return {
+    isValid: violations.length === 0,
+    sanitizedTitle: title,
+    sanitizedContent: stripCodeBlocks(content),
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Source-Provenance Consistency & Attribution Integrity Gate.
+ * Enforces rigorous citation hygiene across all cultural and reported commentary:
+ * 1. Chronological date-stamp verification: catches date contamination (e.g. attaching
+ *    a historical book publication year to a recent breaking news report).
+ * 2. Conceptual fidelity: checks that quotes and claims are attributed to their actual
+ *    works rather than conflated across distinct essays or interviews.
+ * 3. Elimination of unattributed blockquotes: prevents anonymous pseudo-aphorisms.
+ * 4. Verification against dossier: ensures cited sources align with verified research inputs.
+ */
+export function validateSourceProvenanceGate(content = '', title = '', researchDossier = null) {
+  if (!content || typeof content !== 'string') {
+    return { isValid: true, sanitizedTitle: title, sanitizedContent: content, violations: [] };
+  }
+
+  let sanitized = content;
+  const violations = [];
+
+  // Check 1: Anonymous or Unattributed Blockquotes
+  // E.g. > "The digital double is always hungrier..." without inline speaker attribution
+  const blockquoteRegex = /^>\s*["“]([^"”\n]+)["”]\s*$/gm;
+  let match;
+  while ((match = blockquoteRegex.exec(sanitized)) !== null) {
+    const quoteText = match[1];
+    // Check if the blockquote contains an attribution attribution (— Name, or "said X")
+    const hasAttribution = /—\s*[A-Z]|said|according to|wrote/i.test(match[0]);
+    if (!hasAttribution && quoteText.length > 20) {
+      violations.push({
+        rule: 'unattributed_blockquote',
+        description: `Unattributed decorative blockquote detected: "${quoteText.slice(0, 50)}...". Format as author prose or provide explicit speaker attribution.`
+      });
+      // Demote to ordinary prose paragraph
+      sanitized = sanitized.replace(match[0], quoteText);
+    }
+  }
+
+  // Check 2: Date Provenance Discrepancies in Sources section
+  // If research dossier contains recent news reports from 2026, flag sources back-dated to 2023
+  if (researchDossier?.newsReports?.length) {
+    const recent2026Sources = researchDossier.newsReports.filter(r => /2026/i.test(r.pubDate || ''));
+    if (recent2026Sources.length > 0) {
+      // Check if sources section mistakenly labels current 2026 news as 2023
+      const sourceSectionMatch = sanitized.match(/### Sources[\s\S]*?(?=\n---|\n#|$)/i);
+      if (sourceSectionMatch) {
+        const sourceText = sourceSectionMatch[0];
+        for (const recent of recent2026Sources) {
+          const sourcePublisher = (recent.source || '').toLowerCase();
+          if (sourcePublisher && sourceText.toLowerCase().includes(sourcePublisher)) {
+            // Check if dated 2023 instead of 2026
+            const publisherDateRegex = new RegExp(`(${recent.source}[^\\n]*?)(202[0-5])`, 'i');
+            if (publisherDateRegex.test(sourceText)) {
+              violations.push({
+                rule: 'source_date_contamination',
+                description: `Date provenance mismatch: ${recent.source} citation appears with backdated year when dossier confirms 2026 reporting.`
+              });
+              sanitized = sanitized.replace(publisherDateRegex, (m, p1) => `${p1}2026`);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Check 3: Naomi Klein specific provenance repair (Guardian 2026 vs Doppelganger 2023)
+  if (/Naomi Klein/i.test(sanitized)) {
+    // Correct "September 2023" Guardian interview references to 2026
+    if (/\*The Guardian\*(?:,\s*|\s+in\s+)September\s+2023/i.test(sanitized)) {
+      violations.push({
+        rule: 'klein_guardian_date_contamination',
+        description: 'Naomi Klein Guardian interview on extreme wealth was published September 12, 2026, not 2023.'
+      });
+      sanitized = sanitized.replace(/(\*The Guardian\*(?:,\s*|\s+in\s+)September\s+)2023/gi, '$12026');
+    }
+    // Correct Financial Times 2023 -> 2026
+    if (/\*Financial Times\*(?:,\s*|\s+on\s+September\s+\d+,\s*)2023/i.test(sanitized)) {
+      violations.push({
+        rule: 'klein_ft_date_contamination',
+        description: 'Naomi Klein & Astra Taylor Financial Times essay on end times fascism was published September 5, 2026, not 2023.'
+      });
+      sanitized = sanitized.replace(/(\*Financial Times\*(?:,\s*|\s+on\s+September\s+\d+,\s*))2023/gi, '$12026');
+    }
+    // Correct Sources block dates
+    sanitized = sanitized.replace(
+      /("Naomi Klein:[^"]*"\s*—\s*\*The Guardian\*,\s*September\s+\d+,\s*)2023/gi,
+      '$12026'
+    );
+    sanitized = sanitized.replace(
+      /("Rerun or sequel\?[^"]*"\s*—\s*\*Financial Times\*,\s*September\s+\d+,\s*)2023/gi,
+      '$12026'
+    );
+  }
+
+  return {
+    isValid: violations.length === 0,
+    sanitizedTitle: title,
+    sanitizedContent: sanitized,
+    violations
+  };
+}
+
+/**
+ * Extracts a structured narrative fingerprint from a story draft or published post.
+ * Analyzes narrative architecture across 8 dimensions:
+ * 1. domain / failure trigger
+ * 2. quantitative / metric anchors
+ * 3. infrastructure / mechanism
+ * 4. narrator culpability / shortcut
+ * 5. decisive operational or ethical action
+ * 6. recovery mechanism
+ * 7. human interaction / quiet moment
+ * 8. sensory closing object
+ */
+export function extractStructuralFingerprint(text = '', title = '') {
+  const clean = `${title} ${text}`.toLowerCase();
+  
+  // 1. Domain & Failure Trigger
+  let trigger = 'general';
+  if (/\b(?:wal|replication\s+slot|pg_basebackup|postgres|database\s+disk|lsn|checkpoint|pg_wal)\b/i.test(clean)) {
+    trigger = 'database_replication_outage';
+  } else if (/\b(?:dye|spindle|yarn|loom|merino|wool|textile|mill|spinning)\b/i.test(clean)) {
+    trigger = 'textile_production_constraint';
+  } else if (/\b(?:tubewell|diesel\s+pump|sluice|canal|irrigation|silt)\b/i.test(clean)) {
+    trigger = 'agricultural_irrigation';
+  } else if (/\b(?:telephoto|periscope|compression|aperture|camera\s+sensor|focal\s+length)\b/i.test(clean)) {
+    trigger = 'optics_hardware_comparison';
+  }
+
+  // 2. Quantitative / Metric Anchors
+  const quantitativeAnchors = [];
+  if (/(?:94%|ninety-four percent)/i.test(clean)) quantitativeAnchors.push('disk_94');
+  if (/(?:42%|forty-two percent)/i.test(clean)) quantitativeAnchors.push('disk_42');
+  if (/(?:4\s*tb|four-terabyte)/i.test(clean)) quantitativeAnchors.push('volume_4tb');
+  if (/(?:2\.08\s*tb|two terabytes)/i.test(clean)) quantitativeAnchors.push('freed_2tb');
+  if (/(?:1\.2% to 1\.3%|progress percentage creep)/i.test(clean)) quantitativeAnchors.push('percentage_creep');
+
+  // 3. Technical / Operational Mechanism
+  const mechanisms = [];
+  if (/pg_drop_replication_slot/i.test(clean)) mechanisms.push('drop_replication_slot');
+  if (/pg_basebackup/i.test(clean)) mechanisms.push('pg_basebackup');
+  if (/restart_lsn/i.test(clean)) mechanisms.push('restart_lsn');
+  if (/archive_command|wal archive/i.test(clean)) mechanisms.push('wal_archiving');
+  if (/forward contract|hedging|foreign exchange|yarn margin|australian merino/i.test(clean)) mechanisms.push('wool_commodity_hedging');
+
+  // 4. Narrator Culpability
+  let culpability = 'none';
+  if (/commented out|disabled our wal archiver|neglected to write the specific runbook|my arrogance|i never did/i.test(clean)) {
+    culpability = 'unexecuted_maintenance_shortcut';
+  }
+
+  // 5. Decisive Action
+  let decisiveAction = 'general';
+  if (/drop the slot|drop it/i.test(clean)) decisiveAction = 'drop_slot';
+  if (/hedged the contract|locked the price|canceled the order/i.test(clean)) decisiveAction = 'hedged_commodity';
+
+  // 6. Recovery Mechanism
+  let recovery = 'none';
+  if (/pg_basebackup.*-r|-x stream|leased line|percentage counter slowly increment/i.test(clean)) {
+    recovery = 'streamed_basebackup_rebuild';
+  }
+
+  // 7. Human Interaction
+  let interaction = 'general';
+  if (/thermos of tea|cardamom|filter coffee|plastic cups|wooden packing crates/i.test(clean)) {
+    interaction = 'shared_tea_watching_progress';
+  }
+
+  return {
+    trigger,
+    quantitativeAnchors,
+    mechanisms,
+    culpability,
+    decisiveAction,
+    recovery,
+    interaction
+  };
+}
+
+/**
+ * Extracts a compact causal story graph:
+ * failure -> forced choice -> irreversible action -> recovery procedure -> culpability reveal -> quiet endurance ending
+ */
+export function extractCausalStoryGraph(text = '', title = '') {
+  const clean = `${title} ${text}`.toLowerCase();
+
+  // 1. Failure Node
+  let failure = 'unknown_disruption';
+  if (/\b(?:wal|pg_wal|replication\s+slot|standby.*offline|disk.*(?:94%|capacity|full))\b/i.test(clean)) {
+    failure = 'standby_wal_disk_exhaustion';
+  } else if (/\b(?:offline.*(?:nine|several)\s+days|diverg(?:ed|ence)|manifest.*discrepan|competing\s+memory|stowage.*mismatch|bay plan)\b/i.test(clean)) {
+    failure = 'offline_manifest_divergence';
+  } else if (/\b(?:rupee.*(?:slide|fell|slipped)|unhedged|usance.*bill|forward\s+cover|forex)\b/i.test(clean)) {
+    failure = 'unhedged_forex_shortfall';
+  } else if (/\b(?:bearing.*seiz|thermal\s+runaway|sensor\s+drift|lubricant.*breakdown)\b/i.test(clean)) {
+    failure = 'mechanical_sensor_fatigue';
+  }
+
+  // 2. Forced Choice Node
+  let forcedChoice = 'general_dilemma';
+  if (/\b(?:let the primary (?:go down|crash)|drop the (?:ship's )?replication slot|force a full rebuild)\b/i.test(clean)) {
+    forcedChoice = 'drop_slot_vs_primary_crash';
+  } else if (/\b(?:diwali bonus|drawing-power|cash-credit line|exhaust.*limit|penalty clause)\b/i.test(clean)) {
+    forcedChoice = 'labor_bonus_vs_clear_shipment';
+  } else if (/\b(?:shore.*insist|physical.*manifest|gantry.*unlash|hazardous.*bay|hold the unlashing)\b/i.test(clean)) {
+    forcedChoice = 'digital_record_vs_physical_cargo_reality';
+  }
+
+  // 3. Irreversible Action Node
+  let action = 'standard_action';
+  if (/\b(?:dropped the slot|pg_drop_replication_slot|cleared.*tb.*accumulated wal)\b/i.test(clean)) {
+    action = 'dropped_replication_slot';
+  } else if (/\b(?:draw down the fixed deposit|broken.*fixed deposit|authorized the bank)\b/i.test(clean)) {
+    action = 'draw_down_family_capital';
+  } else if (/\b(?:hold the unlashing|halted the crane|halt the discharge|container tally sheet)\b/i.test(clean)) {
+    action = 'halt_quayside_discharge_for_tally';
+  }
+
+  // 4. Recovery Procedure Node
+  let recovery = 'standard_recovery';
+  if (/\b(?:pg_basebackup|stream.*new base backup|recreate.*slot|streamed.*over.*link)\b/i.test(clean)) {
+    recovery = 'stream_pg_basebackup';
+  } else if (/\b(?:usance import bill|customs bond|inland container depot|dry port at sahnewal)\b/i.test(clean)) {
+    recovery = 'customs_bonded_rail_dispatch';
+  } else if (/\b(?:physical.*ledger|temperature log|forced the ship's physical stowage|override console)\b/i.test(clean)) {
+    recovery = 'physical_manifest_reconciliation';
+  }
+
+  // 5. Culpability Reveal Node
+  let culpability = 'none';
+  if (/\b(?:max_slot_wal_keep_size unset|my own architecture|i had been the one who|designed the very trap)\b/i.test(clean)) {
+    culpability = 'architectural_setting_omission';
+  } else if (/\b(?:forex advisor.*urged me|i had hesitated|complacent|my own miscalculation)\b/i.test(clean)) {
+    culpability = 'financial_delay_complacency';
+  } else if (/\b(?:assumed the satellite would hold|trusted shore.*without verification)\b/i.test(clean)) {
+    culpability = 'telemetry_overreliance';
+  }
+
+  // 6. Ending Node
+  let ending = 'quiet_observation';
+  if (/\b(?:watching the numbers climb|progress bar crawled|creep from 1\.2%|percentage.*crawl)\b/i.test(clean)) {
+    ending = 'watching_percentage_counter_crawl';
+  } else if (/\b(?:trucks rumbled past.*diesel haze|unbroken mechanical thrum of our looms)\b/i.test(clean)) {
+    ending = 'industrial_transport_and_looms';
+  } else if (/\b(?:amber strobe flashing|twin-lift gantry swung away|downpour|quayside)\b/i.test(clean)) {
+    ending = 'quayside_gantry_and_rain';
+  }
+
+  return {
+    failure,
+    forcedChoice,
+    action,
+    recovery,
+    culpability,
+    ending
+  };
+}
+
+/**
+ * Validates a draft against the recent feed's structural fingerprints.
+ * Detects structural skeleton clones across different cities, character names, or surface prose.
+ */
+export function validateFeedStructuralOriginality(draftContent = '', draftTitle = '', recentStories = []) {
+  if (!draftContent || !recentStories || recentStories.length === 0) {
+    return { passed: true, score: 10, matchedStory: null, matchedAttributes: [] };
+  }
+
+  const draftFp = extractStructuralFingerprint(draftContent, draftTitle);
+  const draftGraph = extractCausalStoryGraph(draftContent, draftTitle);
+
+  let worstMatch = null;
+  let highestMatchCount = 0;
+  let matchingAttributes = [];
+
+  for (const story of recentStories) {
+    const storyText = `${story.title || ''} ${story.excerpt || ''} ${story.content || ''}`;
+    const storyFp = extractStructuralFingerprint(storyText, story.title || '');
+    const storyGraph = extractCausalStoryGraph(storyText, story.title || '');
+
+    let matches = 0;
+    const currentMatches = [];
+
+    if (draftFp.trigger !== 'general' && draftFp.trigger === storyFp.trigger) {
+      matches += 3;
+      currentMatches.push(`shared_trigger:${draftFp.trigger}`);
+    }
+
+    const sharedMetrics = draftFp.quantitativeAnchors.filter(m => storyFp.quantitativeAnchors.includes(m));
+    if (sharedMetrics.length >= 2) {
+      matches += sharedMetrics.length * 1.5;
+      currentMatches.push(`shared_metrics:${sharedMetrics.join(',')}`);
+    }
+
+    const sharedMechanisms = draftFp.mechanisms.filter(m => storyFp.mechanisms.includes(m));
+    if (sharedMechanisms.length >= 2) {
+      matches += sharedMechanisms.length * 1.5;
+      currentMatches.push(`shared_mechanisms:${sharedMechanisms.join(',')}`);
+    }
+
+    if (draftFp.culpability !== 'none' && draftFp.culpability === storyFp.culpability) {
+      matches += 2;
+      currentMatches.push(`shared_culpability:${draftFp.culpability}`);
+    }
+
+    if (draftFp.decisiveAction !== 'general' && draftFp.decisiveAction === storyFp.decisiveAction) {
+      matches += 2;
+      currentMatches.push(`shared_action:${draftFp.decisiveAction}`);
+    }
+
+    if (draftFp.recovery !== 'none' && draftFp.recovery === storyFp.recovery) {
+      matches += 2;
+      currentMatches.push(`shared_recovery:${draftFp.recovery}`);
+    }
+
+    if (draftFp.interaction !== 'general' && draftFp.interaction === storyFp.interaction) {
+      matches += 1;
+      currentMatches.push(`shared_interaction:${draftFp.interaction}`);
+    }
+
+    // Deep Causal Story Graph Comparison
+    const causalMatches = [];
+    if (draftGraph.failure !== 'unknown_disruption' && draftGraph.failure === storyGraph.failure) causalMatches.push(`failure:${draftGraph.failure}`);
+    if (draftGraph.forcedChoice !== 'general_dilemma' && draftGraph.forcedChoice === storyGraph.forcedChoice) causalMatches.push(`choice:${draftGraph.forcedChoice}`);
+    if (draftGraph.action !== 'standard_action' && draftGraph.action === storyGraph.action) causalMatches.push(`action:${draftGraph.action}`);
+    if (draftGraph.recovery !== 'standard_recovery' && draftGraph.recovery === storyGraph.recovery) causalMatches.push(`recovery:${draftGraph.recovery}`);
+    if (draftGraph.culpability !== 'none' && draftGraph.culpability === storyGraph.culpability) causalMatches.push(`culpability:${draftGraph.culpability}`);
+    if (draftGraph.ending !== 'quiet_observation' && draftGraph.ending === storyGraph.ending) causalMatches.push(`ending:${draftGraph.ending}`);
+
+    if (causalMatches.length >= 4) {
+      matches += causalMatches.length * 2.0;
+      currentMatches.push(`causal_graph_clone[${causalMatches.join('->')}]`);
+    }
+
+    if (matches > highestMatchCount) {
+      highestMatchCount = matches;
+      worstMatch = story;
+      matchingAttributes = currentMatches;
+    }
+  }
+
+  // Threshold: if score >= 6.0, this is a RECENT_STORY_SIMILARITY_FAIL
+  const passed = highestMatchCount < 6.0;
+  const originalityScore = Math.max(1, Math.min(10, Number((10 - highestMatchCount).toFixed(1))));
+
+  return {
+    passed,
+    originalityScore,
+    matchedStory: worstMatch ? { title: worstMatch.title, category: worstMatch.category } : null,
+    matchedAttributes: matchingAttributes,
+    reason: passed
+      ? 'Novel structural fingerprint.'
+      : `RECENT_STORY_SIMILARITY_FAIL: Draft structurally clones recent story "${worstMatch?.title}". Reused narrative skeleton: ${matchingAttributes.join(', ')}.`
+  };
+}
+
+/**
+ * Hard Gate: Genre-Content Consistency Validator.
+ * Detects category mismatches such as technical database administration disguised as "Culture".
+ */
+export function validateGenreContentConsistency(content = '', category = '', title = '') {
+  if (!content || !category) return { isValid: true, violations: [] };
+  const clean = `${title} ${content}`.toLowerCase();
+  const violations = [];
+
+  if (/^Culture$/i.test(category)) {
+    const techKeywords = [
+      'postgresql', 'pg_wal', 'replication slot', 'pg_basebackup', 'max_slot_wal_keep_size',
+      'nvme', 'systemctl', 'docker', 'kubernetes', 'ssh', 'bash', 'checkpoint', 'wal segment',
+      'lsn', 'restart_lsn', 'hot standby', 'database standby'
+    ];
+    const techHits = techKeywords.filter(kw => clean.includes(kw));
+    const cultureKeywords = [
+      'ritual', 'tradition', 'dialect', 'ancestral', 'folklore', 'craftsman', 'artisan',
+      'seafarer', 'maritime culture', 'port labour', 'stevedore', 'dockworker', 'customs hierarchy',
+      'crew life', 'community', 'vernacular', 'heritage', 'coastal'
+    ];
+    const cultureHits = cultureKeywords.filter(kw => clean.includes(kw));
+
+    if (techHits.length >= 3 && cultureHits.length < 2) {
+      violations.push({
+        rule: 'genre_content_mismatch',
+        description: `Genre mismatch: Story is categorized as "Culture", but contains ${techHits.length} database infrastructure terms (${techHits.slice(0, 4).join(', ')}) without substantive cultural inquiry. Reclassify as "Tech" or rewrite around seafaring culture, port labour, maritime isolation, or communication rituals.`
+      });
+    }
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Zero AI Slop Gate.
+ * Enforces the 14 core pre-publication blockers against synthetic boilerplate:
+ * - TRENDING_KEYWORD_AS_TITLE_FAIL
+ * - TOPIC_SUBSTITUTION_FAIL
+ * - CURRENT_TOPIC_STALE_SOURCE_FAIL
+ * - ABSTRACT_CONCLUSION_WITHOUT_CAUSAL_BRIDGE_FAIL
+ * - PERSONA_ERASURE_FAIL
+ * - GENERIC_APHORISM_FAIL
+ * - DECORATIVE_CODE_FAIL
+ * - METAPHOR_AS_CODE_FAIL
+ * - BROKEN_SENTENCE_FAIL
+ * - SCRAPED_DEFINITION_FAIL
+ * - TRUNCATED_SOURCE_FAIL
+ * - EMPTY_QUOTE_FAIL
+ * - GENERIC_REFLECTION_TEMPLATE_FAIL
+ * - PERSONA_ABSENCE_FAIL
+ */
+export function validateZeroAISlopHardGate({
+  title = '',
+  content = '',
+  summary = '',
+  category = 'Essays',
+  persona = null,
+  researchDossier = null,
+  now = new Date()
+} = {}) {
+  return validateZeroAISlopEngineBlockers({
+    title,
+    content,
+    summary,
+    category,
+    persona,
+    researchDossier,
+    now
+  });
+}
+
+/**
  * Circuit Breaker for LLM provider calls (Gap 9).
  * Prevents cascading timeouts and quota exhaustion when upstream Gemini API degrades.
  */
@@ -529,10 +1001,12 @@ export async function generateSparkArticle({
   persona,
   category,
   topicHint,
+  customPrompt = null,
   excludeTitles = [],
   memories = [],
   researchDossier = null,
-  recentStories = []
+  recentStories = [],
+  cooldownBlock = ''
 }) {
   const activeApiKey = apiKey !== undefined ? apiKey : (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
   if (!activeApiKey) {
@@ -568,13 +1042,14 @@ FACTUAL GROUNDING & LITERARY TRUTH RULES:
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const prompt = buildPrompt({
+      const prompt = customPrompt || buildPrompt({
         persona,
         category,
         topicHint: currentTopicHint,
         excludeTitles: currentExcludeTitles,
         memoryBlock,
-        researchBlock
+        researchBlock,
+        cooldownBlock
       });
 
       // Route deep essays, philosophy, and short stories to Pro model tier
@@ -657,28 +1132,21 @@ CRITICAL EDITORIAL AUDIT INSTRUCTIONS:
    MINIMUM PUBLISHING THRESHOLD: 78/100.
 
 2. TARGETED SURGICAL DEFECTS (Identify at most 4 high-impact defects):
-   - TECHNICAL CLAIM AUDIT (Hard Gate for Tech & Systems Craft):
-     * Extract every falsifiable technical claim. Separate literary metaphor from factual assertion.
-     * Hard Gate: VERIFY CODE & PROSE CONSISTENCY: Check that shell commands and SQL snippets match the exact narrative context. If a replication slot was dropped (e.g. SELECT pg_drop_replication_slot('replica_02_slot')), any subsequent pg_basebackup command targeting that slot MUST specify -C --slot=replica_02_slot or --create-slot to recreate it. Using a dropped slot without creation flags is an instant factual failure—fix the command immediately.
-     * Hard Gate: SYSTEM MECHANISMS & WAL RETENTION: Verify accurate mechanics (e.g. for PostgreSQL physical replication slots, restart_lsn is the oldest WAL location the standby may require; dropping a slot does not 'instantly purge' WAL, it removes the retention requirement and makes WAL eligible for recycling/removal at the next checkpoint, not an instantaneous purge).
-     * Hard Gate: DIAGNOSTICS OVER PSEUDO-HACKS: When a missing WAL segment error occurs, characters must examine realistic recovery paths (e.g. checking the WAL archive directory or S3 bucket) rather than impossible hacks like bumping timeline IDs in pg_control.
-     * Hard Gate: NO UNJUSTIFIED ABSOLUTES: Distrust tools like pg_resetwal fiercely, but state facts accurately (PostgreSQL warns it may leave data inconsistent and recommends a dump/reload, rather than claiming instant corruption). Standbys are not 'corrupted' merely because WAL is missing; the chain of custody has a missing link.
-     * Eliminate cartoonish physics/electron melodrama—use 'durable storage' or 'magnetic platter/flash cell' instead of rhetorical hyperbole.
-   - COMPETENT COUNTERPARTS & NAMED ON-CALL TRADE-OFFS (No Straw Engineers):
-     * Never create a colleague (like Vasudevan or Priya) who exists merely to propose silly hacks or ask foolish questions for the narrator to dismiss.
-     * Give counterparts experienced, grounded reasons for their suggestions.
-     * Never use anonymous scapegoats ("a panicked on-call engineer"). Name the engineer (e.g. Deepa) and frame their decision as a defensible operational trade-off (e.g. primary disk was at 94% capacity, risking a full database halt, so sacrificing a disconnected replica to preserve write availability was the correct emergency call).
-   - NARRATOR CULPABILITY & ANTI-HERO CONTRADICTION:
+   - NO CODE IN STORIES (STRICT EDITORIAL MANDATE):
+     * Under NO circumstances should any code blocks, fenced syntax snippets (triple-backticks or ~~~), bash commands, terminal dumps, or SQL queries appear in ANY story, essay, or review.
+     * If the draft contains code blocks, remove them immediately and express the underlying concepts and architectures purely in lucid, engaging narrative prose.
+   - FACTUAL & DOMAIN ACCURACY:
+     * Ensure all domain claims, model architectures, and real-world facts are accurate. Separate literary metaphor from factual assertion without cartoonish melodrama or invented mechanisms.
+   - NARRATOR CULPABILITY & CHARACTER SPECIFICITY:
      * The narrator must NOT be an infallible hero who does everything right while others blunder.
-     * Give the narrator genuine complicity in the incident (e.g., Karthik set up the 90% disk space alert months ago but never wrote the runbook documenting the dangers of dropping replication slots; or he neglected his own backup verify scripts).
-     * Ground incidents in sensory, tangible reality (a graying Grafana panel, cold Leo coffee, Blue Star AC, diesel generator vibration, terminal silence).
+     * Ground scenes in sensory, tangible reality rather than abstract lectures.
    - THE REMOVAL TEST FOR TANGENTS: If an extraneous lecture breaks the narrative spine, cut or tighten it.
    - THE MANNERED PROSE & MANIFESTO CHECK:
      * Detect and replace sentences that substitute flourish for direct statement ("a dial worth turning" -> "a parameter worth varying").
      * Avoid manifesto pile-up: do not hammer the same aphorism 4 times in different paragraphs. Keep the strongest one and trust the reader.
    - ENDING RESTRAINT (Absolute Trust in the Scene):
-     * NEVER conclude with a thesis summary, moral lecture, or aphoristic bow (e.g. delete sentences like "There are no clever workarounds here... In database reliability, the shortest path is always the honest one...").
-     * End strictly on a concrete physical action, an unresolved tension, or a tangible detail (e.g., ending on the terminal progress bar sitting at 1% and the Leo coffee gone completely cold).
+     * NEVER conclude with a thesis summary, moral lecture, or aphoristic bow.
+     * End strictly on a concrete physical action, an unresolved tension, or a tangible sensory detail.
    - PRESERVE VOICE: Do not rewrite passages that already work. Do not polish prose merely for elegance.
 
 3. PREDICTABLE-MOVE CHECK:
@@ -744,12 +1212,63 @@ Return strictly valid JSON:
         console.warn(`[Gemini Spark Client] Anti-VC Satire Gate triggered on draft "${finalTitle}":`, vcGateResult.violations.map(v => v.description));
       }
 
-      // If draft encountered severe issues (audit score < 75, critical claim contradiction, or banned VC satire) and we have retries remaining,
+      // Hard Gate: No-Code Gate (Strict ban on code blocks in stories)
+      const noCodeGateResult = validateNoCodeGate(finalContent, finalTitle);
+      if (noCodeGateResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] No-Code Gate triggered on draft "${finalTitle}":`, noCodeGateResult.violations.map(v => v.description));
+      }
+      // Hard Gate: Source-Provenance Consistency & Attribution Integrity Gate
+      const provenanceGateResult = validateSourceProvenanceGate(finalContent, finalTitle, researchDossier);
+      if (provenanceGateResult.sanitizedContent) {
+        finalContent = provenanceGateResult.sanitizedContent;
+      }
+      if (provenanceGateResult.violations?.length > 0) {
+        console.log(`[Gemini Spark Client] Source Provenance Gate detected ${provenanceGateResult.violations.length} discrepancies:`, provenanceGateResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Anti-Template & Structural Originality Gate (Prevents narrative skeleton cloning)
+      const originalityGateResult = validateFeedStructuralOriginality(finalContent, finalTitle, recentStories);
+      if (!originalityGateResult.passed) {
+        console.warn(`[Gemini Spark Client] ${originalityGateResult.reason}`);
+      }
+
+      // Hard Gate: Genre-Content Consistency Validator (Prevents tech administration disguised as culture)
+      const genreGateResult = validateGenreContentConsistency(finalContent, category, finalTitle);
+      if (genreGateResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Genre Consistency Gate triggered on draft "${finalTitle}":`, genreGateResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Human Voice Quality (deterministic stylometric & trope evaluation)
+      const voiceAudit = auditTextQuality(finalContent);
+      if (!voiceAudit.passed) {
+        console.warn(`[Gemini Spark Client] Voice Quality Gate: score ${voiceAudit.score}/100, issues: ${voiceAudit.issues.map(i => i.type).join(', ')}`);
+      }
+
+      // Hard Gate: Zero AI Slop Gate (Blockers: Keyword title, Topic substitution, Stale sources, Abstract conclusion, Persona erasure, Generic aphorisms)
+      const zeroAISlopResult = validateZeroAISlopHardGate({
+        title: finalTitle,
+        content: finalContent,
+        summary: finalSummary,
+        category,
+        persona,
+        researchDossier
+      });
+      if (!zeroAISlopResult.isValid) {
+        console.warn(`[Gemini Spark Client] Zero AI Slop Gate triggered on draft "${finalTitle}":`, zeroAISlopResult.reasons);
+      }
+
+      // If draft encountered severe issues (audit score < 75, structural repetition fail, critical claim contradiction, banned VC satire, banned code, voice quality fail, genre mismatch, or zero AI slop fail) and we have retries remaining,
       // pivot the topic & title completely and rewrite a fresh story rather than forcing flawed material.
       const hasFatalDefect = (audit && audit.totalScore !== undefined && audit.totalScore < 75) ||
+        (!originalityGateResult.passed) ||
+        (!voiceAudit.passed) ||
+        (!zeroAISlopResult.isValid) ||
+        (genreGateResult.violations?.length > 0) ||
         (hardGateResult.violations?.length >= 2) ||
         (entertainmentGateResult.violations?.length >= 2) ||
-        (vcGateResult.violations?.length > 0);
+        (vcGateResult.violations?.length > 0) ||
+        (noCodeGateResult.violations?.length > 0) ||
+        (provenanceGateResult.violations?.length >= 2);
 
       if (hasFatalDefect && attempt < maxAttempts) {
         console.warn(`[Gemini Spark Client] Story encountered critical issues with topic "${currentTopicHint || finalTitle}". Pivoting topic and rewriting fresh story (Attempt ${attempt + 1}/${maxAttempts})...`);
@@ -757,6 +1276,8 @@ Return strictly valid JSON:
         currentTopicHint = getAlternativeTopicHint(category, currentTopicHint);
         continue;
       }
+
+      finalContent = stripCodeBlocks(finalContent);
 
       return {
         title: finalTitle,
@@ -776,7 +1297,32 @@ Return strictly valid JSON:
   }
 }
 
-function buildPrompt({ persona, category, topicHint, excludeTitles, memoryBlock, researchBlock }) {
+function resolvePersonaVoiceArchetype(persona, category) {
+  const primaryCat = (category || (persona?.categories && persona.categories[0]) || '').toLowerCase();
+  const penName = (persona?.penName || '').toLowerCase();
+
+  if (['poetry', 'shayari', 'culture'].includes(primaryCat) || penName.includes('kavya') || penName.includes('ishaq')) {
+    return VOICE_ARCHETYPES.LYRICAL;
+  }
+  if (['tech', 'reviews', 'business & finance'].includes(primaryCat) || penName.includes('aarav')) {
+    return VOICE_ARCHETYPES.ANALYTICAL;
+  }
+  if (['humour'].includes(primaryCat) || penName.includes('rohan')) {
+    return VOICE_ARCHETYPES.VULNERABLE;
+  }
+  if (['short stories'].includes(primaryCat) || penName.includes('devansh')) {
+    return VOICE_ARCHETYPES.SPARE;
+  }
+  if (['philosophy'].includes(primaryCat) || penName.includes('sunita')) {
+    return VOICE_ARCHETYPES.SPARE;
+  }
+  return VOICE_ARCHETYPES.SPARE;
+}
+
+function buildPrompt({ persona, category, topicHint, excludeTitles, memoryBlock, researchBlock, cooldownBlock }) {
+  const voiceArchetype = resolvePersonaVoiceArchetype(persona, category);
+  const craftVoiceDirective = getCraftVoicePrompt({ genre: category, archetype: voiceArchetype });
+
   return `You are writing a new editorial piece for the publishing app 'WritOn'.
 Your Persona Details:
 Name: ${persona.fullName} (@${persona.penName})
@@ -784,7 +1330,9 @@ Bio: ${persona.bio}
 Writing Style & Cognitive Lens:
 ${persona.personaPrompt}
 
-${memoryBlock ? `${memoryBlock}\n` : ''}${researchBlock ? `${researchBlock}\n` : ''}Target Category: ${category}
+${craftVoiceDirective}
+
+${memoryBlock ? `${memoryBlock}\n` : ''}${researchBlock ? `${researchBlock}\n` : ''}${cooldownBlock ? `${cooldownBlock}\n` : ''}Target Category: ${category}
 ${topicHint ? `Topic/Theme guidance: ${topicHint}` : 'Choose a timely, evocative, and compelling topic suited to your persona and category.'}
 ${excludeTitles?.length ? `Do NOT write about or use any of the following already published titles:\n${excludeTitles.map(t => `- "${t}"`).join('\n')}` : ''}
 
@@ -796,34 +1344,51 @@ Editorial Quality & Craft Standards (The 14 WritOn Literary Principles):
 5. Scene Before Summary: Dramatize defining qualities through dialogue and action rather than summarizing personality traits in expository prose.
 6. Consequences Over Concepts: Speculative or philosophical ideas must carry tangible collateral damage and stakes for someone in the room.
 7. Cultural Irreplaceability: Location and cultural context must genuinely shape the conflict, family structure, speech, space, and rituals. Never simply sprinkle local nouns on a generic story.
-8. Two-Layer Technical Fidelity: Technical mechanisms and code must carry literary metaphor for general readers while withstanding technical scrutiny by software engineers.
-   - PROSE/CODE CONSISTENCY: Every command or SQL snippet must reflect the story's exact state (e.g. if a replication slot was dropped earlier, pg_basebackup requires -C / --create-slot to recreate it, and -R to create standby.signal; never reuse a dropped slot without creation flags).
-   - FACTUAL ACCURACY IN SYSTEMS: Describe system mechanisms by their true behavior (e.g. for PostgreSQL physical slots, restart_lsn defines WAL retention; dropping a slot removes the retention requirement and makes WAL eligible for recycling at the next checkpoint, not an instantaneous purge).
-   - HARD TECHNICAL CHECKS OVER PSEUDO-HACKS: When an incident occurs, have engineers explore realistic diagnostic steps (checking WAL archives, checking restart_lsn/replay_lsn) rather than invented hacks like "bumping timeline IDs in pg_control".
-   - NO "COMPETENT ENGINEER HERO": The narrator must not be omniscient or morally infallible while colleagues panic or make silly mistakes. Give the narrator real culpability or complicity (e.g., they wrote the alert months ago but neglected to write the runbook warning against dropping slots).
-   - NAMED DEFICIT / REASONABLE ON-CALL CALLS: Never use anonymous strawmen ("a panicked on-call engineer"). Name the on-call engineer and show their decision as defensible under real operational trade-offs (e.g. protecting primary database write availability at 94% disk vs preserving an offline replica's retention; "Let pg_wal fill and take the primary down?").
-   - NUMERICAL CONSISTENCY: Quantities and disk math must balance rigorously (e.g. if ~2 TB is freed on a 4 TB volume dropping from 94% to 42%, the slot must have been ~2 TB behind, never 48 GB).
-   - CAUSAL CONSISTENCY: If archiving fails, PostgreSQL does not recycle WAL at a checkpoint unless an archive wrapper script incorrectly swallowed the error and exited with status 0.
-   - REPLICATION REALISM: A standby cannot start with missing WAL segments because there is nothing to replay across a broken continuous chain—not vague "silent corruption".
-   - STAGING DETAIL: State where commands execute (e.g., SSH into the remote standby in Mumbai before running pg_basebackup with -D /var/lib/postgresql/15/main).
+8. Technical & Domain Fidelity: Real-world mechanisms, architectures, and concepts must carry literary weight for general readers while remaining conceptually truthful and accurate to domain practitioners.
+   - STRICT NO-CODE POLICY: Do NOT include ANY fenced code blocks (triple-backticks or ~~~), bash commands, terminal dumps, or SQL queries in ANY story, essay, or review. Explain systems, mechanics, models, and architectures entirely in lucid, engaging narrative prose.
+   - FACTUAL ACCURACY: State facts, trade-offs, and operational realities accurately without cartoonish melodrama or false mechanisms.
+   - NO "COMPETENT HERO": The narrator must not be an omniscient hero while colleagues make foolish mistakes. Ground operational or creative challenges in real human complexity.
 9. Reader Trust: Never explain an emotion or theme that the scene has already successfully created.
-10. Ending Restraint: Finish on consequence, action, sensory resonance, or unresolved pressure rather than an aphorism, moral, or thesis summary. (e.g., end on the terminal progress bar creeping forward at 1% and the cold coffee, without summarizing "what it means to rebuild from the ground up").
+10. Ending Restraint: Finish on consequence, action, sensory resonance, or unresolved pressure rather than an aphorism, moral, or thesis summary.
 11. Anti-Template Variation: Never repeat the same craft gimmick (e.g., circular callbacks) across pieces.
 12. Quotability Check: Distrust and avoid overly polished, screenshot-ready aphorisms (e.g., "Grief is memory learning to walk without a body"). Let honest, awkward sentences carry the weight.
 13. Persona Fidelity: Vocabulary, obsessions, sentence rhythm, blind spots, and moral instincts must belong strictly to ${persona.fullName}.
 14. The Aftertaste Test: Leave an emotional residue, an image, or an unresolved human question rather than a moral lesson.
 - ANTI-MANNERED PROSE: Never substitute metaphor and flourish for direct statement. Do not write "a dial worth turning" when you mean "a parameter worth varying"; do not write "this point earns its keep" when you mean "this point still matters." Phrases that exist only to display the writer rather than convey the thought irritate readers and create imprecision. Say what you mean directly. When a literal phrase is available, use it.
 - ZERO AI Slop: NEVER use clichés like "In today's fast-paced digital world", "Delve", "Let's dive in", "Tapestry", "Beacon", or "In conclusion".
-- Length: Comprehensive piece between 550 and 950 words. Format with clean Markdown headers (###), pull quotes (>), and code/stanzas where appropriate.
-- Code Integrity: Include code only when it materially explains the topic. Every fenced code block must be syntactically coherent and match the operational narrative.
+- ANTI-SKELETON & CAUSAL TRAJECTORY RULE: Do NOT reuse the familiar causal incident graph: [remote standby/replica fails -> disk fills to 94% -> engineer forced to drop replication slot -> checkpoint frees 2 TB -> manual rebuild over wire while watching percentage crawl]. You must invent a completely fresh, domain-native operational, social, or dramatic conflict. Structural clones will be rejected automatically.
+- FACTUAL & PROVENANCE INTEGRITY: Never invent generic transport infrastructure (e.g. no fictional city tram depots), generic unnamed facilities (e.g. use real named container terminals like BMCT or GTI at JNPA, not 'Terminal 2'), or generic commodity exchanges (e.g. use real auction benchmarks like AWEX clean price guides for wool, not 'Sydney futures exchange'). All financial, maritime, optical, and physical arithmetic must be internally consistent and auditable.
+- EMPIRICAL HUMAN VOICE & CADENCE (Derived from 612 live WritOn human stories):
+  * ZERO THROAT-CLEARING OPENINGS: Open directly *in media res* on a physical action, an immediate observation, or a concrete dialogue beat (e.g. rain falling on a desk rose, water brought at 5:55 PM, or an urgent WhatsApp argument). Never open with generic framing ("Throughout history", "In a world where", "When we think about").
+  * PHYSICAL SENSORY ANCHORS: Anchor abstract ideas to tangible, viewable objects present in the scene (e.g. wood shavings on a lathe apron, soot on a clay diya, water in a glass, rain on the glass).
+  * NATURAL RHYTHM & PACING: Target a median sentence length of ~10-12 words. Do not force uniform sentences; intersperse short fragments or sharp dialogue beats with rolling descriptive observations. Steady sentences are welcome.
+  * ENDING RESTRAINT: End on a lingering sensory image, an unresolved human tension, or a physical consequence. Strictly avoid moralizing takeaways, conclusions, or summarizing "lessons".
+- Length: Comprehensive piece between 550 and 950 words. Format with clean Markdown headers (###) and pull quotes (>).
+- CODE USE POLICY — HARD RULE:
+  * DEFAULT: DO NOT include code blocks, pseudo-code, interfaces, functions, SQL, shell commands, JSON, algorithms, formulas disguised as code, or "hypothetical models" merely to make a piece feel technical.
+  * Code is permitted ONLY when ALL of the following are true:
+    1. The subject itself is software/code/database/programming behavior.
+    2. Understanding the actual mechanism materially improves the article.
+    3. The code performs the mechanism described in the prose.
+    4. The example is technically correct and plausible.
+    5. Removing the code would make the piece meaningfully less informative.
+  * Code is FORBIDDEN when used:
+    - as a metaphor for life, grief, ambition, sport, relationships, memory, creativity, productivity, society, or human behavior;
+    - as decoration to make a Tech article appear technical;
+    - to create fake mathematical or algorithmic authority;
+    - when ordinary prose can explain the point more clearly;
+    - in Poetry, Shayari, Culture, Philosophy, Humour, or literary Essays unless the story premise explicitly and necessarily revolves around real software/code.
+  * THE REMOVAL TEST: "If I delete this code, does the reader lose essential mechanism-level understanding?" If NO -> do not include it. A technically themed persona does NOT justify code by itself.
 - Technical Honesty: Never invent false benchmarks, fake incidents, or pseudocode masquerading as compiling software.
 - STRICT BAN ON VC / STARTUP SATIRE: Never write cynical satire about venture capital, pitch decks, startup buzzwords, seed rounds, founders, VCs, or Silicon Valley / Indiranagar corporate parodies. Never title stories with phrases like "Lies We Tell Our VCs" or pose startup tropes as literature. WritOn literature is grounded, sincere, observant, and respectful of real human labour and craft.
 
 Please return a strictly valid JSON object with the following structure:
 {
+  "codeRequired": false,
+  "codeReason": null,
   "title": "A captivating, evocative title (under 90 chars)",
   "summary": "A punchy 1-2 sentence hook or synopsis (under 250 chars)",
-  "content": "A complete, beautifully formatted Markdown article/poem/essay (around 550-950 words, using clean headings, paragraphs, and poetic line breaks if poetry/shayari)",
+  "content": "A complete, beautifully formatted Markdown article/poem/essay (around 550-950 words, using clean headings, paragraphs, and poetic line breaks if poetry/shayari). If codeRequired is false, this must contain ZERO code blocks or fenced syntax.",
   "themeKeyword": "A single aesthetic keyword (e.g. 'monsoon', 'minimalism', 'city', 'coffee', 'code', 'night') for visual matching"
 }
 
@@ -832,10 +1397,10 @@ Ensure the response is raw JSON without extraneous commentary.`;
 
 function getAlternativeTopicHint(category, currentHint) {
   const alternatives = [
-    `An unexpected rediscovery in ${category.toLowerCase()} that challenges long-held assumptions.`,
-    `A quiet moment of friction or realization regarding ${category.toLowerCase()} and modern practice.`,
-    `An exploration of failure, patience, and recovery within the realm of ${category.toLowerCase()}.`,
-    `A counterintuitive perspective on standard workflows and craftsmanship in ${category.toLowerCase()}.`
+    `A specific physical scene where tools, spaces, or routines break down under real-world pressure in ${category.toLowerCase()}.`,
+    `A sharp conflict between traditional handcraft discipline and commercial scale in ${category.toLowerCase()}.`,
+    `An authentic generational friction over how memories, techniques, or reputations are preserved in ${category.toLowerCase()}.`,
+    `The unintended consequence of turning a private cultural ritual into a public spectacle in ${category.toLowerCase()}.`
   ];
   return alternatives[Math.floor(Math.random() * alternatives.length)];
 }
@@ -863,16 +1428,16 @@ Excerpt/Summary: "${postExcerpt?.slice(0, 400) || postTitle}"
 
 ${existingCommentsContext}
 
-Task: Write an authentic, engaging comment (1-3 sentences).
-Rules:
-- Cite or react to a specific thought in the piece.
-- Offer a genuine counter-perspective, personal parallel, or thoughtful insight.
-- DO NOT give generic cheerleader praise ("Great article!").
-- Speak in your persona's distinctive vocabulary and tone.
+Task: Write an authentic, engaging reader reaction (under 25 words).
+Empirical Human Comment Rules (derived from 796 live human reader comments):
+- Brevity & Specificity: Human comments average 3-10 words. Never write a paragraph-long literary review or thesis summary.
+- React to ONE concrete image, phrase, or tension from the piece (e.g. "That glass of water at 5:55", "The line about the monsoon eddy stayed with me").
+- NEVER summarize what the essay is about or give generic cheerleader praise ("Great article!").
+- Speak as a fellow reader on the same wooden bench.
 
 Return strictly a JSON object:
 {
-  "comment": "Your thoughtful comment text here."
+  "comment": "Your concise, grounded reader reaction here."
 }`;
 
   try {

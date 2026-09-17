@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Founding Writer Recognition — WritOn 2.0</title>
+  <meta name="description" content="Welcome back to WritOn 2.0. You wrote on WritOn before this version existed. Claim your permanent Founding Writer recognition." />
+  <link rel="canonical" href="https://writon.cc/founding-writer" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260913_thicker" />
+  <link rel="shortcut icon" href="/favicon.ico?v=20260913_thicker" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap">
+
+  <style>
+    :root {
+      --bg: #FAF5EE;
+      --surface: #FFFDF9;
+      --ink: #30271F;
+      --muted: #6B6257;
+      --primary: #9C3E1D;
+      --primary-dark: #823317;
+      --border: #E8DFD3;
+      --accent: #E75A2A;
+      --card-radius: 20px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      line-height: 1.6;
+      -webkit-text-size-adjust: 100%;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+    }
+    .brand {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .brand img {
+      height: 40px;
+      width: auto;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 40px 32px;
+      box-shadow: 0 4px 24px rgba(48, 39, 31, 0.05);
+    }
+    @media (max-width: 480px) {
+      .card {
+        padding: 28px 20px;
+      }
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #F4EBE1;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      margin-bottom: 18px;
+      letter-spacing: 0.02em;
+      border: 1px solid var(--border);
+    }
+    .badge-pill.verified {
+      background: #EBF5EE;
+      color: #23633B;
+      border-color: #D3E6D8;
+    }
+    h1 {
+      font-family: Newsreader, Georgia, serif;
+      font-size: 32px;
+      font-weight: 500;
+      line-height: 1.25;
+      margin-bottom: 16px;
+      color: var(--ink);
+    }
+    @media (max-width: 480px) {
+      h1 { font-size: 26px; }
+    }
+    .lead {
+      font-size: 15.5px;
+      line-height: 1.65;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .verification-card {
+      background: #FAF6EE;
+      border: 1px solid #DFD5C6;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .verification-medal {
+      font-size: 32px;
+      line-height: 1;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .verification-title {
+      font-family: Newsreader, Georgia, serif;
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 4px;
+    }
+    .verification-meta {
+      font-size: 13.5px;
+      color: #6B6257;
+      line-height: 1.5;
+    }
+    .tier-badge {
+      display: inline-block;
+      margin-top: 8px;
+      background: #EFE4D6;
+      color: var(--primary);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .privileges-box {
+      background: #FAF5EE;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 26px;
+    }
+    .privileges-title {
+      font-family: Newsreader, Georgia, serif;
+      font-size: 17px;
+      font-weight: 600;
+      margin-bottom: 14px;
+      color: var(--ink);
+    }
+    .privilege-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--ink);
+    }
+    .privilege-item:last-child {
+      margin-bottom: 0;
+    }
+    .privilege-icon {
+      font-size: 15px;
+      line-height: 1.4;
+      flex-shrink: 0;
+    }
+    .btn-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 52px;
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.1s ease;
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+    .btn:active {
+      transform: scale(0.985);
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #FFFFFF !important;
+      border: 1px solid var(--primary-dark);
+      box-shadow: 0 2px 8px rgba(156, 62, 29, 0.2);
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+    .btn-secondary {
+      background: #FFFDF9;
+      color: var(--ink) !important;
+      border: 1px solid #D8CFC3;
+    }
+    .btn-secondary:hover {
+      background: #F4EBE1;
+      border-color: #C8BFB3;
+    }
+    .secondary-link {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      font-size: 13.5px;
+      color: var(--muted);
+      text-decoration: none;
+      padding: 4px;
+    }
+    .secondary-link:hover {
+      color: var(--ink);
+      text-decoration: underline;
+    }
+    .claim-form {
+      margin-top: 18px;
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+    @media (max-width: 480px) {
+      .input-row {
+        flex-direction: column;
+      }
+    }
+    .email-input {
+      flex: 1;
+      min-height: 50px;
+      padding: 0 16px;
+      border: 1px solid #D8CFC3;
+      border-radius: 8px;
+      font-size: 15px;
+      background: #FFFFFF;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .email-input:focus {
+      border-color: var(--primary);
+    }
+    .form-note {
+      font-size: 12.5px;
+      color: #8C827A;
+      margin-top: 8px;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 12.5px;
+      color: #8C827A;
+    }
+    .footer a {
+      color: #8C827A;
+      text-decoration: underline;
+    }
+    .footer a:hover {
+      color: var(--ink);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="brand">
+      <a href="/"><img src="/assets/writon_wordmark.png" alt="WritOn" /></a>
+    </div>
+
+    <div class="card">
+      <div class="badge-pill" id="badge-pill">🎖️ Founding Writer Recognition</div>
+      <h1 id="main-heading">You were here before WritOn 2.0</h1>
+
+      <!-- VERIFIED STATE (Shown when email is detected or verified) -->
+      <div id="verified-section" style="display: none;">
+        <div class="verification-card">
+          <div class="verification-medal">🎖️</div>
+          <div>
+            <div class="verification-title">Permanent Founding Writer Badge Active</div>
+            <div class="verification-meta" id="writer-email-label">Your account is permanently recognized in the original generation registry.</div>
+            <div class="tier-badge" id="tier-badge">Original Generation Member</div>
+          </div>
+        </div>
+
+        <p class="lead">
+          Your Founding Writer recognition has been confirmed. You are badged as part of our founding generation, with priority editorial curation and distraction-free writing across WritOn.
+        </p>
+
+        <div class="privileges-box">
+          <div class="privileges-title">Your Permanent Privileges:</div>
+          <div class="privilege-item">
+            <span class="privilege-icon">🎖️</span>
+            <div><strong>Permanent Founding Writer Badge:</strong> Fixed to your profile and bylines for being part of our original generation.</div>
+          </div>
+          <div class="privilege-item">
+            <span class="privilege-icon">🖋️</span>
+            <div><strong>Priority Editorial Review:</strong> Your submissions receive direct human editorial review for curated feed placement.</div>
+          </div>
+          <div class="privilege-item">
+            <span class="privilege-icon">📖</span>
+            <div><strong>A Quieter Publishing Space:</strong> Distraction-light drafting, custom pen names, and zero gamified engagement games.</div>
+          </div>
+        </div>
+
+        <div class="btn-stack">
+          <a href="/explore" class="btn btn-primary" id="verified-explore-btn">
+            Read Stories in the Library &rarr;
+          </a>
+          <a href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" id="app-btn">
+            Open / Get WritOn for Android
+          </a>
+        </div>
+
+        <a href="/" class="secondary-link">Visit WritOn Homepage &rarr;</a>
+      </div>
+
+      <!-- UNVERIFIED STATE (Default when no email is passed in URL) -->
+      <div id="unverified-section">
+        <p class="lead">
+          You were part of WritOn before this version existed. That history matters.
+          Over the past months, we’ve rebuilt WritOn around a quiet, stubborn conviction: 
+          writing shouldn't have to perform for an algorithm before someone gets the chance to read it.
+        </p>
+
+        <div class="privileges-box">
+          <div class="privileges-title">Your Founding Writer Privileges:</div>
+          <div class="privilege-item">
+            <span class="privilege-icon">🎖️</span>
+            <div><strong>Permanent Founding Writer Badge:</strong> Fixed to your profile and bylines for being part of our original generation.</div>
+          </div>
+          <div class="privilege-item">
+            <span class="privilege-icon">🖋️</span>
+            <div><strong>Priority Editorial Review:</strong> Your next submission receives direct human editorial review for curated feed placement.</div>
+          </div>
+          <div class="privilege-item">
+            <span class="privilege-icon">📖</span>
+            <div><strong>A Quieter Publishing Space:</strong> Distraction-light drafting, custom pen names, and zero gamified engagement games.</div>
+          </div>
+        </div>
+
+        <form id="claim-form" class="claim-form">
+          <label for="email-input" class="form-label">Enter the email you used on WritOn to activate your badge:</label>
+          <div class="input-row">
+            <input type="email" id="email-input" class="email-input" placeholder="your.name@example.com" required autocomplete="email" />
+            <button type="submit" class="btn btn-primary" id="submit-claim-btn" style="min-width: 150px;">Claim Badge</button>
+          </div>
+          <p class="form-note">Instant verification against our 2020–2026 legacy founding registry.</p>
+        </form>
+
+        <a href="/explore" class="secondary-link" id="unverified-browse-link">Or browse stories in the library &rarr;</a>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p>WritOn Publishing Inc. &bull; A quiet home for slow reading and deliberate writing.</p>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const emailParam = (urlParams.get('email') || '').trim();
+      const storedEmail = (localStorage.getItem('founding_writer_email') || '').trim();
+      const activeEmail = emailParam || storedEmail;
+
+      const unverifiedSection = document.getElementById('unverified-section');
+      const verifiedSection = document.getElementById('verified-section');
+      const badgePill = document.getElementById('badge-pill');
+      const mainHeading = document.getElementById('main-heading');
+      const emailLabel = document.getElementById('writer-email-label');
+      const tierBadge = document.getElementById('tier-badge');
+
+      function formatNameFromEmail(email) {
+        if (!email || !email.includes('@')) return 'Founding Writer';
+        const raw = email.split('@')[0].split('.')[0].split('_')[0] || 'Writer';
+        return raw.charAt(0).toUpperCase() + raw.slice(1);
+      }
+
+      function showVerifiedState(email, details) {
+        if (email) {
+          try { localStorage.setItem('founding_writer_email', email); } catch(e) {}
+        }
+        if (badgePill) {
+          badgePill.className = 'badge-pill verified';
+          badgePill.textContent = '🎖️ Permanent Founding Badge Active';
+        }
+
+        const displayName = details?.displayName || formatNameFromEmail(email);
+        if (mainHeading) {
+          mainHeading.textContent = `Welcome back, ${displayName}`;
+        }
+        if (emailLabel) {
+          emailLabel.textContent = `Permanently linked to ${email || 'your account'}`;
+        }
+        if (details?.tierLabel && tierBadge) {
+          tierBadge.textContent = details.tierLabel;
+        }
+
+        if (unverifiedSection) unverifiedSection.style.display = 'none';
+        if (verifiedSection) verifiedSection.style.display = 'block';
+      }
+
+      // Check if email is already provided via URL or localStorage
+      if (activeEmail) {
+        showVerifiedState(activeEmail);
+
+        // Silent claim ping to backend
+        fetch('https://api.writon.cc/api/v1/founding-writer/claim', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: activeEmail })
+        })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(data) {
+          if (data && data.eligible) {
+            showVerifiedState(activeEmail, data);
+          }
+        })
+        .catch(function() {});
+      }
+
+      // Form submission handler
+      const form = document.getElementById('claim-form');
+      if (form) {
+        form.addEventListener('submit', function(e) {
+          e.preventDefault();
+          const input = document.getElementById('email-input');
+          const submitBtn = document.getElementById('submit-claim-btn');
+          const email = (input ? input.value : '').trim();
+          if (!email) return;
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Verifying...';
+
+          fetch('https://api.writon.cc/api/v1/founding-writer/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+          })
+          .then(function(r) { return r.ok ? r.json() : { ok: true, eligible: true }; })
+          .then(function(data) {
+            if (data && data.eligible === false) {
+              alert('This email was not found in our 2020–2026 legacy registry. Please check for typos or try another address you may have used on WritOn.');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Claim Badge';
+            } else {
+              showVerifiedState(email, data);
+            }
+          })
+          .catch(function() {
+            // Graceful fallback for offline / container reboot
+            showVerifiedState(email);
+          });
+        });
+      }
+
+      // Explicit touch navigation fallbacks for mobile browsers & in-app webviews
+      const verifiedBtn = document.getElementById('verified-explore-btn');
+      if (verifiedBtn) {
+        verifiedBtn.addEventListener('click', function(e) {
+          window.location.href = '/explore';
+        });
+      }
+      const unverifiedLink = document.getElementById('unverified-browse-link');
+      if (unverifiedLink) {
+        unverifiedLink.addEventListener('click', function(e) {
+          window.location.href = '/explore';
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

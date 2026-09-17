@@ -10,43 +10,43 @@
 export const INVISIBLE_WATERMARK = '\u200B\uFEFF#writon\u200B';
 
 export const CATEGORY_DEFAULT_HASHTAGS = {
-  'Trending': ['#Trending', '#CurrentStories', '#Explained', '#WritOnDiscover'],
-  'Reviews': ['#Reviews', '#Tested', '#BuyerGuide', '#WritOnDiscover'],
-  'Tech': ['#Tech', '#Engineering', '#SystemsDesign', '#SoftwareCraft'],
-  'Essays': ['#Essays', '#Philosophy', '#SlowReading', '#Reflections'],
-  'Poetry': ['#Poetry', '#QuietVerses', '#MidnightMusings', '#WordCraft'],
-  'Shayari': ['#Shayari', '#UrduPoetry', '#Ghazal', '#Sukhan'],
-  'Short Stories': ['#ShortStories', '#UrbanFiction', '#Storytelling', '#FlashFiction'],
-  'Philosophy': ['#Philosophy', '#Mindfulness', '#DeepThinking', '#InnerStillness'],
-  'Humour': ['#Humour', '#Satire', '#WorkplaceChronicles', '#DailyLife'],
-  'Culture': ['#Culture', '#Heritage', '#Traditions', '#RegionalMemoir'],
-  'Business & Finance': ['#Business', '#Finance', '#Economy', '#Markets'],
-  'Sports': ['#Sports', '#Athletics', '#Cricket', '#GameDay'],
-  'Entertainment': ['#Entertainment', '#Cinema', '#FilmCraft', '#PopCulture'],
-  'Journalism': ['#Journalism', '#FieldReport', '#PublicInterest', '#CurrentAffairs']
+  'Trending': ['#trending', '#currentstories', '#explained', '#writondiscover'],
+  'Reviews': ['#reviews', '#tested', '#buyerguide', '#writondiscover'],
+  'Tech': ['#tech', '#engineering', '#systemsdesign', '#softwarecraft'],
+  'Essays': ['#essays', '#philosophy', '#slowreading', '#reflections'],
+  'Poetry': ['#poetry', '#quietverses', '#midnightmusings', '#wordcraft'],
+  'Shayari': ['#shayari', '#urdupoetry', '#ghazal', '#sukhan'],
+  'Short Stories': ['#shortstories', '#urbanfiction', '#storytelling', '#flashfiction'],
+  'Philosophy': ['#philosophy', '#mindfulness', '#deepthinking', '#innerstillness'],
+  'Humour': ['#humour', '#satire', '#workplacechronicles', '#dailylife'],
+  'Culture': ['#culture', '#heritage', '#traditions', '#regionalmemoir'],
+  'Business & Finance': ['#business', '#finance', '#economy', '#markets'],
+  'Sports': ['#sports', '#athletics', '#cricket', '#gameday'],
+  'Entertainment': ['#entertainment', '#cinema', '#filmcraft', '#popculture'],
+  'Journalism': ['#journalism', '#fieldreport', '#publicinterest', '#currentaffairs']
 };
 
 export const REVIEW_DOMAIN_HASHTAGS = {
-  'EVs & Battery Tech': ['#ElectricVehicles', '#EVReview', '#CarReview', '#Automotive'],
-  'Performance ICE Cars': ['#CarReview', '#TrackTest', '#SportsCars', '#Automotive'],
-  'Urban Commuter Bikes & EV 2W': ['#Motorcycles', '#BikeReview', '#TwoWheeler', '#CityRide'],
-  '4x4 Off-Roaders & Expedition SUVs': ['#4x4', '#OffRoad', '#SUVReview', '#Overlanding'],
-  'Flagship Smartphones': ['#SmartphoneReview', '#FlagshipPhone', '#MobileTech', '#Gadgets'],
-  'Budget & Mid-Range Mobiles': ['#BudgetPhone', '#ValueTech', '#MobileReview', '#Smartphones'],
-  'Laptops, Silicon & Chips': ['#LaptopReview', '#Ultrabook', '#HardwareBench', '#Processors'],
-  'Headphones, IEMs & Audio Gear': ['#Audiophile', '#HeadphoneReview', '#HiFiAudio', '#SoundTest'],
-  'Wearables & Health Hardware': ['#Smartwatch', '#Wearables', '#HealthTech', '#FitnessTracker'],
-  'Shonen Anime & Sakuga Animation': ['#AnimeReview', '#Shonen', '#Sakuga', '#AnimeCommunity'],
-  'Seinen & Psychological Anime': ['#AnimeReview', '#Seinen', '#AnimeAnalysis', '#JapaneseCulture'],
-  'Prestige TV & Streaming Series': ['#TVReview', '#PrestigeTV', '#BingeWatch', '#SeriesReview'],
-  'Hollywood Blockbusters & Sci-Fi Cinema': ['#MovieReview', '#Cinema', '#IMAX', '#FilmCritique'],
-  'Regional & World Cinema': ['#WorldCinema', '#FilmReview', '#Cinephile', '#ArthouseCinema'],
-  'Gaming Handhelds & Consoles': ['#HandheldGaming', '#GamingConsole', '#PCGaming', '#TechReview'],
-  'Cameras, Prime Lenses & Optics': ['#CameraReview', '#Photography', '#LensReview', '#Mirrorless'],
-  'Custom Mechanical Keyboards': ['#MechanicalKeyboards', '#CustomKeebs', '#DeskSetup', '#KeebLife'],
-  'Smart Home & Matter Hardware': ['#SmartHome', '#IoT', '#HomeAutomation', '#Matter'],
-  'Coffee Gear & Espresso Tech': ['#Espresso', '#CoffeeGear', '#SpecialtyCoffee', '#BaristaTools'],
-  'EDC Gear & Rugged Tools': ['#EverydayCarry', '#EDCGear', '#PocketTools', '#GearReview']
+  'EVs & Battery Tech': ['#electricvehicles', '#evreview', '#carreview', '#automotive'],
+  'Performance ICE Cars': ['#carreview', '#tracktest', '#sportscars', '#automotive'],
+  'Urban Commuter Bikes & EV 2W': ['#motorcycles', '#bikereview', '#twowheeler', '#cityride'],
+  '4x4 Off-Roaders & Expedition SUVs': ['#4x4', '#offroad', '#suvreview', '#overlanding'],
+  'Flagship Smartphones': ['#smartphonereview', '#flagshipphone', '#mobiletech', '#gadgets'],
+  'Budget & Mid-Range Mobiles': ['#budgetphone', '#valuetech', '#mobilereview', '#smartphones'],
+  'Laptops, Silicon & Chips': ['#laptopreview', '#ultrabook', '#hardwarebench', '#processors'],
+  'Headphones, IEMs & Audio Gear': ['#audiophile', '#headphonereview', '#hifiaudio', '#soundtest'],
+  'Wearables & Health Hardware': ['#smartwatch', '#wearables', '#healthtech', '#fitnesstracker'],
+  'Shonen Anime & Sakuga Animation': ['#animereview', '#shonen', '#sakuga', '#animecommunity'],
+  'Seinen & Psychological Anime': ['#animereview', '#seinen', '#animeanalysis', '#japaneseculture'],
+  'Prestige TV & Streaming Series': ['#tvreview', '#prestigetv', '#bingewatch', '#seriesreview'],
+  'Hollywood Blockbusters & Sci-Fi Cinema': ['#moviereview', '#cinema', '#imax', '#filmcritique'],
+  'Regional & World Cinema': ['#worldcinema', '#filmreview', '#cinephile', '#arthousecinema'],
+  'Gaming Handhelds & Consoles': ['#handheldgaming', '#gamingconsole', '#pcgaming', '#techreview'],
+  'Cameras, Prime Lenses & Optics': ['#camerareview', '#photography', '#lensreview', '#mirrorless'],
+  'Custom Mechanical Keyboards': ['#mechanicalkeyboards', '#customkeebs', '#desksetup', '#keeblife'],
+  'Smart Home & Matter Hardware': ['#smarthome', '#iot', '#homeautomation', '#matter'],
+  'Coffee Gear & Espresso Tech': ['#espresso', '#coffeegear', '#specialtycoffee', '#baristatools'],
+  'EDC Gear & Rugged Tools': ['#everydaycarry', '#edcgear', '#pockettools', '#gearreview']
 };
 
 const STOP_WORDS = new Set([
@@ -58,7 +58,7 @@ const STOP_WORDS = new Set([
 ]);
 
 /**
- * Extract 1 to 3 meaningful PascalCase hashtags from a trending topic or headline
+ * Extract 1 to 3 meaningful lowercase hashtags from a trending topic or headline
  */
 export function extractTopicHashtags(topic = '', headline = '', max = 3) {
   const combined = `${topic} ${headline}`
@@ -77,12 +77,12 @@ export function extractTopicHashtags(topic = '', headline = '', max = 3) {
 
     if (STOP_WORDS.has(lower) || seen.has(lower) || lower.length < 3) continue;
 
-    // Check if next word forms a natural pair (e.g., "Blackwell" + "Ultra" -> "#BlackwellUltra")
+    // Check if next word forms a natural pair (e.g., "blackwell" + "ultra" -> "#blackwellultra")
     const nextWord = rawWords[i + 1];
     if (nextWord && !STOP_WORDS.has(nextWord.toLowerCase()) && nextWord.length > 2) {
-      const pair = `#${word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()}${nextWord.charAt(0).toUpperCase() + nextWord.slice(1).toLowerCase()}`;
-      if (!seen.has(pair.toLowerCase())) {
-        seen.add(pair.toLowerCase());
+      const pair = `#${lower}${nextWord.toLowerCase()}`;
+      if (!seen.has(pair)) {
+        seen.add(pair);
         seen.add(lower);
         seen.add(nextWord.toLowerCase());
         tags.push(pair);
@@ -92,9 +92,9 @@ export function extractTopicHashtags(topic = '', headline = '', max = 3) {
       }
     }
 
-    const single = `#${word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()}`;
-    if (!seen.has(single.toLowerCase())) {
-      seen.add(single.toLowerCase());
+    const single = `#${lower}`;
+    if (!seen.has(single)) {
+      seen.add(single);
       seen.add(lower);
       tags.push(single);
       if (tags.length >= max) break;
@@ -105,7 +105,7 @@ export function extractTopicHashtags(topic = '', headline = '', max = 3) {
 }
 
 /**
- * Generate 4 to 6 contextual hashtags (1-3 trend-specific tags + 3 category tags)
+ * Generate 4 to 6 contextual hashtags (1-3 trend-specific tags + 3 category tags, all lowercase)
  */
 export function generateCategoryHashtags(category = 'Essays', topic = '', themeKeyword = '') {
   const normalizedCat = Object.keys(CATEGORY_DEFAULT_HASHTAGS).find(
@@ -123,7 +123,7 @@ export function generateCategoryHashtags(category = 'Essays', topic = '', themeK
     const lower = tag.toLowerCase();
     if (!seen.has(lower)) {
       seen.add(lower);
-      combined.push(tag);
+      combined.push(lower);
     }
   }
 
@@ -131,7 +131,7 @@ export function generateCategoryHashtags(category = 'Essays', topic = '', themeK
     const lower = tag.toLowerCase();
     if (!seen.has(lower) && combined.length < 6) {
       seen.add(lower);
-      combined.push(tag);
+      combined.push(lower);
     }
   }
 
@@ -143,7 +143,7 @@ export function generateCategoryHashtags(category = 'Essays', topic = '', themeK
  * Generate 4 to 6 relevant hashtags specifically for product/gear reviews
  */
 export function generateReviewHashtags(domain = '', productName = '') {
-  const domainTags = REVIEW_DOMAIN_HASHTAGS[domain] || ['#ProductReview', '#HardwareVerdict', '#BuyerGuide'];
+  const domainTags = REVIEW_DOMAIN_HASHTAGS[domain] || ['#productreview', '#hardwareverdict', '#buyerguide'];
   const productTags = extractTopicHashtags(productName, '', 2);
 
   const combined = [];
@@ -153,7 +153,7 @@ export function generateReviewHashtags(domain = '', productName = '') {
     const lower = tag.toLowerCase();
     if (!seen.has(lower)) {
       seen.add(lower);
-      combined.push(tag);
+      combined.push(lower);
     }
   }
 
@@ -161,7 +161,7 @@ export function generateReviewHashtags(domain = '', productName = '') {
     const lower = tag.toLowerCase();
     if (!seen.has(lower) && combined.length < 6) {
       seen.add(lower);
-      combined.push(tag);
+      combined.push(lower);
     }
   }
 
@@ -185,6 +185,18 @@ export function hasWritonWatermark(content = '') {
 }
 
 /**
+ * Normalize any hashtags in a text block to lowercase
+ */
+export function lowercaseHashtagsInText(text = '') {
+  if (!text || typeof text !== 'string') return '';
+  return text.replace(/#([a-zA-Z0-9_]+)/g, (match, tag) => {
+    // Preserve exact invisible watermark case/marker
+    if (tag === 'writon') return match;
+    return `#${tag.toLowerCase()}`;
+  });
+}
+
+/**
  * Attach 4-6 thematic hashtags and zero-width invisible `#writon` watermark to story content
  */
 export function attachHashtagsAndWatermark(content = '', category = 'Essays', topic = '', themeKeyword = '') {
@@ -193,10 +205,12 @@ export function attachHashtagsAndWatermark(content = '', category = 'Essays', to
   // First strip any legacy raw HTML tags or standalone visible #writon
   let result = stripWatermark(content).trim();
 
-  // 1. If content already has hashtags, keep them; otherwise generate 4 to 6 hashtags
+  // 1. If content already has hashtags, normalize them to lowercase; otherwise generate 4 to 6 hashtags
   if (!hasExistingHashtags(result)) {
     const tags = generateCategoryHashtags(category, topic, themeKeyword);
     result = `${result}\n\n---\n\n${tags}`;
+  } else {
+    result = lowercaseHashtagsInText(result);
   }
 
   // 2. Ensure zero-width invisible #writon watermark is embedded in the background
@@ -218,6 +232,8 @@ export function attachReviewHashtagsAndWatermark(content = '', domain = '', prod
   if (!hasExistingHashtags(result)) {
     const tags = generateReviewHashtags(domain, productName);
     result = `${result}\n\n---\n\n${tags}`;
+  } else {
+    result = lowercaseHashtagsInText(result);
   }
 
   if (!result.includes(INVISIBLE_WATERMARK)) {

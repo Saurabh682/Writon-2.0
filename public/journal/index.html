@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L3H0RQ5ZQY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L3H0RQ5ZQY');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#F7F3EB" />
+
+  <title>WritOn Journal — Essays, Notes &amp; Reflections</title>
+  <meta name="description" content="An editorial, reading-first journal exploring literature, craft, the philosophy of slow reading, and behind-the-scenes building of WritOn." />
+  <link rel="canonical" href="https://writon.cc/journal" />
+  <link rel="alternate" type="application/rss+xml" title="WritOn — Stories &amp; Journal" href="https://writon.cc/rss.xml" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="WritOn" />
+  <meta property="og:url" content="https://writon.cc/journal" />
+  <meta property="og:title" content="WritOn Journal — Essays, Notes &amp; Reflections" />
+  <meta property="og:description" content="An editorial publication dedicated to craft, quiet reading, and the building of WritOn." />
+  <meta property="og:image" content="https://writon.cc/assets/hero-banner.webp" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@WritOn_Social" />
+  <meta name="twitter:title" content="WritOn Journal — Essays, Notes &amp; Reflections" />
+  <meta name="twitter:description" content="An editorial publication dedicated to craft, quiet reading, and the building of WritOn." />
+  <meta name="twitter:image" content="https://writon.cc/assets/hero-banner.webp" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png?v=2" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F7F3EB;
+      --surface: #FFFDF9;
+      --surface-hover: #FCF8F2;
+      --ink: #26211D;
+      --muted: #645C54;
+      --primary: #B5442A;
+      --primary-dark: #98351E;
+      --primary-soft: #F3D5C7;
+      --border: #E7DDD1;
+      --shadow-sm: 0 2px 8px rgba(38, 33, 29, 0.04);
+      --shadow-md: 0 12px 32px rgba(38, 33, 29, 0.08);
+      --container: 1040px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Newsreader, Georgia, serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 19px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    .paper-noise {
+      position: fixed; inset: 0; pointer-events: none; z-index: -1; opacity: .18;
+      background-image: repeating-radial-gradient(circle at 0 0, transparent 0 2px, rgba(80,60,40,.04) 3px 4px);
+      background-size: 9px 9px; mix-blend-mode: multiply;
+    }
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(16px);
+      background: color-mix(in srgb, var(--bg) 84%, transparent);
+      border-bottom: 1px solid rgba(231,221,209,.8);
+    }
+    .nav-wrap {
+      max-width: var(--container); margin: 0 auto; height: 76px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+    }
+    .brand img { width: 136px; height: auto; display: block; }
+    .nav-links { display: flex; gap: 24px; align-items: center; font-family: Inter, sans-serif; font-size: 14px; font-weight: 500; }
+    .nav-links a { color: var(--muted); text-decoration: none; transition: color .2s ease; }
+    .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+    .btn-nav-app {
+      background: linear-gradient(135deg, #D75D38, var(--primary));
+      color: #fff !important; font-weight: 600; padding: 8px 18px; border-radius: 999px;
+      box-shadow: var(--shadow-sm);
+    }
+    main { max-width: var(--container); margin: 0 auto; padding: 56px 24px 100px; }
+    
+    .journal-header { margin-bottom: 40px; text-align: center; }
+    .eyebrow {
+      font-family: Inter, sans-serif; font-size: 12px; font-weight: 700;
+      letter-spacing: .18em; color: var(--primary); text-transform: uppercase; margin-bottom: 12px;
+    }
+    h1 {
+      font-size: clamp(38px, 5.5vw, 60px); font-weight: 500; line-height: 1.1;
+      letter-spacing: -0.03em; color: var(--ink); margin-bottom: 16px;
+    }
+    .header-desc { font-size: 21px; color: var(--muted); font-style: italic; max-width: 640px; margin: 0 auto; }
+
+    /* Category Filter Tabs */
+    .filter-bar {
+      display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;
+      margin: 36px 0 48px; font-family: Inter, sans-serif;
+    }
+    .filter-pill {
+      background: rgba(255, 253, 249, 0.7);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 7px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s ease;
+    }
+    .filter-pill:hover, .filter-pill.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* Featured Article Card */
+    .featured-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 44px 40px;
+      margin-bottom: 56px;
+      box-shadow: var(--shadow-sm);
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .featured-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+      background: var(--surface-hover);
+    }
+    .featured-tag {
+      display: inline-block;
+      font-family: Inter, sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: .12em; text-transform: uppercase; color: var(--primary);
+      margin-bottom: 12px;
+    }
+    .featured-title {
+      font-size: clamp(28px, 4vw, 42px); font-weight: 500; line-height: 1.15;
+      margin-bottom: 16px; color: var(--ink);
+    }
+    .featured-excerpt {
+      font-size: 20px; color: var(--muted); line-height: 1.6; margin-bottom: 24px;
+    }
+    .meta-row {
+      display: flex; align-items: center; gap: 12px;
+      font-family: Inter, sans-serif; font-size: 13px; color: var(--muted);
+    }
+    .bullet { opacity: .6; }
+
+    /* Articles Grid */
+    .articles-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 32px;
+    }
+    .article-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .article-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+      background: var(--surface-hover);
+    }
+    .card-top { margin-bottom: 20px; }
+    .card-category {
+      font-family: Inter, sans-serif; font-size: 11px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .card-title {
+      font-size: 24px; font-weight: 500; line-height: 1.25; margin-bottom: 12px;
+      color: var(--ink);
+    }
+    .card-excerpt {
+      font-size: 16px; color: var(--muted); line-height: 1.6;
+    }
+
+    /* Pagination */
+    .pagination {
+      margin-top: 64px; display: flex; justify-content: center; gap: 12px;
+      font-family: Inter, sans-serif; font-size: 14px;
+    }
+    .page-btn {
+      padding: 8px 18px; border-radius: 999px; border: 1px solid var(--border);
+      background: var(--surface); color: var(--muted); text-decoration: none;
+      font-weight: 600; transition: all .2s ease;
+    }
+    .page-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+    .site-footer {
+      border-top: 1px solid var(--border); padding: 48px 24px 32px;
+      font-family: Inter, sans-serif; font-size: 14px; color: var(--muted);
+      text-align: center; background: rgba(255, 253, 249, 0.6);
+    }
+    .footer-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; }
+    .footer-links a { color: var(--muted); text-decoration: none; }
+    .footer-links a:hover { color: var(--primary); }
+  </style>
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "WritOn Journal",
+    "description": "An editorial publication exploring literature, craft, and slower reading.",
+    "url": "https://writon.cc/journal"
+  }
+  </script>
+</head>
+<body>
+  <div class="paper-noise" aria-hidden="true"></div>
+
+  <header class="site-header" role="banner">
+    <div class="nav-wrap">
+      <a class="brand" href="/" aria-label="WritOn home">
+        <img src="/assets/writon-logo.webp" alt="WritOn" width="136" height="46" />
+      </a>
+      <nav class="nav-links" aria-label="Main Navigation">
+        <a href="/">Home</a>
+        <a href="/journal" class="active">Journal</a>
+        <a href="/updates">Updates</a>
+        <a href="/about">About</a>
+        <a class="btn-nav-app" href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon" target="_blank" rel="noopener noreferrer">Get App</a>
+      </nav>
+    </div>
+  </header>
+
+  <main role="main">
+    <div class="journal-header">
+      <div class="eyebrow">Editorial Publication</div>
+      <h1>The WritOn Journal</h1>
+      <p class="header-desc">Essays on craft, deliberate reading, and the architecture of stillness.</p>
+    </div>
+
+    <!-- Category Filter Tabs -->
+    <div class="filter-bar" id="filter-bar">
+      <a class="filter-pill active" data-category="all" href="#all">All Pieces</a>
+      <a class="filter-pill" data-category="inside-writon" href="#inside-writon">Inside WritOn</a>
+      <a class="filter-pill" data-category="building-writon" href="#building-writon">Building WritOn</a>
+      <a class="filter-pill" data-category="writing-reading" href="#writing-reading">Writing &amp; Reading</a>
+      <a class="filter-pill" data-category="community" href="#community">Community</a>
+      <a class="filter-pill" data-category="writon-updates" href="#writon-updates">Updates</a>
+    </div>
+
+    <!-- Featured Post Hero -->
+    <div id="featured-container">
+
+      <a class="featured-card" data-category="inside-writon" href="/journal/where-writon-goes-from-here">
+        <span class="featured-tag">★ Featured Essay · Inside WritOn</span>
+        <h2 class="featured-title">Where WritOn Goes From Here</h2>
+        <p class="featured-excerpt">An outline of our commitment: defending reader attention, expanding regional literature, and keeping publishing open.</p>
+        <div class="meta-row">
+          <span>WritOn Editorial</span>
+          <span class="bullet">•</span>
+          <span>Sep 16, 2026</span>
+          <span class="bullet">•</span>
+          <span>4 min read</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Articles Grid -->
+    <div class="articles-grid" id="articles-grid">
+
+      <a class="article-card" data-category="inside-writon" href="/journal/where-writon-goes-from-here">
+        <div class="card-top">
+          <div class="card-category">Inside WritOn</div>
+          <h3 class="card-title">Where WritOn Goes From Here</h3>
+          <p class="card-excerpt">An outline of our commitment: defending reader attention, expanding regional literature, and keeping publishing open.</p>
+        </div>
+        <div class="meta-row">
+          <span>Sep 16, 2026</span>
+          <span class="bullet">•</span>
+          <span>4 min read</span>
+        </div>
+      </a>
+
+      <a class="article-card" data-category="writon-updates" href="/journal/a-quieter-way-to-save-your-reading-preferences">
+        <div class="card-top">
+          <div class="card-category">Updates</div>
+          <h3 class="card-title">A Quieter Way to Save Your Reading Preferences</h3>
+          <p class="card-excerpt">We rebuilt our notification and delivery architecture with explicit opt-out defaults, zero tracking pixels, and signed unsubscribe links.</p>
+        </div>
+        <div class="meta-row">
+          <span>Sep 15, 2026</span>
+          <span class="bullet">•</span>
+          <span>2 min read</span>
+        </div>
+      </a>
+
+      <a class="article-card" data-category="community" href="/journal/six-languages-one-writing-room">
+        <div class="card-top">
+          <div class="card-category">Community</div>
+          <h3 class="card-title">Six Languages, One Writing Room</h3>
+          <p class="card-excerpt">India and the global literary diaspora think across multiple scripts. WritOn treats regional literature as primary, not an afterthought.</p>
+        </div>
+        <div class="meta-row">
+          <span>Sep 14, 2026</span>
+          <span class="bullet">•</span>
+          <span>3 min read</span>
+        </div>
+      </a>
+
+      <a class="article-card" data-category="building-writon" href="/journal/what-we-deliberately-leave-out-of-the-writon-editor">
+        <div class="card-top">
+          <div class="card-category">Building WritOn</div>
+          <h3 class="card-title">What We Deliberately Leave Out of the WritOn Editor</h3>
+          <p class="card-excerpt">WYSIWYG toolbars with forty formatting buttons distract from the actual sentence. We explain our minimalist editor design.</p>
+        </div>
+        <div class="meta-row">
+          <span>Sep 12, 2026</span>
+          <span class="bullet">•</span>
+          <span>3 min read</span>
+        </div>
+      </a>
+
+      <a class="article-card" data-category="inside-writon" href="/journal/the-feed-is-not-the-destination">
+        <div class="card-top">
+          <div class="card-category">Inside WritOn</div>
+          <h3 class="card-title">The Feed Is Not the Destination</h3>
+          <p class="card-excerpt">When writing is published into a social feed, its lifespan is measured in hours. On WritOn, your writing sits as a permanent archive.</p>
+        </div>
+        <div class="meta-row">
+          <span>Sep 11, 2026</span>
+          <span class="bullet">•</span>
+          <span>4 min read</span>
+        </div>
+      </a>
+
+      <a class="article-card" data-category="community" href="/journal/why-writon-uses-applause">
+        <div class="card-top">
+          <div class="card-category">Community</div>
+          <h3 class="card-title">Why WritOn Uses Applause</h3>
+          <p class="card-excerpt">An applaud is not an algorithmic signal for downranking or virality; it is a reader saying: I heard you.</p>
+        </div>
+        <div class="meta-row">
+          <span>Sep 9, 2026</span>
+          <span class="bullet">•</span>
+          <span>3 min read</span>
+        </div>
+      </a>
+
+      <a class="article-card" data-category="writing-reading" href="/journal/why-the-blank-page-still-matters">
+        <div class="card-top">
+          <div class="card-category">Writing & Reading</div>
+          <h3 class="card-title">Why the Blank Page Still Matters</h3>
+          <p class="card-excerpt">Before autocompletions and synthetic prose generators, writing was where you discovered what you actually believed.</p>
+        </div>
+        <div class="meta-row">
+          <span>Sep 7, 2026</span>
+          <span class="bullet">•</span>
+          <span>3 min read</span>
+        </div>
+      </a>
+
+      <a class="article-card" data-category="building-writon" href="/journal/what-we-mean-by-a-quieter-writing-platform">
+        <div class="card-top">
+          <div class="card-category">Building WritOn</div>
+          <h3 class="card-title">What We Mean by a Quieter Writing Platform</h3>
+          <p class="card-excerpt">Quietness is an architectural decision. It means removing read receipts, unprompted banners, and high-frequency engagement ping loops.</p>
+        </div>
+        <div class="meta-row">
+          <span>Sep 5, 2026</span>
+          <span class="bullet">•</span>
+          <span>4 min read</span>
+        </div>
+      </a>
+
+      <a class="article-card" data-category="writing-reading" href="/journal/words-worth-remembering">
+        <div class="card-top">
+          <div class="card-category">Writing & Reading</div>
+          <h3 class="card-title">Words Worth Remembering</h3>
+          <p class="card-excerpt">The difference between information and literature is what stays with you after the device is put away.</p>
+        </div>
+        <div class="meta-row">
+          <span>Sep 3, 2026</span>
+          <span class="bullet">•</span>
+          <span>3 min read</span>
+        </div>
+      </a>
+
+      <a class="article-card" data-category="inside-writon" href="/journal/why-writon-exists">
+        <div class="card-top">
+          <div class="card-category">Inside WritOn</div>
+          <h3 class="card-title">Why WritOn Exists</h3>
+          <p class="card-excerpt">Most digital platforms are designed around velocity: short attention spans, infinite vertical scrolls, and algorithms trained to reward performative outrage. WritOn was built to do the opposite.</p>
+        </div>
+        <div class="meta-row">
+          <span>Sep 1, 2026</span>
+          <span class="bullet">•</span>
+          <span>4 min read</span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" id="pagination" style="display: none;"></div>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/journal">Journal</a>
+      <a href="/updates">Updates</a>
+      <a href="/about">About</a>
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms.html">Terms</a>
+      <a href="/rss.xml">RSS Feed</a>
+    </div>
+    <div>© 2026 WritOn (writon.cc). All rights reserved.</div>
+  </footer>
+
+  <script>
+    const API_BASE = window.location.origin;
+    let currentCategory = 'all';
+
+    function filterCards(category) {
+      const featCard = document.querySelector('#featured-container .featured-card');
+      const cards = document.querySelectorAll('#articles-grid .article-card');
+
+      if (featCard) {
+        if (category === 'all') {
+          featCard.style.display = 'block';
+        } else {
+          featCard.style.display = 'none';
+        }
+      }
+
+      let visibleCount = 0;
+      cards.forEach(card => {
+        const cat = card.getAttribute('data-category');
+        if (category === 'all' || cat === category) {
+          card.style.display = 'flex';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      const emptyNotice = document.getElementById('category-empty-notice');
+      if (emptyNotice) emptyNotice.remove();
+
+      if (visibleCount === 0) {
+        const grid = document.getElementById('articles-grid');
+        const notice = document.createElement('div');
+        notice.id = 'category-empty-notice';
+        notice.style.cssText = 'grid-column: 1/-1; text-align: center; color: var(--muted); padding: 48px 0; font-family: Newsreader, serif; font-size: 20px; font-style: italic;';
+        notice.textContent = 'No articles in this section yet.';
+        grid.appendChild(notice);
+      }
+    }
+
+    async function loadJournal(category = 'all') {
+      filterCards(category);
+      try {
+        const query = category !== 'all' ? '?category=' + encodeURIComponent(category) + '&limit=20' : '?limit=20';
+        const res = await fetch(API_BASE + '/api/v1/journal' + query);
+        if (!res.ok) return;
+        const data = await res.json();
+      } catch (err) {}
+    }
+
+    function formatCategory(cat) {
+      const map = {
+        'inside-writon': 'Inside WritOn',
+        'building-writon': 'Building WritOn',
+        'writing-reading': 'Writing & Reading',
+        'community': 'Community',
+        'writon-updates': 'Updates'
+      };
+      return map[cat] || cat;
+    }
+
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+      pill.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentCategory = pill.dataset.category;
+        window.location.hash = currentCategory === 'all' ? '' : currentCategory;
+        loadJournal(currentCategory);
+      });
+    });
+
+    const hash = window.location.hash.replace('#', '');
+    if (hash && ['inside-writon', 'building-writon', 'writing-reading', 'community', 'writon-updates'].includes(hash)) {
+      currentCategory = hash;
+      const targetPill = document.querySelector('[data-category="' + hash + '"]');
+      if (targetPill) {
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        targetPill.classList.add('active');
+      }
+    }
+
+    loadJournal(currentCategory);
+  </script>
+</body>
+</html>

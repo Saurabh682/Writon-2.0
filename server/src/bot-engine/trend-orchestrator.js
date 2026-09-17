@@ -362,10 +362,10 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
     };
   }
 
-  // 10. Tech Systems Craft (Pure infrastructure / engineering only, zero VC cynicism)
-  if (/\b(gpu|nvidia|chip|chips|ai|llm|transformer|latency|postgres|postgresql|database|kernel|linux|concurrency|distributed systems|architecture|wal\b|lsn\b|memory leak|cache invalidation)\b/i.test(text)) {
+  // 10. Tech Systems Craft & Frontier AI (Pure architecture / engineering / AI frontier, zero VC cynicism, ZERO code blocks)
+  if (/\b(gpu|nvidia|chip|chips|ai|llm|transformer|latency|claude|gemini|openai|gpt|astra|frontier model|context window|prompting|postgres|postgresql|database|kernel|linux|concurrency|distributed systems|architecture|wal\b|lsn\b|memory leak|cache invalidation)\b/i.test(text)) {
     const techPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Tech'));
-    const author = techPersonas[Math.floor(Math.random() * techPersonas.length)] || {
+    const author = techPersonas.find(p => p.penName === 'aarav_tech') || techPersonas[0] || {
       penName: 'aarav_tech',
       fullName: 'Aarav Mehta'
     };
@@ -376,7 +376,7 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
         penName: author.penName,
         fullName: author.fullName
       },
-      editorialAngle: `Analyze systems architecture and mechanical sympathy behind ${topic}. Strictly avoid startup tropes, pitch decks, or venture capital satire.`
+      editorialAngle: `Analyze frontier model architecture, continuous multimodal attention, mechanical sympathy, latent space dynamics, or systems craft behind ${topic}. Strictly avoid code blocks and startup/VC satire; explain concepts purely in lucid, engaging narrative prose.`
     };
   }
 

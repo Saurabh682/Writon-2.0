@@ -16,6 +16,7 @@ import { processDueDelayedActions, runSparkPulse } from './spark-runner.js';
 import { processOutboxEvents } from './outbox-service.js';
 import { REVIEW_PERSONAS } from './review-personas.js';
 import { generateStructuredReview } from './review-generator.js';
+import { generateSparkArticle } from './gemini-spark-client.js';
 import { conductDeepTrendResearch, getLiveDailyTrends } from './trend-scout-service.js';
 import { orchestrateTrendPipeline, routeTopicToEditorialSlot } from './trend-orchestrator.js';
 import { ingestSparkBatch } from './spark-runner.js';
@@ -64,7 +65,7 @@ export const DOMAIN_PRODUCT_CANDIDATES = {
     'Maruti Suzuki Jimny Alpha Low-Range Crawl in Riverbed Rock'
   ],
   'Flagship Smartphones': [
-    'Vivo X100 Pro vs Xiaomi 14 Ultra Periscope Telephoto Compression',
+    'Vivo X100 Pro vs Xiaomi 14 Ultra: Telephoto & Perspective Compression',
     'Pixel 9 Pro Tensor G4 Thermal Throttling Under Continuous 4K 60fps',
     'Samsung Galaxy S24 Ultra Anti-Reflective Display & Battery Longevity'
   ],
@@ -201,7 +202,7 @@ export async function runMasterSchedulerTick(pool, {
   now = new Date(),
   executeSlot = executeScheduledSlot
 } = {}) {
-  const outcome = { completed: [], failed: [], skipped: [] };
+  const outcome = { completed: [], failed: [], skipped: [], published: [], held: [], queued: [] };
 
   for (const slot of getDueScheduleSlots(now)) {
     const claimed = await claimScheduleSlot(pool, slot, now);
@@ -212,12 +213,34 @@ export async function runMasterSchedulerTick(pool, {
 
     try {
       const result = await executeSlot(pool, slot);
+
+      // A result carrying .error is a soft failure (no exception thrown but no success)
+      if (result?.error) {
+        await pool.query(`
+          update public.bot_schedule_runs
+          set status = 'failed', last_error = $3, completed_at = now(), updated_at = now()
+          where schedule_date = $1 and slot_id = $2 and status = 'running'
+        `, [slot.scheduleDate, slot.id, String(result.error).slice(0, 2000)]);
+        outcome.failed.push(slot.id);
+        console.error(`[Master Scheduler] Slot soft-failed: ${slot.id}`, result.error);
+        continue;
+      }
+
       await pool.query(`
         update public.bot_schedule_runs
         set status = 'completed', result = $3::jsonb, completed_at = now(), updated_at = now()
         where schedule_date = $1 and slot_id = $2 and status = 'running'
       `, [slot.scheduleDate, slot.id, JSON.stringify(result ?? {})]);
       outcome.completed.push(slot.id);
+
+      // Classify outcome into semantic arrays (never overlap with failed/skipped)
+      if (result?.postId) {
+        outcome.published.push({ slotId: slot.id, postId: result.postId });
+      } else if (result?.action?.includes('held') || result?.action === 'review_quality_rejected') {
+        outcome.held.push(slot.id);
+      } else if (result?.action?.includes('queued') || result?.action?.includes('commission')) {
+        outcome.queued.push(slot.id);
+      }
     } catch (error) {
       await pool.query(`
         update public.bot_schedule_runs
@@ -273,9 +296,9 @@ export async function executeScheduledSlot(pool, slot, {
   releaseBriefClaim = releaseEditorialBriefClaim,
   researchTopic = conductDeepTrendResearch,
   createReview = generateStructuredReview,
+  generateArticle = generateSparkArticle,
   publishBatch = ingestSparkBatch,
-  selectProductCover = getProductCoverImage,
-  autoPublishReviews = true
+  selectProductCover = getProductCoverImage
 } = {}) {
   if (slot.type === 'editorial') {
     const approvedBrief = await getApprovedBrief(pool, { category: 'Trending' });
@@ -426,13 +449,27 @@ export async function executeScheduledSlot(pool, slot, {
       const claimedReview = await claimBrief(pool, approvedReview.id);
       if (!claimedReview) return { action: 'brief_already_claimed', researchBriefId: approvedReview.id };
       try {
+        // Reevaluate automatic_low_risk approvals just as the editorial path does; manual approvals proceed.
+        if (claimedReview.approval_mode === 'automatic_low_risk') {
+          const reevaluation = reevaluateAutomaticEditorialBrief(claimedReview);
+          if (reevaluation.approval.status !== 'approved') {
+            await holdBrief(pool, claimedReview.id, reevaluation.approval.reasons.join('; '));
+            return { action: 'held_for_review', researchBriefId: claimedReview.id };
+          }
+        }
         const reviewer = REVIEW_PERSONAS.find(persona => persona.penName === claimedReview.suggested_author_pen_name);
         if (!reviewer) throw new Error('Approved review brief has no matching specialist reviewer');
-        const reviewData = createReview({
+
+        const reviewData = await createReview({
           productName: claimedReview.topic,
           reviewer,
-          researchDossier: claimedReview.research_dossier
+          researchDossier: claimedReview.research_dossier,
+          generateArticle
         });
+        if (!reviewData) {
+          await releaseBriefClaim(pool, claimedReview.id, 'Review quality gates rejected the generated output');
+          return { action: 'review_quality_rejected', researchBriefId: claimedReview.id, reviewer: reviewer.penName };
+        }
         const outcome = await publishBatch(pool, { stories: [{
           authorPenName: reviewer.penName,
           title: reviewData.title,
@@ -499,11 +536,18 @@ export async function executeScheduledSlot(pool, slot, {
       researchDossier: dossier,
       publicationCategory: 'Reviews'
     });
+    // Publish only after the existing automated review quality gates pass.
+    // No human approval step is required for scheduled review commissions.
+    const reviewData = await createReview({
+      productName: sampleTopic, reviewer, researchDossier: dossier, generateArticle
+    });
+    if (!reviewData) {
+      return { action: 'review_quality_rejected', reviewer: reviewer.penName };
+    }
     reviewBrief.approval = {
-      status: 'pending_review',
-      mode: 'human_required',
-      sensitive: false,
-      reasons: ['Scheduled review commissions require a named product and editorial approval']
+      status: 'approved', mode: 'automatic_quality_gates',
+      sensitive: Boolean(reviewBrief.approval?.sensitive),
+      reasons: ['Generated review passed automated quality gates']
     };
     const queuedReview = await queueBrief(pool, {
       ...reviewBrief,
@@ -511,52 +555,23 @@ export async function executeScheduledSlot(pool, slot, {
       editorialAngle: `Evidence-based ${reviewer.domain} review using ${reviewer.evaluationCriteria.join(', ')}`
     });
 
-    // In unit testing where queueBrief is explicitly mocked or commission-only is desired, queue commission and return.
-    if (autoPublishReviews === false) {
-      return {
-        action: 'review_commission_queued',
-        researchBriefId: queuedReview.id,
-        reviewer: reviewer.penName,
-        domain: reviewer.domain
-      };
-    }
-
-    // In autonomous publishing mode, generate and publish the structured review immediately
+    const claimed = await claimBrief(pool, queuedReview.id);
+    if (!claimed) return { action: 'brief_already_claimed', researchBriefId: queuedReview.id };
     try {
-      const reviewData = createReview({
-        productName: sampleTopic,
-        reviewer,
-        researchDossier: dossier
-      });
       const outcome = await publishBatch(pool, { stories: [{
-        authorPenName: reviewer.penName,
-        title: reviewData.title,
-        summary: reviewData.summary,
-        content: reviewData.content,
-        category: 'Reviews',
+        authorPenName: reviewer.penName, title: reviewData.title,
+        summary: reviewData.summary, content: reviewData.content, category: 'Reviews',
         coverImage: selectProductCover(reviewer.domain, sampleTopic),
         publishedAt: new Date().toISOString()
       }] });
       const postId = outcome.stories?.[0]?.id;
-      if (postId) {
-        await markBriefPublished(pool, { id: queuedReview.id, postId }).catch(() => {});
-        return {
-          action: 'published_review',
-          researchBriefId: queuedReview.id,
-          postId,
-          reviewer: reviewer.penName
-        };
-      }
-    } catch (reviewErr) {
-      console.warn('[Master Scheduler] Direct review generation failed, falling back to queued commission:', reviewErr.message);
+      if (!postId) throw new Error('Review publishing engine did not return a post id');
+      await markBriefPublished(pool, { id: queuedReview.id, postId });
+      return { action: 'published_review', researchBriefId: queuedReview.id, postId, reviewer: reviewer.penName };
+    } catch (error) {
+      await releaseBriefClaim(pool, queuedReview.id, `Scheduled review publication failed: ${error.message}`);
+      throw error;
     }
-
-    return {
-      action: 'review_commission_queued',
-      researchBriefId: queuedReview.id,
-      reviewer: reviewer.penName,
-      domain: reviewer.domain
-    };
   }
 
   if (slot.type === 'maintenance') {

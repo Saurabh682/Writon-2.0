@@ -1,0 +1,472 @@
+{
+  "schema_version": "1.0.0",
+  "description": "WritOn Master Editorial Brain & Creative Insight Reservoir. Single source of truth for high-resonance propositions, hooks, and cross-platform creative intelligence.",
+  "last_updated": "2026-09-16T09:05:00.000Z",
+  "creative_north_star": "Point of view, tension, transformation, or curiosity beat neutral descriptive framing. Never spend the first seconds introducing the thing that should have been the first seconds.",
+  "core_rules": [
+    "Strong proposition > neutral framing: Never use filing-cabinet titles (e.g. \"Week-one practice recap\"). Give the reader unfinished business.",
+    "0:00 Cut Hook: Put the strongest, sharpest sentence at the very top (in video 0:00-0:02; on social in the first 80 characters above the fold).",
+    "Sensory Anchors: Ground abstractions in physical objects (tea cooling at 5:55 PM, folded receipts, chipping clay cups).",
+    "Cadence & Spacing: Avoid self-competition by enforcing at least 48h separation between identical proposition archetypes.",
+    "Zero AI Slop Hard Gates: All generators must pass the 21 engine blockers (TRENDING_KEYWORD_AS_TITLE_FAIL, TOPIC_SUBSTITUTION_FAIL, CURRENT_TOPIC_STALE_SOURCE_FAIL, ABSTRACT_CONCLUSION_WITHOUT_CAUSAL_BRIDGE_FAIL, PERSONA_ERASURE_FAIL, GENERIC_APHORISM_FAIL, DECORATIVE_CODE_FAIL, METAPHOR_AS_CODE_FAIL, BROKEN_SENTENCE_FAIL, SCRAPED_DEFINITION_FAIL, TRUNCATED_SOURCE_FAIL, EMPTY_QUOTE_FAIL, GENERIC_REFLECTION_TEMPLATE_FAIL, PERSONA_ABSENCE_FAIL, PRECISE_TECH_DETAIL_WITHOUT_SOURCE_FAIL, UNEARNED_TITLE_OCCUPATION_FAIL, FABRICATED_SOURCE_DETAIL_FAIL, PLANNER_TEXT_LEAK_FAIL, TITLE_NATURALNESS_CHECK, UNATTRIBUTED_APHORISM_FAIL, ABSTRACT_CULTURE_WITHOUT_OBJECT_FAIL) before any candidate text touches disk or queue."
+  ],
+  "proposition_archetypes": {
+    "contrarian_rule": {
+      "name": "The Contrarian Craft Rule",
+      "purpose": "Disrupts default writing cliches with immediate counter-consensus friction.",
+      "scroll_stopping_mechanism": "Provocation / Counter-Intuition"
+    },
+    "transformation": {
+      "name": "The Transformation (Before vs After)",
+      "purpose": "Demonstrates visible, actionable improvement in a writer's draft with zero fluff.",
+      "scroll_stopping_mechanism": "Immediate Practical Utility"
+    },
+    "counterintuitive": {
+      "name": "The Counterintuitive Inversion",
+      "purpose": "Inverts the standard sequence of creation, making the brain pause to re-evaluate.",
+      "scroll_stopping_mechanism": "Cognitive Friction / Curiosity"
+    },
+    "craft_philosophy": {
+      "name": "Craft Philosophy & Sensory Truth (Lines Worth Keeping)",
+      "purpose": "Articulates a deep, unspoken truth about human storytelling with acoustic precision.",
+      "scroll_stopping_mechanism": "Deep Resonance (\"I have never heard it put that way\")"
+    },
+    "manifesto_identity": {
+      "name": "The Manifesto & Cultural Identity",
+      "purpose": "Draws a clear line in the sand regarding modern distraction vs literary dignity.",
+      "scroll_stopping_mechanism": "Belief / Cultural Conflict"
+    }
+  },
+  "review_craft_architecture": {
+    "required_structure": "Question -> Relevant Hardware -> Independent Evidence -> Direct Comparison -> Practical Photographic Consequence -> Uncertainty -> Verdict",
+    "golden_rules": [
+      "SOURCE_PRODUCT_MISMATCH: Reject and fail if primary sources cover a different product variant (e.g., citing X100 Ultra review for an X100 Pro comparison).",
+      "Zero Template & Query Leakage: The research query must NEVER leak into prose as a product name (e.g. 'For the Vivo X100 Pro vs Xiaomi 14 Ultra Periscope Telephoto Compression...'). Eliminate boilerplates ('Published positioning: The available material outlines the intended feature set').",
+      "No Unearned Decimal Scores: Eliminate arbitrary scores like 8.7/10. Use 'Evidence confidence: Moderate | High' unless derived visibly with explicit percentage weights.",
+      "Physical & Optical Accuracy: Define phenomena precisely. Lens compression is perspective compression governed by camera-to-subject distance and viewpoint, not lens magic.",
+      "7 Evaluation Pillars for Comparisons: (1) Native focal length framing, (2) Matched-framing working distance & perspective, (3) Subject/facial rendering & distortion, (4) Background separation & optical bokeh, (5) Fine detail & sharpening artifacts, (6) Low-light performance & noise floor, (7) Stabilization & focus tracking.",
+      "Actionable Divergent Verdict: Always conclude with explicit trade-offs ('Choose [Product A] if... Choose [Product B] if...'). Never default to generic shortlist hedges."
+    ],
+    "standard_weighting_matrix": {
+      "native_detail": 0.25,
+      "portrait_rendering": 0.2,
+      "low_light_performance": 0.15,
+      "focal_length_versatility": 0.15,
+      "focus_stabilization": 0.1,
+      "processing_consistency": 0.1,
+      "tele_macro_capability": 0.05
+    }
+  },
+  "zero_ai_slop_blockers": {
+    "description": "Pre-publication hard quality gates preventing generic Mad Lib boilerplate and template substitution.",
+    "gates": [
+      {
+        "code": "TRENDING_KEYWORD_AS_TITLE_FAIL",
+        "description": "Rejects verbatim search queries used as titles (e.g. 'Stock market today') or canned template suffix formulas (e.g. ': Reflections on a Changing World')."
+      },
+      {
+        "code": "TOPIC_SUBSTITUTION_FAIL",
+        "description": "Detects fill-in-the-blank template scaffolding where the central subject noun can be swapped without changing underlying argument."
+      },
+      {
+        "code": "CURRENT_TOPIC_STALE_SOURCE_FAIL",
+        "description": "Blocks articles claiming current timeframes ('today', 'latest', 'current') while citing outdated reporting."
+      },
+      {
+        "code": "ABSTRACT_CONCLUSION_WITHOUT_CAUSAL_BRIDGE_FAIL",
+        "description": "Blocks sweeping societal claims unsupported by concrete domain mechanisms or evidence."
+      },
+      {
+        "code": "PERSONA_ERASURE_FAIL",
+        "description": "Enforces that persona-authored pieces carry distinctive settings, regional vocabulary, and lived domestic/work sensory anchors."
+      },
+      {
+        "code": "GENERIC_APHORISM_FAIL",
+        "description": "Flags unearned decorative quote-card aphorisms and Fortune-cookie maxims formatted as standalone blockquotes."
+      },
+      {
+        "code": "DECORATIVE_CODE_FAIL",
+        "description": "Flags code blocks where removing them changes nothing essential, trivial boilerplate (e.g. date subtractions), or code in non-code genres (Essays, Stories, Culture, Philosophy, Poetry)."
+      },
+      {
+        "code": "METAPHOR_AS_CODE_FAIL",
+        "description": "Blocks programming constructs (interfaces, mock types, velocity objects) used as decorative metaphors for human emotions, sports, or ambition."
+      },
+      {
+        "code": "PRECISE_TECH_DETAIL_WITHOUT_SOURCE_FAIL",
+        "description": "Flags hyper-specific synthetic numbers (frequencies, coordinates, temperatures, voltages, speeds, model numbers, timestamps) generated merely to simulate technical authority without verifiable grounding in primary sources."
+      }
+    ],
+    "anti_repetition_doctrine": [
+      "Anti-repetition must check narrative mechanics, not merely surface subjects. A novel topic that reuses the familiar story machine (distant crisis -> device mediation -> tea/brass prop cluster -> persistent machine sound ending) is a structural clone.",
+      "Title motif collisions (e.g. repeated 'Static' titles across genres) must be caught before generation.",
+      "Media channel realism: Never attribute digital wire services (e.g. Reuters) or financial streaming feeds (e.g. CNBC) to consumer analog shortwave broadcasts.",
+      "Zero invented eyewitness details: Never attach fictional eyewitness observations to active real-world military or diplomatic incidents."
+    ],
+    "code_use_policy": [
+      "Default to NO CODE across all genres including Tech. Code is permitted ONLY when the subject itself is software/query/debugging behavior, understanding the mechanism materially improves the article, and the removal test confirms essential understanding would be lost.",
+      "Technical authenticity comes from accurate operational mechanisms, not from the presence of code.",
+      "Aarav Mehta Technical Authority Rule: Aarav demonstrates technical authority through measurable behavior, constraints, failure modes, and engineering decisions, not through decorative code blocks."
+    ],
+    "financial_accuracy_rules": [
+      "Mutual-fund NAVs do not update intraday; open-ended funds declare NAV once per business day after market close.",
+      "Intraday investor anxiety is tied to the stock index and brokerage app estimates, not the fund's official NAV.",
+      "Open-ended mutual fund redemption is executed with the fund at closing NAV, not by selling to intraday trading desks.",
+      "The chain of craft: Market event -> household behavior -> psychological observation -> essay."
+    ]
+  },
+  "insights": [
+    {
+      "id": "hook_dont_start_weather",
+      "proposition_archetype": "contrarian_rule",
+      "title": "Don't start with weather",
+      "hook_0_sec": "DON'T START WITH WEATHER.",
+      "turn_2_sec": "Start with someone deciding something they can't undo.",
+      "body_core": "A scene begins with a consequence, not ambient temperature. Never spend the first seconds introducing what should have been the first seconds.",
+      "anti_pattern_warning": "Burying the hook inside artwork while opening the caption with soft descriptive generalities like \"Readers notice different things...\".",
+      "provenance": {
+        "source_platform": "linkedin",
+        "signal_level": "proven_cold_audience_hook",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-16T05:11:41.000Z",
+      "video_id": "W8AZfNL3uWY",
+      "unlisted_shorts_url": "https://www.youtube.com/shorts/W8AZfNL3uWY"
+    },
+    {
+      "id": "hook_replace_he_was_happy",
+      "proposition_archetype": "transformation",
+      "title": "Replace \"He was happy\" with action",
+      "hook_0_sec": "NEVER WRITE: \"HE WAS HAPPY.\"",
+      "turn_2_sec": "Give the reader one physical action they could actually see.",
+      "body_core": "Emotion words are summaries. Actions are evidence. If she is nervous, let her fold a receipt until it splits. The moment you name the emotion, the reader stops feeling it.",
+      "anti_pattern_warning": "Explaining the psychological state before showing the physical gesture.",
+      "provenance": {
+        "source_platform": "linkedin",
+        "signal_level": "proven_cold_audience_hook",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel",
+          "carousel"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-08T09:00:37.000Z"
+    },
+    {
+      "id": "hook_opening_sentence_last",
+      "proposition_archetype": "counterintuitive",
+      "title": "Write your opening sentence last",
+      "hook_0_sec": "WRITE YOUR OPENING SENTENCE LAST.",
+      "turn_2_sec": "You cannot introduce a room until you know who leaves it.",
+      "body_core": "Most opening lines suffer because the writer is clearing their throat trying to find the story. Finish the draft. Find where the real story started on page two. Move that sentence to the front.",
+      "anti_pattern_warning": "Treating the first draft's chronological order as sacred.",
+      "provenance": {
+        "source_platform": "linkedin",
+        "signal_level": "high_curiosity",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-15T06:49:20.207Z",
+      "published_shorts": "https://www.youtube.com/shorts/5wb-NECYyds"
+    },
+    {
+      "id": "hook_delete_first_sentence",
+      "proposition_archetype": "transformation",
+      "title": "Delete Your First Sentence (The Throat-Clearing Move)",
+      "hook_0_sec": "DELETE YOUR FIRST SENTENCE.",
+      "turn_2_sec": "Almost every first draft begins by clearing its throat.",
+      "body_core": "Generalities carry zero stakes. A writer drafts line one to warm up their fingers with abstract commentary; the real narrative always begins at line two where concrete physical facts enter the room. Cross out line one.",
+      "demonstration_workbench": {
+        "draft_1_line": "Since the dawn of smartphones, human conversation has steadily fractured into shallow distraction.",
+        "diagnosis_tag": "Throat-clearing / Zero stakes",
+        "margin_note": "Cut: Abstract speech",
+        "line_2_working": "I watched four people at the bus stop stare into their palms while an ambulance passed.",
+        "working_tag": "One physical fact / Genuine stakes"
+      },
+      "anti_pattern_warning": "Preaching revision rules abstractly without showing an actual bad sentence, strikethrough diagnosis, and rewritten working line side-by-side.",
+      "provenance": {
+        "source_platform": "editorial_workbench",
+        "signal_level": "demonstration_craft_standard",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "instagram_reel",
+          "x_root_tweet",
+          "threads"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-15T11:49:35.000Z",
+      "published_shorts": "https://www.youtube.com/shorts/zlwVIRP3j9c"
+    },
+    {
+      "id": "hook_scene_begins_detail",
+      "proposition_archetype": "craft_philosophy",
+      "title": "A scene begins with a detail, not an explanation",
+      "hook_0_sec": "A SCENE BEGINS WITH A DETAIL. NOT AN EXPLANATION.",
+      "turn_2_sec": "At 5:55 PM, the tea is already cold.",
+      "body_core": "Exposition asks for trust; a concrete detail earns it. Place an unusual object in an ordinary room—a whistle in an empty kitchen, a soot-black diya on glass—and the story tells itself.",
+      "demonstration_workbench": {
+        "desk_prop": "artisan_ceramic_coffee_mug",
+        "draft_1_line": "She had been feeling anxious and unsettled in the quiet apartment all morning.",
+        "diagnosis_tag": "Abstract emotion / Telling",
+        "margin_note": "Cut: Show the table",
+        "line_2_working": "At 8:15 AM, the coffee mug was already cold, but she hadn't touched the handle.",
+        "working_tag": "Physical fact / Earned subtext"
+      },
+      "anti_pattern_warning": "Giving the historical or domestic context before placing the camera on the table.",
+      "provenance": {
+        "source_platform": "editorial_workbench",
+        "signal_level": "proven_cold_audience_hook",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-15T13:05:33.000Z",
+      "published_shorts": "https://www.youtube.com/shorts/bT1DxPNwzJc",
+      "privacy_status": "unlisted"
+    },
+    {
+      "id": "hook_dignity_of_sentence",
+      "proposition_archetype": "manifesto_identity",
+      "title": "Dignity of the written sentence",
+      "hook_0_sec": "A SOCIAL NETWORK BUILT AROUND WRITING. NOT SELFIES.",
+      "turn_2_sec": "We built WritOn because we missed the dignity of the written sentence.",
+      "body_core": "In a feed designed for seven-second distraction, slow prose feels revolutionary. A photograph may bring you to the gate, but only the sentence is asked to carry the weight of the house. On WritOn, visual identity and cover artwork exist with quiet restraint: you encounter the sentence before the person, never ranked around glamour or selfie performance.",
+      "anti_pattern_warning": "Claiming the platform is literally blind or text-only (cover artwork and author portraits exist); making universal theories about image cognition instead of advocating visual restraint where writing remains primary.",
+      "provenance": {
+        "source_platform": "linkedin",
+        "signal_level": "proven_cold_audience_hook",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-06T14:00:00.000Z"
+    },
+    {
+      "id": "hook_three_ways_to_begin",
+      "proposition_archetype": "transformation",
+      "title": "Three small ways to begin writing",
+      "hook_0_sec": "YOU DON'T NEED THE WHOLE PLOT TO START.",
+      "turn_2_sec": "Pick one: a character's immediate want, an unsaid gesture, or one displaced object.",
+      "body_core": "Desire creates momentum. A fold of paper creates subtext. A quiet detail creates curiosity. Five lines tonight is better than waiting for an empty weekend.",
+      "anti_pattern_warning": "Filing-cabinet labeling like \"Week 1 Recap\"; present it as an active toolkit for tonight's blank page.",
+      "provenance": {
+        "source_platform": "linkedin",
+        "signal_level": "proven_cold_audience_hook",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel",
+          "carousel"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-12T09:22:42.000Z"
+    },
+    {
+      "id": "hook_dialogue_subtext",
+      "proposition_archetype": "contrarian_rule",
+      "title": "Dialogue is tension, not conversation",
+      "hook_0_sec": "GOOD DIALOGUE IS NEVER ABOUT WHAT IS BEING SAID.",
+      "turn_2_sec": "Two people, one missing object. The words fight over what is unsaid.",
+      "body_core": "If both characters speak with the same vocabulary and cadence, cut one. Give one person shorter, clipped lines and make the other speak around the truth.",
+      "anti_pattern_warning": "Writing pleasant exchanges that merely convey information to the audience.",
+      "provenance": {
+        "source_platform": "campaign_day8",
+        "signal_level": "active_experiment",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-13T03:30:14.616Z"
+    },
+    {
+      "id": "hook_mtzblm9p",
+      "proposition_archetype": "contrarian_rule",
+      "title": "Murder your favourite adjective",
+      "hook_0_sec": "DELETE YOUR FAVOURITE ADJECTIVE.",
+      "turn_2_sec": "If the noun cannot stand on its own feet, the sentence is already dead.",
+      "body_core": "Adjectives are excuses for vague verbs. Instead of a fierce wind, let the glass rattle in the sash.",
+      "anti_pattern_warning": "Explaining why adjectives are bad instead of forcing the writer to replace them with physical movement.",
+      "provenance": {
+        "source_platform": "learning_engine",
+        "signal_level": "candidate_hypothesis",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-16T10:47:43.000Z",
+      "video_id": "-FRnucIMFck",
+      "unlisted_shorts_url": "https://www.youtube.com/shorts/-FRnucIMFck"
+    },
+    {
+      "id": "insight_telephoto_compression",
+      "proposition_archetype": "craft_philosophy",
+      "title": "Telephoto compression is viewpoint distance, not lens magic",
+      "hook_0_sec": "LENS COMPRESSION IS A MYTH OF DISTANCE.",
+      "turn_2_sec": "Lenses don't compress space; stepping back from the subject does.",
+      "body_core": "Longer focal lengths force you to stand farther away for equal framing, and that physical camera-to-subject distance is what flattens perspective, enlarges backgrounds, and eliminates facial distortion. Comparing the Vivo X100 Pro's native ~100mm periscope against Xiaomi 14 Ultra's 75mm and 120mm dual optical setup reveals how working distance shapes portraiture.",
+      "anti_pattern_warning": "Attributing compression to glass elements rather than camera-to-subject distance; reciting spec sheets without matched-framing perspective analysis.",
+      "provenance": {
+        "source_platform": "editorial_reviews",
+        "signal_level": "proven_benchmark",
+        "cross_platform_formats": [
+          "reviews",
+          "essays",
+          "x_root_tweet",
+          "linkedin"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-13T05:00:43.130Z",
+      "outcomes": []
+    },
+    {
+      "id": "hook_amad_not_completion",
+      "proposition_archetype": "counterintuitive",
+      "title": "Never mistake āmad for completion",
+      "hook_0_sec": "INSPIRATION IS NOT A FINISHED POEM.",
+      "turn_2_sec": "Āmad is what arrives unasked; craft is deciding whether it deserves to stay.",
+      "body_core": "In classical poetics, āmad is natural poetic arrival, while āward is forced contrivance. Craft is neither: craft is the labor of deciding whether the arrival survives. But show revision, not the accounting ledger: never display the craft machinery in fluorescent lighting with arithmetic tables. The best craft dissolves into utterance, using meter as a quiet lie detector that strips away self-indulgent confession until only sensory weight remains.",
+      "anti_pattern_warning": "Displaying craft machinery in fluorescent lighting with scansion tables and arithmetic ledgers; confusing rigorous revision with pedagogic lecturing.",
+      "provenance": {
+        "source_platform": "editorial_essays",
+        "signal_level": "proven_benchmark",
+        "cross_platform_formats": [
+          "essays",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel",
+          "youtube_shorts"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-14T02:30:00.000Z",
+      "outcomes": []
+    },
+    {
+      "id": "hook_patient_capital_screen",
+      "proposition_archetype": "counterintuitive",
+      "title": "The investment may be patient. The screen is not.",
+      "hook_0_sec": "YOUR SAVINGS ARE PATIENT. YOUR SCREEN IS NOT.",
+      "turn_2_sec": "Placing a 10-year horizon beside an index that updates every few seconds produces neurotic surveillance, not wealth.",
+      "body_core": "A market dip is not an immediate deduction from your kitchen table unless you are forced to sell. The chain of genuine craft: Market event -> household behavior -> psychological observation -> essay. Open-ended mutual funds redeem with the fund at closing NAV, not via liquidation to an intraday desk. Never mistake intraday price noise for structural ruin.",
+      "anti_pattern_warning": "Treating intraday index movements as live mutual fund NAV deductions; asserting theoretical liquidation to intraday desks; turning trending search keywords into generic fill-in-the-blank essays.",
+      "provenance": {
+        "source_platform": "editorial_essays",
+        "signal_level": "proven_benchmark",
+        "cross_platform_formats": [
+          "essays",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel",
+          "youtube_shorts"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-16T08:54:00.000Z",
+      "outcomes": []
+    },
+    {
+      "id": "hook_geometry_diminishing_returns",
+      "proposition_archetype": "craft_philosophy",
+      "title": "The Geometry of Diminishing Returns",
+      "hook_0_sec": "FASTER HARDWARE IS NOT A LICENSE FOR BLOATED CODE.",
+      "turn_2_sec": "When silicon outruns the daily task, bending the glass becomes the only way to sell the replacement.",
+      "body_core": "With the iPhone 18 Pro starting at ₹164,900 and iPhone Duo at ₹299,900, hardware engineering has surpassed ordinary computing demand. Folding a screen in half solves an upgrade cycle, not a computational bottleneck. Faster hardware should increase the performance budget returned to the user, not excuse thirty-megabyte single-page application bundles or recursive hydration.",
+      "anti_pattern_warning": "Writing pre-launch leak rumors after official announcements; injecting decorative boilerplate code into hardware essays; treating trivial date subtractions as engineering evidence.",
+      "provenance": {
+        "source_platform": "editorial_tech",
+        "signal_level": "proven_benchmark",
+        "cross_platform_formats": [
+          "tech",
+          "essays",
+          "x_root_tweet",
+          "linkedin",
+          "youtube_shorts"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-16T10:48:00.000Z",
+      "outcomes": []
+    },
+    {
+      "id": "hook_replace_happy",
+      "proposition_archetype": "contrarian_rule",
+      "title": "Never Write: He Was Happy",
+      "hook_0_sec": "NEVER WRITE: HE WAS HAPPY.",
+      "turn_2_sec": "Give the reader one physical action they could actually see.",
+      "body_core": "Draft one names the emotion, but leaves the page completely blank. Now watch the rewrite: He slit the envelope with his thumb, scanned the first three words, and sat down on the kitchen step. Name the physical gesture. Let the reader feel the joy.",
+      "anti_pattern_warning": "Naming an abstract emotional label instead of grounding it in physical character movement.",
+      "provenance": {
+        "source_platform": "editorial_workbench",
+        "signal_level": "active_experiment",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads",
+          "instagram_reel"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-16T16:47:00.000Z",
+      "video_id": "pfbNcRRwR1Q",
+      "unlisted_shorts_url": "https://www.youtube.com/shorts/pfbNcRRwR1Q",
+      "privacy_status": "unlisted"
+    },
+    {
+      "id": "hook_five_dollar_swear",
+      "proposition_archetype": "craft_philosophy",
+      "title": "The Five-Dollar Swear",
+      "hook_0_sec": "WHEN YOU PUT A PRICE TAG ON ANGER, SPORT BECOMES REALITY TV ON WHEELS.",
+      "turn_2_sec": "NASCAR's 'Swear Jar' doesn't celebrate blue-collar authenticity—it packages human panic as inventory.",
+      "body_core": "Driver radio used to feel like eavesdropping on raw survival at 200 miles an hour. Turning profanity into a five-dollar fan bounty turns an involuntary stress reflex into an engagement metric. When frustration is monetized, even anger becomes a performance for surveillance.",
+      "anti_pattern_warning": "Writing canned 'reflections on a changing world' templates; inserting scraped encyclopedia definitions; dropping broken grammar fragments into body copy.",
+      "provenance": {
+        "source_platform": "editorial_essays",
+        "signal_level": "proven_benchmark",
+        "cross_platform_formats": [
+          "essays",
+          "culture",
+          "x_root_tweet",
+          "threads",
+          "linkedin"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-16T18:00:00.000Z",
+      "outcomes": []
+    }
+  ]
+}
