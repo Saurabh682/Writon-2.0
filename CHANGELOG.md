@@ -1,5 +1,192 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.1.89 — Match Reality Grounding, Anti-Contamination Guardrails & Sunita Banerjee US Open Calibration — 2026-09-18
+
+- **Think Brain Rule Implementation (Rules 25–29)**:
+  - Added `RESULT_CONTRADICTS_PREMISE_FAIL` (Rule 25) in `editorial-intelligence-service.js`: Blocks essays where pre-event narrative bias contradicts actual match outcomes (e.g. framing a 4-hour 33-minute, 5-set midnight marathon as a "predictable march").
+  - Added `SPORT_STYLE_GENERALIZATION_FAIL` (Rule 26) in `editorial-intelligence-service.js`: Rejects sweeping, unearned claims that an entire sport or era has abandoned tactics, slices, or drop shots based on a single match.
+  - Added `TITLE_OBJECT_CONTRACT_FAIL` (Rule 27) in `editorial-intelligence-service.js`: Rejects metaphorical dual-object titles ("The X and the Y") when either noun fails to materially exist and shape the essay (eliminating ghost metaphors like "the clay" on hard courts).
+  - Added `PERSONA_LENS_CONTAMINATION_FAIL` (Rule 28) in `editorial-intelligence-service.js`: Prevents persona cross-contamination where Dr. Sunita Banerjee inappropriately borrows Aarav Mehta's systems engineering / cache invalidation vocabulary for metaphor convenience.
+  - Added `SELF_REFERENCE_COOLDOWN` (Rule 29) in `editorial-intelligence-service.js`: Prohibits artificial self-references to earlier bot essays ("In my earlier essay, 'The Graded Response'...") unless explicitly refuting or revising previous beliefs.
+  - Updated `EDITORIAL_BRAIN.json` (server & campaign) to 29 Zero AI Slop hard gates with explicit Dr. Sunita Banerjee persona guardrails and research-first pipeline doctrine.
+  - Expanded `server/test/zero-ai-slop-blockers.test.js` to 49 passing tests; entire server test suite verified at 562/562 passing across 58 test files.
+- **Dr. Sunita Banerjee Essay Calibration (*Four Hours Inside a Foregone Conclusion*)**:
+  - Replaced rejected draft *"The Metronome and the Clay"* (Post ID: `a6e1d2d7-65e7-46f0-84e0-39e9eb5de9d2`) with *"Four Hours Inside a Foregone Conclusion"*.
+  - Grounded the essay in the actual 4-hour, 33-minute 5-set marathon (Zverev d. Halys 6–4, 4–6, 7–6(3), 6–7(3), 6–3 finishing past 2 a.m. with 47 combined aces).
+  - Framed through Sunita's authentic pedagogical lens: comparing administrative betting odds/tournament rankings with provisional grades on student tutorial papers—hierarchy having to pay full price for its survival.
+  - Replaced decorative/symbolic moralizing ending with concrete, understated physical action: unscrewing the fountain pen and drawing a dark blue stroke across the margin through the provisional grade.
+  - Synchronized PostgreSQL (`public.posts`, `public.editorial_failure_patterns`, `public.editorial_narrative_fingerprints`), regenerated all SEO and social feeds, and generated static pre-rendered story HTML.
+
+## 2.1.88 — Autonomous LinkedIn Bot Suite & Dedicated LinkedIn Studio — 2026-09-18
+
+- **LinkedIn Marketing API v202609 & Zero-Dependency Execution**:
+  - Replaced legacy `/v2/ugcPosts` and Assets `registerUpload` with modern Posts API (`/rest/posts`) and versioned media endpoints (`/rest/images`, `/rest/documents`, and `/rest/videos`).
+  - Configured mandatory protocol headers: `Linkedin-Version: 202609`, `X-Restli-Protocol-Version: 2.0.0`, and pure Node.js `fetch` implementation adhering to Ponytail code minimization.
+  - Implemented capture of `x-restli-id` response header for canonical LinkedIn post URNs.
+- **15 PostgreSQL Subsystem Tables & Freeze Trigger (`server/src/migrations/20260919_linkedin_bot_subsystem.sql`)**:
+  - Created full relational persistence for `linkedin_connections`, `linkedin_candidates`, `linkedin_candidate_versions`, `linkedin_assets`, `linkedin_validation_runs`, `linkedin_validation_results`, `linkedin_schedules`, `linkedin_media_uploads`, `linkedin_publish_intents`, `linkedin_publish_attempts`, `linkedin_reconciliation_checks`, `linkedin_publications`, `linkedin_metric_snapshots`, `linkedin_observations`, and `linkedin_learning_patterns`.
+  - Added database trigger `trg_freeze_approved_candidate_version` strictly locking commentary, format, and assets once approved.
+- **Permission-Aware Reconciliation & Quarantine Ledger**:
+  - Resolved `UNKNOWN` dispatches (missing header or timeout) by evaluating member read permissions (`r_member_social`).
+  - Quarantines ambiguous publishes to prevent duplicate dispatches during member-scope restrictions.
+- **Dedicated LinkedIn Studio Interface (`public/linkedin.html`, `/linkedin-studio`)**:
+  - Built Warm Ivory Parchment (`#FAF5EE`) command center exclusively for LinkedIn post lifecycle management.
+  - Features 24-hour application and member quota meters (500 and 100 default ceilings), 34-gate traffic light evaluation (`LI01`–`LI17`), candidate revision history, and quarantine resolution.
+- **Operational Invariant Enforced**:
+  - Strict rule: **NEVER post test things online**. All tests and calibrations operate strictly in `--dry-run` simulation mode with zero live network mutations.
+- **Scout Agent & Publisher CLI**:
+  - Added `scripts/linkedin_publisher.mjs` with `--brain --dry-run` support.
+  - Added `scripts/linkedin_scout.mjs` for multi-surface metric harvesting and quarantine auditing.
+- **Full Test Suite Verification**:
+  - 557/557 server tests passing across 58 test files.
+
+## 2.1.87 — Brain-Governed 𝕏 Engine & Dedicated Canvas Operator Surface — 2026-09-18
+
+- **Editorial Brain Constitution Governance & 31 Gates (`server/src/services/x-bot-service.js`, `server/test/x-bot-brain.test.js`)**:
+  - Bound 𝕏 candidate evaluation directly to `EDITORIAL_BRAIN.json` with cryptographically verified SHA-256 constitution sealing (`computeBrainHash`).
+  - Implemented all 31 constitutional gates (17 Global Quality + 14 𝕏-Specific):
+    - Global Gates: word length bounds (`G01`), craft score threshold (`G02`), four-voice taxonomy alignment (`G03`), AI throat-clearing / banned opener checks (`G04`), concrete sensory anchor requirement (`G05`), takeaway / moral lesson prohibition (`G06`), decorative pseudo-code ban (`G07`), direct prose enforcement (`G08`), repetition suppression (`G09` / `G10`), claim citation anchoring (`G11`), claim integrity (`G12`), broken sentence fragment prevention (`G13`), quote balance (`G14`), markdown stripping (`G15`), titlecase suppression (`G16`), and non-empty validation (`G17`).
+    - 𝕏 Gates: hard 280-character ceiling (`X01`), lowercase hashtag validation (`X02`), subject hashtag density (`X03`), hashtag character budget (`X04`), vanity link enforcement (`X05`), line break budgeting (`X06`), emoji discipline (`X07`), craft truth opening cut (`X08`), direct reply anchoring (`X09`), channel cooldown checks (`X10`), daily dispatch budgeting (`X11`), duplicate detection (`X12`), voice variation tracking (`X13`), and hook variation validation (`X14`).
+  - Refined `G13_BROKEN_SENTENCE_FAIL` to sanitize trailing lowercase hashtags before evaluating terminal punctuation, preventing false-positive gate failures on valid tweets with standard hashtag footers.
+  - Added dedicated test in `server/test/x-bot-brain.test.js` validating trailing hashtag handling across broken-sentence checks (17/17 tests passing).
+- **Dedicated 𝕏 Bot Operator Surface & Modal Alignment (`public/canvas.html`)**:
+  - Fully integrated `#tab-btn-xbot` and `#view-xbot` in the Canvas interface.
+  - Aligned Canvas UI actions (`renderXBotCandidates`, `composeValidateCandidate`, `validateXCandidate`, `approveXCandidate`, `dryRunXCandidate`, `dispatchXCandidate`) with the authoritative `/api/v1/x-bot/*` backend API contracts.
+  - Implemented live 31-Gate explanation modal (`openXExplanationModal`) fetching and displaying exact pass/fail reasons, gate descriptions, and evidence bundles dynamically.
+- **Strict Dry-Run Safety Invariant**:
+  - Enforced operational mandate: **NEVER post test assets online**.
+  - All test and staging verification routines execute strictly in `--dry-run` simulation mode with zero live network dispatches to Twitter API.
+  - Safe channel cooldown bypass in `dryRun` mode enables seamless multi-candidate simulation testing without triggering false cooldown blocks.
+
+## 2.1.86 — Instagram Subsystem Dry-Run Invariant & Carousel Layout Engine — 2026-09-18
+
+- **Strict Dry-Run Invariant Rule Enforced (`scripts/instagram_publisher.mjs`, `public/js/instagram-studio.js`)**:
+  - Enforced operational mandate: **NEVER post test assets online**.
+  - All automated and interactive test verifications run strictly in `--dry-run` simulation mode with zero network mutations against Meta Graph API.
+  - Interactive Studio in `public/instagram.html` and `public/canvas.html` displays comprehensive 17-gate pre-flight audit report on dry-run and requires operator confirmation for any dispatch attempt.
+- **Dynamic Slide Layout & Divider Collision Fix (`server/src/services/render-warm-parchment-slide.js`)**:
+  - Replaced hardcoded vertical baseline (`y=560`) with dynamic text flow positioning.
+  - Accent divider line is now dynamically offset from the headline's last line with a `56px` breathing room before body text, permanently eliminating accidental strikethrough appearance.
+- **End-to-End Dry-Run Verification**:
+  - Ran `node scripts/instagram_publisher.mjs --dry-run` validating all 17 gates, cryptographic integrity hashes (`content_hash`, `asset_manifest_hash`, `governance_bundle_hash`), and Meta v26.0 quota checks without making any outbound requests.
+  - Verified 16/16 Vitest tests passing across client, validator, and publisher service.
+
+## 2.1.85 — Gemini Spark Production Sync Bridge & Test Fixture Decoupling — 2026-09-17
+
+- **Decoupled Production Bridge (`server/src/scripts/sync-spark-trend-report.mjs`)**:
+  - Replaced hardcoded sample research runner with a dedicated, zero-fabrication sync client.
+  - Accepts Schema 1.0.0 JSON payloads via `--input=<file>` and piped `stdin`.
+  - Enforces strict parsing and validation against `sparkPayloadSchema` with BOM-resilient input parsing.
+  - Supports `--dry-run` flag to validate payloads locally without network transmission.
+  - Fail-closed authentication requiring `process.env.TREND_INGEST_SECRET`; removed all hardcoded fallbacks and `ADMIN_SECRET_KEY` overloading.
+  - Sends authenticated HTTP POST requests strictly via `Authorization: Bearer <TREND_INGEST_SECRET>`.
+  - Comprehensive HTTP status handling: 200 OK, 202 Accepted (with `Retry-After`), 400 Bad Request, 401 Unauthorized, and 409 Conflict.
+- **Test Fixture Decoupling (`server/test/fixtures/sample-spark-trend-report.json`)**:
+  - Moved the 3 sample trends out of executable production scripts into an isolated test fixture.
+  - Added automated test assertion in `server/test/trend-intelligence.test.js` verifying the fixture strictly validates against Schema 1.0.0.
+- **Documentation Updates (`docs/SPARK_TREND_SYNC_GUIDE.md`, `server/.env.example`)**:
+  - Updated operator guide with `--input` file and `stdin` pipeline examples.
+  - Documented `TREND_INGEST_SECRET` requirements in `server/.env.example`.
+
+## 2.1.84 — Autonomous Instagram Bot Suite & Dedicated Studio/Tracker (Meta v26.0) — 2026-09-17
+
+- **Meta Graph API v26.0 Hardened Architecture (`instagram_platform_contract.md`, `instagram_editorial_rules.md`, `INSTAGRAM_BOTS.md`)**:
+  - **Configurable Versioning**: Upgraded to configurable `META_GRAPH_API_VERSION` defaulting to `v26.0` (released July 29, 2026), replacing the expiring v20.0 protocol.
+  - **Separation of Contracts**: Decoupled protocol mechanics (`instagram_platform_contract.md`) from brand heuristics (`instagram_editorial_rules.md`).
+- **PostgreSQL Authoritative Runtime (15 Relational Tables) (`server/src/migrations/20260918_instagram_bot_subsystem.sql`, `server/src/services/instagram-db.js`)**:
+  - Implemented 15 tables completely replacing file-based runtime lookups: `instagram_connections`, `instagram_candidates`, `instagram_candidate_versions`, `instagram_assets`, `instagram_validation_runs`, `instagram_validation_results`, `instagram_schedules`, `instagram_containers`, `instagram_publish_intents`, `instagram_publish_attempts`, `instagram_reconciliation_checks`, `instagram_publications`, `instagram_metrics`, `instagram_observations`, and `instagram_learning_patterns`.
+  - Enforced physical database immutability triggers (`trg_candidate_version_immutability` & `trg_asset_identity_immutability`) post-approval while keeping signed URLs rotatable.
+- **Publish Intent Idempotency & Three-Way Outcome Branching (`server/src/services/instagram-publisher-service.js`)**:
+  - Anchored idempotency to `instagram_publish_intents` with `UNIQUE(candidate_version_id, publication_role)` where `publication_role` is relational (`PRIMARY` | `COMPANION_STORY`).
+  - Strict three-way attempt branching: `200 + media_id` $\to$ `SUCCESS`, 4xx Meta error $\to$ `EXPLICIT_FAIL`, transport timeout $\to$ `TIMEOUT_UNKNOWN`.
+  - Auditable reconciliation checks (`instagram_reconciliation_checks`) transition ambiguous dispatches to `QUARANTINED` for operator inspection, eliminating blind auto-republishing.
+- **17 Instagram Channel Gates & Repetition Engine (`server/src/services/instagram-brain-validator.js`)**:
+  - Evaluates caption, visual layouts, 50%+ negative space, and slide sequencing as a single editorial unit.
+  - Stores versioned engine metadata (`ig-repetition-v1`), similarity evidence, and asset manifest SHA-256 (`asset_manifest_hash`).
+- **Unified Instagram Studio (`public/js/instagram-studio.js`, `public/css/instagram-studio.css`, `public/instagram.html`, `public/canvas.html`)**:
+  - Single reusable component mounted identically in `public/instagram.html` and `public/canvas.html` under tab `📸 Instagram Studio & Tracker`.
+  - Triple-Gauge Sentinel: Meta API Health (v26.0 latency), Publishing Quota (`content_publishing_limit`), and Token Health.
+  - Visual 10-slide carousel sequence inspector with narrative role badges (`Hook`, `Tension`, `Proof`, `CTA`), 0:00 proposition cut hook check, and views-first metrics with NULL-preservation.
+- **Genesis Protocol CLI Agents (`scripts/instagram_publisher.mjs`, `scripts/instagram_scout.mjs`)**:
+  - Added standalone CLI publisher with surgical flags (`--dry-run`, `--ignore-schedule-window`) and community scout harvesting observations into the neutral performance ledger.
+
+## 2.1.83 — Founding Writer Campaign Cohort 1 Dispatch (50 Published Authors) — 2026-09-17
+
+- **Live Cohort 1 Execution (`server/src/scripts/dispatch-founding-writers-campaign.mjs`)**:
+  - **Successful Dispatch**: Dispatched Founding Writer invitations to the top **50 highest-affinity legacy published authors** with 50ms pacing and zero delivery errors (50/50 accepted by Resend).
+  - **Zero Tracking Compliance**: Enforced strict privacy standards with `open_tracking: false`, `click_tracking: false`, zero 1×1 tracking pixels, and zero redirect wrappers.
+  - **RFC 8058 One-Click Compliance**: Injected signed HMAC-SHA256 URL-safe unsubscribe headers (`List-Unsubscribe: <https://api.writon.cc/email/unsubscribe/...>`, `List-Unsubscribe-Post: List-Unsubscribe=One-Click`).
+  - **Dynamic Personalization**: Deep-linked each recipient to their personalized, pre-verified Founding Writer portal (`https://writon.cc/founding-writer?email=...`) with dynamic live library count (766 stories across 15 categories).
+  - **Database State Synchronization**: Recorded dispatches atomically across `public.email_jobs`, `public.founding_writer_eligibility` (setting `contacted_at = NOW(), cohort = 1`), and `public.user_email_preferences`.
+  - **Maturation Gate Armed**: Initiated mandatory 24-hour observation window to monitor provider delivery telemetry, hard bounces (max 2.0%), and spam complaints (max 0.1%) before Cohort 2 can proceed.
+
+## 2.1.82 — Founding Writer Invitation Final Production Lock & Warmer Compliance Tone (Sample 8) — 2026-09-17
+
+- **Founding Writer Email Final Production Calibrations (`server/src/email/render/founding-writers-invitation.js`, `server/src/email/render/layout.js`)**:
+  - **Warmer Compliance Phrasing**: Softened administrative compliance statement to: *"You’re receiving this note because you previously had a WritOn account. This is a one-time invitation. You won’t receive recurring emails unless you choose to subscribe."*
+  - **Secondary Link Legibility**: Elevated contrast on *"Or browse the live library at writon.cc/explore"* (`#4D4238` text, `#3D342C` link, `14px`) while preserving strict hierarchy subordination below the primary terracotta button.
+  - **Sign-Off Vertical Isolation**: Added +8px breathing room below the editorial sign-off (`margin-top: 44px;` on the divider) to mirror the unhurried letter spacing above.
+  - **Legible Footer Sizing**: Increased footer text and preference/unsubscribe links to `13.5px` (`#4A4239`, line-height `1.6`) across both desktop and mobile viewports.
+  - **Restraint Invariant Enforced**: Firmly locked design with zero icons, badges, or ornamental clutter; zero tracking pixels or redirect wrappers.
+  - **Verification & Live Dispatch**: Dispatched final Sample 8 to `saurabh.682@gmail.com` (Resend Message ID: `01a0b047-f46d-725e-a50e-0ab5da2e8a57`). Campaign engine ready for Cohort 1.
+
+## 2.1.81 — Decadal App Release Journey & PostgreSQL Canonical Release Ledger — 2026-09-17
+
+- **App Release Journey Database Infrastructure (`server/migrations/20260918_app_release_history.sql`, `server/src/scripts/seed-app-releases.mjs`)**:
+  - **Canonical Table Creation**: Created `public.app_releases` with columns `platform`, `package_name`, `version_code`, `version_name`, `release_title`, `released_at`, `replaced_at`, `status`, `era`, `is_major`, and `raw_metadata`, indexed on code, era, and status with unique constraint `(platform, version_code)`.
+  - **Full 10-Year Historical Ingestion**: Ingested all **80 production releases** of the WritOn app from Genesis (Build 1, version 1.0, released November 16, 2016 at 11:05 AM IST) to the modern live release (Build 170, version 2.0.71, released September 15, 2026 at 12:23 PM IST).
+  - **Era Partitioning**:
+    - **Genesis Era (2016–2017)**: 48 releases (Builds 1 to 50).
+    - **Classic 1.x Era (2019–2022)**: 15 releases (Builds 51 to 68; Build 68 served as the stable store foundation for 4.4 continuous years).
+    - **Modern WritOn 2.0 Era (August 2026–Present)**: 17 releases (Builds 102 to 170).
+  - **Editorial Ingestion Mirroring**: Mirrored all 17 modern WritOn 2.0 releases into `public.editorial_releases` with idempotent keys `android:<versionCode>` for editorial provenance and update changelogs.
+  - **Comprehensive Chronicle Documentation**: Documented the complete release ledger with timestamps and release titles in [`docs/releases/GOOGLE_PLAY_RELEASE_CHRONICLE.md`](file:///d:/VibeCode/WritOn-PowerUp/docs/releases/GOOGLE_PLAY_RELEASE_CHRONICLE.md).
+
+## 2.1.80 — 𝕏 Bot Governance Architecture, Constitutional Sentinel & Dedicated Canvas Tracker — 2026-09-17
+
+- **𝕏 Bot Governance Engine (`server/src/services/x-bot-service.js`, `server/migrations/20260918_x_bot_governance.sql`)**:
+  - **Constitutional Primacy**: Established strict separation where `campaign/EDITORIAL_BRAIN.json` serves as the immutable Constitution verified via cryptographic SHA-256 (`computeBrainHash()`), while PostgreSQL serves as runtime memory.
+  - **Layered Candidate Pipeline**: Formalized pipeline: `Brain Insight` $\to$ `𝕏 Proposition` $\to$ `𝕏 Draft` $\to$ `Quality Evaluation` $\to$ `Approved Candidate` $\to$ `Dispatch` $\to$ `Outcome`. Edits create immutable `vN+1` revisions without mutating approved candidate records.
+  - **31 Constitutional Gates (4-State Evaluation)**: Implemented 17 Global Quality Blockers + 14 𝕏 Channel-Specific Gates returning `PASS`, `FAIL`, `NOT_APPLICABLE`, or `INSUFFICIENT_EVIDENCE`. All factual and technical claims require explicit `evidence_bundle` grounding.
+  - **Deterministic Repetition Engine v1.0**: Multi-layer novelty filter checking exact text duplicate SHA-256 hash, 4-word opening prefix collision against past 5 dispatches, 3-gram Jaccard similarity ($\ge 0.75$), and 12-hour archetype cooldowns.
+  - **Three-State Dispatch Reliability & Reconciliation Sentinel**:
+    - Dispatches return `succeeded`, `failed_safe_to_retry`, or `outcome_unknown`.
+    - Network drops or ambiguous API responses transition candidate to `reconciliation_required` state with **automatic retries strictly prohibited** to prevent duplicate public tweets.
+    - Added itemized decomposition tracking discrete statuses for root posts and thread replies.
+- **Dedicated Canvas Operator Interface (`public/canvas.html`)**:
+  - Added dedicated navigation tab (`𝕏 Bot Governance`) with live counter pill and URL deep-linking (`/canvas?tab=xbot`).
+  - **Constitution & Telemetry Sentinel**: Real-time status badge showing Constitution sync, brain SHA-256 hash, candidate queue counts, approved ready counts, today's dispatches, and quarantine queue.
+  - **Reconciliation Sentinel Alert**: Prominent alert banner rendered when dispatches are in `outcome_unknown` state, providing operator resolution triggers (*"Confirm on 𝕏"* or *"Mark Failed & Purge"*).
+  - **Provenance Drawer ("Why This Exists")**: Click-to-open modal inspecting source insight, proposition, archetype, evidence bundle, repetition score, and itemized audit of all 31 gates.
+  - **Direct Operator Composer with Zero Immunity**: All manually submitted operator copy must pass the identical 31 constitutional blockers before admission.
+  - **Audit Ledger Tail**: Live tail of the governance activity ledger.
+- **Verification & Testing (`server/test/x-bot-brain.test.js`)**:
+  - Added comprehensive 16-test suite covering cryptographic hashing, repetition engine, 4-state blocker evaluation, evidence bundle verification, network drop quarantine, and execution-time stale hash veto.
+  - All 16 tests passing cleanly (`npx vitest run test/x-bot-brain.test.js`).
+ 
+## 2.1.79 — Founding Writer Invitation Typographic & Visual Hierarchy Calibration (Sample 7) — 2026-09-17
+
+- **Email Design & Architectural Refinements (`server/src/email/render/layout.js`, `server/src/email/render/founding-writers-invitation.js`)**:
+  - **Lighter Card Border**: Softened outer card container border to `#EDE5DA` (from `#E8DFD3`) for an understated warm paper edge.
+  - **Scaled Wordmark Masthead**: Increased `WritOn` masthead font size by ~7.5% to `21.5px` with `-0.015em` letter-spacing, reinforcing its presence as a publication masthead rather than a plain text label.
+  - **Opening Letter Headline Breathing Room**: Expanded headline bottom margin to `30px` (from `24px`) to establish the natural cadence of a private letter.
+  - **Prose Leading & Cadence**: Elevated body copy line-height to `1.68` across all paragraphs, shifting reading cadence firmly into literary editorial territory.
+  - **Warmer Inset Privilege Panel**: Shifted privilege box background to `#F7F1E7` with border `#E5DDD1` and an imperceptible warm terracotta radial wash (`rgba(231,90,42,0.035)` at 92% 88%) for subtle handmade parchment depth; elevated privilege descriptions to `14px` (`#483E34`, line-height `1.55`) for crystal-clear readability without fine-print fatigue.
+  - **Marginalia Editorial Note Breathing Room**: Expanded top divider spacing above *"From the WritOn desk"* (`padding-top: 20px; margin-top: 22px; border-top: 1px dashed #DDD2C4`), enlarged italic craft quote to `15.5px` (`#2C241D`, line-height `1.6`) to read as an authentic editor's marginal note.
+  - **Literary Proof Precision**: Strictly calibrated proof sentence to *"While you were away, the library grew to **766 stories, poems, essays and reflections**, from Urdu ghazals to investigative technology."* with bolding reserved exclusively for the count and collection noun phrase.
+  - **Isolated Primary Action**: Allocated `44px` top margin above the primary terracotta button (*"Open your writing desk"*), cementing visual focus while preserving 100% full-width mobile responsiveness.
+  - **Muted Exploration Route**: Styled secondary library URL (`writon.cc/explore`) in muted warm gray (`#6A6057`).
+  - **Verification & Live Dispatch**: Full server test suite passing (519/519 tests across 53 test files); live Sample 7 dispatched to `saurabh.682@gmail.com` (Resend Message ID: `01a0b01b-316b-77ce-88b5-8051fc812cc4`).
+
+## 2.1.78 — Founding Writer Invitation Final Production Polish & Breathing Room Calibration — 2026-09-17
+
+- **Founding Writer Invitation Production Refinements (`server/src/email/render/founding-writers-invitation.js`)**:
+  - **Vertical CTA Spacing Calibration**: Added +10px vertical breathing room above the primary CTA table (`margin: 42px auto 14px;`), separating the proof copy cleanly from the action destination.
+  - **Muted Library Sub-Link**: Changed secondary library URL from competing terracotta to muted warm brown/gray (`#6A6057` / `#7A7067`), cementing the visual dominance of the primary *"Open your writing desk"* button.
+  - **Literary Proof Refinement**: Removed administrative "across 15 writing categories" phrasing, updating the proof statement to: *"While you were away, the library grew to 766 stories, poems, essays and reflections, from Urdu ghazals to investigative technology."*
+  - **Editorial Body Typography**: Relaxed paragraph line-height to `1.62–1.65` across all body segments for reading cadence suited to long-form prose.
+  - **Verification & Dispatch**: Verified unit tests (`test/email-foundation.test.js`) and dispatched live Sample 6 to `saurabh.682@gmail.com` (Resend Message ID: `01a0b000-d1d4-735d-8323-b0581541431e`).
+
 ## 2.1.77 — Non-Fiction Reportage Integrity, Eyewitness Guardrails & Meera Varma Cultural Calibration — 2026-09-17
 
 - **Think Brain Rule Implementation (Rules 22, 23, 24)**:

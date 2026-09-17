@@ -1029,10 +1029,11 @@ ${researchDossier.verification ? `- Corroboration Status: ${researchDossier.veri
 ${researchDossier.hashtagIntelligence?.hashtags?.length ? `- Approved Hashtags: ${researchDossier.hashtagIntelligence.hashtags.join(' ')}` : ''}
 
 FACTUAL GROUNDING & LITERARY TRUTH RULES:
-1. ACCURACY: Treat headlines and snippets as leads, distinguish reported claims from established facts, and never invent dates, claims, quotes, test results, or technical details.
+1. TIMELINE & OUTCOME SEPARATION: Separate PRE-EVENT predictions, odds, and rankings from POST-EVENT actual match/event outcomes. Never describe pre-event expectations as post-event reality. Check the actual final score, match duration, and developments. Let the actual match outcome determine the essay's core tension rather than forcing an event into a pre-existing philosophical thesis.
 1a. ATTRIBUTION: Attribute consequential claims to the named publisher in prose and include the supplied source links in a final "Sources" section. If sources conflict, say so plainly.
-2. LITERARY CRAFT OVER NEWS CLIPPINGS: Do NOT write a dry news report. Transform these real-world events into rich, human, evocative literature—exploring what this moment reveals about society, craft, ambition, silence, or human nature.
-3. AUTHENTIC PERSONA: Write strictly through ${persona.fullName}'s cognitive lens and perspective.
+2. NO SWEEPING SPORT/ERA GENERALIZATIONS: Never claim that an entire sport or era has "abandoned tactics/slice" or that "everything is velocity" based on one match. A single match can only support observations about THAT match.
+3. TITLE METAPHOR INTEGRITY: If the title uses dual concrete nouns ("The X and the Y"), BOTH nouns must materially appear and shape the narrative engine of the essay.
+4. DISTINCT PERSONA LENS: Maintain the author's authentic cognitive lens. Do not borrow another persona's signature domain (e.g. computing/cache metaphors) merely for decorative flourish. Do not cite earlier essays by name unless directly refuting or revisiting them.
 ===================================================================
 ` : '';
 

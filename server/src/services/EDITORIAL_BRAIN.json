@@ -8,7 +8,7 @@
     "0:00 Cut Hook: Put the strongest, sharpest sentence at the very top (in video 0:00-0:02; on social in the first 80 characters above the fold).",
     "Sensory Anchors: Ground abstractions in physical objects (tea cooling at 5:55 PM, folded receipts, chipping clay cups).",
     "Cadence & Spacing: Avoid self-competition by enforcing at least 48h separation between identical proposition archetypes.",
-    "Zero AI Slop Hard Gates: All generators must pass the 24 engine blockers (TRENDING_KEYWORD_AS_TITLE_FAIL, TOPIC_SUBSTITUTION_FAIL, CURRENT_TOPIC_STALE_SOURCE_FAIL, ABSTRACT_CONCLUSION_WITHOUT_CAUSAL_BRIDGE_FAIL, PERSONA_ERASURE_FAIL, GENERIC_APHORISM_FAIL, DECORATIVE_CODE_FAIL, METAPHOR_AS_CODE_FAIL, BROKEN_SENTENCE_FAIL, SCRAPED_DEFINITION_FAIL, TRUNCATED_SOURCE_FAIL, EMPTY_QUOTE_FAIL, GENERIC_REFLECTION_TEMPLATE_FAIL, PERSONA_ABSENCE_FAIL, PRECISE_TECH_DETAIL_WITHOUT_SOURCE_FAIL, UNEARNED_TITLE_OCCUPATION_FAIL, FABRICATED_SOURCE_DETAIL_FAIL, PLANNER_TEXT_LEAK_FAIL, TITLE_NATURALNESS_CHECK, UNATTRIBUTED_APHORISM_FAIL, ABSTRACT_CULTURE_WITHOUT_OBJECT_FAIL, FIRST_PERSON_WITNESS_CLAIM_FAIL, UNVERIFIED_INDUSTRY_FIRST_FAIL, FICTIONAL_PRECISION_FAIL) before any candidate text touches disk or queue."
+    "Zero AI Slop Hard Gates: All generators must pass the 29 engine blockers (TRENDING_KEYWORD_AS_TITLE_FAIL, TOPIC_SUBSTITUTION_FAIL, CURRENT_TOPIC_STALE_SOURCE_FAIL, ABSTRACT_CONCLUSION_WITHOUT_CAUSAL_BRIDGE_FAIL, PERSONA_ERASURE_FAIL, GENERIC_APHORISM_FAIL, DECORATIVE_CODE_FAIL, METAPHOR_AS_CODE_FAIL, BROKEN_SENTENCE_FAIL, SCRAPED_DEFINITION_FAIL, TRUNCATED_SOURCE_FAIL, EMPTY_QUOTE_FAIL, GENERIC_REFLECTION_TEMPLATE_FAIL, PERSONA_ABSENCE_FAIL, PRECISE_TECH_DETAIL_WITHOUT_SOURCE_FAIL, UNEARNED_TITLE_OCCUPATION_FAIL, FABRICATED_SOURCE_DETAIL_FAIL, PLANNER_TEXT_LEAK_FAIL, TITLE_NATURALNESS_CHECK, UNATTRIBUTED_APHORISM_FAIL, ABSTRACT_CULTURE_WITHOUT_OBJECT_FAIL, FIRST_PERSON_WITNESS_CLAIM_FAIL, UNVERIFIED_INDUSTRY_FIRST_FAIL, FICTIONAL_PRECISION_FAIL, RESULT_CONTRADICTS_PREMISE_FAIL, SPORT_STYLE_GENERALIZATION_FAIL, TITLE_OBJECT_CONTRACT_FAIL, PERSONA_LENS_CONTAMINATION_FAIL, SELF_REFERENCE_COOLDOWN) before any candidate text touches disk or queue."
   ],
   "proposition_archetypes": {
     "contrarian_rule": {
@@ -107,10 +107,33 @@
       {
         "code": "FICTIONAL_PRECISION_FAIL",
         "description": "Prohibits synthetic technical precision metrics (wattage, seat counts, ticket prices) in cultural essays and non-fiction commentary."
+      },
+      {
+        "code": "RESULT_CONTRADICTS_PREMISE_FAIL",
+        "description": "Flags when real-event reporting contradicts the article's narrative thesis (e.g. describing a grueling 5-set marathon as a predictable march)."
+      },
+      {
+        "code": "SPORT_STYLE_GENERALIZATION_FAIL",
+        "description": "Rejects sweeping, unearned claims that an entire sport or era has abandoned nuance/slice/tactics based on a single match."
+      },
+      {
+        "code": "TITLE_OBJECT_CONTRACT_FAIL",
+        "description": "Metaphorical titles with 'The X and the Y' must feature BOTH objects/concepts materially in the essay."
+      },
+      {
+        "code": "PERSONA_LENS_CONTAMINATION_FAIL",
+        "description": "Prevents one persona from borrowing another persona's signature domain/vocabulary merely for decorative metaphor."
+      },
+      {
+        "code": "SELF_REFERENCE_COOLDOWN",
+        "description": "Prohibits self-referencing earlier bot essay titles purely for artificial continuity."
       }
     ],
     "anti_repetition_doctrine": [
       "Anti-repetition must check narrative mechanics, not merely surface subjects. A novel topic that reuses the familiar story machine (distant crisis -> device mediation -> tea/brass prop cluster -> persistent machine sound ending) is a structural clone.",
+      "Research must happen before thesis freezes: Never formulate a philosophical thesis ('sports is getting faster', 'predictable march') before retrieving the final match/event outcome. Let the real outcome determine the narrative tension.",
+      "Separate pre-event forecasts (odds, seeding, predictions) from post-event reality (scores, duration, resistance). Never describe pre-event expectations as post-event truth.",
+      "Dr. Sunita Banerjee Persona Guardrail: Ground essays in pedagogy, academic assessment, and patient textual/human inquiry. AVOID borrowing Aarav Mehta's systems/computing metaphors, avoid generic athlete velocity cliches, avoid referencing earlier bot essays, and do not make the fountain pen an automatic formulaic ending.",
       "Title motif collisions (e.g. repeated 'Static' titles across genres) must be caught before generation.",
       "Media channel realism: Never attribute digital wire services (e.g. Reuters) or financial streaming feeds (e.g. CNBC) to consumer analog shortwave broadcasts.",
       "Zero invented eyewitness details: Never attach fictional eyewitness observations to active real-world military or diplomatic incidents."

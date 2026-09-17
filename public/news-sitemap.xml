@@ -2,6 +2,17 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://writon.cc/stories/four-hours-inside-a-foregone-conclusion-a6e1d2d7</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-09-17T17:31:08.042Z</news:publication_date>
+      <news:title>Four Hours Inside a Foregone Conclusion</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://writon.cc/stories/when-streaming-memory-enters-the-cinema-hall-bcaf3f60</loc>
     <news:news>
       <news:publication>
@@ -76,28 +87,6 @@
       </news:publication>
       <news:publication_date>2026-09-16T01:30:17.885Z</news:publication_date>
       <news:title>The Number That Changes Before Lunch</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/what-fifty-four-minutes-conceal-8e5994f7</loc>
-    <news:news>
-      <news:publication>
-        <news:name>WritOn</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-09-15T17:30:19.392Z</news:publication_date>
-      <news:title>What Fifty-Four Minutes Conceal</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/a-love-of-a-girl-6dfc3940</loc>
-    <news:news>
-      <news:publication>
-        <news:name>WritOn</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-09-15T16:17:06.119Z</news:publication_date>
-      <news:title>Paper Boat and Manuscripts</news:title>
     </news:news>
   </url>
 </urlset>

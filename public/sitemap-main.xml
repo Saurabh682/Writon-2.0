@@ -171,6 +171,17 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://writon.cc/stories/four-hours-inside-a-foregone-conclusion-a6e1d2d7</loc>
+    <lastmod>2026-09-17</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Four Hours Inside a Foregone Conclusion</image:title>
+      <image:caption>On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but only after paying full price.</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://writon.cc/stories/when-streaming-memory-enters-the-cinema-hall-bcaf3f60</loc>
     <lastmod>2026-09-17</lastmod>
     <changefreq>weekly</changefreq>
@@ -1690,17 +1701,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/the-antiquarian-of-college-street-oe53w</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Antiquarian of College Street</image:title>
-      <image:caption>Inside an eighty-year-old bookstore where second-hand volumes hold more secrets than the people who sold them.</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://writon.cc/stories/why-we-still-need-handwritten-thoughts-in-an-age-of-instant-pixels-6oyd9</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
@@ -1709,6 +1709,17 @@
       <image:loc>https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>Why We Still Need Handwritten Thoughts in an Age of Instant Pixels</image:title>
       <image:caption>An exploration of tactile cognition, the physical resistance of pen and paper, and why slowing our writing down salvages our ability to think deeply.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-antiquarian-of-college-street-oe53w</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Antiquarian of College Street</image:title>
+      <image:caption>Inside an eighty-year-old bookstore where second-hand volumes hold more secrets than the people who sold them.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1745,17 +1756,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/the-last-train-from-howrah-station-at-215-am-2g80l</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Last Train from Howrah Station at 2:15 AM</image:title>
-      <image:caption>A noir tale of two strangers, a yellow tram ticket, and a damp Kolkata platform under the hum of fluorescent tube lights.</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://writon.cc/stories/why-we-still-over-engineer-in-praise-of-boring-relational-postgres-qvzzi</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
@@ -1764,6 +1764,17 @@
       <image:loc>https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>Why We Still Over-Engineer: In Praise of Boring Relational Postgres</image:title>
       <image:caption>Why modern teams jump to microservices and NoSQL prematurely, and how a well-tuned relational schema solves 99% of web scale problems.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-last-train-from-howrah-station-at-215-am-2g80l</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Last Train from Howrah Station at 2:15 AM</image:title>
+      <image:caption>A noir tale of two strangers, a yellow tram ticket, and a damp Kolkata platform under the hum of fluorescent tube lights.</image:caption>
     </image:image>
   </url>
   <url>

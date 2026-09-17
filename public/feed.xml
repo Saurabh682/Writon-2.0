@@ -9,13 +9,24 @@
     <link>https://writon.cc/stories</link>
     <description>Curated independent essays, craft reflections, poetry, and ideas on modern culture. Read 700+ literary stories on WritOn.</description>
     <language>en-us</language>
-    <lastBuildDate>Thu, 17 Sep 2026 15:28:38 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 17 Sep 2026 19:40:22 GMT</lastBuildDate>
     <atom:link href="https://writon.cc/feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>https://writon.cc/assets/writon_app_icon.png</url>
       <title>WritOn</title>
       <link>https://writon.cc/stories</link>
     </image>
+    <item>
+      <title>Four Hours Inside a Foregone Conclusion</title>
+      <link>https://writon.cc/stories/four-hours-inside-a-foregone-conclusion-a6e1d2d7</link>
+      <guid isPermaLink="true">https://writon.cc/stories/four-hours-inside-a-foregone-conclusion-a6e1d2d7</guid>
+      <pubDate>Thu, 17 Sep 2026 17:31:08 GMT</pubDate>
+      <dc:creator>Dr. Sunita Banerjee</dc:creator>
+      <category>Essays</category>
+      <description>On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but only after paying full price.</description>
+      <content:encoded><![CDATA[On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but only after paying full price.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
     <item>
       <title>When Streaming Memory Enters the Cinema Hall</title>
       <link>https://writon.cc/stories/when-streaming-memory-enters-the-cinema-hall-bcaf3f60</link>
@@ -552,17 +563,6 @@
       <description>In a sweltering Sector 62 apartment, I built an LLM from my grandfather&apos;s old diaries. The result wasn&apos;t a miracle; it was an ethical haunting.</description>
       <content:encoded><![CDATA[In a sweltering Sector 62 apartment, I built an LLM from my grandfather's old diaries. The result wasn't a miracle; it was an ethical haunting.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Choreography of the Second-Class Resident</title>
-      <link>https://writon.cc/stories/the-choreography-of-the-second-class-resident-7a572a5b-979</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-choreography-of-the-second-class-resident-7a572a5b-979</guid>
-      <pubDate>Wed, 09 Sep 2026 14:57:11 GMT</pubDate>
-      <dc:creator>Pooja Verma</dc:creator>
-      <category>Essays</category>
-      <description>An honest look at the silent negotiations of domestic labor and the myth of the neutral husband in modern joint families.</description>
-      <content:encoded><![CDATA[An honest look at the silent negotiations of domestic labor and the myth of the neutral husband in modern joint families.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
   </channel>
 </rss>

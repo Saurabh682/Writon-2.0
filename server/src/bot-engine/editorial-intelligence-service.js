@@ -541,6 +541,73 @@ export function validateZeroAISlopEngineBlockers({
     }
   }
 
+  // 25. RESULT_CONTRADICTS_PREMISE_FAIL
+  // Flags when real-event reporting contradicts the article's narrative thesis (e.g. describing a grueling 5-set marathon as a predictable march)
+  if (/\bpredictable\s+march\b/i.test(cleanContent) && /\b(?:five-set|5-set|marathon|four-hour|4\s*hours|after\s+2\s*a\.m\.)\b/i.test(`${cleanContent} ${JSON.stringify(researchDossier || {})}`)) {
+    violations.push({
+      rule: 'RESULT_CONTRADICTS_PREMISE_FAIL',
+      description: 'The real-world event outcome contradicts the article\'s thesis. Describing a five-set marathon or grueling resistance as a "predictable march" forces reality into a predetermined premise.'
+    });
+  }
+
+  // 26. SPORT_STYLE_GENERALIZATION_FAIL
+  // Rejects sweeping, unearned claims that an entire sport or era has abandoned nuance/slice/tactics based on a single match
+  const sweepingSportGeneralizations = [
+    /\bmodern\s+tennis\s+has\s+discarded\s+the\s+(?:slow|loitering)\s+slice\b/i,
+    /\bmodern\s+(?:tennis|game)\s+has\s+abandoned\b/i,
+    /\btoday's\s+game\s+is\s+only\s+velocity\b/i,
+    /\bhuman\s+worth\s+in\s+milliseconds\s+of\s+racket-head\s+speed\b/i,
+    /\brallies\s+.*?end\s+only\s+when\s+someone['’]s\s+lung\s+capacity\s+fails\b/i
+  ];
+  for (const pattern of sweepingSportGeneralizations) {
+    if (pattern.test(cleanContent)) {
+      violations.push({
+        rule: 'SPORT_STYLE_GENERALIZATION_FAIL',
+        description: 'Sweeping, unverified sport-wide aesthetic decline claim detected. A single match cannot be used to declare that an entire era or sport has abandoned tactical variety.'
+      });
+      break;
+    }
+  }
+
+  // 27. TITLE_OBJECT_CONTRACT_FAIL
+  // Metaphorical titles with "The X and the Y" must feature BOTH objects/concepts materially in the essay
+  const dualObjectTitleMatch = cleanTitle.match(/^the\s+([a-z]+)\s+and\s+the\s+([a-z]+)$/i);
+  if (dualObjectTitleMatch) {
+    const obj1 = dualObjectTitleMatch[1].toLowerCase();
+    const obj2 = dualObjectTitleMatch[2].toLowerCase();
+    const lowerContent = cleanContent.toLowerCase();
+    const hasObj1 = lowerContent.includes(obj1);
+    const hasObj2 = lowerContent.includes(obj2);
+    if (!hasObj1 || !hasObj2) {
+      const missing = !hasObj1 && !hasObj2 ? `both "${obj1}" and "${obj2}"` : (!hasObj1 ? `"${obj1}"` : `"${obj2}"`);
+      violations.push({
+        rule: 'TITLE_OBJECT_CONTRACT_FAIL',
+        description: `Title promises two core material metaphors ("${cleanTitle}"), but the essay fails to feature ${missing}. Both nouns must materially shape the piece.`
+      });
+    }
+  }
+
+  // 28. PERSONA_LENS_CONTAMINATION_FAIL
+  // Prevents one persona from borrowing another persona's signature domain/vocabulary merely for decorative metaphor
+  if (penName.includes('sunita') || penName.includes('banerjee')) {
+    const aaravSystemsMetaphor = /\b(?:cache\s+invalidation|distributed\s+systems|wal\b|replication\s+slot|lsn\b|kernel\s+panic)\b/i;
+    if (aaravSystemsMetaphor.test(cleanContent)) {
+      violations.push({
+        rule: 'PERSONA_LENS_CONTAMINATION_FAIL',
+        description: 'Persona lens contamination detected: Dr. Sunita Banerjee borrowing Aarav Mehta\'s systems engineering / cache invalidation vocabulary for metaphor convenience.'
+      });
+    }
+  }
+
+  // 29. SELF_REFERENCE_COOLDOWN
+  // Prohibits self-referencing earlier bot essay titles purely for artificial continuity
+  if (/\b(?:in\s+my\s+earlier\s+essay|as\s+i\s+wrote\s+in\s+['"“]the\s+graded\s+response['"”])\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'SELF_REFERENCE_COOLDOWN',
+      description: 'Artificial bot network self-reference detected ("In my earlier essay..."). Continuity citations are disallowed unless the earlier piece is formally being revised or refuted.'
+    });
+  }
+
   return {
     isValid: violations.length === 0,
     violations,

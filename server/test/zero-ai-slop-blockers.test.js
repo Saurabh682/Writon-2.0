@@ -762,6 +762,80 @@ NASCAR's jar makes a different sound altogether: the electric hum of a brand tha
     });
   });
 
+  describe('25. RESULT_CONTRADICTS_PREMISE_FAIL', () => {
+    it('flags drafts where thesis claims predictable march when research dossier confirms a five-set marathon', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Four Hours Inside a Foregone Conclusion',
+        content: 'This match represents a predictable march toward the third round for the higher-seeded German.',
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        researchDossier: {
+          topic: 'Zverev vs Halys',
+          newsReports: [{ headline: 'Zverev survives five-set marathon against Halys at 2 a.m.' }]
+        },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'RESULT_CONTRADICTS_PREMISE_FAIL')).toBe(true);
+    });
+  });
+
+  describe('26. SPORT_STYLE_GENERALIZATION_FAIL', () => {
+    it('flags sweeping claims of sport-wide decline based on a single match', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Four Hours Inside a Foregone Conclusion',
+        content: 'The modern game has discarded the slow, loitering slice, the delicate drop shot. Rallies end only when someone’s lung capacity fails.',
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'SPORT_STYLE_GENERALIZATION_FAIL')).toBe(true);
+    });
+  });
+
+  describe('27. TITLE_OBJECT_CONTRACT_FAIL', () => {
+    it('flags titles promising two material objects when one is completely missing from the text', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Metronome and the Clay',
+        content: 'The metronome clicks on the side table. The players move across the blue acrylic hard court.',
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'TITLE_OBJECT_CONTRACT_FAIL')).toBe(true);
+    });
+  });
+
+  describe('28. PERSONA_LENS_CONTAMINATION_FAIL', () => {
+    it('flags Sunita Banerjee borrowing Aarav Mehta systems engineering vocabulary for metaphor convenience', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Measurement of Resistance',
+        content: 'Aarav and I once debated this over tea. He spoke of cache invalidation and distributed systems.',
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'PERSONA_LENS_CONTAMINATION_FAIL')).toBe(true);
+    });
+  });
+
+  describe('29. SELF_REFERENCE_COOLDOWN', () => {
+    it('flags artificial references to earlier bot essays', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Measurement of Resistance',
+        content: 'In my earlier essay, "The Graded Response", I wrote about how Delhi measures its days.',
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'SELF_REFERENCE_COOLDOWN')).toBe(true);
+    });
+  });
+
   describe('Full Calibrated Rewrite Verification: "When Streaming Memory Enters the Cinema Hall"', () => {
     it('passes cleanly with zero violations on the rewritten calibrated essay', () => {
       const calibratedContent = `When the creators of *Mirzapur* announced a theatrical film set between episodes six and seven of the first season, they described the transition as a deliberate wager on community viewing. Over three seasons, the fiction had lived on personal screens—propped on pillows, carried through commutes on local trains, paused at will, or replayed alone in fragments. Moving that world onto a fifty-foot cinema screen was framed not merely as an expansion, but as a test of whether an audience that built an intimate relationship with a streaming series would gather in the dark to watch it together.
