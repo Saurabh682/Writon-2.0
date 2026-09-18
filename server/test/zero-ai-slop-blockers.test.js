@@ -4,6 +4,7 @@ import {
   validateGeneratedArticleIntegrity
 } from '../src/bot-engine/editorial-intelligence-service.js';
 import { validateZeroAISlopHardGate } from '../src/bot-engine/gemini-spark-client.js';
+import { buildPremiseCard, validatePremiseOriginality } from '../src/bot-engine/editorial-memory-service.js';
 
 describe('Zero AI Slop Hard Pre-Publication Engine Blockers', () => {
   const mockNow = new Date('2026-09-16T10:00:00Z');
@@ -1178,6 +1179,98 @@ Watching wire copy move across editorial desks makes that divergence legible. Th
 
       expect(res.isValid).toBe(true);
       expect(res.violations).toHaveLength(0);
+    });
+
+    it('flags Rule 62 DECORATIVE_SOURCE_FAIL when news topic is mentioned only as passing gossip', () => {
+      const decorativeSourceDraft = `### Afternoon at the Counter
+The wooden counter smelled of wet ginger and old pine. Someone mentioned at the counter that the prime minister had set a record across the ocean.
+The crows perched on the tin roof, shaking rain from their wings. Outside, a cyclist steered through the brown puddles, balancing two brass cans on the carrier.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Rain on the Tin Roof',
+        content: decorativeSourceDraft,
+        category: 'Essays',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' },
+        researchDossier: { topic: 'Giorgia Meloni longest-serving postwar Italian PM' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'DECORATIVE_SOURCE_FAIL')).toBe(true);
+    });
+
+    it('flags Rule 63 STOCK_NARRATIVE_SCAFFOLD_FAIL on railway + station clock + tea stall + goods train scaffold', () => {
+      const scaffoldDraft = `### The Siding
+The railway siding was quiet under the station clock stuck at six. At the tea stall, the wooden counter creaked as a distant whistle announced the goods train.
+The weathered benches were damp with evening fog.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Evening Siding',
+        content: scaffoldDraft,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'STOCK_NARRATIVE_SCAFFOLD_FAIL')).toBe(true);
+    });
+
+    it('correctly populates distinct internal fields in buildPremiseCard and triggers SKIP when Devansh writes political fiction', () => {
+      const devanshPersona = {
+        id: 'bot_devansh_fiction',
+        fullName: 'Devansh Roy',
+        penName: 'devansh_roy',
+        bio: 'Writer and archival researcher.',
+        personaPrompt: 'You examine media provenance and archival records.'
+      };
+
+      const politicalDossier = {
+        topic: 'Giorgia Meloni longest-serving Italian PM',
+        category: 'Short Stories',
+        newsReports: [
+          { headline: 'Report 1: Milestone reached' },
+          { headline: 'Report 2: Modi congratulates' }
+        ]
+      };
+
+      const card = buildPremiseCard(devanshPersona, 'A counterintuitive perspective on standard workflows', 'Short Stories', politicalDossier);
+
+      // Verify internal fields are populated and topic_hint was cleansed
+      expect(card.researchSubject).toBe('Giorgia Meloni longest-serving Italian PM');
+      expect(card.topic_hint).toBe(null);
+      expect(card.personaDomainMismatch).toBe(true);
+      expect(card.whyMustWrite).toContain('Attuned to archival provenance');
+
+      // Verify validatePremiseOriginality returns SKIP
+      const check = validatePremiseOriginality(card, { persona: [], platform: [] }, []);
+      expect(check.passed).toBe(false);
+      expect(check.decision).toBe('SKIP');
+      expect(check.reason).toContain('Devansh Roy cannot force political milestones');
+    });
+
+    it('returns SKIP if research brief has fewer than 3 indispensable source facts', () => {
+      const aaravPersona = {
+        id: 'bot_aarav_tech',
+        fullName: 'Aarav Patel',
+        penName: 'aarav_patel',
+        bio: 'Systems engineer and writer.',
+        personaPrompt: 'You examine systems engineering.'
+      };
+
+      const thinDossier = {
+        topic: 'Postgres 18 release date',
+        category: 'Tech',
+        newsReports: [
+          { headline: 'Postgres 18 commits merged' }
+        ]
+      };
+
+      const card = buildPremiseCard(aaravPersona, 'Postgres 18 overview', 'Tech', thinDossier);
+      const check = validatePremiseOriginality(card, { persona: [], platform: [] }, []);
+      expect(check.passed).toBe(false);
+      expect(check.decision).toBe('SKIP');
+      expect(check.violations.some(v => v.includes('INSUFFICIENT_SOURCE_FACTS'))).toBe(true);
     });
   });
 });

@@ -1006,11 +1006,12 @@ export async function generateSparkArticle({
   memories = [],
   researchDossier = null,
   recentStories = [],
-  cooldownBlock = ''
+  cooldownBlock = '',
+  trendingKeywords = []
 }) {
   const activeApiKey = apiKey !== undefined ? apiKey : (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY);
   if (!activeApiKey) {
-    return generateFallbackArticle(persona, category, topicHint, excludeTitles, researchDossier);
+    return generateFallbackArticle(persona, category, topicHint, excludeTitles, researchDossier, trendingKeywords);
   }
 
   const memoryBlock = formatMemoriesForPrompt(memories);
@@ -1278,12 +1279,21 @@ Return strictly valid JSON:
         continue;
       }
 
+      if (hasFatalDefect) {
+        const failureDetails = [
+          !zeroAISlopResult.isValid ? `Zero AI Slop (${zeroAISlopResult.reasons.join(', ')})` : null,
+          genreGateResult.violations?.length > 0 ? `Genre mismatch (${genreGateResult.violations.map(v => v.description).join(', ')})` : null,
+          !originalityGateResult.passed ? `Repetition (${originalityGateResult.reason})` : null
+        ].filter(Boolean).join('; ');
+        throw new Error(`Draft fatal defects could not be resolved after ${attempt} attempts: ${failureDetails || 'Quality check failed'}`);
+      }
+
       finalContent = stripCodeBlocks(finalContent);
 
       return {
         title: finalTitle,
         summary: finalSummary,
-        content: attachHashtagsAndWatermark(finalContent, category, themeKeyword),
+        content: attachHashtagsAndWatermark(finalContent, category, themeKeyword, '', trendingKeywords),
         themeKeyword
       };
     } catch (error) {
@@ -1293,7 +1303,7 @@ Return strictly valid JSON:
         continue;
       }
       console.warn(`[Gemini Spark Client] API calls failed, using fallback generator: ${error.message}`);
-      return generateFallbackArticle(persona, category, currentTopicHint, currentExcludeTitles, researchDossier);
+      return generateFallbackArticle(persona, category, currentTopicHint, currentExcludeTitles, researchDossier, trendingKeywords);
     }
   }
 }
@@ -1382,6 +1392,10 @@ Editorial Quality & Craft Standards (The 14 WritOn Literary Principles):
   * THE REMOVAL TEST: "If I delete this code, does the reader lose essential mechanism-level understanding?" If NO -> do not include it. A technically themed persona does NOT justify code by itself.
 - Technical Honesty: Never invent false benchmarks, fake incidents, or pseudocode masquerading as compiling software.
 - STRICT BAN ON VC / STARTUP SATIRE: Never write cynical satire about venture capital, pitch decks, startup buzzwords, seed rounds, founders, VCs, or Silicon Valley / Indiranagar corporate parodies. Never title stories with phrases like "Lies We Tell Our VCs" or pose startup tropes as literature. WritOn literature is grounded, sincere, observant, and respectful of real human labour and craft.
+- PUBLICATION TITLE INTEGRITY MANDATE:
+  * "title" MUST be a distinctive, original, and evocative literary title.
+  * NEVER use internal planning phrases, prompt briefs, or abstract outlines as the title (e.g. NEVER use "A counterintuitive perspective on standard workflows and craftsmanship in short stories", "An exploration of failure", "Through the lens of...", "Within the realm of...", or "Reflections on...").
+  * The title MUST be generated as pure literature, completely distinct from any research topic or planning notes.
 
 Please return a strictly valid JSON object with the following structure:
 {
@@ -1464,8 +1478,8 @@ Return strictly a JSON object:
   }
 }
 
-function generateFallbackArticle(persona, category, topicHint, excludeTitles = [], researchDossier = null) {
-  return getAuthenticFallbackArticle(persona, category, topicHint, excludeTitles, researchDossier);
+function generateFallbackArticle(persona, category, topicHint, excludeTitles = [], researchDossier = null, trendingKeywords = []) {
+  return getAuthenticFallbackArticle(persona, category, topicHint, excludeTitles, researchDossier, trendingKeywords);
 }
 
 function generateFallbackComment(persona, postTitle, category = 'Essays', postExcerpt = '') {

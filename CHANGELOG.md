@@ -1,5 +1,32 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.1.102 — Think Brain Editorial Pipeline Redo, Rules 62–63, SKIP Gateway & Database Calibration — 2026-09-19
+
+- **Root-Cause Gateway Plug (`server/src/bot-engine/spark-runner.js`)**:
+  - Identified and sealed the execution bypass in `executePostAction` where scheduled bot articles entered `public.posts` with only `validateAntiRepetition` and optional local LM Studio checks, omitting `validateGeneratedArticleIntegrity` and `validateZeroAISlopEngineBlockers`.
+  - Wired `validateGeneratedArticleIntegrity` and `validateZeroAISlopEngineBlockers` directly into `executePostAction` before database insertion, throwing a hard error and recording failure patterns if any gate fails.
+  - Added support for `{ decision: 'SKIP' }` from `buildPremiseCard` and `validatePremiseOriginality`, cleanly skipping unsuitable topics without throwing false runtime errors.
+  - Aligned `runSparkPulse` and `master-scheduler.js` to handle `pulse_skipped` as a clean, successful editorial gate outcome.
+- **Think Brain Rules 62 & 63 & Enhanced Scaffolding Blockers**:
+  - Implemented in `server/src/bot-engine/editorial-intelligence-service.js`:
+    - `DECORATIVE_SOURCE_FAIL` (Rule 62): Rejects drafts where an external news event is only mentioned decoratively (e.g. as passing gossip in a tea stall or background radio chatter) without structural narrative necessity or archival/documentary grounding.
+    - `STOCK_NARRATIVE_SCAFFOLD_FAIL` (Rule 63): Enforces global cooldown and blocks the generic short-story scaffold combining railway siding, stopped station clock, tea stall, goods train whistle, and unwritten journey tropes.
+    - Enhanced `PLANNER_PLACEHOLDER_LEAK_FAIL`: Expanded detection to catch `the intersection of`, `planning brief`, and `content objective`.
+- **Editorial Memory & Premise Architecture (`server/src/bot-engine/editorial-memory-service.js`)**:
+  - Strictly separated internal brief fields (`researchSubject`, `editorialIntent`, `personaAngle`, `workingPremise`) from `publicationTitle`.
+  - Enforced that `publicationTitle` can never equal or resemble internal brief fields.
+  - Added 3-indispensable-source-facts check for trending research briefs.
+  - Added `whyMustWrite` persona relevance check: evaluating whether persona cognitive lens aligns with the domain (e.g. preventing political milestones from being forced into rural short stories).
+- **Gemini Spark Client Hard Pre-Publication Gate (`server/src/bot-engine/gemini-spark-client.js`)**:
+  - Added `PUBLICATION_TITLE_INTEGRITY_MANDATE` to generation prompts.
+  - Prevented returning flawed content on final retry attempt: throws hard on unresolved fatal defects.
+- **Production Post Calibration & Feed Synchronization**:
+  - Calibrated offending post `3442f45f-aa21-4909-ac38-103b4ee09f7d` in production PostgreSQL to Devansh Roy's *"Three Headlines for the Same 1,400 Days"* (Essays category, 4 min reading time, documentary media provenance).
+  - Aligned linked research brief `b1b2be45-b592-4c09-96b0-2c34f2152a10` to `Essays`.
+  - Set active failure patterns and cooldowns on the flawed railway scaffold.
+  - Regenerated all public feeds: `public/feed.xml`, `public/sitemap.xml`, `public/sitemap_index.xml`, `public/news-sitemap.xml`, `public/reddit-feed.xml`, and `public/pinterest-feed.xml`.
+  - All 66 unit tests in `server/test/zero-ai-slop-blockers.test.js` passing.
+
 ## 2.1.101 — Think Brain Rules 57–61, Persona Calibration (Devansh Roy) & Anti-Placeholder Gates — 2026-09-19
 
 - **Zero AI Slop Hard Pre-Publication Engine Blockers (Rules 57–61)**:

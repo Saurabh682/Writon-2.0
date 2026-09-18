@@ -916,10 +916,14 @@ export function validateZeroAISlopEngineBlockers({
   const placeholderBriefPatterns = [
     /\ba\s+counterintuitive\s+perspective\s+on\b/i,
     /\bstandard\s+workflows\s+and\s+craftsmanship\b/i,
+    /\ban\s+exploration\s+of\b/i,
     /\ban\s+exploration\s+of\s+failure,\s*patience\b/i,
     /\bthrough\s+the\s+lens\s+of\b/i,
     /\bwithin\s+the\s+realm\s+of\b/i,
-    /\ba\s+reflection\s+on\b/i
+    /\ba\s+reflection\s+on\b/i,
+    /\bthe\s+intersection\s+of\b/i,
+    /\bplanning\s+brief\b/i,
+    /\bcontent\s+objective\b/i
   ];
   for (const pat of placeholderBriefPatterns) {
     if (pat.test(cleanTitle) || pat.test(cleanContent)) {
@@ -970,6 +974,37 @@ export function validateZeroAISlopEngineBlockers({
         description: 'Empty atmospheric closure: Cliche abstraction masquerading as poetic resolution ("quiet promise of an unwritten journey"). Conclude with concrete physical consequence.'
       });
     }
+  }
+
+  // 62. DECORATIVE_SOURCE_FAIL
+  // Rejects drafts where an external news event is only mentioned decoratively (e.g. as passing gossip in a tea stall or radio in the background) without structural narrative necessity
+  if (researchDossier?.topic && cleanContent) {
+    const hasPassingGossip = /\b(?:word had (?:already )?spread|heard on the radio|someone mentioned at the counter|read in the morning paper|chatter in the market)\b/i.test(cleanContent);
+    const mentionsTopicOnlyPassingly = cleanContent.split('\n').filter(line => /\b(?:spread|radio|paper|chatter|someone mentioned|news|headline)\b/i.test(line)).length <= 2;
+    if (hasPassingGossip && mentionsTopicOnlyPassingly && !/\b(?:documentary record|archival record|wire copy|news wire|dispatch|logbook|regulatory filing|official release|transmission)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'DECORATIVE_SOURCE_FAIL',
+        description: 'Decorative source failure: The research dossier source is mentioned merely as incidental gossip or background radio chatter. Removing the source leaves the scene virtually unaltered. Source must drive the narrative engine or be skipped.'
+      });
+    }
+  }
+
+  // 63. STOCK_NARRATIVE_SCAFFOLD_FAIL
+  // Enforces global cooldown and blocks the generic short-story scaffold:
+  // [railway platform/siding + station clock + tea stall + goods train + unwritten journey / slow departure]
+  const railwayScaffoldHits = [
+    /\b(?:railway\s+siding|railway\s+platform|old\s+station)\b/i.test(cleanContent),
+    /\b(?:station\s+clock|clock\s+stuck|stopped\s+clock)\b/i.test(cleanContent),
+    /\b(?:tea\s+stall|wooden\s+counter|station\s+master)\b/i.test(cleanContent),
+    /\b(?:goods\s+train|train\s+whistle|distant\s+whistle)\b/i.test(cleanContent),
+    /\b(?:unwritten\s+journey|twenty\s+years\s+just\s+to\s+begin|weathered\s+benches)\b/i.test(cleanContent)
+  ].filter(Boolean).length;
+
+  if (railwayScaffoldHits >= 3) {
+    violations.push({
+      rule: 'STOCK_NARRATIVE_SCAFFOLD_FAIL',
+      description: `Stock narrative scaffold detected (${railwayScaffoldHits}/5 elements): Draft reuses the stock railway platform / stopped clock / tea stall / goods train / weathered bench template. This scaffold is on global cooldown.`
+    });
   }
 
   return {

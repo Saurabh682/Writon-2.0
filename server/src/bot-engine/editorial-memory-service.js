@@ -243,6 +243,8 @@ export async function getRecentFingerprints(pool, { authorId, limit = 15, global
 /**
  * Build a structured premise card before drafting.
  * This is a lightweight, deterministic object — no LLM call.
+ * Strictly separates internal brief/planning fields from publication fields.
+ *
  * @param {object} persona - { id, fullName, penName, bio, personaPrompt }
  * @param {string|null} topicHint
  * @param {string} category
@@ -252,24 +254,68 @@ export async function getRecentFingerprints(pool, { authorId, limit = 15, global
 export function buildPremiseCard(persona, topicHint, category, researchDossier = null) {
   // Purge internal planning description or meta-prompt language from topicHint
   let cleanTopicHint = topicHint || null;
-  if (cleanTopicHint && /\b(?:an\s+exploration\s+of\s+failure,\s*patience|within\s+the\s+realm\s+of\s+culture|content\s+objective|planning\s+brief|a\s+counterintuitive\s+perspective\s+on|standard\s+workflows\s+and\s+craftsmanship)\b/i.test(cleanTopicHint)) {
+  if (cleanTopicHint && /\b(?:an\s+exploration\s+of\s+failure,\s*patience|within\s+the\s+realm\s+of\s+culture|content\s+objective|planning\s+brief|a\s+counterintuitive\s+perspective\s+on|standard\s+workflows\s+and\s+craftsmanship|through\s+the\s+lens\s+of|the\s+intersection\s+of)\b/i.test(cleanTopicHint)) {
     cleanTopicHint = null;
   }
 
-  // Extract source-supported facts and cultural question (SOURCE_ANGLE_BINDING)
-  const sourceSubject = researchDossier?.topic || cleanTopicHint || 'Cultural continuity and performance memory';
+  // 1. Distinguish internal planning fields from publication fields
+  const researchSubject = researchDossier?.topic || cleanTopicHint || 'Cultural continuity and performance memory';
+  const editorialIntent = cleanTopicHint || `Explore tensions in ${category}`;
+  const personaAngle = persona.personaPrompt ? persona.personaPrompt.slice(0, 160) : (persona.bio || '');
+  const workingPremise = `Grounded examination of ${researchSubject} in ${category}`;
+
+  // 2. Extract source-supported facts (Indispensable Source Dependency Check)
   const rawReports = Array.isArray(researchDossier?.newsReports) ? researchDossier.newsReports : [];
   const sourceFacts = rawReports.slice(0, 5).map(r => r.headline).filter(Boolean);
+
+  // 3. Persona Relevance Sentence ("WHY MUST [PERSONA] WRITE THIS?")
+  let whyMustWrite = 'General editorial assignment';
+  const penName = (persona.penName || '').toLowerCase();
+  if (penName.includes('devansh')) {
+    whyMustWrite = 'Attuned to archival provenance, transmission discrepancies across wire dispatches, and public media artifacts';
+  } else if (penName.includes('gurpreet')) {
+    whyMustWrite = 'Examines mediated narratives, sports/cultural measurement, and spectatorship uncertainties';
+  } else if (penName.includes('aarav')) {
+    whyMustWrite = 'Domain expertise in systems engineering, latency benchmarks, and hardware architecture';
+  } else if (penName.includes('priyanka')) {
+    whyMustWrite = 'Civic and domestic observation of generational routines, urban infrastructure, and family economics';
+  } else if (penName.includes('sunita')) {
+    whyMustWrite = 'Philosophical inquiry into institutional boundaries, memory, and intellectual history';
+  } else if (penName.includes('ishaq') || penName.includes('kavya')) {
+    whyMustWrite = 'Lyrical exploration of language, dusk, meter, and classical aesthetics';
+  }
+
+  // Check persona-domain compatibility
+  let personaDomainMismatch = false;
+  let mismatchReason = null;
+
+  // Devansh Roy rule: Political news with zero media/wire transmission or archival provenance cannot be forced into rural/tea-stall fiction
+  if (penName.includes('devansh') && researchDossier?.topic) {
+    const isPoliticalMilestone = /\b(?:meloni|modi|minister|parliament|government|election|diplomatic)\b/i.test(researchDossier.topic);
+    if (isPoliticalMilestone && category === 'Short Stories') {
+      personaDomainMismatch = true;
+      mismatchReason = 'Devansh Roy cannot force political milestones into generic rural short stories without a media transmission/archival angle';
+    }
+  }
 
   return {
     persona_id: persona.id,
     persona_name: persona.fullName,
+    persona_pen_name: persona.penName,
     persona_lens: persona.personaPrompt || persona.bio || '',
     category,
     topic_hint: cleanTopicHint,
     research_topic: researchDossier?.topic || null,
     research_category: researchDossier?.category || null,
-    source_subject: sourceSubject,
+    // Internal fields (MUST NEVER EQUAL publicationTitle)
+    researchSubject,
+    editorialIntent,
+    personaAngle,
+    workingPremise,
+    whyMustWrite,
+    personaDomainMismatch,
+    mismatchReason,
+    source_subject: researchSubject,
     source_facts: sourceFacts,
     cultural_question: null,
     subject_domain: researchDossier?.topic?.toLowerCase().replace(/\s+/g, '_').slice(0, 60) || null
@@ -277,25 +323,52 @@ export function buildPremiseCard(persona, topicHint, category, researchDossier =
 }
 
 /**
- * Validate a premise against recent narrative fingerprints and active cooldowns.
+ * Validate a premise against recent narrative fingerprints, source dependency, and active cooldowns.
  * Deterministic heuristic matching — no LLM call.
+ * Can return `{ decision: 'SKIP', reason: '...' }` as a valid, successful outcome.
  *
  * @param {object} premiseCard - From buildPremiseCard()
  * @param {{persona: object[], platform: object[]}} recentFingerprints
  * @param {object[]} activeCooldowns - From getActiveCooldowns()
- * @returns {{passed: boolean, score: number, violations: string[], suggestedPivot: string|null}}
+ * @returns {{passed: boolean, decision: 'PROCEED'|'SKIP', score: number, violations: string[], reason?: string, suggestedPivot: string|null}}
  */
 export function validatePremiseOriginality(premiseCard, recentFingerprints, activeCooldowns = []) {
   const violations = [];
   let score = 0;
 
+  // 1. Hard Persona-Domain Relevance Check: Force SKIP if persona cannot organically write this premise
+  if (premiseCard.personaDomainMismatch) {
+    return {
+      passed: false,
+      decision: 'SKIP',
+      score: 10,
+      violations: [premiseCard.mismatchReason || 'PERSONA_DOMAIN_MISMATCH'],
+      reason: premiseCard.mismatchReason || 'No distinctive persona-grounded literary angle found.',
+      suggestedPivot: null
+    };
+  }
+
+  // 2. Source Dependency Check: Trending research briefs must provide at least 3 distinct source facts
+  if (premiseCard.research_topic && premiseCard.source_facts) {
+    if (premiseCard.source_facts.length < 3) {
+      return {
+        passed: false,
+        decision: 'SKIP',
+        score: 8,
+        violations: [`INSUFFICIENT_SOURCE_FACTS: Dossier has only ${premiseCard.source_facts.length} source facts (minimum 3 required for news-grounded briefing)`],
+        reason: 'Insufficient source facts to construct an authentic, evidential piece.',
+        suggestedPivot: null
+      };
+    }
+  }
+
   if (!premiseCard.subject_domain) {
-    return { passed: true, score: 0, violations: [], suggestedPivot: null };
+    return { passed: true, decision: 'PROCEED', score: 0, violations: [], suggestedPivot: null };
   }
 
   const domain = premiseCard.subject_domain.toLowerCase();
 
-  // 1. Check persona-level repetition: same subject domain in recent persona fingerprints
+  // 3. Check persona-level repetition: same subject domain in recent persona fingerprints
   for (const fp of (recentFingerprints.persona || [])) {
     if (fp.subject_domain && fp.subject_domain.toLowerCase() === domain) {
       violations.push(`PERSONA_SUBJECT_REPEAT: "${domain}" was used by ${premiseCard.persona_name} on ${fp.created_at?.toISOString?.().slice(0, 10) || 'recently'}`);
@@ -304,7 +377,7 @@ export function validatePremiseOriginality(premiseCard, recentFingerprints, acti
     }
   }
 
-  // 2. Check platform-level repetition: same subject domain across all recent pieces
+  // 4. Check platform-level repetition: same subject domain across all recent pieces
   const platformMatches = (recentFingerprints.platform || []).filter(
     fp => fp.subject_domain && fp.subject_domain.toLowerCase() === domain
   );
@@ -313,7 +386,7 @@ export function validatePremiseOriginality(premiseCard, recentFingerprints, acti
     score += 3;
   }
 
-  // 3. Check active cooldowns
+  // 5. Check active cooldowns
   for (const cd of activeCooldowns) {
     if (cd.dimension_type === 'subject_domain' && cd.dimension_value.toLowerCase() === domain) {
       violations.push(`COOLDOWN_ACTIVE: "${domain}" is on cooldown until ${cd.expires_at?.toISOString?.().slice(0, 10) || 'soon'}`);
@@ -325,8 +398,10 @@ export function validatePremiseOriginality(premiseCard, recentFingerprints, acti
   const passed = score < 4; // Threshold: anything >= 4 is a repeat risk
   return {
     passed,
+    decision: passed ? 'PROCEED' : 'SKIP',
     score,
     violations,
+    reason: passed ? null : violations.join('; '),
     suggestedPivot: passed ? null : `Choose a topic completely different from "${premiseCard.topic_hint}". Avoid the subject domain "${domain}".`
   };
 }

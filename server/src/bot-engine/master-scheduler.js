@@ -332,6 +332,11 @@ export async function executeScheduledSlot(pool, slot, {
               await markBriefPublished(pool, { id: claimedBrief.id, postId: result.postId });
               return { ...result, researchBriefId: claimedBrief.id };
             }
+            if (result?.action === 'pulse_skipped' || result?.skipped) {
+              console.log(`[Master Scheduler] Brief ${claimedBrief.id} skipped cleanly by editorial gate: ${result.reason}`);
+              await holdBrief(pool, claimedBrief.id, `Editorial Gate SKIP: ${result.reason || 'No distinctive persona angle'}`);
+              return { action: 'brief_skipped', researchBriefId: claimedBrief.id, reason: result.reason };
+            }
             await holdBrief(pool, claimedBrief.id, result?.error || 'Publishing did not return a post ID');
           }
         } catch (error) {

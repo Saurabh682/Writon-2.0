@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://writon.cc/</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -12,25 +12,25 @@
   </url>
   <url>
     <loc>https://writon.cc/about</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://writon.cc/journal</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://writon.cc/updates</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -64,7 +64,7 @@
   </url>
   <url>
     <loc>https://writon.cc/hi</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -74,7 +74,7 @@
   </url>
   <url>
     <loc>https://writon.cc/mr</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -84,7 +84,7 @@
   </url>
   <url>
     <loc>https://writon.cc/bn</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -94,81 +94,136 @@
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Tech</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Essays</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Poetry</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Shayari</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Humour</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Culture</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Short%20Stories</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Philosophy</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Science%20%26%20Health</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Business%20%26%20Finance</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Entertainment</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Sports</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Journalism</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/rain-on-the-transistor-b3c73c02-b33</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Rain on the Transistor</image:title>
+      <image:caption>In a humid Delhi flat, a father and son share a quiet ritual of static and longing, tethered to a football match occurring thousands of miles away.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/three-headlines-for-the-same-1400-days-3442f45f-7a7</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Three Headlines for the Same 1,400 Days</image:title>
+      <image:caption>A documentary study of three competing wire dispatches following the September 4 milestone in Rome, examining the gap between parliamentary longevity and municipal administrative reality.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-shares-beneath-the-silt-24305149-bca</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Shares Beneath the Silt</image:title>
+      <image:caption>In the aftermath of the Trishuli valley flood above Syabrubesi, a father holds his Rasuwagadhi Hydropower allotment papers while scraping river silt from his boots.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/on-the-municipal-margin-blue-white-and-rain-efcb78ad-997</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Rain on Southern Avenue</image:title>
+      <image:caption>A quiet observation of Kolkata&apos;s rain-soaked municipal blue-and-white paint, captured through balcony vignettes, a shared glance across a minibus, and monsoon surfaces on Southern Avenue.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-long-shot-of-a-stay-6261998f-8a8</loc>
+    <lastmod>2026-09-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Long Shot of a Stay</image:title>
+      <image:caption>When thirty-six hours of jury deliberation ends without a verdict, the legal system refuses to provide easy moral certainty. An examination of the Lindsay Clancy mistrial and the limits of institutional closure.</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://writon.cc/stories/four-hours-inside-a-foregone-conclusion-a6e1d2d7</loc>
@@ -178,7 +233,7 @@
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>Four Hours Inside a Foregone Conclusion</image:title>
-      <image:caption>On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but only after paying full price.</image:caption>
+      <image:caption>On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but it had to be defended every minute.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1701,17 +1756,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/why-we-still-need-handwritten-thoughts-in-an-age-of-instant-pixels-6oyd9</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Why We Still Need Handwritten Thoughts in an Age of Instant Pixels</image:title>
-      <image:caption>An exploration of tactile cognition, the physical resistance of pen and paper, and why slowing our writing down salvages our ability to think deeply.</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://writon.cc/stories/the-antiquarian-of-college-street-oe53w</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
@@ -1720,17 +1764,6 @@
       <image:loc>https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>The Antiquarian of College Street</image:title>
       <image:caption>Inside an eighty-year-old bookstore where second-hand volumes hold more secrets than the people who sold them.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/the-modern-tragedy-of-cold-samosas-at-430-pm-standups-why4k</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Modern Tragedy of Cold Samosas at 4:30 PM Standups</image:title>
-      <image:caption>A satirical breakdown of corporate sprint rituals, &quot;quick syncs&quot; that last 50 minutes, and the psychological warfare of office snacks.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1745,14 +1778,25 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/the-epistemology-of-solitude-reclaiming-quiet-attention-kwscf</loc>
+    <loc>https://writon.cc/stories/why-we-still-need-handwritten-thoughts-in-an-age-of-instant-pixels-6oyd9</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Epistemology of Solitude: Reclaiming Quiet Attention</image:title>
-      <image:caption>Why true contemplation requires withdrawal from the permanent panopticon of continuous connectivity.</image:caption>
+      <image:loc>https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Why We Still Need Handwritten Thoughts in an Age of Instant Pixels</image:title>
+      <image:caption>An exploration of tactile cognition, the physical resistance of pen and paper, and why slowing our writing down salvages our ability to think deeply.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-modern-tragedy-of-cold-samosas-at-430-pm-standups-why4k</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Modern Tragedy of Cold Samosas at 4:30 PM Standups</image:title>
+      <image:caption>A satirical breakdown of corporate sprint rituals, &quot;quick syncs&quot; that last 50 minutes, and the psychological warfare of office snacks.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1832,6 +1876,17 @@
     </image:image>
   </url>
   <url>
+    <loc>https://writon.cc/stories/chiragh-e-khamooshi-the-lamp-of-silence-d6ec4f99</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Chirāgh-e-Khamooshi (The Lamp of Silence)</image:title>
+      <image:caption>A classical Urdu ghazal exploring silence, nostalgia, and distance, paired with English translations and poetic commentary.</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://writon.cc/stories/the-8-14-fast-local-to-churchgate-bb9240c7</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
@@ -1873,17 +1928,6 @@
       <image:loc>https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>A Field Guide to Calendar Choreography</image:title>
       <image:caption>A satirical observation on the modern corporate obsession with artificial busyness and defensive calendar blocking.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/chiragh-e-khamooshi-the-lamp-of-silence-d6ec4f99</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Chirāgh-e-Khamooshi (The Lamp of Silence)</image:title>
-      <image:caption>A classical Urdu ghazal exploring silence, nostalgia, and distance, paired with English translations and poetic commentary.</image:caption>
     </image:image>
   </url>
   <url>

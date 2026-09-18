@@ -5,6 +5,7 @@ import { CURATED_READER_PERSONAS } from './reader-personas.js';
 import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from './commenter-personas.js';
 import { generateSparkArticle, generateSparkComment, generateSparkReply } from './gemini-spark-client.js';
 import { getCoverImageForCategory } from './image-service.js';
+import { fetchTrendingKeywordsForCategory, attachHashtagsAndWatermark } from './watermark-service.js';
 import {
   recordStoryMemory,
   recordFeedbackMemory,
@@ -21,6 +22,7 @@ import {
 import { queryInsights } from '../services/editorial-brain.js';
 import { ensureContextualComment, resolvePublicationCategory, resolveEngagementCategory } from './content-relevance-service.js';
 import { validateGeneratedArticleIntegrity } from './editorial-intelligence-service.js';
+import { reviewDraftWithLmStudio } from '../services/lm-studio-critic.js';
 import {
   getRecentFingerprints,
   getActiveCooldowns,
@@ -573,7 +575,7 @@ export async function getBotById(pool, botId) {
   return result.rows[0] ?? null;
 }
 
-export async function executePostAction(pool, { botId, category, topicHint, customTitle, customContent, researchDossier }) {
+export async function executePostAction(pool, { botId, category, topicHint, customTitle, customContent, researchDossier, trendingKeywords = [] }) {
   const bot = await getBotById(pool, botId);
   if (!bot) throw new Error(`Bot persona ${botId} not found`);
 
@@ -611,17 +613,40 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     topicHint = premiseCard.topic_hint;
   }
   const premiseCheck = validatePremiseOriginality(premiseCard, recentFingerprints, activeCooldowns);
-  if (!premiseCheck.passed) {
+  if (premiseCheck.decision === 'SKIP') {
+    console.warn(`[Spark Runner] Premise gate issued SKIP for "${bot.fullName}": ${premiseCheck.reason || premiseCheck.violations.join('; ')}`);
+    return {
+      skipped: true,
+      decision: 'SKIP',
+      botId: bot.id,
+      penName: bot.penName,
+      category: targetCategory,
+      reason: premiseCheck.reason || premiseCheck.violations.join('; ')
+    };
+  } else if (!premiseCheck.passed) {
     console.warn(`[Spark Runner] Premise originality FAILED for "${bot.fullName}": ${premiseCheck.violations.join('; ')}. Pivoting topic.`);
     topicHint = premiseCheck.suggestedPivot || `Choose a completely fresh, original topic in ${targetCategory} that you have never written about.`;
   }
 
+  // Fetch trending keywords for SEO readiness if not provided
+  let effectiveTrendingKeywords = trendingKeywords;
+  if (!Array.isArray(effectiveTrendingKeywords) || effectiveTrendingKeywords.length === 0) {
+    effectiveTrendingKeywords = await fetchTrendingKeywordsForCategory(pool, targetCategory, 3).catch(() => []);
+  }
+
   let articleData;
   if (customTitle && customContent) {
+    const finalCustomContent = attachHashtagsAndWatermark(
+      customContent,
+      targetCategory,
+      customTitle,
+      targetCategory,
+      effectiveTrendingKeywords
+    );
     articleData = {
       title: customTitle,
       summary: topicHint || null,
-      content: customContent,
+      content: finalCustomContent,
       themeKeyword: targetCategory
     };
   } else {
@@ -641,8 +666,26 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       recentStories,
       memories: botMemories,
       researchDossier,
-      cooldownBlock
+      cooldownBlock,
+      trendingKeywords: effectiveTrendingKeywords
     });
+  }
+
+  // Mandatory Pre-Publication Hard Gate: Zero AI Slop & Article Integrity
+  const integrityCheck = validateGeneratedArticleIntegrity({
+    title: articleData.title,
+    content: articleData.content,
+    category: targetCategory,
+    summary: articleData.summary,
+    persona: bot,
+    researchDossier
+  });
+
+  if (!integrityCheck.isValid) {
+    const violationSummary = integrityCheck.reasons.join('; ');
+    console.warn(`[Spark Runner] Article Integrity & Zero-AI-Slop gate FAILED for "${articleData.title}": ${violationSummary}`);
+    await registerFailurePattern(pool, null, bot.id, 'ZERO_AI_SLOP_INTEGRITY_FAIL', violationSummary, articleData.title).catch(() => {});
+    throw new Error(`Zero-AI-Slop Integrity gate rejected publication: ${violationSummary}`);
   }
 
   // Server-Side Zero-Slop & Anti-Repetition Governance Check
@@ -657,6 +700,23 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     console.warn(`[Spark Runner] Anti-Repetition gate FAILED for "${articleData.title}": ${violationSummary}`);
     await registerFailurePattern(pool, null, bot.id, 'ANTI_REPETITION_FAIL', violationSummary, articleData.title).catch(() => {});
     throw new Error(`Anti-Repetition gate rejected publication: ${violationSummary}`);
+  }
+
+  // Mandatory Pre-Publication Approval Gate via Local LM Studio Critic
+  const lmReview = await reviewDraftWithLmStudio({
+    title: articleData.title,
+    content: articleData.content,
+    category: targetCategory,
+    author: bot.fullName || bot.penName
+  }).catch(err => ({ available: false, error: err.message }));
+
+  if (lmReview.available && lmReview.verdict !== 'APPROVE') {
+    const rejectionReason = `LM Studio rejected draft with score ${lmReview.score ?? 'N/A'}/100. Critique: ${lmReview.critique?.slice(0, 200)}...`;
+    console.warn(`[Spark Runner] Pre-publication LM Studio gate REJECTED for "${articleData.title}": ${rejectionReason}`);
+    await registerFailurePattern(pool, null, bot.id, 'LM_STUDIO_CRITIC_REJECT', rejectionReason, articleData.title).catch(() => {});
+    throw new Error(`Publication rejected by LM Studio: ${rejectionReason}`);
+  } else if (lmReview.available) {
+    console.log(`[Spark Runner] Pre-publication LM Studio gate APPROVED for "${articleData.title}" (Score: ${lmReview.score ?? 'N/A'}/100)`);
   }
 
   const coverImage = getCoverImageForCategory(targetCategory);
@@ -726,7 +786,7 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
         theme: articleData.themeKeyword || targetCategory,
         approxWordCount: readingTime * 200,
         targetPostId: createdPost.id,
-        details: { slug: createdPost.slug, readingTimeMin: readingTime }
+        details: { slug: createdPost.slug, readingTimeMin: readingTime, keywords: trendingKeywords }
       }
     });
 
@@ -744,6 +804,8 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     await enqueueStorySyndication(client, createdPost, {
       fullName: bot.fullName,
       penName: bot.penName,
+    }, {
+      keywords: trendingKeywords
     });
 
     await client.query('commit');
@@ -1681,8 +1743,39 @@ export async function runSparkPulse(pool, options = {}) {
     if (targetBot) {
       const targetCategory = requestedCategory || targetBot.categories[Math.floor(Math.random() * targetBot.categories.length)] || 'Essays';
 
-      // Seed high-tension craft proposition from Editorial Brain when no explicit topic is provided
+      // Seed high-tension topic: first check database editorial_ideas_backlog for this persona/category
       let resolvedTopicHint = topicHint;
+      let activeBacklogIdeaId = null;
+      let activeBacklogKeywords = [];
+
+      if (!resolvedTopicHint) {
+        try {
+          // 1. Check if there are qualified trends seeded into editorial_ideas_backlog for this writer or category
+          const backlogPick = await client.query(`
+            select b.id, b.proposed_title as "proposedTitle", b.premise, b.genre,
+                   coalesce(ts.normalized_keywords, '{}') as keywords
+            from public.editorial_ideas_backlog b
+            left join public.trend_signals ts on ts.id = b.source_trend_signal_id
+            where b.status = 'backlog'
+              and (lower(b.target_author_pen_name) = lower($1) or b.genre = $2)
+            order by case when lower(b.target_author_pen_name) = lower($1) then 0 else 1 end, b.created_at asc
+            limit 1
+            for update of b skip locked
+          `, [targetBot.penName, targetCategory]);
+
+          if (backlogPick.rowCount > 0) {
+            const idea = backlogPick.rows[0];
+            resolvedTopicHint = `${idea.proposedTitle}: ${idea.premise}`.trim();
+            activeBacklogIdeaId = idea.id;
+            activeBacklogKeywords = Array.isArray(idea.keywords) ? idea.keywords : [];
+            console.log(`[Spark Pulse] Ingested Trend Backlog seeded topic for @${targetBot.penName}: "${idea.proposedTitle}" (Idea ID: ${idea.id}, Keywords: ${activeBacklogKeywords.join(', ')})`);
+          }
+        } catch (e) {
+          console.warn(`[Spark Pulse] Failed to query editorial_ideas_backlog (${e.message}), falling back to Brain insights.`);
+        }
+      }
+
+      // 2. Fallback to high-tension craft propositions from static Editorial Brain
       if (!resolvedTopicHint) {
         try {
           const availableInsights = queryInsights({ availableOnly: true });
@@ -1700,8 +1793,30 @@ export async function runSparkPulse(pool, options = {}) {
         botId: targetBot.id,
         category: targetCategory,
         topicHint: resolvedTopicHint,
-        researchDossier
+        researchDossier,
+        trendingKeywords: activeBacklogKeywords
       });
+
+      if (createdPost?.skipped) {
+        await client.query('commit');
+        return {
+          action: 'pulse_skipped',
+          botId: targetBot.id,
+          reason: createdPost.reason,
+          decision: createdPost.decision || 'SKIP',
+          executedDelayedCount: executedDelayed.length
+        };
+      }
+
+      // If this post came from a seeded backlog idea, mark it as executed
+      if (activeBacklogIdeaId) {
+        await client.query(`
+          update public.editorial_ideas_backlog
+          set status = 'executed', updated_at = now()
+          where id = $1
+        `, [activeBacklogIdeaId]);
+      }
+
       await client.query('commit');
       return {
         action: 'published_story',
@@ -1936,7 +2051,7 @@ CRITICAL DIRECTIVE: DO NOT POST OR SCHEDULE ANY COMMENTS. THIS RECURRING PLAN IS
 WritOn features 100 authentic South Asian and global voices across 6 core genres, including:
 - Tech & Systems Craft: Aarav Mehta (@aarav_tech), Maya Lin (@maya_lin_craft), Tanya Mehra (@tanya_mehra_dev), Vikram Aditya (@vikram_aditya_kernel)
 - Poetry & Verses: Kavya Nair (@kavya_nair), Shreya Ghosh (@shreya_ghosh_rhyme), Ananya Deshmukh (@ananya_deshmukh)
-- Short Stories & Fiction: Devansh Roy (@devansh_roy), Arshdeep Singh (@arsh_zee), Shamik Prabhu (@shamik_prabhu)
+- Short Stories & Fiction: Devansh Roy (@devansh_roy), Gurpreet Sandhu (@gurpreet_sandhu), Shamik Prabhu (@shamik_prabhu)
 - Philosophy & Essays: Dr. Sunita Banerjee (@sunita_banerjee), Devashish Somani (@devashish_s_somani), Swati Tripathi (@swati_tripathi)
 - Humour & Satire: Rohan Kapoor (@rohan_kapoor), Ashi Srivastava (@ashi_srivastava_shelby), Gopal Krishnan (@gopal_krishnan_jokes)
 - Shayari & Urdu: Ishaq Qureshi (@ishaq_qureshi), Zafar Iqbal (@zafar_iqbal_sher), Asma Jahan (@asma_jahan)
@@ -2421,6 +2536,19 @@ export async function ingestSparkBatch(pool, rawPayload) {
       const penName = (story.authorPenName || story.author || story.penName || '').toLowerCase().trim();
       const botId = botMap.get(penName) || defaultBotId;
       const category = resolvedCategory;
+
+      // Mandatory Pre-Publication Approval Gate via Local LM Studio Critic
+      const lmReview = await reviewDraftWithLmStudio({
+        title: cleanTitle,
+        content: cleanContent,
+        category,
+        author: penName
+      }).catch(err => ({ available: false, error: err.message }));
+
+      if (lmReview.available && lmReview.verdict !== 'APPROVE') {
+        throw new Error(`LM Studio rejected draft with score ${lmReview.score ?? 'N/A'}/100: ${lmReview.critique?.slice(0, 150)}...`);
+      }
+
       const coverImage = story.coverImage || story.cover_image_url || getCoverImageForCategory(category);
       const readingTime = calculateReadingTime(cleanContent);
       const slug = createSlug(cleanTitle);
