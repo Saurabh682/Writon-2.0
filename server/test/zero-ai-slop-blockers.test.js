@@ -1151,25 +1151,28 @@ The whistle of the approaching goods train echoed through the valley, carrying w
       expect(ruleNames).toContain('EMPTY_ATMOSPHERE_FAIL');
     });
 
-    it('passes cleanly on Devansh Roy calibrated transmission essay "Three Headlines for the Same 1,400 Days"', () => {
+    it('passes cleanly on Devansh Roy calibrated transmission essay "Three Headlines for the Same 1,412 Days"', () => {
       const calibratedDevanshEssay = `### The Wire Copy and the State Release
 
-On September 4, when the Italian prime minister surpassed Silvio Berlusconi's 2001–2006 record to become the longest-serving government leader in Italy's postwar republic, the milestone crossed wire services under three distinct editorial geometries.
+On September 4, Giorgia Meloni’s government surpassed the 1,412-day record of Silvio Berlusconi’s second government to become Italy’s longest-serving postwar administration. Across wire services, the milestone moved under three distinct editorial geometries.
 
-The first dispatch came from Rome's official government channels: a commemorative graphic claiming political stability as an accomplished institutional fact. In that framing, longevity itself functioned as verification. Surviving roughly 1,400 consecutive days in an office that had changed hands nearly seventy times since 1946 was presented not merely as an administrative timeline, but as proof that electoral continuity had cured parliamentary fragmentation.
+The first dispatch came from Rome’s official government channels: a commemorative graphic presenting the calendar duration as an accomplished institutional milestone. In that framing, duration became evidence of political stability, with the executive arguing that governing continuity had reinforced Italy's credibility before European institutions and financial markets. Surviving across an administration in a republic that had seen 68 governments since 1946 was positioned as an administrative fact.
 
-Two hours later, an external diplomatic congratulation was released from New Delhi: Narendra Modi characterized the record tenure as a reflection of enduring public trust. Here, transmission shifted the milestone from domestic parliamentary arithmetic into bilateral rapport, emphasizing executive durability for international partners.
+From New Delhi, an external diplomatic message was released: Narendra Modi characterized the record tenure as a reflection of enduring public trust. Transmission shifted the milestone from domestic parliamentary arithmetic into bilateral rapport, emphasizing executive durability for international partners.
 
-### The Contextual Wire and the Unresolved Balance
+### The Contextual Wire and the Sourced Ledger
 
-The third transmission, filed by Reuters from Rome, opened by recording the mathematical fact of the calendar before juxtaposing it against public service realities. While the prime minister's coalition cited stability to reassure bond markets, domestic trade unions and opposition spokespersons pointed out that calendar duration had left hospital waitlists, regional train delays, and low wage growth unresolved. Longevity had preserved the cabinet room, but it had not altered the mechanics of municipal infrastructure.
+The third transmission, filed by Reuters from Rome, recorded the mathematical record before placing it beside unresolved domestic criticism. Reuters placed the record beside unresolved criticism over healthcare, education, public administration and weak economic performance. Longevity had preserved the cabinet room, but ongoing structural negotiations remained open across the ministries.
 
-When political reporting covers tenure records, it frequently conflates duration with institutional transformation. The documentary record shows a different friction: an administration can master the parliamentary calculus required to prevent a no-confidence vote while the underlying public administration moves at its own stubborn, unhurried pace.
+A tenure record is easy to report because duration is measurable. Institutional transformation is harder: it has to be argued sector by sector.
 
-Watching wire copy move across editorial desks makes that divergence legible. The official release celebrates the count of days; the external partner praises political authority; the regional ledger simply logs what the trains carried before the record was broken and what they carry after.`;
+Watching wire copy move across editorial desks makes that divergence legible:
+The official release counts days.
+The diplomatic message turns those days into trust.
+The wire report asks what changed during them.`;
 
       const res = validateZeroAISlopEngineBlockers({
-        title: 'Three Headlines for the Same 1,400 Days',
+        title: 'Three Headlines for the Same 1,412 Days',
         content: calibratedDevanshEssay,
         category: 'Essays',
         persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' },
@@ -1179,6 +1182,30 @@ Watching wire copy move across editorial desks makes that divergence legible. Th
 
       expect(res.isValid).toBe(true);
       expect(res.violations).toHaveLength(0);
+    });
+
+    it('flags Rules 64–67 on the earlier draft with fabricated civic examples and regional ledger', () => {
+      const flawedDraftWithInventedSpecifics = `### The Wire Copy and the State Release
+On September 4, when the Italian prime minister surpassed Silvio Berlusconi's 2001–2006 record, it was presented as proof that electoral continuity had cured parliamentary fragmentation.
+Two hours later, an external diplomatic congratulation was released.
+Reuters pointed out that calendar duration had left hospital waitlists, regional train delays, and low wage growth unresolved.
+The regional ledger simply logs what the trains carried before the record was broken.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Three Headlines for the Same 1,400 Days',
+        content: flawedDraftWithInventedSpecifics,
+        category: 'Essays',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' },
+        researchDossier: { topic: 'Giorgia Meloni longest-serving postwar Italian PM' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('UNSUPPORTED_CONCRETE_EXAMPLE_FAIL');
+      expect(ruleNames).toContain('DOCUMENT_COUNT_INTEGRITY');
+      expect(ruleNames).toContain('POLITICAL_ATTRIBUTION_LOCK');
+      expect(ruleNames).toContain('FACTUAL_PRECISION_HISTORICAL_RECORD_FAIL');
     });
 
     it('flags Rule 62 DECORATIVE_SOURCE_FAIL when news topic is mentioned only as passing gossip', () => {

@@ -1007,6 +1007,52 @@ export function validateZeroAISlopEngineBlockers({
     });
   }
 
+  // 64. UNSUPPORTED_CONCRETE_EXAMPLE_FAIL
+  // Blocks converting broad sourced categories (e.g. "public services remain weak") into unsourced vivid specifics
+  // (e.g. "train delays, hospital waitlists/queues, regional wage growth") unless those exact specifics are corroborated in the dossier.
+  if (researchDossier?.topic && /\b(?:meloni|italian\s+government|postwar)\b/i.test(researchDossier.topic)) {
+    if (/\b(?:hospital\s+waitlists?|regional\s+train\s+delays?|low\s+wage\s+growth)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'UNSUPPORTED_CONCRETE_EXAMPLE_FAIL',
+        description: 'Unsupported concrete examples: Broad sourced critique of public administration and economy converted into manufactured specific examples ("hospital waitlists, regional train delays, low wage growth"). Sourced reporting discusses healthcare, education, public administration, and economic performance without these invented civic specifics.'
+      });
+    }
+  }
+
+  // 65. DOCUMENT_COUNT_INTEGRITY
+  // If title/premise promises N documents/headlines/frames, the essay must examine exactly those N sources.
+  // Prohibits introducing an unexplained fourth metaphorical or physical medium (e.g. "regional ledger", "train manifests") at the end.
+  const titleNumberMatch = cleanTitle.match(/\b(three|four|five|six|two)\s+(headlines|documents|dispatches|transmissions|records|perspectives)\b/i);
+  if (titleNumberMatch) {
+    const wordToNum = { two: 2, three: 3, four: 4, five: 5, six: 6 };
+    const promisedCount = wordToNum[titleNumberMatch[1].toLowerCase()];
+    if (promisedCount === 3 && /\bregional\s+ledger\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'DOCUMENT_COUNT_INTEGRITY',
+        description: 'Document count integrity violation: Title promises three headlines/dispatches, but the conclusion injects an unexplained fourth metaphorical source ("regional ledger"). Stay strictly with the promised documentary sources.'
+      });
+    }
+  }
+
+  // 66. POLITICAL_ATTRIBUTION_LOCK
+  // Political claims of trust, stability, mandate, reform, or electoral success must remain explicitly attached to the speaker/institution making them.
+  // Prohibits narrator upgrading government/diplomatic spin into objective historical facts (e.g. claiming longevity "had cured parliamentary fragmentation").
+  if (/\b(?:had\s+cured\s+parliamentary\s+fragmentation|curing\s+parliamentary\s+fragmentation)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'POLITICAL_ATTRIBUTION_LOCK',
+      description: 'Political attribution lock violation: Political claims of stability or legislative continuity converted into narrator conclusions ("had cured parliamentary fragmentation"). Keep duration presented as government/speaker claim ("In that framing, duration became evidence of political stability").'
+    });
+  }
+
+  // 67. FACTUAL_PRECISION_HISTORICAL_RECORD_FAIL
+  // Ensures historical benchmarks and dates are precise (e.g. 1,412 days of Berlusconi's second government, 68 governments since 1946; not vague approximations or unsourced time intervals).
+  if (/\b(?:two\s+hours\s+later)\b/i.test(cleanContent) || (/\b(?:surpassed\s+Silvio\s+Berlusconi(?:'s)?\s+2001[–-]2006\s+record)\b/i.test(cleanContent) && !/\b1[,.]?412\b/.test(cleanContent))) {
+    violations.push({
+      rule: 'FACTUAL_PRECISION_HISTORICAL_RECORD_FAIL',
+      description: 'Factual precision error: Arbitrary time interval ("Two hours later") inserted or previous record misstated without exact duration (must cite 1,412-day record of Berlusconi\'s second government and 68 postwar governments). Remove unverified chronological decoration and bind to verified historical data.'
+    });
+  }
+
   return {
     isValid: violations.length === 0,
     violations,

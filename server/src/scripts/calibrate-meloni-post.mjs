@@ -66,26 +66,29 @@ async function run() {
   }
 
   // 3. Calibrated Essay Prose
-  const calibratedTitle = 'Three Headlines for the Same 1,400 Days';
-  const calibratedSlug = 'three-headlines-for-the-same-1400-days-3442f45f-7a7';
+  const calibratedTitle = 'Three Headlines for the Same 1,412 Days';
+  const calibratedSlug = 'three-headlines-for-the-same-1412-days-3442f45f-7a7';
   const calibratedCategory = 'Essays';
-  const calibratedSummary = 'A documentary study of three competing wire dispatches following the September 4 milestone in Rome, examining the gap between parliamentary longevity and municipal administrative reality.';
+  const calibratedSummary = 'A documentary study of three competing wire dispatches following the September 4 milestone in Rome, examining how political longevity is framed through official, diplomatic, and journalistic channels.';
 
   const rawCalibratedEssay = `### The Wire Copy and the State Release
 
-On September 4, when the Italian prime minister surpassed Silvio Berlusconi's 2001–2006 record to become the longest-serving government leader in Italy's postwar republic, the milestone crossed wire services under three distinct editorial geometries.
+On September 4, Giorgia Meloni’s government surpassed the 1,412-day record of Silvio Berlusconi’s second government to become Italy’s longest-serving postwar administration. Across wire services, the milestone moved under three distinct editorial geometries.
 
-The first dispatch came from Rome's official government channels: a commemorative graphic claiming political stability as an accomplished institutional fact. In that framing, longevity itself functioned as verification. Surviving roughly 1,400 consecutive days in an office that had changed hands nearly seventy times since 1946 was presented not merely as an administrative timeline, but as proof that electoral continuity had cured parliamentary fragmentation.
+The first dispatch came from Rome’s official government channels: a commemorative graphic presenting the calendar duration as an accomplished institutional milestone. In that framing, duration became evidence of political stability, with the executive arguing that governing continuity had reinforced Italy's credibility before European institutions and financial markets. Surviving across an administration in a republic that had seen 68 governments since 1946 was positioned as an administrative fact.
 
-Two hours later, an external diplomatic congratulation was released from New Delhi: Narendra Modi characterized the record tenure as a reflection of enduring public trust. Here, transmission shifted the milestone from domestic parliamentary arithmetic into bilateral rapport, emphasizing executive durability for international partners.
+From New Delhi, an external diplomatic message was released: Narendra Modi characterized the record tenure as a reflection of enduring public trust. Transmission shifted the milestone from domestic parliamentary arithmetic into bilateral rapport, emphasizing executive durability for international partners.
 
-### The Contextual Wire and the Unresolved Balance
+### The Contextual Wire and the Sourced Ledger
 
-The third transmission, filed by Reuters from Rome, opened by recording the mathematical fact of the calendar before juxtaposing it against public service realities. While the prime minister's coalition cited stability to reassure bond markets, domestic trade unions and opposition spokespersons pointed out that calendar duration had left hospital waitlists, regional train delays, and low wage growth unresolved. Longevity had preserved the cabinet room, but it had not altered the mechanics of municipal infrastructure.
+The third transmission, filed by Reuters from Rome, recorded the mathematical record before placing it beside unresolved domestic criticism. Reuters placed the record beside unresolved criticism over healthcare, education, public administration and weak economic performance. Longevity had preserved the cabinet room, but ongoing structural negotiations remained open across the ministries.
 
-When political reporting covers tenure records, it frequently conflates duration with institutional transformation. The documentary record shows a different friction: an administration can master the parliamentary calculus required to prevent a no-confidence vote while the underlying public administration moves at its own stubborn, unhurried pace.
+A tenure record is easy to report because duration is measurable. Institutional transformation is harder: it has to be argued sector by sector.
 
-Watching wire copy move across editorial desks makes that divergence legible. The official release celebrates the count of days; the external partner praises political authority; the regional ledger simply logs what the trains carried before the record was broken and what they carry after.`;
+Watching wire copy move across editorial desks makes that divergence legible:
+The official release counts days.
+The diplomatic message turns those days into trust.
+The wire report asks what changed during them.`;
 
   const finalContent = attachHashtagsAndWatermark(
     rawCalibratedEssay,
@@ -124,7 +127,7 @@ Watching wire copy move across editorial desks makes that divergence legible. Th
     UPDATE public.editorial_research_briefs
     SET
       topic_category = 'Essays',
-      editorial_angle = 'A documentary study of three competing wire dispatches following the September 4 milestone in Rome, examining the gap between parliamentary longevity and municipal administrative reality.',
+      editorial_angle = 'A documentary study of three competing wire dispatches following the September 4 milestone in Rome, examining how political longevity is framed through official, diplomatic, and journalistic channels.',
       updated_at = now()
     WHERE id = $1
   `, [briefId]);
@@ -137,17 +140,17 @@ Watching wire copy move across editorial desks makes that divergence legible. Th
     genre: 'Essays',
     subject_domain: 'wire_transmission_political_tenure',
     setting: 'Wire service editorial desk',
-    central_question: 'How does political tenure record reporting diverge between state release, diplomatic transmission, and regional municipal reality?',
-    narrative_mechanism: 'comparing three editorial geometries of wire copy filed on the same afternoon',
-    opening_device: 'transmission_timestamp_comparison',
-    ending_device: 'contrasting the count of days with regional railway cargo manifests',
+    central_question: 'How does political tenure record reporting diverge between state release, diplomatic transmission, and journalistic context?',
+    narrative_mechanism: 'comparing three editorial geometries of wire copy filed on the same milestone',
+    opening_device: 'documentary_transmission_comparison',
+    ending_device: 'three_medium_parallel_summary',
     metaphor_family: 'editorial desk, wire copy, transmission cables',
-    emotional_arc: 'objective tracking to civic clarity',
-    major_objects: ['wire copy terminal', 'state press release', 'diplomatic congratulation cable', 'regional rail ledger'],
+    emotional_arc: 'objective tracking to documentary clarity',
+    major_objects: ['wire copy terminal', 'state press release', 'diplomatic message', 'wire dispatch'],
     recurring_people: ['Giorgia Meloni', 'Silvio Berlusconi', 'Narendra Modi'],
     has_code_blocks: false,
     real_person_dependent: true,
-    structural_hash: 'wire_tenure_1400_hash'
+    structural_hash: 'wire_tenure_1412_hash'
   };
 
   await storeNarrativeFingerprint(pool, targetPostId, fp);

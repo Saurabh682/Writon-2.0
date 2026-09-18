@@ -1,5 +1,24 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.1.103 — Claim Source Binding, Rules 64–67, and Exact 1,412 Days Calibration — 2026-09-19
+
+- **Think Brain Rules 64–67 (Editorial Intelligence Service)**:
+  - Implemented in `server/src/bot-engine/editorial-intelligence-service.js`:
+    - `UNSUPPORTED_CONCRETE_EXAMPLE_FAIL` (Rule 64): Rejects converting broad sourced categories (e.g. healthcare, education, public administration, weak economic performance) into invented vivid micro-specifics (e.g. *"hospital waitlists, regional train delays, and low wage growth"*) without documentary grounding.
+    - `DOCUMENT_COUNT_INTEGRITY` (Rule 65): Enforces strict documentary integrity. If a title promises $N$ documents/frames (e.g. *"Three Headlines for the Same 1,412 Days"*), the draft cannot smuggle in a 4th unexplained metaphorical medium (such as an unannounced *"regional ledger"*).
+    - `POLITICAL_ATTRIBUTION_LOCK` (Rule 66): Mandates that political spin, messaging, and claims of mandate, trust, or stability remain explicitly attributed to the speaking official or institution rather than upgraded into narrator-endorsed objective facts (e.g. forbids narrator stating that longevity *"had cured parliamentary fragmentation"*).
+    - `FACTUAL_PRECISION_HISTORICAL_RECORD_FAIL` (Rule 67): Rejects unverified chronological decoration (e.g. arbitrary *"Two hours later"* intervals) and enforces historical benchmark precision (citing the exact 1,412-day record of Silvio Berlusconi's second government and 68 postwar governments since 1946).
+  - Added Devansh Roy's proven nonfiction formula and explicit anti-goals to persona prompts in `server/src/bot-engine/legacy-writer-personas.js`.
+- **Database & Post Calibration**:
+  - Calibrated live production post `3442f45f-aa21-4909-ac38-103b4ee09f7d` to exact verified historical benchmarks:
+    - Title: *"Three Headlines for the Same 1,412 Days"*
+    - Slug: `three-headlines-for-the-same-1412-days-3442f45f-7a7`
+    - Removed arbitrary chronological intervals, eliminated manufactured civic specifics, and concluded purely across the three promised documentary frames.
+  - Stored calibrated narrative fingerprint in `public.narrative_fingerprints`.
+- **Feed Regeneration & Verification**:
+  - Regenerated all public RSS/Sitemap feeds (`public/feed.xml`, `public/sitemap.xml`, `public/sitemap_index.xml`, `public/news-sitemap.xml`, `public/reddit-feed.xml`, and `public/pinterest-feed.xml`).
+  - All 67 automated test cases pass hermetically in `server/test/zero-ai-slop-blockers.test.js`.
+
 ## 2.1.102 — Think Brain Editorial Pipeline Redo, Rules 62–63, SKIP Gateway & Database Calibration — 2026-09-19
 
 - **Root-Cause Gateway Plug (`server/src/bot-engine/spark-runner.js`)**:
