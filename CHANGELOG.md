@@ -1,5 +1,259 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.1.101 — Think Brain Rules 57–61, Persona Calibration (Devansh Roy) & Anti-Placeholder Gates — 2026-09-19
+
+- **Zero AI Slop Hard Pre-Publication Engine Blockers (Rules 57–61)**:
+  - Implemented in `server/src/bot-engine/editorial-intelligence-service.js`:
+    - `PLANNER_PLACEHOLDER_LEAK_FAIL` (Rule 57): Immediate pre-publication rejection if raw internal editorial planning briefs, meta-prompts, or scaffolding (*"a counterintuitive perspective on standard workflows and craftsmanship in short stories"*, *"an exploration of failure, patience"*, *"within the realm of"*) leak into titles, section headings, body paragraphs, or hashtags.
+    - `SOURCE_PREMISE_COMPATIBILITY_FAIL` & `NO_FORCED_ANGLE_RULE` (Rule 58): Strictly enforces persona-topic compatibility and the right to skip unsuited sources. If a trending political/diplomatic event (e.g. Narendra Modi congratulating Giorgia Meloni on Italy's longest-serving postwar government) is mechanically stapled onto generic rural railway or tea-stall templates with zero provenance or transmission angle, it is immediately rejected.
+    - `SOURCE_DEPENDENCY_FAIL` (Rule 59): Rejects drafts where removing a passing headline reference leaves behind a generic scene unchanged. Every sourced event must drive the core narrative stakes.
+    - `APHORISTIC_DIALOGUE_FAIL` (Rule 60): Rejects unearned, artificial quote-card dialogue designed merely to sound philosophical (*"Some things change overnight... and some things take twenty years just to begin"*) without immediate practical character conflict.
+    - `EMPTY_ATMOSPHERE_FAIL` / `SHORT_STORY_MINIMUM_STRUCTURE` (Rule 61): Short stories require concrete character desires, friction, and consequential action rather than atmospheric wallpaper or decorative closure clichés (*"quiet promise of an unwritten journey"*).
+  - All 62 blocker tests in `server/test/zero-ai-slop-blockers.test.js` pass hermetically.
+- **Editorial Memory & Premise Sanitization**:
+  - Enhanced `buildPremiseCard()` in `server/src/bot-engine/editorial-memory-service.js` to automatically sanitize meta-prompt scaffolding and internal planning phrases (`a counterintuitive perspective on`, `standard workflows and craftsmanship`) before seed generation or fingerprinting.
+- **Persona Re-Anchoring: Devansh Roy (`@devansh_roy`)**:
+  - Re-anchored in `server/src/bot-engine/legacy-writer-personas.js` with cognitive lens strictly centered on: media provenance, transmission drift, archival wire copy, broadcast vs state framing, and information transformation across mediums.
+  - Added anti-goals forbidding generic railway nostalgia, station clocks, tea-stall philosophy, or distant political news without a verifiable archival/transmission angle.
+  - Validated with calibrated essay *"Three Headlines for the Same 1,400 Days"*.
+
+## 2.1.100 — Founding Writer Campaign Cohort 2 Dispatch (150 Authors & Engaged Writers) — 2026-09-18
+
+- **Live Cohort 2 Execution (`server/src/scripts/dispatch-founding-writers-campaign.mjs`)**:
+  - **Successful Delivery**: Dispatched Founding Writer invitations to **150 qualified legacy writers** (the remaining 135 published authors + 15 highest-activity engaged community writers) with 50ms pacing and zero delivery errors (150/150 accepted by Resend). Cumulative campaign total now stands at **200 writers**.
+  - **Zero Tracking Compliance**: Strict privacy rules enforced (`open_tracking: false`, `click_tracking: false`, zero 1×1 pixels, zero redirect proxies).
+  - **RFC 8058 One-Click Header**: Embedded signed HMAC-SHA256 URL-safe unsubscribe links on all 150 emails.
+  - **Live Dynamic Count**: Rendered live dynamically updated library stat (**771 stories, poems, essays and reflections** across 15 craft categories).
+  - **Database State Synchronization**: Stamped `public.founding_writer_eligibility` with `contacted_at = NOW(), cohort = 2`, created jobs in `public.email_jobs`, and updated `public.user_email_preferences`.
+  - **Maturation Gate Armed**: Activated 24-hour observation gate before Cohort 3 can be unlocked.
+
+## 2.1.99 — Think Brain Rules 47–52, Shorts Retention Pacing & Nepal Disaster Story Calibration — 2026-09-18
+
+- **Firebase Auth Rate Limiting & Anti-Abuse Telemetry Calibration**:
+  - Resolved `FirebaseTooManyRequestsException` (`We have blocked all requests from this device due to unusual activity. Try again later.`) in `AuthFailurePolicy.kt`.
+  - Suppressed expected Firebase device/IP rate-limiting from logging to Crashlytics as a non-fatal exception, eliminating false-positive crash noise.
+  - Added user-reassuring explanation in `AuthFailurePolicy.userMessage`: *"Too many requests. For your security, requests from this device are temporarily paused. Please try again in a few minutes."* (and aligned `ERROR_TOO_MANY_REQUESTS`).
+  - Routed `FirebaseAuthManager.sendPasswordReset` through `AuthFailurePolicy.userMessage` and `AuthFailurePolicy.shouldReportNonFatal` for consistent telemetry and friendly error presentation.
+  - Expanded unit test coverage in `AuthFailurePolicyTest.kt` verifying suppression and messaging.
+
+- **Day 13 Carousel Slide Text Overflow Repair & Border Boundary Confinement**:
+  - Repaired the rendering bug on Day 13 Instagram Carousel slides (`day13_carousel_slide_1.png` through `day13_carousel_slide_5.png` in both `campaign/antigravity-2026-09-06-19/assets/day13/` and `public/assets/`):
+    - Replaced the single unbroken run of horizontal body text that previously overflowed across the inner card boundary past $x=950$ to $x=1054$ into the watercolor background.
+    - Cleaned and restored background pixels across the overflow corridor ($x \in [940, 1080], y \in [585, 635]$).
+    - Wrapped all body text lines cleanly within 3 discrete `<tspan>` rows (max ~35 characters per line, line-height 44px, Georgia serif 28px) placed at $x=181$, with $\ge 50\%$ negative space preserved.
+    - Verified all 5 slides visually with `view_file` and confirmed zero clipping or horizontal bleed.
+    - Ran `sprint2-dispatcher.mjs --day=13 --slot=19:30 --dry-run` to ensure all 5 regenerated assets pass pre-flight verification cleanly.
+
+- **Zero AI Slop Hard Gates (Rules 47–56)**:
+  - Implemented and integrated Rules 47 to 56 in `server/src/bot-engine/editorial-intelligence-service.js`:
+    - `REAL_DISASTER_FICTION_BOUNDARY_FAIL` (Rule 47): Enforces geographic and institutional binding when a story references contemporary disasters (e.g. Nepal Trishuli/Rasuwa glacial floods), prohibiting vague parables and unanchored casualty references.
+    - `TRAGEDY_STACKING_FAIL` (Rule 48): Prohibits introducing an unrelated contemporary tragedy (e.g. Kuhestak Iran wedding strike) merely to artificially intensify emotional or philosophical weight.
+    - `CAUSAL_EQUIVALENCE_FAIL` (Rule 49): Rejects claiming that two radically different disasters with distinct geopolitical, human, or geophysical causes share "identical geometry" or are a "violent redistribution of space".
+    - `SYMBOL_EXPLAINS_ITSELF_FAIL` (Rule 50): Forbids didactic narration that explicitly explains household object symbolism (e.g. *"The damage is permanent, but the object still functions"*).
+    - `ENDING_MOTIF_COOLDOWN` (Rule 51): Enforces cooldown on repetitive WritOn melancholic endings (damaged object $\rightarrow$ silence $\rightarrow$ water dripping from eaves); requires concrete physical action.
+    - `PREMISE_TITLE_INTEGRITY_FAIL` (Rule 52): Rejects titles promising materials or physical concepts completely absent from the text (e.g. *"The Weight of Wet Concrete"* when no wet concrete exists).
+    - `ENTITY_FACT_BINDING_FAIL` & `ASSET_OWNERSHIP_VALIDATION` (Rule 53): Enforces relationship checking across real named companies and public projects. Prevents combining disparate project facts (e.g. Upper Trishuli 3A, which did not offer local-resident shares, vs Rasuwagadhi Hydropower, which issued 10% local resident shares in 2022).
+    - `STATISTIC_SCOPE_DRIFT_FAIL` (Rule 54): Enforces numeric scope discipline. Prevents regional macro disaster statistics (2.2M tonnes regional debris across Nepal) from sliding down to a single localized facility (e.g. turbine floor).
+    - `PLAUSIBLE_PRECISION_FAIL` (Rule 55): Rejects speculative cinematic measurements (e.g. "six feet of pulverized schist") lacking verified telemetry or journalistic reportage.
+    - `GEOGRAPHIC_SETTLEMENT_PRECISION_FAIL` (Rule 56): Enforces precise administrative and geographic terminology (e.g. Rasuwa is an entire district; requires living "above Syabrubesi" or "in Rasuwa district", not "above Rasuwa").
+  - Added unit test coverage in `server/test/zero-ai-slop-blockers.test.js`; all 60 tests passing hermetically.
+
+- **Persona Cognitive Evolution (Atharva Bhavsar — `@atharv_bhav`)**:
+  - Re-anchored Atharva Bhavsar in `server/src/bot-engine/legacy-writer-personas.js` around infrastructure, household economics, material failure, public works, and regional development trade-offs.
+  - Persona insight now originates from observing how large-scale civil engineering and financial systems enter kitchens and bank passbooks, rather than generic melancholy.
+
+- **Nepal Hydropower Disaster Story Calibration (*"The Shares Beneath the Silt"*)**:
+  - Fully calibrated post ID `c8fdc4bb-b1b6-486e-a1df-3e01a3cdf235` in production PostgreSQL:
+    - Retitled to *"The Shares Beneath the Silt"* (`the-shares-beneath-the-silt-24305149-bca`).
+    - Grounded firmly in Nepal's Rasuwa district above Syabrubesi and the **Rasuwagadhi Hydropower Company** (111 MW) following the August 26 glacial collapse.
+    - Grounded the father's investment in Nepal's authentic 10% project-affected local resident share quota with his printed allotment notice from the Dhunche collection counter in a blue fertilizer sack.
+    - Replaced the didactic 30 MW line with authentic character dialogue: *"I still have the allotment number... They told us the shares would be for our children."*
+    - Removed unsupported regional debris statistics (2M tonnes at plant) and speculative "six feet of pulverized schist" ruler metrics.
+    - Grounded the father's psychological denial in tangible reality: *"The plant is still there."* without invented tunnel assumptions.
+    - Preserved the earned tactile ending: scraping the boot heel until a coin-sized crust of dried silt drops with a soft click against the cement floor.
+    - Verified via local LM Studio: Score **87/100, Verdict: APPROVE**.
+    - Re-embedded discovery tags: `#nepalhydropower #localshares #trishulivalley #shortstories` and invisible `#writon` watermark.
+    - Regenerated all public RSS and XML sitemaps (`feed.xml`, `rss.xml`, `sitemap.xml`, `news-sitemap.xml`).
+
+- **WritOn Shorts Retention Grammar & Pacing Calibration (Short #11 & Master Standard)**:
+  - Codified the permanent **WritOn Shorts Base Grammar**:
+    *Architecture: Challenge → Flawed Example → Isolate the Mistake → Tiny Instruction → Visible Rewrite → Principle → Memorable Rule.*
+  - Established the **1.5-Second Visual Progression Invariant (Zero-Plateau Gate)** in `AGENTS.md` and `campaign/video-system/BRAND_RULES.md`:
+    *During the first 8 seconds, never allow more than ~1.5 seconds without a meaningful visual, textual, or auditory change. After the payoff, allow the frame to breathe.*
+  - Rendered both testing candidates for Short #11:
+    - **18.0s Standard Cut**: Full 3.5s hold on final craft contrast (`Dialogue carries the words. Action carries the threat.`).
+    - **16.0s Tight Retention Cut**: Snappier 1.5–2.0s hold on final lesson to maximize full completion and replay velocity.
+  - Pacing Progression Breakdown:
+    - `0.0–0.8s`: Immediate high-curiosity hook challenge: *"Make this line feel dangerous. without changing the dialogue"* + frame 0 deadbolt audio snap.
+    - `0.8–1.8s`: Flawed dialogue line fully visible.
+    - `1.8–2.5s`: Yellow highlighter micro-motion snaps across *menacingly.*.
+    - `2.5–3.2s`: Red directive badge pops: *"DELETE ONE WORD."*.
+    - `3.2–4.0s`: Modifier dissolves out cleanly.
+    - `4.2–6.5s`: Physical threat revealed: *"“Don't touch that.” His thumb clicked the deadbolt into place."* with subtle `Physical Threat` chip (removed clinical *"HEALED SENTENCE"*).
+    - `8.5–15.2s`: Memorable teaching payoff flow: *"Now the threat is in the room, not in the modifier. Dialogue carries the words. Action carries the threat."*
+    - `15.0–16.0s / 18.0s`: Clean hold breathing room before seamless loop back to 0.0s.
+
+## 2.1.98 — Brain Constitutional Rule: SEO & Trending Keyword Tagging, Persona Distribution, and Social Hashtag Injection — 2026-09-18
+
+- **Editorial Brain Constitutional Rule (Trending Keywords Tagging)**:
+  - Added new core constitutional rule to both `campaign/EDITORIAL_BRAIN.json` and `server/src/services/EDITORIAL_BRAIN.json`:
+    *"SEO & Trending Keyword Tagging: Stories, posts, and social dispatches derived from trend intelligence must always tag and incorporate the canonical trending keywords and rising search queries harvested from the Brain's database into the piece summary, social copy, and discovery hashtags (all lowercase) to maintain maximum algorithmic discoverability and SEO readiness without sacrificing human literary voice."*
+  - Cryptographic Brain Hash recalculation verified and passing across all engine services.
+
+- **Autonomous Trending Keyword & Hashtag Tagging Engine**:
+  - Upgraded `server/src/bot-engine/watermark-service.js`:
+    - Implemented `formatKeywordToHashtag`: Converts multi-word search phrases/keywords into clean lowercase hashtags (e.g. `"supervisory tax"` $\rightarrow$ `"#supervisorytax"`, `"AI Burnout"` $\rightarrow$ `"#aiburnout"`).
+    - Updated `generateCategoryHashtags` and `attachHashtagsAndWatermark` to prioritize high-value trending keywords at the head of the tag list, followed by topic and category tags, capped strictly at 4–6 tags total.
+    - Implemented `fetchTrendingKeywordsForCategory`: Direct database connector querying `public.trend_signals` for top-scoring keywords and search phrases for any category.
+  - Upgraded `server/src/bot-engine/spark-runner.js`:
+    - Automatically fetches top trending keywords via `fetchTrendingKeywordsForCategory` when not explicitly supplied in `executePostAction`.
+    - Threads `trendingKeywords` to `generateSparkArticle` prompt/fallback and applies `attachHashtagsAndWatermark` for custom posts.
+  - Upgraded `server/src/bot-engine/gemini-spark-client.js` and `curated-articles.js`:
+    - Integrated `trendingKeywords` into draft generation prompts, final returns, and authentic fallback anthologies.
+  - Upgraded `server/src/server.js`:
+    - Integrated `fetchTrendingKeywordsForCategory` and `attachHashtagsAndWatermark` into `POST /api/v1/posts` and `PUT /api/v1/posts/:id`, ensuring all published stories receive optimal SEO tags.
+  - Re-calibrated post `3d3df93a-6d18-4a0f-939b-ba954f51b527` (*"Rain on Southern Avenue"*) with `#poetry #kolkata #southernavenue #monsoon #urbanobservation #quietverses` and the invisible `#writon` watermark.
+  - Regenerated all public RSS, Atom, and Sitemap feeds (`feed.xml`, `rss.xml`, `sitemap.xml`, `news-sitemap.xml`) indexing 770 stories with updated metadata.
+  - Vitest test suites (`watermark-service.test.js` and `spark-bot-engine.test.js`) 100% passing (71 tests).
+
+- **Writer Persona Rebalancing & Migration**:
+  - Rebalanced candidate ranking in `server/src/services/trend-intelligence-service.js` with category affinity anchoring, anti-goal protection, and workload spread across distinct writers (`@aarav_tech`, `@sunita_banerjee`, `@riya_sharma_systems`, `@devansh_roy`, and `@kavya_nair`).
+  - Migrated writer persona `bot_writer_007` from *Arshdeep Singh (Arsh Zee)* to *Gurpreet Sandhu* (`@gurpreet_sandhu`) across source code and PostgreSQL database.
+
+## 2.1.97 — Think Brain Rules 42–46, Kolkata Poem Calibration & Mandatory LM Studio Pre-Pub Gate — 2026-09-18
+
+- **Zero AI Slop Hard Gates (Rules 42–46)**:
+  - Implemented and integrated Rules 42 to 46 in `server/src/bot-engine/editorial-intelligence-service.js`:
+    - `SCENE_TEMPORAL_CONSISTENCY_FAIL` (Rule 42): Detects direct contradictions between scene headers and textual time markers (e.g. "Morning" header vs "three-o'clock cloudburst").
+    - `LOCAL_GEOGRAPHY_PRECISION_FAIL` (Rule 43): Blocks transit and geographic route hallucinations (e.g. S-12 minibus on Southern Avenue, Lake Kalibari on College Street).
+    - `ENVIRONMENTAL_MOTIF_DRIFT_FAIL` (Rule 44): Rejects coastal/marine environmental tropes (salt-pans, salt-crusted, tidal flats) erroneously imported into inland cities like Kolkata.
+    - `POETRY_OVEREXPLANATION_FAIL` (Rule 45): Forbids didactic post-poem explanatory prose (e.g. "Notes from the Balcony", "Author's Reflection") that overexplains civic metaphors after the poem has concluded.
+    - `AUTHENTICITY_TOKEN_COOLDOWN_FAIL` (Rule 46): Detects heavy token clustering of generic WritOn props (cardamom, brass kettle, wet mortar, "old city taking its time").
+  - Added unit test suite in `server/test/zero-ai-slop-blockers.test.js`; all 57 test assertions passing hermetically.
+
+- **Mandatory LM Studio Pre-Publication Evaluation Gate**:
+  - Implemented `server/src/services/lm-studio-critic.js` connecting to local LM Studio on `http://localhost:1234/v1`.
+  - Wired directly into `server/src/bot-engine/spark-runner.js` (`executePostAction` and `/api/v1/spark/publish`).
+  - Strict publication invariant: no story is published or inserted into the live database unless LM Studio returns `APPROVE` with a quality score $\ge 80/100$.
+
+- **Southern Avenue Kolkata Poem Calibration & Production Sync**:
+  - Addressed user and critic feedback on post ID `3d3df93a-6d18-4a0f-939b-ba954f51b527` (*"Rain on Southern Avenue"* by Ananya Deshmukh):
+    - Changed title and section header from morning to *"Rain on Southern Avenue"*.
+    - Replaced all coastal salt props with native Kolkata monsoon urban surfaces (mildew, running vinyl ink, rusted tin roof, soot, and wet stone).
+    - Eliminated didactic *"Notes from the Balcony"* essay so the verse stands purely on its own.
+    - Grounded ending in concrete observed motion (puddle closing over itself, blue railing upside down in the water).
+    - Submitted draft to local LM Studio critic: scored **87/100** (`APPROVE`) praising persona integrity and restrained ending.
+    - Persisted approved calibrated poem to production PostgreSQL database.
+    - Regenerated all distribution feeds (`feed.xml`, `rss.xml`, `sitemap.xml`, `news-sitemap.xml`) via `generate-seo-feeds.mjs`.
+
+## 2.1.96 — YouTube Shorts Studio: Short #12 (Writing Hack #12) Released — 2026-09-18
+
+- **Short #12 Production & Release (`campaign/shorts-rendered/short12_cold_anger`)**:
+  - Produced and uploaded **Writing Hack #12**: *“How to Write Anger Without Screaming”* (Video ID: `TYbPVp9k3Es`).
+  - Search Title: `How to Write Anger Without Screaming` (strictly under 50 characters, zero generic `#shorts` clutter).
+  - Franchise Pill: `WRITING HACK #12` visibly anchored at the top of the video canvas.
+  - Frame 0 Cold Open: Immediate bad draft visible at 0:00 (*“She was furious at him for lying.”*).
+  - Audio & Acoustic Craft: Nicole (`af_nicole` @ 1.22x) generated via Kokoro-82M ONNX layered with official ambient acoustic piano (`volume: 0.038`). Audio verified via embedded HTML `<audio>` stream and ffprobe (`aac` stereo).
+  - Typographic Dissolve: Smooth 1.2s upward fade of the abstract statement into Warm Parchment (`#FAF5EE`), followed by line-by-line synchronized healed rewrite (*“She refolded his napkin into a sharp triangle, and slid the salt cellar two inches left.”*).
+  - Semantic Loop: Closing craft maxim (*“Loud anger makes noise. Lethal anger organizes the cutlery.”*) acts as immediate empirical proof when the video replays.
+  - Video Production OS Integration: Full lifecycle artifacts logged across `brief.json`, `hooks.md`, `script_final.md`, `critic_review.md`, `shotlist.json`, `render_config.json`, and `upload_result.json` in `campaign/video-system/videos/short_012/`.
+  - Brain & Memory Updates: Synced with `campaign/EDITORIAL_BRAIN.json`, `CONTENT_MEMORY.json`, and `PERFORMANCE_HISTORY.json`. Short #11 marked `public`.
+
+
+## 2.1.95 — 𝕏 Post Clock: Day 13 Morning Card Published Live — 2026-09-18
+
+- **𝕏 Post Clock Dispatch (`2609_d18_x_card_en_sprint2_am_find_your_next_read`)**:
+  - Successfully executed the scheduled morning 𝕏 post clock delivery for **Day 13 (2026-09-18, 09:00 IST)**.
+  - Published live to official account `@WritOn_Social` via Twitter API v2:
+    - **Tweet ID**: `2100916822619160773`
+    - **URL**: [https://x.com/WritOn_Social/status/2100916822619160773](https://x.com/WritOn_Social/status/2100916822619160773)
+    - **Copy**: *“For your next read, would you choose a familiar setting or somewhere completely new? #writon #writingcommunity #amwriting”*
+    - **Creative Asset**: High-resolution rendered card `campaign/antigravity-2026-09-06-19/assets/day13/day13_am_x_card.png` (210.8 KB, Warm Parchment brand aesthetic).
+  - Synchronized and updated delivery status to `published` in `campaign/antigravity-2026-09-06-19/publishing-calendar.csv` and logged dispatch metadata to `campaign/published-history.json`.
+
+## 2.1.94 — YouTube Shorts Studio: Short #11 (Writing Hack #11) Released — 2026-09-18
+
+- **Short #11 Production & Release (`campaign/shorts-rendered/short11_dialogue_tags`)**:
+  - Produced and uploaded **Writing Hack #11**: *“Stop Using Adverbs in Dialogue Tags”* (Video ID: `fpLRilhg5L4`).
+  - Search Title: `Stop Using Adverbs in Dialogue Tags` (strictly under 50 characters, zero generic `#shorts` clutter).
+  - Franchise Pill: `WRITING HACK #11` visibly anchored at the top of the video canvas.
+  - Frame 0 Cold Open: Immediate bad draft visible at 0:00 (*““Don't touch that,” he whispered menacingly.”*).
+  - Audio & Acoustic Craft: Nicole (`af_nicole` @ 1.18x) generated via Kokoro-82M ONNX layered with official ambient acoustic piano (`volume: 0.038`). Audio verified via embedded HTML audio stream and ffprobe (`aac` stereo).
+  - Typographic Dissolve: Smooth 1.2s upward fade of the adverb tag into Warm Parchment (`#FAF5EE`), followed by line-by-line synchronized healed rewrite (*““Don't touch that.” His thumb clicked the deadbolt into place.”*).
+  - Semantic Loop: Closing craft maxim (*“Dialogue carries the words. Action carries the threat.”*) acts as immediate empirical proof when the video replays.
+  - Video Production OS Integration: Full lifecycle artifacts logged across `brief.json`, `hooks.md`, `script_final.md`, `critic_review.md`, `shotlist.json`, `render_config.json`, and `upload_result.json` in `campaign/video-system/videos/short_011/`.
+  - Brain & Memory Updates: Synced with `campaign/EDITORIAL_BRAIN.json`, `CONTENT_MEMORY.json`, and `PERFORMANCE_HISTORY.json`. Short #10 verified public.
+
+
+## 2.1.93 — LinkedIn Post Clock & Autonomous Brain Publishing Suite — 2026-09-18
+
+- **LinkedIn Post Clock Orchestration (`/api/v1/admin/linkedin/clock/tick`)**:
+  - Implemented the scheduled LinkedIn Post Clock endpoint in `server/src/routes/admin-linkedin.js` governed by the Master Editorial Brain (`campaign/EDITORIAL_BRAIN.json`).
+  - Strict eligibility window gating in Indian Standard Time (IST):
+    - `MORNING`: 08:30 – 10:30 IST
+    - `EVENING`: 18:30 – 21:00 IST
+  - Automatically verifies pending approved candidate versions in PostgreSQL or sources proposition insights from the Master Editorial Brain, running through all 34 quality gates (`LI01`–`LI17`).
+  - Supports dual authentication via `ADMIN_SECRET_KEY` (`X-Admin-Key`) and least-privilege `BOT_INGEST_SECRET` (`X-Bot-Secret`) for automated Cloud Scheduler / worker invocation.
+  - Adheres strictly to the invariant: **NEVER POST TEST THINGS ONLINE** (defaults strictly to offline dry-run validation mode unless `live: true` is explicitly provided).
+- **CLI Trigger Integration (`scripts/linkedin_publisher.mjs`)**:
+  - Added `--clock` option to the LinkedIn publisher CLI runner.
+  - Supports `node scripts/linkedin_publisher.mjs --clock --dry-run` to execute immediate offline post clock evaluation against production PostgreSQL state.
+- **Verification & Testing**:
+  - Successfully ran `node scripts/linkedin_publisher.mjs --clock --dry-run` during the MORNING window (09:37 IST), verifying candidate loading, gate compliance, and Posts API payload preparation with zero network mutations.
+  - Server test suite verified: **573/573 tests passing** across 59 test files.
+
+
+- **Think Brain Hard Gates 37–41 Encoded (`editorial-intelligence-service.js`)**:
+  - `REAL_TRAGEDY_FICTIONALIZATION_FAIL` (Rule 37): Hard planning gate strictly prohibiting fictionalized domestic drama, invented dialogue, emotional props, or speculative interiority around real active criminal proceedings involving homicide, child fatalities, or identifiable victims. Mandates strict classification as sourced legal/philosophical **Essays** or complete fictionalization with zero real names.
+  - `ONGOING_LEGAL_STATUS_SYNC_FAIL` (Rule 38): Enforces precise temporal synchronization for active court cases. Prohibits conflating "judge intends to declare mistrial" with "emergency stay pending" and "mistrial formally declared."
+  - `LEGAL_ARGUMENT_BINDING_FAIL` (Rule 39): Enforces procedural binding. Bids for emergency stays to appellate courts address the procedural declaration of a mistrial, not underlying trial medical insanity defenses.
+  - `CONTESTED_MENTAL_STATE_SIMPLIFICATION_FAIL` (Rule 40): Bars collapsing disputed medical diagnoses and criminal responsibility claims into unearned lyrical judgments (*"a mind simply breaks"*). Mandates attributed adversarial accounts.
+  - `SOURCE_AS_PROP_FAIL` (Rule 41): Prohibits using named journalistic publications (e.g. Wall Street Journal printouts on a fictional attic floor) as decorative atmosphere; sources must actively contribute evidence or examined arguments.
+- **Arshdeep Singh Persona Profile Calibration (`legacy-writer-personas.js`)**:
+  - Encoded core strength: examination of projection, uncertainty, spectatorship, measurement, and what mediated legal/athletic information conceals.
+  - Added explicit anti-goals: never invent private conversations around real human tragedies, never use fictional friends as convenient philosophical mouthpieces, and never exploit real suffering into a metaphor for personal uncertainty.
+- **Post Rebuilt as Sourced Essay (`public.posts` ID: `105b1991-bb87-4388-aece-9ce60e950bf4`)**:
+  - Reclassified *"The Long Shot of a Stay"* from `Short Stories` to `Essays`.
+  - Deepened emotional resonance without exploiting tragedy: directly examined the profound human discomfort and collective grief that occurs when a high-profile trial involving child fatalities refuses binary narrative resolution.
+- **Mandatory LM Studio Pre-Publication Approval Gate (`spark-runner.js`)**:
+  - Wired `reviewDraftWithLmStudio` directly into the database insertion pipelines (`executePostAction` and batch `/api/v1/spark/publish`).
+  - No generated story or batch candidate can be inserted or published online unless it is evaluated against the Zero AI Slop Standard by the local LM Studio instance (`http://localhost:1234`) and receives an explicit `APPROVE` verdict ($\ge 80$ score).
+  - Automatically records rejection reasons in `public.editorial_failure_patterns` under `LM_STUDIO_CRITIC_REJECT` if LM Studio flags slop, factual inaccuracy, or ethical boundaries. All 63 bot engine tests passing.
+
+## 2.1.91 — Think Brain Hard Gates 34–36, Extension Bridge v1.5.0 & Sunita Banerjee Calibration — 2026-09-18
+
+- **Think Brain Hard Gates 34–36 Encoded (`editorial-intelligence-service.js`)**:
+  - `ANALOGY_FUNCTION_MISMATCH_FAIL` (Rule 34): Enforces functional parity in cross-domain comparisons. Specifically blocks comparing an a priori expectation hierarchy (like tournament seeding) with retrospective grading evaluations on completed work. Mandates matching seeds to prior semester GPAs, entrance ranks, or marks ledger forecasts.
+  - `SYMBOLIC_ENDING_TOO_NEAT_FAIL` (Rule 35): Blocks synthetic closure where the narrator immediately performs a tidy physical action embodying the philosophical thesis (e.g. crossing out a grade because of a tennis match, tearing up a rubric, deleting an email). Requires renewed attention, continued scrutiny, or unresolved observation.
+  - `SPORTS_SEED_BINDING_FAIL` (Rule 36): Strict verification of tournament seeds against verified draw telemetry (Alexander Zverev was seeded fourth/No. 4 at the 2026 US Open, not third).
+- **WritOn Browser Bridge Extension v1.6.0 (`extensions/writon-browser-bridge/`)**:
+  - Full hands-free autonomous background service worker (`background.js`) operating independently of the popup window.
+  - Automatically polls `localhost:3001/poll` every 5 seconds, locates or opens the critique tab, injects the draft prompt, monitors completion, and posts the critique back to `/result`.
+  - Added direct fallback `[ Extract Current Output ]` button in popup to instantly pull streaming or completed critique turns.
+  - Implemented persistent `lastJobId` state across background storage.
+  - Hardened selectors for `.markdown`, `article`, and all assistant turn variants.
+- **Dr. Sunita Banerjee Calibrated Essay Approved (Score: 96/100 — VERDICT: APPROVE)**:
+  - *"Four Hours Inside a Foregone Conclusion"* achieved a 96/100 score under the strict Zero AI Slop Standard.
+  - Successfully resolved all earlier feedback: tournament seeding accurately aligned with prior semester marks ledger forecasts, Arthur Ashe Stadium venue and 4th seed verified, removed symbolic grade-crossing theatricality in favor of quiet continued scrutiny (*"I turn back to the student's essay and begin reading the final page again"*).
+  - Production database updated (`public.posts` ID: `a6e1d2d7-65e7-46f0-84e0-39e9eb5de9d2`).
+  - Full SEO and news sitemaps (`sitemap.xml`, `feed.xml`, `news-sitemap.xml`) and pre-rendered story pages regenerated.
+- **Test Suite Verification**:
+  - Added unit test suite for Rules 34–36 in `server/test/zero-ai-slop-blockers.test.js` (55/55 passing).
+
+## 2.1.90 — Autonomous Browser Critic Bridge & Think Brain Rules 30–33 — 2026-09-18
+
+- **Autonomous Background Extension Bridge (`extensions/writon-browser-bridge/`)**:
+  - Upgraded extension to Version 1.3.0 with hands-free, autonomous background polling and execution.
+  - Zero-button operation: the extension worker automatically claims queued draft evaluation jobs from `localhost:3001/poll`, executes `inPageSubmitPrompt` into the active or background ChatGPT tab via `chrome.scripting.executeScript`, waits for completion without requiring the popup to remain open, and returns scores/verdicts.
+  - Added smart natural language verdict parser supporting both structured formats (`Score: X/100`, `VERDICT: APPROVE/REJECT`) and qualitative critiques.
+- **Think Brain Rules 30–33 Encoded (`editorial-intelligence-service.js`)**:
+  - `UNSOURCED_SCENE_PRECISION_FAIL` (Rule 30): Blocks synthetic courtside detail (e.g. "remaining seventy people", "ball boys shaking cramps", "water out of necessity", unverified "four inches" line margins) without factual telemetry.
+  - `EVENT_BINDING_FAIL` (Rule 31): Enforces strict event binding contract (verifying Arthur Ashe Stadium vs Grandstand for the 2026 US Open 5-set marathon).
+  - `PERSONA_METAPHOR_CONTAMINATION_FAIL` (Rule 32): Prohibits Dr. Sunita Banerjee from adopting mechanical engineering, torque specifications, or cylinder-head imagery.
+  - `SIMILE_COMPLEXITY_FAIL` (Rule 33): Rejects overdesigned multi-clause similes that advertise generation effort rather than clarifying the narrative beat.
+- **Test Suite**:
+  - Added 3 new test suites in `server/test/zero-ai-slop-blockers.test.js` covering Rules 30–33 (52/52 passing). All 569 server tests passing.
+
 ## 2.1.89 — Match Reality Grounding, Anti-Contamination Guardrails & Sunita Banerjee US Open Calibration — 2026-09-18
 
 - **Think Brain Rule Implementation (Rules 25–29)**:

@@ -252,7 +252,7 @@ export async function getRecentFingerprints(pool, { authorId, limit = 15, global
 export function buildPremiseCard(persona, topicHint, category, researchDossier = null) {
   // Purge internal planning description or meta-prompt language from topicHint
   let cleanTopicHint = topicHint || null;
-  if (cleanTopicHint && /\b(?:an\s+exploration\s+of\s+failure,\s*patience|within\s+the\s+realm\s+of\s+culture|content\s+objective|planning\s+brief)\b/i.test(cleanTopicHint)) {
+  if (cleanTopicHint && /\b(?:an\s+exploration\s+of\s+failure,\s*patience|within\s+the\s+realm\s+of\s+culture|content\s+objective|planning\s+brief|a\s+counterintuitive\s+perspective\s+on|standard\s+workflows\s+and\s+craftsmanship)\b/i.test(cleanTopicHint)) {
     cleanTopicHint = null;
   }
 

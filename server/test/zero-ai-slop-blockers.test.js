@@ -836,6 +836,157 @@ NASCAR's jar makes a different sound altogether: the electric hum of a brand tha
     });
   });
 
+  describe('30. UNSOURCED_SCENE_PRECISION_FAIL', () => {
+    it('catches manufactured courtside eyewitness details without telemetry or source', () => {
+      const content = 'At 2:15 a.m., when the ball boys on Grandstand were shaking the cramps out of their calves and the remaining seventy people in the lower bowl had stopped drinking beer and started drinking water out of necessity, Quentin Halys missed a backhand down the line by four inches.';
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Late Night Resistance',
+        content,
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'UNSOURCED_SCENE_PRECISION_FAIL')).toBe(true);
+    });
+  });
+
+  describe('31. EVENT_BINDING_FAIL', () => {
+    it('catches Grandstand vs Arthur Ashe Stadium venue mismatch for Zverev vs Halys', () => {
+      const content = 'The match between Zverev and Halys was played on Grandstand under the lights.';
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Four Hours',
+        content,
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'EVENT_BINDING_FAIL')).toBe(true);
+    });
+  });
+
+  describe('32. PERSONA_METAPHOR_CONTAMINATION_FAIL & 33. SIMILE_COMPLEXITY_FAIL', () => {
+    it('flags cylinder head and mechanical torque metaphors when used by Sunita Banerjee', () => {
+      const content = 'Alexander Zverev walked toward the net with the heavy, unhurried gait of an engineer who has spent forty-five minutes re-torquing a cylinder head that should never have vibrated loose in the first place.';
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Four Hours',
+        content,
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'PERSONA_METAPHOR_CONTAMINATION_FAIL')).toBe(true);
+      expect(res.violations.some(v => v.rule === 'SIMILE_COMPLEXITY_FAIL')).toBe(true);
+    });
+  });
+
+  describe('34. ANALOGY_FUNCTION_MISMATCH_FAIL, 35. SYMBOLIC_ENDING_TOO_NEAT_FAIL, 36. SPORTS_SEED_BINDING_FAIL', () => {
+    it('flags mismatched analogy comparing seed to a provisional grade on a paper', () => {
+      const content = 'In the margin of an essay, I penciled a provisional grade: B-plus. It was an administrative prediction. A tournament seeding tells you where an athlete finishes.';
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Four Hours',
+        content,
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'ANALOGY_FUNCTION_MISMATCH_FAIL')).toBe(true);
+    });
+
+    it('flags overly neat symbolic endings where the narrator draws a line through a grade', () => {
+      const content = 'I pick up my fountain pen, unthread the cap, and draw a single blue line through the provisional grade on the student paper.';
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Four Hours',
+        content,
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'SYMBOLIC_ENDING_TOO_NEAT_FAIL')).toBe(true);
+    });
+
+    it('flags sports fact binding error when Zverev is claimed to be seeded third', () => {
+      const content = 'Alexander Zverev, seeded third, defeated Quentin Halys in five sets.';
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Four Hours',
+        content,
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' },
+        now: mockNow
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'SPORTS_SEED_BINDING_FAIL')).toBe(true);
+    });
+  });
+
+  describe('37–41. Legal Sensitivity & Real Tragedy Guardrails (Lindsay Clancy Case)', () => {
+    const rawClancyDraft = `The radiator clanked twice.
+Preet did not look up from his blue-tinted screen.
+On the pine desk, a half-peeled orange was turning dry at the edges. It smelled of cheap citrus and damp wood.
+"Mistrial," Preet said. His voice was flat.
+I poured black tea into two mismatched ceramic mugs. We were in a drafty attic bedroom, watching the trial of Lindsay Clancy.
+"The judge just declared it," Preet added. "Reddington is going for an emergency stay."
+Preet reached for a printout on the floor. It was an opinion piece from the Wall Street Journal. The headline stared up at us: Lindsay Clancy Isn't an Everywoman.
+"Nobody wants to look at the quiet, empty space where a mind simply breaks," Preet said.
+"Reddington will argue the medical state," I said.`;
+
+    it('flags all 5 blockers (Rules 37–41) on the fictionalized Lindsay Clancy draft', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Long Shot of a Stay',
+        content: rawClancyDraft,
+        category: 'Short Stories',
+        persona: { penName: 'arsh_zee', fullName: 'Arshdeep Singh' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('REAL_TRAGEDY_FICTIONALIZATION_FAIL');
+      expect(ruleNames).toContain('ONGOING_LEGAL_STATUS_SYNC_FAIL');
+      expect(ruleNames).toContain('LEGAL_ARGUMENT_BINDING_FAIL');
+      expect(ruleNames).toContain('CONTESTED_MENTAL_STATE_SIMPLIFICATION_FAIL');
+      expect(ruleNames).toContain('SOURCE_AS_PROP_FAIL');
+    });
+  });
+
+  describe('42–46. Sensory Drift, Local Precision & Poetry Architecture (Southern Avenue Draft)', () => {
+    const rawSouthernAvenueDraft = `### Morning on Southern Avenue
+
+Steam rises from the steel tumbler on the balcony ledge, smelling of crushed cardamom and boiled milk. Below, the fresh blue-and-white guardrails along the avenue glisten under a sudden three-o'clock cloudburst. A salt-stained party banner flaps against an electrical pole while the route 205 bus sprays brown water onto the kerb.
+
+The boy covers the brass kettle.
+The color of salt-pans, or salt-air.
+It hits the salt-crusted tin roof of the flower shop.
+In the window of the s-12 minibus, a clerk rests his temple against the pane.
+The rain smells of soot and wet mortar.
+An old city taking its time.
+
+### Notes from the Balcony
+The municipal painting drive began four years ago across South Kolkata.`;
+
+    it('flags all 5 blockers (Rules 42–46) on the flawed Southern Avenue poem', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Morning on Southern Avenue',
+        content: rawSouthernAvenueDraft,
+        category: 'Poetry',
+        persona: { penName: 'ananya_deshmukh', fullName: 'Ananya Deshmukh' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('SCENE_TEMPORAL_CONSISTENCY_FAIL');
+      expect(ruleNames).toContain('LOCAL_GEOGRAPHY_PRECISION_FAIL');
+      expect(ruleNames).toContain('ENVIRONMENTAL_MOTIF_DRIFT_FAIL');
+      expect(ruleNames).toContain('POETRY_OVEREXPLANATION_FAIL');
+      expect(ruleNames).toContain('AUTHENTICITY_TOKEN_COOLDOWN_FAIL');
+    });
+  });
+
   describe('Full Calibrated Rewrite Verification: "When Streaming Memory Enters the Cinema Hall"', () => {
     it('passes cleanly with zero violations on the rewritten calibrated essay', () => {
       const calibratedContent = `When the creators of *Mirzapur* announced a theatrical film set between episodes six and seven of the first season, they described the transition as a deliberate wager on community viewing. Over three seasons, the fiction had lived on personal screens—propped on pillows, carried through commutes on local trains, paused at will, or replayed alone in fragments. Moving that world onto a fifty-foot cinema screen was framed not merely as an expansion, but as a test of whether an audience that built an intimate relationship with a streaming series would gather in the dark to watch it together.
@@ -857,6 +1008,171 @@ The transition from phone screen to cinema hall proves that streaming loyalty ca
         content: calibratedContent,
         category: 'Culture',
         persona: { penName: 'meera_varma', fullName: 'Meera Varma' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(true);
+      expect(res.violations).toHaveLength(0);
+    });
+  });
+  describe('Rules 47–52: Disaster Fiction Boundary, Tragedy Stacking, Causal Equivalence & Ending Restraint', () => {
+    const rawWetConcreteDraft = `### The River’s Ledger
+
+The water line on the kitchen wall has dried into a jagged, salt-crusted map. It stops exactly at the height of my father’s shoulder. He stands there, staring at the stain, holding a plastic cup of lukewarm tea. The condensation drips onto his knuckles.
+
+Down in the valley, the news reports are still cycling through the same footage. The BBC says the hydropower plants, those massive concrete lungs we built to breathe wealth into the hills, are choked with silt and debris. They bet everything on the current, and the current decided to stop playing along. My father doesn't watch the TV. He watches the ceiling fan, waiting for it to wobble into a rhythm that makes sense.
+
+Outside, the smell of damp earth is heavy. I walk out to the porch, my slippers caked in dried gray mud that flakes off like dead skin. The road is gone. Not just washed away, but erased, replaced by a slurry of gravel and uprooted pine. A neighbor is trying to salvage a rusted bicycle frame from the muck. He pulls, the metal groans, and he stops. He just leaves it there, halfway out of the ground.
+
+### The Logic of Loss
+
+We spent years talking about the transition. We traded the quiet, slow harvest for the fast, humming voltage. My father believed it. He invested his pension in the local co-op, convinced that the turbines would spin long after he stopped. Now, he scrapes the mud off his boots with a rusted butter knife.
+
+I think about the headlines coming out of the West, the reports from the news about a wedding in Iran that turned into a crater. It feels distant, yet the geometry of the tragedy is identical. A sudden, violent redistribution of space. One moment, a celebration; the next, an empty chair. One moment, a power grid; the next, a graveyard of submerged steel.
+
+There is no grand lesson in the ruin. The silt gets into the gears, the locks, and the small, intricate spaces of our lives. It makes the hinges creak. It forces us to acknowledge that we built on a theory that assumed the earth would stay still.
+
+### The Unfinished Afternoon
+
+I walk back inside. The air in the house is cool, smelling of wet timber and old paper. My father has finally sat down. He isn't looking at the wall anymore. He is looking at his palms, rubbing the dirt from his creases. He looks small against the backdrop of the darkened kitchen.
+
+"The rain has stopped," he says. His voice is flat, devoid of the frantic energy that defined the last decade of our lives.
+
+I don't answer. I pick up the teapot from the stove. It is cold. I touch the spout, feeling the rough texture of the ceramic, the small chip near the handle where I dropped it three years ago. It’s still there. The damage is permanent, but the object still functions.
+
+I set the pot back down. The ceramic makes a dull, final thud against the granite. We sit in the quiet, listening to the drip of water from the eaves, rhythmic and slow.`;
+
+    it('flags Rules 47–52 on the flawed "The Weight of Wet Concrete" draft', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Weight of Wet Concrete',
+        content: rawWetConcreteDraft,
+        category: 'Short Stories',
+        persona: { penName: 'atharv_bhav', fullName: 'Atharva Bhavsar' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('REAL_DISASTER_FICTION_BOUNDARY_FAIL');
+      expect(ruleNames).toContain('TRAGEDY_STACKING_FAIL');
+      expect(ruleNames).toContain('CAUSAL_EQUIVALENCE_FAIL');
+      expect(ruleNames).toContain('SYMBOL_EXPLAINS_ITSELF_FAIL');
+      expect(ruleNames).toContain('ENDING_MOTIF_COOLDOWN');
+      expect(ruleNames).toContain('PREMISE_TITLE_INTEGRITY_FAIL');
+    });
+
+    it('flags Rules 53–56 on the Upper Trishuli mismatched draft', () => {
+      const mismatchedDraft = `### The Silt Line
+
+The waterline on the kitchen wall has dried into a gray mark that stops level with my father's shoulder. In the corner, where the masonry meets the doorframe of our house above Rasuwa, a skim of fine mountain silt has begun to peel from the plaster like dry paper.
+
+Inside is his share allotment certificate from the Upper Trishuli run-of-the-river hydropower project allotted under the local resident quota five years ago.
+
+Down along the riverbed, the water left behind six feet of pulverized schist, boulders, and gravel that buried the road to the powerhouse. It came as a dense slurry moving fast enough to drown the turbine floor under two million tonnes of sediment.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Shares Beneath the Silt',
+        content: mismatchedDraft,
+        category: 'Short Stories',
+        persona: { penName: 'atharv_bhav', fullName: 'Atharva Bhavsar' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('ENTITY_FACT_BINDING_FAIL');
+      expect(ruleNames).toContain('STATISTIC_SCOPE_DRIFT_FAIL');
+      expect(ruleNames).toContain('PLAUSIBLE_PRECISION_FAIL');
+      expect(ruleNames).toContain('GEOGRAPHIC_SETTLEMENT_PRECISION_FAIL');
+    });
+
+    it('passes cleanly with zero violations on the calibrated story "The Shares Beneath the Silt" (Rasuwagadhi)', () => {
+      const calibratedNepalStory = `### The Silt Line
+
+The waterline on the kitchen wall has dried into a gray mark that stops level with my father's shoulder. In the corner, where the masonry meets the doorframe of our house above Syabrubesi, a skim of fine mountain silt has begun to peel from the plaster like dry paper.
+
+My father does not touch the wall. He sits on a low wooden stool, holding a blue plastic fertilizer sack across his knees. Inside are his printed Rasuwagadhi Hydropower allotment papers, bought under the project-affected residents' quota when shares were offered across the valley. The paper inside the sack is damp at the edges, but the stamp from the collection counter in Dhunche is still legible through the polyethylene.
+
+"I still have the allotment number," he says. He speaks without looking up from the bag. "They told us the shares would be for our children."
+
+Down along the riverbed, the water is no longer surging, but the banks and access road are buried beneath grey silt, boulders, and shattered timber. On August 26, when the glacial collapse hit the upper catchment across the border, the flood did not arrive as clean water. It came as a dense slurry moving fast enough to wedge trees into the intake gates and drive mud deep into the powerhouse. The plant had been built around predictable seasonal flow from the monsoon; it was never designed to swallow a collapsing mountain.
+
+### The Passbook in the Kitchen
+
+Outside, in the lane below our terrace, our neighbor is trying to haul a hand-tiller out of the ditch. The metal makes a dull clink against river stone, moves an inch, and jams. He leaves the towline slack and sits down on the mud bank to catch his breath.
+
+My father reaches down to the floor, picks up a dull kitchen knife, and begins prying caked silt from the treads of his work boots. He works deliberately, following the deep rubber grooves around the heel.
+
+"The cooperative office in the bazaar is submerged up to the lintel," I tell him. "They won't be certifying share transfers or dividend ledgers this quarter."
+
+"The plant is still there," he answers.
+
+He simply continues scraping the heel of his left boot. A dried crust of gray silt the size of a coin breaks loose and drops with a soft click against the cement floor.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Shares Beneath the Silt',
+        content: calibratedNepalStory,
+        category: 'Short Stories',
+        persona: { penName: 'atharv_bhav', fullName: 'Atharva Bhavsar' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(true);
+      expect(res.violations).toHaveLength(0);
+    });
+  });
+
+  describe('Rules 57–61: Planner Placeholder Leak, Source-Premise Compatibility, and Empty Atmosphere', () => {
+    const rawMeloniFlawedDraft = `### The Siding
+
+The old railway siding sat under the station clock stuck at twelve minutes past six, casting a long copper shadow across the weathered benches. Word had already spread through the tea stalls about the events surrounding A counterintuitive perspective on standard workflows and craftsmanship in short stories.
+
+The whistle of the approaching goods train echoed through the valley, carrying with it the cold scent of the river and the quiet promise of an unwritten journey.
+
+"Some things change overnight," the station master said, leaning against the wooden counter. "And some things take twenty years just to begin."`;
+
+    it('flags Rules 57–61 on the flawed placeholder-leaked Meloni railway draft', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'A counterintuitive perspective on standard workflows and craftsmanship in short stories',
+        content: rawMeloniFlawedDraft,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' },
+        researchDossier: { topic: 'Giorgia Meloni becomes longest-serving Italian PM in postwar era' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('PLANNER_PLACEHOLDER_LEAK_FAIL');
+      expect(ruleNames).toContain('SOURCE_PREMISE_COMPATIBILITY_FAIL');
+      expect(ruleNames).toContain('SOURCE_DEPENDENCY_FAIL');
+      expect(ruleNames).toContain('APHORISTIC_DIALOGUE_FAIL');
+      expect(ruleNames).toContain('EMPTY_ATMOSPHERE_FAIL');
+    });
+
+    it('passes cleanly on Devansh Roy calibrated transmission essay "Three Headlines for the Same 1,400 Days"', () => {
+      const calibratedDevanshEssay = `### The Wire Copy and the State Release
+
+On September 4, when the Italian prime minister surpassed Silvio Berlusconi's 2001–2006 record to become the longest-serving government leader in Italy's postwar republic, the milestone crossed wire services under three distinct editorial geometries.
+
+The first dispatch came from Rome's official government channels: a commemorative graphic claiming political stability as an accomplished institutional fact. In that framing, longevity itself functioned as verification. Surviving roughly 1,400 consecutive days in an office that had changed hands nearly seventy times since 1946 was presented not merely as an administrative timeline, but as proof that electoral continuity had cured parliamentary fragmentation.
+
+Two hours later, an external diplomatic congratulation was released from New Delhi: Narendra Modi characterized the record tenure as a reflection of enduring public trust. Here, transmission shifted the milestone from domestic parliamentary arithmetic into bilateral rapport, emphasizing executive durability for international partners.
+
+### The Contextual Wire and the Unresolved Balance
+
+The third transmission, filed by Reuters from Rome, opened by recording the mathematical fact of the calendar before juxtaposing it against public service realities. While the prime minister's coalition cited stability to reassure bond markets, domestic trade unions and opposition spokespersons pointed out that calendar duration had left hospital waitlists, regional train delays, and low wage growth unresolved. Longevity had preserved the cabinet room, but it had not altered the mechanics of municipal infrastructure.
+
+When political reporting covers tenure records, it frequently conflates duration with institutional transformation. The documentary record shows a different friction: an administration can master the parliamentary calculus required to prevent a no-confidence vote while the underlying public administration moves at its own stubborn, unhurried pace.
+
+Watching wire copy move across editorial desks makes that divergence legible. The official release celebrates the count of days; the external partner praises political authority; the regional ledger simply logs what the trains carried before the record was broken and what they carry after.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Three Headlines for the Same 1,400 Days',
+        content: calibratedDevanshEssay,
+        category: 'Essays',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' },
+        researchDossier: { topic: 'Giorgia Meloni longest-serving postwar Italian PM' },
         now: mockNow
       });
 

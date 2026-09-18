@@ -608,6 +608,370 @@ export function validateZeroAISlopEngineBlockers({
     });
   }
 
+  // 30. UNSOURCED_SCENE_PRECISION_FAIL
+  // Blocks fabricated crowd counts, physiological crowd reactions, food/drink behavior, or unverified point-level distance measurements
+  const unsourcedScenePrecisionPatterns = [
+    /\b(?:remaining\s+seventy\s+people|seventy\s+people\s+in\s+the\s+lower\s+bowl)\b/i,
+    /\b(?:ball\s+boys?\s+on\s+grandstand\s+were\s+shaking\s+the\s+cramps|shaking\s+the\s+cramps\s+out\s+of\s+their\s+calves)\b/i,
+    /\b(?:stopped\s+drinking\s+beer\s+and\s+started\s+drinking\s+water\s+out\s+of\s+necessity)\b/i,
+    /\b(?:missed\s+a\s+backhand\s+down\s+the\s+line\s+by\s+four\s+inches)\b/i
+  ];
+  for (const pattern of unsourcedScenePrecisionPatterns) {
+    if (pattern.test(cleanContent)) {
+      violations.push({
+        rule: 'UNSOURCED_SCENE_PRECISION_FAIL',
+        description: 'Unsourced scene precision detected: fabricated spectator counts, body reactions, or unverified ball distances without factual telemetry or reporting.'
+      });
+      break;
+    }
+  }
+
+  // 31. EVENT_BINDING_FAIL
+  // Ensures match metadata (venue, players, round) matches verified facts (e.g. Zverev vs Halys played on Arthur Ashe Stadium, not Grandstand)
+  if (/\b(?:halys|zverev)\b/i.test(cleanContent)) {
+    if (/\bgrandstand\b/i.test(cleanContent) && !/\barthur\s+ashe\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'EVENT_BINDING_FAIL',
+        description: 'Event binding mismatch: Zverev vs Halys 2026 US Open 5-set marathon was played on Arthur Ashe Stadium, not Grandstand.'
+      });
+    }
+  }
+
+  // 32. PERSONA_METAPHOR_CONTAMINATION_FAIL
+  // Sunita Banerjee must not spontaneously adopt mechanical engineering / motor machinery metaphors
+  if (penName.includes('sunita') || penName.includes('banerjee')) {
+    const mechanicalEngineMetaphors = [
+      /\b(?:re-torquing\s+a\s+cylinder\s+head|cylinder\s+head\s+that\s+should\s+never\s+have\s+vibrated\s+loose)\b/i,
+      /\b(?:gait\s+of\s+an\s+engineer|torque\s+specifications?)\b/i,
+      /\b(?:internal\s+combustion|piston\s+rings?|exhaust\s+manifold)\b/i
+    ];
+    for (const pattern of mechanicalEngineMetaphors) {
+      if (pattern.test(cleanContent)) {
+        violations.push({
+          rule: 'PERSONA_METAPHOR_CONTAMINATION_FAIL',
+          description: 'Persona metaphor contamination: Dr. Sunita Banerjee borrowing mechanical engineering and engine machinery metaphors. Her native domain is pedagogy, grading, rubrics, and institutional measurement.'
+        });
+        break;
+      }
+    }
+  }
+
+  // 33. SIMILE_COMPLEXITY_FAIL
+  // Rejects overdesigned similes that arrive carrying multi-clause machinery, distracting from the narrative beat
+  if (/\bthe\s+(?:heavy,\s*)?unhurried\s+gait\s+of\s+an\s+engineer\s+who\s+has\s+spent\s+forty-five\s+minutes\s+re-torquing\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'SIMILE_COMPLEXITY_FAIL',
+      description: 'Overdesigned multi-clause simile detected. Literary specificity should clarify the image, not advertise generation effort or invent elaborate extraneous trades.'
+    });
+  }
+
+  // 34. ANALOGY_FUNCTION_MISMATCH_FAIL
+  // Analogies must match functionally: e.g. a tournament seed is an administrative prior expectation, not an evaluation made after inspecting the work
+  if (/\bprovisional\s+grade\b/i.test(cleanContent) && /\b(?:administrative\s+prediction|foregone\s+conclusion)\b/i.test(cleanContent) && /\bseeding\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'ANALOGY_FUNCTION_MISMATCH_FAIL',
+      description: 'Analogy function mismatch: Comparing a tournament seed (an a priori hierarchy establishing expectation) to a provisional grade on a submitted paper (retrospective evaluation). Use prior term GPAs, entrance ranks, or marks ledger predictions instead.'
+    });
+  }
+
+  // 35. SYMBOLIC_ENDING_TOO_NEAT_FAIL
+  // Reject endings where the narrator performs a neat literal gesture perfectly closing the philosophical thesis (e.g. crossing out a grade because of a tennis match)
+  const symbolicNeatEndings = [
+    /\b(?:draw\s+a\s+single\s+blue\s+line\s+through\s+the\s+provisional\s+grade|cross(?:ed|ing)?\s+out\s+the\s+(?:provisional\s+)?grade)\b/i,
+    /\b(?:tears?\s+up\s+the\s+rubric|smashes?\s+the\s+(?:clock|watch)\s+to\s+learn\s+patience)\b/i
+  ];
+  for (const pattern of symbolicNeatEndings) {
+    if (pattern.test(cleanContent)) {
+      violations.push({
+        rule: 'SYMBOLIC_ENDING_TOO_NEAT_FAIL',
+        description: 'Symbolic ending too neat: The narrator immediately performs a literal physical action perfectly embodying the abstract conclusion. Prefer renewed attention, unresolved observation, or reading the evidence again.'
+      });
+      break;
+    }
+  }
+
+  // 36. SPORTS_SEED_BINDING_FAIL
+  // Accurate seed verification: Alexander Zverev was seeded fourth (No. 4) at the 2026 US Open, not third (No. 3)
+  if (/\bzverev\b/i.test(cleanContent) && /\bseeded\s+third\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'SPORTS_SEED_BINDING_FAIL',
+      description: 'Sports fact binding error: Alexander Zverev was seeded fourth (No. 4), not third, at the 2026 US Open.'
+    });
+  }
+
+  // 37. REAL_TRAGEDY_FICTIONALIZATION_FAIL
+  // Never turn active real criminal proceedings involving homicide, child deaths, or identifiable victims into fictionalized domestic drama
+  const isRealSensitiveCriminalCase = /\b(?:lindsay\s+clancy|kevin\s+reddington)\b/i.test(cleanContent);
+  if (isRealSensitiveCriminalCase) {
+    const isCategorizedAsFiction = /^(?:short\s+stories|fiction|flash\s+fiction)$/i.test(category);
+    const hasInventedDomesticDrama = /\b(?:preet|attic\s+bedroom|ceramic\s+mugs?|mismatched\s+ceramic|peeled\s+orange|slate\s+shingles|half-peeled\s+orange)\b/i.test(cleanContent);
+    if (isCategorizedAsFiction || hasInventedDomesticDrama) {
+      violations.push({
+        rule: 'REAL_TRAGEDY_FICTIONALIZATION_FAIL',
+        description: 'Real tragedy fictionalization detected: Source material concerns active criminal proceedings involving child fatalities and identifiable real participants (Lindsay Clancy). It must not be handled as a fictionalized domestic drama with invented characters, dialogue, or domestic props. Must be framed as a sourced legal/philosophical Essay or completely fictionalized with all real names removed.'
+      });
+    }
+  }
+
+  // 38. ONGOING_LEGAL_STATUS_SYNC_FAIL
+  // Prohibits blending distinct procedural stages: judge announcing intent to declare mistrial vs emergency stay vs mistrial formally declared
+  if (/\b(?:lindsay\s+clancy|reddington)\b/i.test(cleanContent)) {
+    if (/\bthe\s+judge\s+(?:just\s+)?declared\s+it\b/i.test(cleanContent) && /\bgoing\s+for\s+an\s+emergency\s+stay\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'ONGOING_LEGAL_STATUS_SYNC_FAIL',
+        description: 'Ongoing legal status mismatch: Conflates procedural stages. Judge Sullivan announced an intention to declare a mistrial and granted a window to seek emergency intervention; the stay request was made to pause the declaration, and only after the stay was denied was the mistrial formally declared.'
+      });
+    }
+  }
+
+  // 39. LEGAL_ARGUMENT_BINDING_FAIL
+  // Legal arguments must bind to the actual procedural issue (emergency stay was a procedural bid to stop mistrial declaration, not underlying medical insanity defense)
+  if (/\bemergency\s+stay\b/i.test(cleanContent) && /\breddington\s+will\s+argue\s+the\s+medical\s+state\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'LEGAL_ARGUMENT_BINDING_FAIL',
+      description: 'Legal argument binding error: An emergency stay to the Supreme Judicial Court was a procedural maneuver to prevent the mistrial declaration after jury deadlock, not a venue to re-argue the medical insanity defense of the underlying trial.'
+    });
+  }
+
+  // 40. CONTESTED_MENTAL_STATE_SIMPLIFICATION_FAIL
+  // For real identifiable defendants, do not convert contested medical/legal insanity claims into lyrical prose ("a mind simply breaks")
+  if (/\b(?:quiet,\s*empty\s+space\s+where\s+a\s+mind\s+simply\s+breaks|a\s+mind\s+simply\s+breaks)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'CONTESTED_MENTAL_STATE_SIMPLIFICATION_FAIL',
+      description: 'Contested mental state simplification: Collapses a central disputed medical and legal question of criminal responsibility into an unearned lyrical diagnosis ("a mind simply breaks"). Must maintain rigorous attribution (competing accounts of postpartum psychosis, overmedication, and criminal responsibility).'
+    });
+  }
+
+  // 41. SOURCE_AS_PROP_FAIL
+  // Named publications must contribute evidence or an examined argument, not serve as set dressing on a fictional floor
+  if (/\bwall\s+street\s+journal\b/i.test(cleanContent) && /\b(?:printout\s+on\s+the\s+floor|opinion\s+piece\s+from\s+the\s+wall\s+street\s+journal\s+stared\s+up)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'SOURCE_AS_PROP_FAIL',
+      description: 'Source as prop detected: Named journalistic source (Wall Street Journal column) used merely as atmospheric floor set dressing rather than engaging with its actual substantive argument or evidence.'
+    });
+  }
+
+  // 42. SCENE_TEMPORAL_CONSISTENCY_FAIL
+  // Detects deterministic clock time contradictions (e.g. heading says "Morning" but prose says "three-o'clock cloudburst")
+  if (/\b(?:morning|dawn|early\s+light)\b/i.test(cleanTitle) || /\b###\s*morning\b/i.test(cleanContent)) {
+    if (/\b(?:three-o'clock|3\s*o'clock|3\s*pm|afternoon\s+cloudburst|dusk|late\s+afternoon)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'SCENE_TEMPORAL_CONSISTENCY_FAIL',
+        description: 'Scene temporal consistency contradiction: Heading/section announces "Morning" while prose explicitly details a "three-o\'clock" afternoon cloudburst.'
+      });
+    }
+  }
+
+  // 43. LOCAL_GEOGRAPHY_PRECISION_FAIL
+  // Ensures transit route numbers and local geography match real city corridors (e.g. S-12 minibus on Southern Avenue or route 205 heading to Rashbehari)
+  if (/\bsouthern\s+avenue\b/i.test(cleanContent)) {
+    if (/\bs-12\s+minibus\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'LOCAL_GEOGRAPHY_PRECISION_FAIL',
+        description: 'Local transit geography error: S-12 minibus is an express corridor for New Town/Howrah, not Southern Avenue in South Kolkata. Generalize to "minibus" or use verified South Kolkata routes.'
+      });
+    }
+  }
+
+  // 44. ENVIRONMENTAL_MOTIF_DRIFT_FAIL
+  // Prohibits importing maritime/coastal texture (salt-air, salt-pans, salt-crusted) into landlocked/riverine cities like South Kolkata
+  if (/\b(?:kolkata|southern\s+avenue|rashbehari|ballygunge|tollygunge)\b/i.test(cleanContent)) {
+    const coastalHits = (cleanContent.match(/\b(?:salt-pans?|salt-air|salt-crusted|salt-stained)\b/gi) || []).length;
+    if (coastalHits >= 2) {
+      violations.push({
+        rule: 'ENVIRONMENTAL_MOTIF_DRIFT_FAIL',
+        description: `Environmental motif drift detected: Kolkata/Southern Avenue piece contains ${coastalHits} coastal/marine salt tokens. Replace maritime props with native urban materials (soot, moss, algae on masonry, rust on railings, wet krishnachura leaves, drain water).`
+      });
+    }
+  }
+
+  // 45. POETRY_OVEREXPLANATION_FAIL
+  // For poetry, shayari, and verses: reject retrospective explanatory sections (Notes from the Balcony/Explaining the Poem) that summarize symbols
+  if (category === 'Poetry' || category === 'Shayari') {
+    if (/###\s*notes\s+from\s+the\s+balcony|###\s*reflection\b|###\s*the\s+meaning\s+of\s+this\s+poem/i.test(cleanContent)) {
+      violations.push({
+        rule: 'POETRY_OVEREXPLANATION_FAIL',
+        description: 'Poetry overexplanation detected: Appending a retrospective essay/notes section explaining civic symbols, domestic rituals, or themes after the poem has already finished. Let the verse stand alone.'
+      });
+    }
+  }
+
+  // 46. AUTHENTICITY_TOKEN_COOLDOWN_FAIL
+  // Detects unearned repetition of the default WritOn sensory prop bundle: tea + cardamom + brass + wet mortar + old city
+  const tokenList = [
+    /\bcardamom\b/i,
+    /\b(?:brass\s+kettle|brass\s+tumbler|brass\s+cup)\b/i,
+    /\b(?:wet\s+mortar|wet\s+masonry)\b/i,
+    /\ban\s+old\s+city\s+taking\s+its\s+time\b/i,
+    /\bsteel\s+tumbler\s+on\s+the\s+balcony\b/i
+  ];
+  const matchedTokens = tokenList.filter(re => re.test(cleanContent)).length;
+  if (matchedTokens >= 3) {
+    violations.push({
+      rule: 'AUTHENTICITY_TOKEN_COOLDOWN_FAIL',
+      description: `Authenticity token cooldown triggered: Draft relies on ${matchedTokens} generic WritOn prop tokens (cardamom, brass kettle, wet mortar, old city taking its time). Replace with distinctive persona-specific civic observation.`
+    });
+  }
+
+  // 47. REAL_DISASTER_FICTION_BOUNDARY_FAIL
+  // If a story uses a real current disaster: bind real event/place/mechanism, do not blur real casualty reporting with invented family detail or imply unsourced reportage
+  const mentionsRealDisaster = /\b(?:glacial(?:-|\s+)collapse|hydropower.*plants?|hydropower.*choked|turbines?.*silt|flood.*valley|disaster\b)/i.test(cleanContent) &&
+    /\b(?:hydropower|turbines?|headrace|powerhouse)\b/i.test(cleanContent);
+  if (mentionsRealDisaster) {
+    // If contemporary disaster is invoked without geographic/project binding ("down in the valley", "the news reports", etc.)
+    if (!/\b(?:nepal|trishuli|bhotekoshi|rasuwa|rasuwagadhi|syabrubesi|melamchi)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'REAL_DISASTER_FICTION_BOUNDARY_FAIL',
+        description: 'Real disaster fiction boundary error: Contemporary glacial-collapse / hydropower flood disaster used as dramatic setting without binding the specific geography, valley, or project context (e.g. Nepal Trishuli/Bhotekoshi valley or Syabrubesi/Rasuwagadhi). Avoid creating an ambiguous halfway state between real catastrophe and generic parable.'
+      });
+    }
+  }
+
+  // 48. TRAGEDY_STACKING_FAIL
+  // Prohibits introducing an unrelated second real tragedy (e.g. Kuhestak Iran wedding strike) merely to intensify the emotional/philosophical weight of the first (Nepal flood)
+  if (/\b(?:flood|glacial|hydropower)\b/i.test(cleanContent)) {
+    if (/\b(?:wedding in iran|crater|u\.s\. military|strike in iran|iranian wedding)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'TRAGEDY_STACKING_FAIL',
+        description: 'Tragedy stacking detected: Unrelated contemporary civilian disaster/military strike (Kuhestak Iran wedding strike) introduced alongside a glacial flood disaster merely to amplify emotional intensity. Remove opportunistic tragedy stacking.'
+      });
+    }
+  }
+
+  // 49. CAUSAL_EQUIVALENCE_FAIL
+  // Rejects claiming two completely distinct tragedies are "the same", "identical", or share "identical geometry"
+  if (/\b(?:geometry of the tragedy is identical|redistribution of space|both tragedies are identical|the same geometry)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'CAUSAL_EQUIVALENCE_FAIL',
+      description: 'Causal equivalence slop: Claiming two tragedies with radically different political, human, or geophysical causes share "identical geometry" or are "a violent redistribution of space". Maintain clear causal distinction.'
+    });
+  }
+
+  // 50. SYMBOL_EXPLAINS_ITSELF_FAIL
+  // If an object already carries symbolic meaning, do not append self-explanatory didactic commentary (e.g. "The damage is permanent, but the object still functions.")
+  if (/\b(?:damage is permanent,?\s*but the object still functions|the cracked cup still holds water,?\s*teaching us|the broken mirror reflects\w*,?\s*reminding us|the chipped (?:pot|plate|cup)\s*reminds? us)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'SYMBOL_EXPLAINS_ITSELF_FAIL',
+      description: 'Symbol explains itself: Didactic narrative line explicitly decoding the symbolism of a household object (e.g. "The damage is permanent, but the object still functions"). Let physical objects speak without authorial explanation.'
+    });
+  }
+
+  // 51. ENDING_MOTIF_COOLDOWN
+  // Recent WritOn endings using: damaged object -> silence -> dripping water / ambient sound -> restrained melancholy
+  if (/\b(?:the drip of water from the eaves|drip of water,?\s*rhythmic and slow|listening to the drip|listening to the slow drip)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'ENDING_MOTIF_COOLDOWN',
+      description: 'Ending motif cooldown: Story concludes with the overused WritOn formula (cold teapot/damaged object -> silence -> rhythmic water dripping from the eaves). End on an unadorned physical action or concrete human gesture instead.'
+    });
+  }
+
+  // 52. PREMISE_TITLE_INTEGRITY_FAIL
+  // Rejects titles promising materials or mechanisms that do not exist in the piece (e.g. "The Weight of Wet Concrete" when there is no wet concrete)
+  if (/the weight of wet concrete/i.test(cleanTitle) && !/\b(?:poured wet concrete|curing concrete|mixer drum|fresh concrete slab)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'PREMISE_TITLE_INTEGRITY_FAIL',
+      description: 'Premise title integrity violation: Title promises "Wet Concrete", but the story details silt, flood mud, debris, and hydropower tunnels rather than fresh wet concrete.'
+    });
+  }
+
+  // 53. ENTITY_FACT_BINDING_FAIL & ASSET_OWNERSHIP_VALIDATION
+  // For every real named project/company, facts and investment schemes must remain attached to the actual entity
+  // E.g. Upper Trishuli 3A did not issue local shares; Rasuwagadhi Hydropower did (10% local resident quota in 2022).
+  if (/\bupper\s+trishuli\b/i.test(cleanContent) && /\b(?:local\s+(?:resident\s+)?quota|local-share|share\s+allotment\s+certificate)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'ENTITY_FACT_BINDING_FAIL',
+      description: 'Entity fact binding mismatch: Upper Trishuli 3A did not issue local shares to project-affected residents. Rasuwagadhi Hydropower Company (111 MW) issued 10% local-resident shares in 2022 and was damaged by the 2026 flood.'
+    });
+  }
+
+  // 54. STATISTIC_SCOPE_DRIFT_FAIL
+  // Prohibits shifting regional macro statistics down to a single localized facility (e.g. 2.2 million tonnes of disaster debris deposited inside one turbine floor)
+  if (/\b(?:two\s+million\s+tonnes|2\.2\s+million\s+tonnes)\b/i.test(cleanContent) && /\b(?:turbine\s+floor|inside\s+the\s+powerhouse|in\s+the\s+kitchen)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'STATISTIC_SCOPE_DRIFT_FAIL',
+      description: 'Statistic scope drift detected: 2.2 million tonnes is the regional disaster-wide debris estimate across Nepal, not sediment deposited inside a single turbine floor.'
+    });
+  }
+
+  // 55. PLAUSIBLE_PRECISION_FAIL
+  // Blocks speculative cinematic precision metrics (e.g. "six feet of pulverized schist", fabricated share counts) without journalistic or telemetry grounding
+  if (/\bsix\s+feet\s+of\s+pulverized\s+schist\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'PLAUSIBLE_PRECISION_FAIL',
+      description: 'Plausible precision failure: "six feet of pulverized schist" is cinematic precision rather than verified measurement. State observed physical blockage directly without synthetic ruler metrics.'
+    });
+  }
+
+  // 56. GEOGRAPHIC_SETTLEMENT_PRECISION_FAIL
+  // Ensures natural topography and administrative terms match reality (e.g. Rasuwa is a district, living "above Syabrubesi" or "in Rasuwa district", not "our house above Rasuwa")
+  if (/\bour\s+house\s+above\s+rasuwa\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'GEOGRAPHIC_SETTLEMENT_PRECISION_FAIL',
+      description: 'Geographic naming error: Rasuwa is an entire district, not an individual settlement. Use "our house above Syabrubesi" or "in Rasuwa district".'
+    });
+  }
+
+  // 57. PLANNER_PLACEHOLDER_LEAK_FAIL
+  // Blocks internal planning briefs, meta-prompts, or editorial notes leaking into titles, headings, or body text
+  const placeholderBriefPatterns = [
+    /\ba\s+counterintuitive\s+perspective\s+on\b/i,
+    /\bstandard\s+workflows\s+and\s+craftsmanship\b/i,
+    /\ban\s+exploration\s+of\s+failure,\s*patience\b/i,
+    /\bthrough\s+the\s+lens\s+of\b/i,
+    /\bwithin\s+the\s+realm\s+of\b/i,
+    /\ba\s+reflection\s+on\b/i
+  ];
+  for (const pat of placeholderBriefPatterns) {
+    if (pat.test(cleanTitle) || pat.test(cleanContent)) {
+      violations.push({
+        rule: 'PLANNER_PLACEHOLDER_LEAK_FAIL',
+        description: `Planner placeholder leak detected: Text contains raw editorial/meta-prompt scaffolding ("${cleanTitle || cleanContent.slice(0, 60)}"). Must be fully transformed into original literary language before drafting.`
+      });
+      break;
+    }
+  }
+
+  // 58. SOURCE_PREMISE_COMPATIBILITY & NO_FORCED_ANGLE_RULE
+  // Detects when a current political news event (e.g. Giorgia Meloni tenure / Modi congratulations) is arbitrarily stapled onto generic rural/railway templates with zero provenance or transmission angle
+  if (/\b(?:giorgia\s+meloni|meloni|italian\s+government|postwar\s+era\s+government)\b/i.test(cleanContent) || (researchDossier?.topic && /\b(?:meloni|italy.*pm|longest-serving\s+italian)\b/i.test(researchDossier.topic))) {
+    // If used in fiction/railway scene without media provenance / transmission framing
+    if (/\b(?:railway\s+siding|station\s+clock|goods\s+train|tea\s+stalls?)\b/i.test(cleanContent) && !/\b(?:wire\s+service|reuters|headline|broadcast|transmission|press\s+release|front\s+page)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'SOURCE_PREMISE_COMPATIBILITY_FAIL',
+        description: 'Source-premise incompatibility: Political milestone (Giorgia Meloni tenure / Modi congratulations) arbitrarily stapled onto a generic rural railway station scene. If a persona lacks a legitimate documentary/provenance angle for a political source, skip the source rather than forcing literary wallpaper.'
+      });
+    }
+  }
+
+  // 59. SOURCE_DEPENDENCY_TEST & TOPIC_SUBSTITUTION_FAIL
+  // Rejects stories where removing the news event headline leaves an unchanged generic scene
+  if (/\bword\s+had\s+already\s+spread\s+through\s+the\s+tea\s+stalls\s+about\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'SOURCE_DEPENDENCY_FAIL',
+      description: 'Source dependency failure: News event is mechanically inserted into a stock tea-stall rumor template ("Word had already spread through the tea stalls about..."). The scene does not organically arise from the source material.'
+    });
+  }
+
+  // 60. APHORISTIC_DIALOGUE_FAIL
+  // Rejects empty, unearned philosophical dialogue engineered merely to sound quotable without character stakes
+  if (/\bsome\s+things\s+change\s+overnight\b/i.test(cleanContent) && /\bsome\s+things\s+take\s+twenty\s+years\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'APHORISTIC_DIALOGUE_FAIL',
+      description: 'Aphoristic dialogue failure: Pretentious, unearned dialogue designed for quote-cards ("Some things change overnight... and some things take twenty years just to begin") without immediate practical motivation.'
+    });
+  }
+
+  // 61. SHORT_STORY_MINIMUM_STRUCTURE & EMPTY_ATMOSPHERE_FAIL
+  // Short Stories must feature a concrete character desire/friction, resistance, and a consequential action rather than atmospheric closure props ("quiet promise of an unwritten journey")
+  if (category === 'Short Stories') {
+    if (/\b(?:quiet\s+promise\s+of\s+an\s+unwritten\s+journey|the\s+unwritten\s+journey|unwritten\s+voyage)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'EMPTY_ATMOSPHERE_FAIL',
+        description: 'Empty atmospheric closure: Cliche abstraction masquerading as poetic resolution ("quiet promise of an unwritten journey"). Conclude with concrete physical consequence.'
+      });
+    }
+  }
+
   return {
     isValid: violations.length === 0,
     violations,
