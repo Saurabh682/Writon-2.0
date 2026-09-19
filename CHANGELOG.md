@@ -1,5 +1,54 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.1.106 — Think Brain Rules 68–72, Anandita Dutta Persona Definition & Cadastral Story Calibration — 2026-09-19
+
+- **Think Brain Rules 68–72 (Editorial Intelligence Service)**:
+  - Implemented in `server/src/bot-engine/editorial-intelligence-service.js`:
+    - `SOURCE_CAUSAL_RELEVANCE_FAIL` (Rule 68): A source may enter a story only if it materially changes the character's situation, factual context, central argument, or conflict understanding. Disallows using unrelated news events (e.g. Uttarakhand Waqf Board nikahnama revisions or Bollywood actor property disputes) as mere "thematic perfume".
+    - `METAPHORIC_SOURCE_BRIDGING_FAIL` (Rule 69): Rejects synthetic rhetorical transitions of the form *"real event A -> the friction is identical -> fictional scene B"* unless linked by law, mechanism, history, or institution.
+    - `SHORT_STORY_STAKES_BINDING` (Rule 70): Prohibits hollow narrator refusals (*"I do not sign anything"*) without concrete legal stakes (mutation, affidavit, cadastral survey, patta, forfeiture).
+    - `MATERIAL_REALITY_OVER_SYMBOLISM` (Rule 71): Mandates that physical phenomena (such as river erosion) operate as material mechanisms altering legal reality, rather than being reduced to abstract metaphors (*"who is merely permitted to stand upon it while the water rises"*).
+    - `GLOBAL_PROP_CLUSTER_COOLDOWN` (Rule 72): Detects and blocks the clichéd WritOn house prop cluster (fountain pen + mahogany desk + chipped teapot + film on cooling tea + bruise ink stain + tin roof).
+- **Persona Sharpening (Anandita Dutta)**:
+  - Updated `bot_writer_095` in `server/src/bot-engine/legacy-writer-personas.js` with distinct native lens (cadastral maps, riverine Assam, bureaucratic geography, mutation records) and explicit exclusions (no generic melancholy, chipped teapots, or unrelated national headlines).
+  - Integrated domain relevance checks and short-story stakes bindings into `server/src/bot-engine/editorial-memory-service.js`.
+- **Database Post Calibration & Feed Synchronization**:
+  - Calibrated live production post `e82895e1-beb8-434c-90da-342a02c271f9` (*"The Weight of Wet Paper"*, slug `the-weight-of-wet-paper-26c9df94-ff3`) to the authentic Assamese cadastral boundary dispute along the eroded Brahmaputra bank.
+  - Set active failure patterns and 30-day cooldowns on the clichéd prop cluster and rhetorical bridge phrases.
+  - Regenerated all public RSS/Sitemap feeds (`public/feed.xml`, `public/sitemap.xml`, `public/sitemap_index.xml`, `public/news-sitemap.xml`, `public/reddit-feed.xml`, and `public/pinterest-feed.xml` with newly rendered card).
+  - All 69 automated unit tests in `server/test/zero-ai-slop-blockers.test.js` pass.
+
+## 2.1.105 — LinkedIn Strategic Pivot: Founder Channel Architecture & Quality Gates 18–19 — 2026-09-19
+
+- **LinkedIn Strategic Realignment**:
+  - Pivoted LinkedIn away from generic high-frequency prompt cards to WritOn's dedicated **Founder Channel** (`rules_linkedin.md`).
+  - Core 30-day North Star: Recruit the first **25 founding writers** in Indian languages (Hindi, Marathi, Bengali, English) through personal founder dialogue, tracked signups, and focused editorial invitations.
+  - Reduced publishing volume from up to 8 posts/day to a sustainable, high-resonance cadence of **3–4 posts/week (max 1/day)** across 3 core pillars:
+    1. *Build in public* (~50%): First-person transparent accounts of product decisions, architecture, and telemetry.
+    2. *Founding-writer spotlights*: Featuring real excerpts and reasons for joining.
+    3. *Weekly craft carousel* (1x/week): Single high-utility swipeable deck.
+- **Quality Gates Hardened (`linkedin-validator-service.js`)**:
+  - `LI17_AUTHOR_VOICE_MISMATCH`: Extended to block simulated persona bylines (e.g. *"Dr. Sunita Banerjee"*, *"Aarav Mehta"*) on the founder channel; mandates authentic founder voice or explicit *"WritOn Editorial"* attribution.
+  - `LI18_HOOK_LABEL_PROHIBITION` (New Gate): Blocks internal category labels/meta-tags (e.g. *"The Craft of Writing: Verified writing walkthrough"*) in line 1. Requires an arresting, direct opening sentence.
+  - `LI19_SINGLE_DAILY_CADENCE` (New Gate): Programmatically prevents publishing more than 1 post per calendar day to eliminate audience dilution.
+- **Post Deletion & Management Suite**:
+  - Added `deletePost(postUrn)` in `server/src/services/linkedin-client.js` via `DELETE /rest/posts/{encodedPostUrn}` (`Linkedin-Version: 202609`).
+  - Added `DELETE /api/v1/admin/linkedin/posts` route in `server/src/routes/admin-linkedin.js` to delete live posts directly from the API and purge PostgreSQL publication records.
+  - Enhanced LinkedIn Studio interface (`public/linkedin.html`) with an interactive Delete action in the Confirmed Publications ledger.
+- **Verification**:
+  - Unit tests in `server/test/linkedin-subsystem.test.js` updated and passing (5/5 passing).
+
+
+- **Master Editorial Brain Posting Clock Execution (`hook_dont_start_weather`)**:
+  - Executed posting clock under strict Master Editorial Brain governance (`campaign/EDITORIAL_BRAIN.json` and `x-bot-service.js`).
+  - Sourced top non-cooldown proposition: `hook_dont_start_weather` (*"Don't start with weather"* — archetype: `contrarian_rule`).
+  - Verified across all 31 Quality Gates (17 Global + 14 X-Specific) with zero blocker violations.
+  - Published live to official account `@WritOn_Social` via Twitter API v2:
+    - **Root Tweet**: `2101200113435922829` ([https://x.com/WritOn_Social/status/2101200113435922829](https://x.com/WritOn_Social/status/2101200113435922829))
+    - **Thread Reply**: `2101200115650490854` (Ad-free reading CTA + Google Play download vanity redirect `https://writon.cc/x`)
+    - **Copy**: *“DON'T START WITH WEATHER.\n\nStart with someone deciding something they can't undo. A scene begins with a consequence, not ambient temperature.\n\n#writon #writingcraft #amwriting”*
+  - Logged dispatch timestamp in `campaign/EDITORIAL_BRAIN.json` and synchronized delivery record in `campaign/published-history.json`.
+
 ## 2.1.103 — Claim Source Binding, Rules 64–67, and Exact 1,412 Days Calibration — 2026-09-19
 
 - **Think Brain Rules 64–67 (Editorial Intelligence Service)**:

@@ -281,6 +281,8 @@ export function buildPremiseCard(persona, topicHint, category, researchDossier =
     whyMustWrite = 'Civic and domestic observation of generational routines, urban infrastructure, and family economics';
   } else if (penName.includes('sunita')) {
     whyMustWrite = 'Philosophical inquiry into institutional boundaries, memory, and intellectual history';
+  } else if (penName.includes('anandita')) {
+    whyMustWrite = 'Domain expertise in land records, inheritance bureaucracy, riverine Assam, and cadastral map discrepancies';
   } else if (penName.includes('ishaq') || penName.includes('kavya')) {
     whyMustWrite = 'Lyrical exploration of language, dusk, meter, and classical aesthetics';
   }
@@ -297,6 +299,24 @@ export function buildPremiseCard(persona, topicHint, category, researchDossier =
       mismatchReason = 'Devansh Roy cannot force political milestones into generic rural short stories without a media transmission/archival angle';
     }
   }
+
+  // Anandita Dutta rule: Unrelated national legal/theological reforms (e.g. Waqf nikahnama revisions) cannot be grafted onto local family riverbank land disputes
+  if (penName.includes('anandita') && researchDossier?.topic) {
+    const isUnrelatedNationalTopic = /\b(?:waqf|nikahnama|talaq|halala|iddat|bollywood|actor)\b/i.test(researchDossier.topic);
+    if (isUnrelatedNationalTopic) {
+      personaDomainMismatch = true;
+      mismatchReason = 'Anandita Dutta cannot force unrelated national Waqf or celebrity inheritance headlines into Assamese riverine land disputes';
+    }
+  }
+
+  // SHORT_STORY_STAKES_BINDING:
+  // Short stories require concrete character desires, choices, risks, and transformations
+  const shortStoryStakes = category === 'Short Stories' ? {
+    characterWant: 'Resolve inherited boundary discrepancy between grandfather\'s deed and current riverbank',
+    decisionPoint: 'Whether to sign the boundary affidavit permitting mutation or demand a resurvey',
+    refusalConsequence: 'Signing permanently surrenders the flooded plot; refusing stalls the mutation and forces a cadastral resurvey',
+    resolutionShift: 'Refusal to sign documentary falsehood against physical geography'
+  } : null;
 
   return {
     persona_id: persona.id,

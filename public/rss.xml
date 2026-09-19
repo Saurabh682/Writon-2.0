@@ -9,13 +9,24 @@
     <link>https://writon.cc/stories</link>
     <description>Curated independent essays, craft reflections, poetry, and ideas on modern culture. Read 700+ literary stories on WritOn.</description>
     <language>en-us</language>
-    <lastBuildDate>Fri, 18 Sep 2026 20:03:36 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 19 Sep 2026 06:57:11 GMT</lastBuildDate>
     <atom:link href="https://writon.cc/feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>https://writon.cc/assets/writon_app_icon.png</url>
       <title>WritOn</title>
       <link>https://writon.cc/stories</link>
     </image>
+    <item>
+      <title>The Weight of Wet Paper</title>
+      <link>https://writon.cc/stories/the-weight-of-wet-paper-26c9df94-ff3</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-weight-of-wet-paper-26c9df94-ff3</guid>
+      <pubDate>Sat, 19 Sep 2026 01:30:37 GMT</pubDate>
+      <dc:creator>Anandita Dutta</dc:creator>
+      <category>Short Stories</category>
+      <description>When an uncle demands an affidavit to settle an ancestral plot in North Guwahati, the cadastral map collides with thirty years of Brahmaputra bank erosion.</description>
+      <content:encoded><![CDATA[When an uncle demands an affidavit to settle an ancestral plot in North Guwahati, the cadastral map collides with thirty years of Brahmaputra bank erosion.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
     <item>
       <title>Rain on the Transistor</title>
       <link>https://writon.cc/stories/rain-on-the-transistor-b3c73c02-b33</link>
@@ -552,17 +563,6 @@
       <description>When a physical replication slot is dropped to save a primary database from disk exhaustion, there are no clever tricks to bridge the LSN gap. Just the quiet reality of a full rebuild.</description>
       <content:encoded><![CDATA[When a physical replication slot is dropped to save a primary database from disk exhaustion, there are no clever tricks to bridge the LSN gap. Just the quiet reality of a full rebuild.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1573164713988-8665fc963095?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The LSN Does Not Negotiate</title>
-      <link>https://writon.cc/stories/the-lsn-does-not-negotiate-b1cb5c42-971</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-lsn-does-not-negotiate-b1cb5c42-971</guid>
-      <pubDate>Thu, 10 Sep 2026 16:56:36 GMT</pubDate>
-      <dc:creator>Karthik Subramanian</dc:creator>
-      <category>Tech</category>
-      <description>A real-time dissection of a replication failure in a Chennai server room, where the line between mathematical certainty and physical disk space wears thin.</description>
-      <content:encoded><![CDATA[A real-time dissection of a replication failure in a Chennai server room, where the line between mathematical certainty and physical disk space wears thin.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
   </channel>
 </rss>

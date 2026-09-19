@@ -9,13 +9,32 @@
     <link>https://writon.cc/stories</link>
     <description>Curated independent stories, poetry, and thought pieces on modern culture formatted for visual reading and inspiration.</description>
     <language>en-us</language>
-    <lastBuildDate>Fri, 18 Sep 2026 20:03:46 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 19 Sep 2026 06:57:24 GMT</lastBuildDate>
     <atom:link href="https://writon.cc/pinterest-feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>https://writon.cc/assets/writon_app_icon.png</url>
       <title>WritOn</title>
       <link>https://writon.cc/stories</link>
     </image>
+    <item>
+      <title>The Weight of Wet Paper — Anandita Dutta</title>
+      <link>https://writon.cc/stories/the-weight-of-wet-paper-26c9df94-ff3</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-weight-of-wet-paper-26c9df94-ff3</guid>
+      <pubDate>Sat, 19 Sep 2026 01:30:37 GMT</pubDate>
+      <dc:creator>Anandita Dutta</dc:creator>
+      <category>Short Stories</category>
+      <description><![CDATA[“When an uncle demands an affidavit to settle an ancestral plot in North Guwahati, the cadastral map collides with thirty years of Brahmaputra bank erosion.”
+​
+✍️ By Anandita Dutta • Short Stories (4 min read)
+​
+📖 Read the full story on WritOn:
+👉 https://writon.cc/stories/the-weight-of-wet-paper-26c9df94-ff3
+​
+──────────
+#writon #shortstories #storytelling #reading #amwriting]]></description>
+      <enclosure url="https://writon.cc/cards/the-weight-of-wet-paper-26c9df94-ff3.png" type="image/png" length="180000" />
+      <media:content url="https://writon.cc/cards/the-weight-of-wet-paper-26c9df94-ff3.png" medium="image" width="1080" height="1350" />
+    </item>
     <item>
       <title>Rain on the Transistor — Sunny Gedam</title>
       <link>https://writon.cc/stories/rain-on-the-transistor-b3c73c02-b33</link>
@@ -186,25 +205,6 @@
 #writon #shortstories #storytelling #reading #amwriting]]></description>
       <enclosure url="https://writon.cc/cards/the-frequency-log-at-esplanade-d7484801.png" type="image/png" length="180000" />
       <media:content url="https://writon.cc/cards/the-frequency-log-at-esplanade-d7484801.png" medium="image" width="1080" height="1350" />
-    </item>
-    <item>
-      <title>The Five-Dollar Swear — Radhika Gowda</title>
-      <link>https://writon.cc/stories/the-five-dollar-swear-c1a7898f-c7b</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-five-dollar-swear-c1a7898f-c7b</guid>
-      <pubDate>Wed, 16 Sep 2026 17:30:11 GMT</pubDate>
-      <dc:creator>Radhika Gowda</dc:creator>
-      <category>Essays</category>
-      <description><![CDATA[“When NASCAR turns driver-radio profanity into a prize sweepstakes, unscripted human stress ceases to be a reflex of survival and becomes packaged entertainment inventory.”
-​
-✍️ By Radhika Gowda • Essays (4 min read)
-​
-📖 Read the full story on WritOn:
-👉 https://writon.cc/stories/the-five-dollar-swear-c1a7898f-c7b
-​
-──────────
-#writon #essays #storytelling #reading #amwriting]]></description>
-      <enclosure url="https://writon.cc/cards/the-five-dollar-swear-c1a7898f-c7b.png" type="image/png" length="180000" />
-      <media:content url="https://writon.cc/cards/the-five-dollar-swear-c1a7898f-c7b.png" medium="image" width="1080" height="1350" />
     </item>
   </channel>
 </rss>

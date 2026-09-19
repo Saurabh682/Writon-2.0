@@ -1053,6 +1053,83 @@ export function validateZeroAISlopEngineBlockers({
     });
   }
 
+  // 68. SOURCE_CAUSAL_RELEVANCE_FAIL
+  // A source may enter a story only if it materially changes:
+  // - the character's situation,
+  // - the factual context,
+  // - the central argument,
+  // - or the reader's understanding of the conflict.
+  // Prohibits topical association / thematic perfume (e.g. grafting Uttarakhand Waqf Board nikahnama revisions or Bollywood actor wills onto family land disputes).
+  if (/\b(?:waqf\s+board|nikahnama|chandrachur\s+singh|actors?\s+and\s+relatives)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'SOURCE_CAUSAL_RELEVANCE_FAIL',
+      description: 'Source causal relevance failure: External news event (Waqf Board / nikahnama or celebrity property disputes) has zero material causal link to the fictional domestic conflict. Thematic similarity of the word "inheritance" does not constitute causal relevance.'
+    });
+  }
+
+  // 69. METAPHORIC_SOURCE_BRIDGING_FAIL
+  // Rejects rhetorical transitions of the form: real event A -> "the friction is identical" -> fictional problem B
+  // unless the two are actually linked by law, mechanism, history, institution, or consequence.
+  if (/\b(?:the\s+friction\s+is\s+identical|the\s+geometry\s+of\s+the\s+tragedy\s+is\s+identical|the\s+tension\s+is\s+the\s+same|the\s+underlying\s+math\s+is\s+identical)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'METAPHORIC_SOURCE_BRIDGING_FAIL',
+      description: 'Metaphoric source bridging failure: Synthetic rhetorical transition ("the friction is identical") artificially couples an unrelated news event with a fictional scene. Remove ungrounded rhetorical equivalence bridges.'
+    });
+  }
+
+  // 70. SHORT_STORY_STAKES_BINDING
+  // In Short Stories, legal or domestic choices must have defined stakes.
+  // If a character declares "I do not sign anything", the document, the demand, what is surrendered, and the consequence of refusal must be concretely established.
+  if (category === 'Short Stories' && /\b(?:i\s+do\s+not\s+sign|refuse\s+to\s+sign|did\s+not\s+sign)\b/i.test(cleanContent)) {
+    const hasDefinedStakes = /\b(?:affidavit|mutation|cadastral|patta|resurvey|survey\s+boundary|tehsildar|revenue\s+circle|sub-divisional)\b/i.test(cleanContent);
+    if (!hasDefinedStakes) {
+      violations.push({
+        rule: 'SHORT_STORY_STAKES_BINDING',
+        description: 'Short story stakes binding failure: Narrator makes a refusal ("I do not sign anything") without establishing the concrete legal document, the uncle/party\'s demand, or what is surrendered. Establish exact documentary stakes before the choice.'
+      });
+    }
+  }
+
+  // 71. MATERIAL_REALITY_OVER_SYMBOLISM
+  // If a physical phenomenon can directly affect the conflict, use it as mechanism before using it as metaphor.
+  // Rejects using river erosion merely as a poetic symbol for family decay ("who is merely permitted to stand upon it while the water rises") while ignoring the cadastral deed mismatch.
+  if (/\b(?:merely\s+permitted\s+to\s+stand\s+upon\s+it\s+while\s+the\s+water\s+rises|navigat(?:e|ing)\s+the\s+shifting\s+currents\s+without\s+a\s+compass)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'MATERIAL_REALITY_OVER_SYMBOLISM',
+      description: 'Material reality over symbolism violation: River erosion or rising water is reduced to an abstract poetic metaphor ("navigating shifting currents without a compass" / "who is merely permitted to stand upon it while the water rises"). Environmental phenomena must operate as concrete physical mechanisms altering legal boundaries.'
+    });
+  }
+
+  // 72. GLOBAL_PROP_CLUSTER_COOLDOWN
+  // Current high-frequency WritOn props:
+  // - fountain pen
+  // - mahogany / teak desk
+  // - brass object / tumbler
+  // - cooling tea
+  // - film on tea (oil / skin)
+  // - chipped ceramic / chipped teapot
+  // - monsoon rain on roof / tin roof
+  // - old paper / wet legal document
+  // - ambient drip / hum / sound ending
+  // If a draft uses 3+ of these clichéd props simultaneously, flag a prop cluster cooldown violation.
+  const propClichés = [
+    /\b(?:fountain\s+pen)\b/i.test(cleanContent),
+    /\b(?:mahogany|teak)\s+(?:desk|table)\b/i.test(cleanContent),
+    /\b(?:brass\s+tumbler|brass\s+object|brass\s+can|brass\s+tray)\b/i.test(cleanContent),
+    /\b(?:cooling\s+tea|tea\s+is\s+cooling|lukewarm\s+tea)\b/i.test(cleanContent),
+    /\b(?:film\s+of\s+oil|skin\s+forming|skin\s+on\s+the\s+tea|film\s+forming)\b/i.test(cleanContent),
+    /\b(?:chipped\s+teapot|chipped\s+vessel|chipped\s+cup|chipped\s+saucer)\b/i.test(cleanContent),
+    /\b(?:monsoon\s+rain\s+hammers|corrugated\s+tin\s+roof|tin\s+roof)\b/i.test(cleanContent),
+    /\b(?:stain\s+like\s+a\s+bruise|bruised\s+plum)\b/i.test(cleanContent)
+  ];
+  const activePropHits = propClichés.filter(Boolean).length;
+  if (activePropHits >= 3) {
+    violations.push({
+      rule: 'GLOBAL_PROP_CLUSTER_COOLDOWN',
+      description: `Global prop cluster cooldown: Draft combines ${activePropHits} high-frequency WritOn props (mahogany desk, fountain pen, chipped teapot, film on tea, bruised stain, tin roof). Break the prop cluster and substitute with domain-native practical objects.`
+    });
+  }
+
   return {
     isValid: violations.length === 0,
     violations,
