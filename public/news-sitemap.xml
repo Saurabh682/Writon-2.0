@@ -2,6 +2,17 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://writon.cc/stories/the-river-that-forgot-its-path-7a213509-b94</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-09-19T08:00:57.847Z</news:publication_date>
+      <news:title>The River That Forgot Its Path</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://writon.cc/stories/the-weight-of-wet-paper-26c9df94-ff3</loc>
     <news:news>
       <news:publication>
@@ -87,17 +98,6 @@
       </news:publication>
       <news:publication_date>2026-09-17T14:00:56.244Z</news:publication_date>
       <news:title>When Streaming Memory Enters the Cinema Hall</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/the-reproduction-of-an-affection-1c4f0f6f</loc>
-    <news:news>
-      <news:publication>
-        <news:name>WritOn</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-09-17T08:00:42.689Z</news:publication_date>
-      <news:title>The Reproduction of an Affection</news:title>
     </news:news>
   </url>
 </urlset>

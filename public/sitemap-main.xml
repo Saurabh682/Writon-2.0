@@ -171,6 +171,17 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://writon.cc/stories/the-river-that-forgot-its-path-7a213509-b94</loc>
+    <lastmod>2026-09-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The River That Forgot Its Path</image:title>
+      <image:caption>A meditation on transience and the geological anxiety of distance, bridging a quiet harbor in Kochi with a stalled river in Darchula.</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://writon.cc/stories/the-weight-of-wet-paper-26c9df94-ff3</loc>
     <lastmod>2026-09-19</lastmod>
     <changefreq>weekly</changefreq>
@@ -178,7 +189,7 @@
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>The Weight of Wet Paper</image:title>
-      <image:caption>When an uncle demands an affidavit to settle an ancestral plot in North Guwahati, the cadastral map collides with thirty years of Brahmaputra bank erosion.</image:caption>
+      <image:caption>When an uncle demands consent for an undisputed partition of an ancestral plot in North Guwahati, the cadastral map collides with thirty years of Brahmaputra bank erosion.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1767,25 +1778,14 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/the-antiquarian-of-college-street-oe53w</loc>
+    <loc>https://writon.cc/stories/the-epistemology-of-solitude-reclaiming-quiet-attention-kwscf</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Antiquarian of College Street</image:title>
-      <image:caption>Inside an eighty-year-old bookstore where second-hand volumes hold more secrets than the people who sold them.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/dard-aur-umeed-ka-taraana-chand-sher-ssknh</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Dard Aur Umeed Ka Taraana: Chand Sher</image:title>
-      <image:caption>Couplets of resilience, dawn light after long nights, and finding grace in unfinished journeys.</image:caption>
+      <image:loc>https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Epistemology of Solitude: Reclaiming Quiet Attention</image:title>
+      <image:caption>Why true contemplation requires withdrawal from the permanent panopticon of continuous connectivity.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1800,14 +1800,25 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/the-modern-tragedy-of-cold-samosas-at-430-pm-standups-why4k</loc>
+    <loc>https://writon.cc/stories/the-last-train-from-howrah-station-at-215-am-2g80l</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Modern Tragedy of Cold Samosas at 4:30 PM Standups</image:title>
-      <image:caption>A satirical breakdown of corporate sprint rituals, &quot;quick syncs&quot; that last 50 minutes, and the psychological warfare of office snacks.</image:caption>
+      <image:loc>https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Last Train from Howrah Station at 2:15 AM</image:title>
+      <image:caption>A noir tale of two strangers, a yellow tram ticket, and a damp Kolkata platform under the hum of fluorescent tube lights.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/dard-aur-umeed-ka-taraana-chand-sher-ssknh</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Dard Aur Umeed Ka Taraana: Chand Sher</image:title>
+      <image:caption>Couplets of resilience, dawn light after long nights, and finding grace in unfinished journeys.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1819,17 +1830,6 @@
       <image:loc>https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>Why We Still Over-Engineer: In Praise of Boring Relational Postgres</image:title>
       <image:caption>Why modern teams jump to microservices and NoSQL prematurely, and how a well-tuned relational schema solves 99% of web scale problems.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/the-last-train-from-howrah-station-at-215-am-2g80l</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Last Train from Howrah Station at 2:15 AM</image:title>
-      <image:caption>A noir tale of two strangers, a yellow tram ticket, and a damp Kolkata platform under the hum of fluorescent tube lights.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1887,17 +1887,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/chiragh-e-khamooshi-the-lamp-of-silence-d6ec4f99</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Chirāgh-e-Khamooshi (The Lamp of Silence)</image:title>
-      <image:caption>A classical Urdu ghazal exploring silence, nostalgia, and distance, paired with English translations and poetic commentary.</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://writon.cc/stories/the-8-14-fast-local-to-churchgate-bb9240c7</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
@@ -1928,6 +1917,17 @@
       <image:loc>https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>Cartography of an Old Balcony</image:title>
       <image:caption>A lyrical meditation on monsoon twilight, rusted iron railings, and the quiet residue of memories left behind in a fast-changing city.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/chiragh-e-khamooshi-the-lamp-of-silence-d6ec4f99</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Chirāgh-e-Khamooshi (The Lamp of Silence)</image:title>
+      <image:caption>A classical Urdu ghazal exploring silence, nostalgia, and distance, paired with English translations and poetic commentary.</image:caption>
     </image:image>
   </url>
   <url>

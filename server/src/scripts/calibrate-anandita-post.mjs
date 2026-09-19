@@ -76,15 +76,15 @@ async function run() {
   const calibratedTitle = 'The Weight of Wet Paper';
   const calibratedSlug = 'the-weight-of-wet-paper-26c9df94-ff3';
   const calibratedCategory = 'Short Stories';
-  const calibratedSummary = 'When an uncle demands an affidavit to settle an ancestral plot in North Guwahati, the cadastral map collides with thirty years of Brahmaputra bank erosion.';
+  const calibratedSummary = 'When an uncle demands consent for an undisputed partition of an ancestral plot in North Guwahati, the cadastral map collides with thirty years of Brahmaputra bank erosion.';
 
   const rawCalibratedStory = `### The Cadastral Fold
 
 The blue cloth backing of the 1968 cadastral map had split along the fold line for Dag Number 42, separating our homestead plot from the river boundary.
 
-My uncle laid his ballpoint pen beside the revenue stamp. He had traveled thirty kilometers by shared taxi from Palashbari to reach our veranda in North Guwahati before the circle office closed for the weekend. The affidavit on the table was already notarized on fifty-rupee non-judicial stamp paper. It stated that our family agreed to the mutation of the ancestral three kathas under the 1984 survey boundaries, allowing the title to pass jointly into his name for settlement.
+My uncle laid his ballpoint pen beside the revenue stamp. He had traveled thirty kilometers by shared taxi from Palashbari to reach our veranda in North Guwahati before the circle office closed for the weekend. The affidavit on the table was already notarized on non-judicial stamp paper. It stated that our family consented to the undisputed partition of the ancestral three kathas under the existing dag boundaries, allowing separate pattas to be issued for each share.
 
-"Sign the second page," he said, pressing his thumb against the margin. "The revenue circle officer said if the mutation is not registered this month, the patta stays frozen under dispute."
+"Sign the second page," he said, pressing his thumb against the margin. "The revenue circle officer said if the partition consent is not registered this month, the patta stays frozen under dispute."
 
 I did not take the pen. I unfolded the survey sheet across the low cane table. In the revenue surveyor's ink from fifty-eight years ago, the eastern edge of Dag 42 was fixed by three permanent markers: the culvert on the public road, an old jackfruit tree, and the high earthen bank of the Brahmaputra.
 
@@ -92,13 +92,13 @@ The culvert was still standing. But the jackfruit tree had slid into the water d
 
 ### The Boundary in the Water
 
-"If I sign this affidavit," I said, "we are certifying to the court that the boundary is intact. You will take the dry upper parcel along the paved road, and our share will be registered on the lower katha."
+"If I sign this consent," I said, "we are certifying to the revenue circle that the old boundaries stand. You will take the dry upper parcel along the paved road, and our share will be registered on the lower katha."
 
-"The deed recognizes the full acreage," my uncle said, his voice tightening. "The government records don't measure the water level every season. We divide what the title paper says we own."
+"The deed recognizes the full acreage," my uncle said, his voice tightening. "The government does not redraw the dag map after every monsoon. We divide what the title paper says we own."
 
-"The lower katha is five feet beneath the river channel," I told him. "A boat crosses it twice every morning to reach the sandbar. If the circle officer issues the mutation without an on-site resurvey, our family will be paying annual land revenue on twenty yards of riverbed."
+"The lower katha is five feet beneath the river channel," I told him. "A boat crosses it twice every morning to reach the sandbar. If the circle officer enters this partition without field verification, our family will be paying annual land revenue on twenty yards of riverbed."
 
-He pulled the papers toward his chest. "If we request a fresh survey from the revenue department, the surveyor will take two years to come. By then, the entire bank will be surveyed under the river reserve, and neither of us will get a patta."
+He pulled the papers toward his chest. "If we call for a fresh survey, they’ll mark the eroded portion separately. Once that happens, you know what becomes of the river-side share."
 
 That was the actual transaction: he wanted documentary finality today, and he wanted my signature to absorb the loss that the river had already claimed.
 
@@ -106,23 +106,17 @@ A small beetle crawled from under the wooden map weight, stepped onto the blue m
 
 ### The Refusal
 
-My mother came out from the kitchen carrying two stainless steel glasses of warm water. She set them on the wooden stool between us. She looked at the folded map, recognized the split along the center fold, and looked down at the courtyard where the garden ended at the bamboo fence. She did not ask about the mutation.
+My mother came out from the kitchen carrying two stainless steel glasses of warm water. She set them on the wooden stool between us. She looked at the folded map, recognized the split along the center fold, and looked down at the courtyard where the garden ended at the bamboo fence. She did not ask about the partition.
 
 "I will not sign the affidavit," I told my uncle.
 
 He stared at me, his fingers curling over the notarized stamp paper. "The dispute will go before the assistant revenue settlement officer. You will lose the whole estate in litigation fees."
 
-"Then let the revenue officer bring his chain and brass pins out to the water line," I said. "We will record what is left of the land, not what the grandfather wrote before the embankment collapsed."
+"Then let the survey team come to the bank and mark what is actually there," I said. "We will record what is left of the land, not what the grandfather wrote before the embankment collapsed."
 
-He did not drink the water. He gathered his stamp papers, slid them into a brown plastic folder, snapped the rubber band around it, and walked down the veranda steps into the humid air. I stayed on the wicker bench, smoothing the split canvas of the old map, listening to the dull, steady slap of the river eating another foot of clay below the silt road.`;
+He did not drink the water. He gathered his stamp papers, slid them into a brown plastic folder, snapped the rubber band around it, and walked down the veranda steps into the humid air. I stayed on the wicker bench, smoothing the split canvas of the old map, listening to the dull, steady slap of water against the cut bank below the silt road.`;
 
-  const finalContent = attachHashtagsAndWatermark(
-    rawCalibratedStory,
-    calibratedCategory,
-    'brahmaputra',
-    calibratedCategory,
-    ['brahmaputra', 'guwahati', 'landrecords']
-  );
+  const finalContent = `${rawCalibratedStory}\n\n---\n\n#brahmaputra #assam #landrecords #shortstories #rivererosion\n\n\u200B\uFEFF#writon\u200B`;
 
   // 4. Update the post in public.posts
   const updatePostRes = await pool.query(`

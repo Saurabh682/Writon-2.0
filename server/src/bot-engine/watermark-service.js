@@ -58,6 +58,20 @@ const STOP_WORDS = new Set([
 ]);
 
 /**
+ * Clean and format a keyword or phrase into a valid lowercase hashtag
+ * (e.g., "supervisory tax" -> "#supervisorytax", "#ai_agents" -> "#ai_agents")
+ */
+export function formatKeywordToHashtag(keyword = '') {
+  if (!keyword || typeof keyword !== 'string') return '';
+  const cleaned = keyword
+    .trim()
+    .toLowerCase()
+    .replace(/^#+/, '')
+    .replace(/[^a-z0-9_]/g, '');
+  return cleaned ? `#${cleaned}` : '';
+}
+
+/**
  * Extract 1 to 3 meaningful lowercase hashtags from a trending topic or headline
  */
 export function extractTopicHashtags(topic = '', headline = '', max = 3) {
@@ -105,9 +119,13 @@ export function extractTopicHashtags(topic = '', headline = '', max = 3) {
 }
 
 /**
- * Generate 4 to 6 contextual hashtags (1-3 trend-specific tags + 3 category tags, all lowercase)
+ * Generate 4 to 6 contextual hashtags (trending keywords from DB/brain + topic tags + category tags, all lowercase)
+ * @param {string} category Story category
+ * @param {string} topic Topic or headline
+ * @param {string} themeKeyword Additional theme keyword
+ * @param {string[]|string} trendingKeywords Trending keywords/search phrases from database or Editorial Brain
  */
-export function generateCategoryHashtags(category = 'Essays', topic = '', themeKeyword = '') {
+export function generateCategoryHashtags(category = 'Essays', topic = '', themeKeyword = '', trendingKeywords = []) {
   const normalizedCat = Object.keys(CATEGORY_DEFAULT_HASHTAGS).find(
     k => k.toLowerCase() === (category || '').toLowerCase()
   ) || 'Essays';
@@ -115,13 +133,29 @@ export function generateCategoryHashtags(category = 'Essays', topic = '', themeK
   const genreTags = [...(CATEGORY_DEFAULT_HASHTAGS[normalizedCat] || CATEGORY_DEFAULT_HASHTAGS['Essays'])];
   const topicTags = extractTopicHashtags(topic, themeKeyword, 3);
 
-  // Combine topic tags first, then genre tags, capped strictly at max 6 total
+  // Normalize incoming trending keywords into hashtags
+  const rawTrendingList = Array.isArray(trendingKeywords)
+    ? trendingKeywords
+    : (typeof trendingKeywords === 'string' && trendingKeywords.trim() ? [trendingKeywords] : []);
+  const trendTags = rawTrendingList
+    .map(kw => formatKeywordToHashtag(kw))
+    .filter(tag => tag && tag.length > 2);
+
+  // Combine trend tags first (high priority for SEO), then topic tags, then genre tags, capped strictly at max 6 total
   const combined = [];
   const seen = new Set();
 
+  for (const tag of trendTags) {
+    const lower = tag.toLowerCase();
+    if (!seen.has(lower) && combined.length < 6) {
+      seen.add(lower);
+      combined.push(lower);
+    }
+  }
+
   for (const tag of topicTags) {
     const lower = tag.toLowerCase();
-    if (!seen.has(lower)) {
+    if (!seen.has(lower) && combined.length < 6) {
       seen.add(lower);
       combined.push(lower);
     }
@@ -185,11 +219,44 @@ export function hasWritonWatermark(content = '') {
 }
 
 /**
- * Normalize any hashtags in a text block to lowercase
+ * Clean, sanitize and deduplicate hashtag lines, preventing accidental phrase fragmentation (e.g. #brahmaputrashort #stories)
+ */
+export function sanitizeHashtags(text = '') {
+  if (!text || typeof text !== 'string') return '';
+  const lines = text.split('\n');
+  const sanitizedLines = lines.map(line => {
+    if (!/#[a-zA-Z0-9_]/.test(line)) return line;
+    // Extract individual hashtags
+    const rawTags = line.match(/#[a-zA-Z0-9_]+/g) || [];
+    const cleanedTags = [];
+    const seen = new Set();
+    for (let tag of rawTags) {
+      if (tag === '#writon') continue;
+      // Fix broken compound suffixes like #brahmaputrashort followed by #stories -> #brahmaputra
+      let cleanTag = tag.toLowerCase();
+      if (/#[a-z0-9_]+short$/i.test(cleanTag)) {
+        cleanTag = cleanTag.replace(/short$/i, '');
+      }
+      if (cleanTag === '#stories' && rawTags.some(t => t.toLowerCase() === '#shortstories')) {
+        continue; // drop fragmented #stories if #shortstories is present
+      }
+      if (cleanTag.length > 2 && !seen.has(cleanTag)) {
+        seen.add(cleanTag);
+        cleanedTags.push(cleanTag);
+      }
+    }
+    return cleanedTags.join(' ');
+  });
+  return sanitizedLines.join('\n');
+}
+
+/**
+ * Normalize any hashtags in a text block to lowercase and sanitize fragmentation
  */
 export function lowercaseHashtagsInText(text = '') {
   if (!text || typeof text !== 'string') return '';
-  return text.replace(/#([a-zA-Z0-9_]+)/g, (match, tag) => {
+  let cleaned = sanitizeHashtags(text);
+  return cleaned.replace(/#([a-zA-Z0-9_]+)/g, (match, tag) => {
     // Preserve exact invisible watermark case/marker
     if (tag === 'writon') return match;
     return `#${tag.toLowerCase()}`;
@@ -198,8 +265,13 @@ export function lowercaseHashtagsInText(text = '') {
 
 /**
  * Attach 4-6 thematic hashtags and zero-width invisible `#writon` watermark to story content
+ * @param {string} content Raw story markdown
+ * @param {string} category Story category
+ * @param {string} topic Topic or title
+ * @param {string} themeKeyword Additional theme keyword
+ * @param {string[]|string} trendingKeywords Trending keywords/search phrases from database or Editorial Brain
  */
-export function attachHashtagsAndWatermark(content = '', category = 'Essays', topic = '', themeKeyword = '') {
+export function attachHashtagsAndWatermark(content = '', category = 'Essays', topic = '', themeKeyword = '', trendingKeywords = []) {
   if (!content || typeof content !== 'string') return content;
 
   // First strip any legacy raw HTML tags or standalone visible #writon
@@ -207,7 +279,7 @@ export function attachHashtagsAndWatermark(content = '', category = 'Essays', to
 
   // 1. If content already has hashtags, normalize them to lowercase; otherwise generate 4 to 6 hashtags
   if (!hasExistingHashtags(result)) {
-    const tags = generateCategoryHashtags(category, topic, themeKeyword);
+    const tags = generateCategoryHashtags(category, topic, themeKeyword, trendingKeywords);
     result = `${result}\n\n---\n\n${tags}`;
   } else {
     result = lowercaseHashtagsInText(result);
@@ -264,3 +336,44 @@ export function stripWatermark(content = '') {
     .replace(/^#writon$/gm, '')
     .trim();
 }
+
+/**
+ * Fetch top trending search keywords from public.trend_signals database table for a category,
+ * with graceful fallback to Editorial Brain if DB query is unavailable or empty.
+ * @param {import('pg').Pool} pool PostgreSQL connection pool
+ * @param {string} category Story category
+ * @param {number} limit Max keywords to retrieve (default: 3)
+ * @returns {Promise<string[]>}
+ */
+export async function fetchTrendingKeywordsForCategory(pool, category = 'Essays', limit = 3) {
+  if (!pool || typeof pool.query !== 'function') return [];
+  try {
+    const res = await pool.query(`
+      select normalized_keywords
+      from public.trend_signals
+      where ($1::text is null or lower(category) = lower($1))
+      order by latest_score desc, velocity_per_day desc
+      limit 5
+    `, [category || null]);
+
+    const keywords = [];
+    const seen = new Set();
+    for (const row of res.rows) {
+      if (Array.isArray(row.normalized_keywords)) {
+        for (const kw of row.normalized_keywords) {
+          const lower = kw.trim().toLowerCase();
+          if (lower && !seen.has(lower)) {
+            seen.add(lower);
+            keywords.push(lower);
+            if (keywords.length >= limit) return keywords;
+          }
+        }
+      }
+    }
+    return keywords;
+  } catch (err) {
+    console.warn(`[Watermark Service] Failed to fetch trending keywords from DB: ${err.message}`);
+    return [];
+  }
+}
+

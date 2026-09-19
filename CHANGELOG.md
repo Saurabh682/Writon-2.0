@@ -1,6 +1,67 @@
 # Changelog & Update History — WritOn 2.0
 
-## 2.1.106 — Think Brain Rules 68–72, Anandita Dutta Persona Definition & Cadastral Story Calibration — 2026-09-19
+## 2.1.108 — Revenue Partition Precision, Think Brain Rules 73–74 & Cadastral Verification — 2026-09-19
+
+- **Revenue Law & Procedural Precision (Anandita Dutta — *"The Weight of Wet Paper"*)**:
+  - Resolved the procedural conflation between inheritance mutation and partition:
+    - In Assam revenue administration (Mission Basundhara / Land Records Manual), mutation by inheritance enters legal heirs into the Jamabandi (Record of Rights), whereas partition divides a joint estate into separate physical holdings and part-dags.
+    - Updated the dispute to center on an undisputed partition consent under existing dag boundaries.
+  - Replaced lawyerly exposition with authentic administrative dialogue: *"The government does not redraw the dag map after every monsoon"* and *"If we call for a fresh survey, they’ll mark the eroded portion separately. Once that happens, you know what becomes of the river-side share."*
+  - Replaced decorative historical surveying tools (*"brass pins and chains"*) with modern field verification: *"Then let the survey team come to the bank and mark what is actually there."*
+  - Restrained ending: closed on the concrete physical sound of water against the cut bank (*"listening to the dull, steady slap of water against the cut bank below the silt road"*).
+- **Think Brain Rules 73 & 74 (Editorial Intelligence Service)**:
+  - `PROCEDURAL_CONFLATION_FAIL` (Rule 73): Prevents collapsing distinct administrative procedures (mutation vs partition, registration vs mutation, inheritance vs demarcation).
+  - `METADATA_HASHTAG_FRAGMENTATION_FAIL` (Rule 74): Disallows fragmented hashtag phrases (e.g. `#brahmaputrashort #stories`) and ensures atomic, canonical topic tags (`#brahmaputra #assam #landrecords #shortstories #rivererosion`).
+  - Added `FICTIONAL_SPECIFICITY_POLICY` to persona guidelines: fiction may invent family history and dialogue, but statutory/procedural sequences must remain faithful to real-world administrative law.
+  - Enhanced `sanitizeHashtags` in `server/src/bot-engine/watermark-service.js` to automatically strip broken compound suffixes.
+- **Database & Production Verification**:
+  - Updated production post `e82895e1-beb8-434c-90da-342a02c271f9` with the calibrated partition prose and clean hashtags.
+  - All 69 unit tests in `server/test/zero-ai-slop-blockers.test.js` and all 8 tests in `server/test/watermark-service.test.js` pass hermetically.
+  - Regenerated all public RSS/Sitemap feeds (`public/feed.xml`, `public/sitemap.xml`, `public/news-sitemap.xml`, `public/reddit-feed.xml`, `public/pinterest-feed.xml`).
+
+## Guest reading preferences and feed refresh — 2026-09-19
+
+- Made reading interests available to signed-in and guest readers from Explore, returned readers to Explore after editing there, refreshed Home immediately after saving, and included guest-selected topics in the existing personalised-feed request without changing API contracts.
+
+## Notification identity and mobile artwork legibility — 2026-09-19
+
+- Replaced the generic notification “W” silhouette with WritOn’s recognizable W-and-signature mark for status notifications and Android themed icons.
+- Made foreground notification large icons decode the existing branded `appcon` artwork directly instead of relying on adaptive-launcher bitmap decoding.
+- Simplified `public/cards/writon-update-banner-landscape.png` to two large, mobile-readable lines with no feature-table fine print; retained the canonical 1024×512 BigPicture ratio and Warm Parchment styling.
+- Preserved all existing notification payload fields, topics, endpoints, channels, routing and legacy aliases. No notification was dispatched and no hosting/cloud deployment was performed in this change.
+
+## 2.1.107 — Founding Writers Pitch Carousel, Bounded Caption & Operational Readiness — 2026-09-19
+
+- **Founding Writers Pitch Carousel (7 Slides Rendered)**:
+  - Rendered high-resolution 1080×1350 Warm Ivory Parchment (`#FAF5EE`) carousel slides in `public/assets/founding-writers-carousel/`:
+    - Slide 1: *“25 founding writers. For a platform with almost no readers yet. The honest pitch →”*
+    - Slide 2: *“A small library. A smaller readership. You’re early, and I’m paying attention.”*
+    - Slide 3: *“No outrage feed. No camera. No follower race. Just writing, and people who read it.”*
+    - Slide 4: *“What you get: A real reader at the other end · A voice in the product · Founding Writer status”*
+    - Slide 5: *“Two or three pieces this month. And honest feedback on what feels off.”*
+    - Slide 6: *“Stories, poems, essays. English · हिन्दी · मराठी · বাংলা. Pen names welcome.”*
+    - Slide 7: *“Interested? Comment your language, or DM me. I’ll send you a personal invite.”*
+  - Typography tuned to $\ge 68\text{px}$ headlines for high readability at mobile feed size; removed internal "Day N" tags.
+- **Strictly Bounded Post Caption & First Comment**:
+  - Implemented the exact bounded founder caption in `server/src/scripts/render-founding-writers-carousel.mjs` with founder-feedback bounded to *"first few pieces"* and delivery grounded in authentic dialogue.
+  - Formatted first-comment anchor: *“Android: https://play.google.com/store/apps/details?id=com.ibitvalley.writon · Or look around first: writon.cc”*.
+- **Quality Gates Verification**:
+  - Evaluated caption and 7-slide media package through all 36 quality gates (`LI01`–`LI19`) $\rightarrow$ **19/19 LinkedIn gates passed (ALL GATES PASSED ✅)**.
+- **Operational Readiness & Playbook Codified**:
+  - Updated [`campaign/FOUNDING_WRITERS_PLAYBOOK.md`](file:///d:/VibeCode/WritOn-PowerUp/campaign/FOUNDING_WRITERS_PLAYBOOK.md) with the finalized 1-to-1 DM script, calendar block requirements (30 mins/day for 50–75 reads across 25 writers), and the direct feedback line protocol before launch.
+- **Live Dispatch to LinkedIn Posts API (202609)**:
+  - Dispatched candidate version `f990b5ef-9501-45a0-874b-841acc0ff34e` via `LinkedInPublisherService`:
+    - Post URN: `urn:li:ugcPost:7506978282677039104`
+    - Live URL: `https://www.linkedin.com/feed/update/urn:li:ugcPost:7506978282677039104`
+    - Uploaded all 7 warm parchment slides as `MULTI_IMAGE` binary assets to LinkedIn CDN.
+    - Immutable publication recorded in PostgreSQL `linkedin_publications` with `publish_intent_id = 4cc3e296-abdc-4968-91b1-f621b17ba8a2`.
+- **LinkedIn Cadence, Schedule & Golden Hour Protocol Codification**:
+  - Locked posting schedule to **Monday, Wednesday, Friday only** at **9:00 AM IST** (window 8:30–10:00 AM IST; backup 12:30–1:30 PM IST).
+  - Codified the **30-Minute Engagement "Golden Hour" Protocol**: author must actively reply to all comments and engage with 2–3 writers in the feed immediately post-dispatch.
+  - Enhanced Quality Gate `LI19_SINGLE_DAILY_CADENCE` with strict 24-hour anti-cannibalization spacing check (`inside24h < 24h` fails).
+  - Introduced Quality Gate `LI20_SCHEDULE_DAY_WINDOW` enforcing allowed days (`Mon`, `Wed`, `Fri`) and allowed IST time windows.
+  - All 5 LinkedIn subsystem tests passing in `server/test/linkedin-subsystem.test.js`.
+
 
 - **Think Brain Rules 68–72 (Editorial Intelligence Service)**:
   - Implemented in `server/src/bot-engine/editorial-intelligence-service.js`:
@@ -170,14 +231,22 @@
     - Re-embedded discovery tags: `#nepalhydropower #localshares #trishulivalley #shortstories` and invisible `#writon` watermark.
     - Regenerated all public RSS and XML sitemaps (`feed.xml`, `rss.xml`, `sitemap.xml`, `news-sitemap.xml`).
 
-- **WritOn Shorts Retention Grammar & Pacing Calibration (Short #11 & Master Standard)**:
+- **WritOn Shorts Retention Grammar & Pacing Calibration (Short #11, Short #12 & Master Standard)**:
   - Codified the permanent **WritOn Shorts Base Grammar**:
     *Architecture: Challenge → Flawed Example → Isolate the Mistake → Tiny Instruction → Visible Rewrite → Principle → Memorable Rule.*
   - Established the **1.5-Second Visual Progression Invariant (Zero-Plateau Gate)** in `AGENTS.md` and `campaign/video-system/BRAND_RULES.md`:
     *During the first 8 seconds, never allow more than ~1.5 seconds without a meaningful visual, textual, or auditory change. After the payoff, allow the frame to breathe.*
-  - Rendered both testing candidates for Short #11:
-    - **18.0s Standard Cut**: Full 3.5s hold on final craft contrast (`Dialogue carries the words. Action carries the threat.`).
-    - **16.0s Tight Retention Cut**: Snappier 1.5–2.0s hold on final lesson to maximize full completion and replay velocity.
+  - **Short #11 (Dialogue Tags / Threat)**:
+    - 16.0s tight cut uploaded and verified live/public on YouTube (`1Tp-3CjUe_M`).
+  - **Short #12 (Cold Anger / Cutlery Geometry — *"How to Write Anger Without Screaming"*)**:
+    - Re-engineered from a sluggish 30.5s draft into an exact 18.0s zero-plateau masterpiece:
+      * `0.0–0.7s`: Immediate interactive challenge hook: *"MAKE HER ANGER TERRIFYING. without raising her voice"* + frame-0 sharp ceramic cutlery strike.
+      * `0.7–1.8s`: Flawed emotion line clean reveal: *"She was furious at him for lying."*.
+      * `1.8–2.2s`: Yellow marker highlight micro-motion snaps over *furious at him*.
+      * `2.2–3.0s`: Red directive badge pops: *"DELETE THE EMOTION."* $\to$ words dissolve out.
+      * `4.0–8.0s`: Staggered physical rewrite reveal with clean `Lethal Restraint` badge: *"She refolded his napkin into a sharp triangle, and slid the salt cellar two inches left."* (synced to 6.8s table slide cue).
+      * `9.5–14.4s`: Closing contrast: *"Loud anger makes noise. Lethal anger organizes the room."*
+      * `14.5–18.0s`: Clean hold breathing room before seamless loop reset to the 0.0s cutlery strike.
   - Pacing Progression Breakdown:
     - `0.0–0.8s`: Immediate high-curiosity hook challenge: *"Make this line feel dangerous. without changing the dialogue"* + frame 0 deadbolt audio snap.
     - `0.8–1.8s`: Flawed dialogue line fully visible.

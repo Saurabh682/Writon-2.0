@@ -1130,6 +1130,30 @@ export function validateZeroAISlopEngineBlockers({
     });
   }
 
+  // 73. PROCEDURAL_CONFLATION_FAIL
+  // When a story invokes an administrative or legal system, adjacent distinct legal procedures must not be collapsed into one.
+  // In revenue land records (e.g. Assam Mission Basundhara / Land Records Manual):
+  // - Mutation by inheritance records heirs in the Jamabandi (Record of Rights).
+  // - Partition divides a joint revenue estate into separate physical holdings and part-dags.
+  // The two cannot be conflated such that signing an inheritance mutation directly allocates specific physical parcels ("you take upper parcel, I get lower katha") without a partition application/demarcation.
+  if (/\b(?:mutation)\b/i.test(cleanContent) && /\b(?:you\s+will\s+take\s+the\s+dry\s+upper\s+parcel|partition\s+the\s+ancestral\s+three\s+kathas\s+on\s+paper)\b/i.test(cleanContent)) {
+    if (!/\b(?:partition|demarcation|part-dag|joint\s+holding|co-pattadar)\b/i.test(cleanContent) || /\b(?:agreed\s+to\s+the\s+mutation.*?allowing\s+the\s+title\s+to\s+pass\s+jointly\s+into\s+his\s+name\s+for\s+settlement)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'PROCEDURAL_CONFLATION_FAIL',
+        description: 'Procedural conflation failure: Conflated inheritance mutation with partition/demarcation. Mutation records legal heirs into the Jamabandi; partition divides the physical holding. Papers must explicitly reference undisputed partition or partition consent rather than claiming mutation alone divides physical land.'
+      });
+    }
+  }
+
+  // 74. METADATA_HASHTAG_FRAGMENTATION_FAIL
+  // Prevents accidental phrase fragmentation in hashtags (e.g. #brahmaputrashort #stories instead of #brahmaputra #shortstories).
+  if (/#(?:brahmaputrashort|stories\b.*#shortstories)\b/i.test(cleanContent) || /#[a-z0-9_]+short\s+#stories\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'METADATA_HASHTAG_FRAGMENTATION_FAIL',
+      description: 'Metadata hashtag fragmentation detected: Hashtag phrases were broken or duplicated (e.g. #brahmaputrashort #stories). Keep tags clean, atomic, and canonical.'
+    });
+  }
+
   return {
     isValid: violations.length === 0,
     violations,

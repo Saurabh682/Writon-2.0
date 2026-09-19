@@ -9,7 +9,7 @@
     <link>https://writon.cc/stories</link>
     <description>Curated independent stories, poetry, and thought pieces on modern culture formatted for visual reading and inspiration.</description>
     <language>en-us</language>
-    <lastBuildDate>Sat, 19 Sep 2026 06:57:24 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 19 Sep 2026 11:37:52 GMT</lastBuildDate>
     <atom:link href="https://writon.cc/pinterest-feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>https://writon.cc/assets/writon_app_icon.png</url>
@@ -17,13 +17,32 @@
       <link>https://writon.cc/stories</link>
     </image>
     <item>
+      <title>The River That Forgot Its Path — Kavya Nair</title>
+      <link>https://writon.cc/stories/the-river-that-forgot-its-path-7a213509-b94</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-river-that-forgot-its-path-7a213509-b94</guid>
+      <pubDate>Sat, 19 Sep 2026 08:00:57 GMT</pubDate>
+      <dc:creator>Kavya Nair</dc:creator>
+      <category>Poetry</category>
+      <description><![CDATA[“A meditation on transience and the geological anxiety of distance, bridging a quiet harbor in Kochi with a stalled river in Darchula.”
+​
+✍️ By Kavya Nair • Poetry (3 min read)
+​
+📖 Read the full story on WritOn:
+👉 https://writon.cc/stories/the-river-that-forgot-its-path-7a213509-b94
+​
+──────────
+#writon #poetry #storytelling #reading #amwriting]]></description>
+      <enclosure url="https://writon.cc/cards/the-river-that-forgot-its-path-7a213509-b94.png" type="image/png" length="180000" />
+      <media:content url="https://writon.cc/cards/the-river-that-forgot-its-path-7a213509-b94.png" medium="image" width="1080" height="1350" />
+    </item>
+    <item>
       <title>The Weight of Wet Paper — Anandita Dutta</title>
       <link>https://writon.cc/stories/the-weight-of-wet-paper-26c9df94-ff3</link>
       <guid isPermaLink="true">https://writon.cc/stories/the-weight-of-wet-paper-26c9df94-ff3</guid>
       <pubDate>Sat, 19 Sep 2026 01:30:37 GMT</pubDate>
       <dc:creator>Anandita Dutta</dc:creator>
       <category>Short Stories</category>
-      <description><![CDATA[“When an uncle demands an affidavit to settle an ancestral plot in North Guwahati, the cadastral map collides with thirty years of Brahmaputra bank erosion.”
+      <description><![CDATA[“When an uncle demands consent for an undisputed partition of an ancestral plot in North Guwahati, the cadastral map collides with thirty years of Brahmaputra bank erosion.”
 ​
 ✍️ By Anandita Dutta • Short Stories (4 min read)
 ​
@@ -112,15 +131,15 @@
       <media:content url="https://writon.cc/cards/on-the-municipal-margin-blue-white-and-rain-efcb78ad-997.png" medium="image" width="1080" height="1350" />
     </item>
     <item>
-      <title>The Long Shot of a Stay — Gurpreet Sandhu</title>
+      <title>The Long Shot of a Stay — Arshdeep Singh (Arsh Zee)</title>
       <link>https://writon.cc/stories/the-long-shot-of-a-stay-6261998f-8a8</link>
       <guid isPermaLink="true">https://writon.cc/stories/the-long-shot-of-a-stay-6261998f-8a8</guid>
       <pubDate>Fri, 18 Sep 2026 01:30:54 GMT</pubDate>
-      <dc:creator>Gurpreet Sandhu</dc:creator>
+      <dc:creator>Arshdeep Singh (Arsh Zee)</dc:creator>
       <category>Essays</category>
       <description><![CDATA[“When thirty-six hours of jury deliberation ends without a verdict, the legal system refuses to provide easy moral certainty. An examination of the Lindsay Clancy mistrial and the limits of ins...”
 ​
-✍️ By Gurpreet Sandhu • Essays (4 min read)
+✍️ By Arshdeep Singh (Arsh Zee) • Essays (4 min read)
 ​
 📖 Read the full story on WritOn:
 👉 https://writon.cc/stories/the-long-shot-of-a-stay-6261998f-8a8
@@ -186,25 +205,6 @@
 #writon #shortstories #storytelling #reading #amwriting]]></description>
       <enclosure url="https://writon.cc/cards/the-reproduction-of-an-affection-1c4f0f6f.png" type="image/png" length="180000" />
       <media:content url="https://writon.cc/cards/the-reproduction-of-an-affection-1c4f0f6f.png" medium="image" width="1080" height="1350" />
-    </item>
-    <item>
-      <title>The Frequency Log at Esplanade — Devansh Roy</title>
-      <link>https://writon.cc/stories/the-frequency-log-at-esplanade-d7484801</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-frequency-log-at-esplanade-d7484801</guid>
-      <pubDate>Thu, 17 Sep 2026 01:31:14 GMT</pubDate>
-      <dc:creator>Devansh Roy</dc:creator>
-      <category>Short Stories</category>
-      <description><![CDATA[“Off the Gariahat tram line in Kolkata, three incompatible accounts of an American underwater drone in the Strait of Hormuz arrive through shortwave radio, wire dispatches, and marine insurance...”
-​
-✍️ By Devansh Roy • Short Stories (4 min read)
-​
-📖 Read the full story on WritOn:
-👉 https://writon.cc/stories/the-frequency-log-at-esplanade-d7484801
-​
-──────────
-#writon #shortstories #storytelling #reading #amwriting]]></description>
-      <enclosure url="https://writon.cc/cards/the-frequency-log-at-esplanade-d7484801.png" type="image/png" length="180000" />
-      <media:content url="https://writon.cc/cards/the-frequency-log-at-esplanade-d7484801.png" medium="image" width="1080" height="1350" />
     </item>
   </channel>
 </rss>
