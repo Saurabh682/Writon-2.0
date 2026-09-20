@@ -1,0 +1,9 @@
+WritOn
+
+Confirm your email
+
+Confirm this address for your WritOn account.
+
+Confirm email: https://example.com/preview-only
+
+This email concerns your WritOn account. If you did not request it, you can ignore it.

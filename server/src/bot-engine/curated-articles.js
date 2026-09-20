@@ -235,7 +235,7 @@ Modern corporate finance often confuses valuation with survival. Paper multiples
   ]
 };
 
-export function getAuthenticFallbackArticle(persona, category = 'Essays', topicHint = '', excludeTitles = [], researchDossier = null) {
+export function getAuthenticFallbackArticle(persona, category = 'Essays', topicHint = '', excludeTitles = [], researchDossier = null, trendingKeywords = []) {
   const authorName = persona?.fullName || 'WritOn Writer';
   const authorPenName = (persona?.penName || '').toLowerCase();
   const excludedSet = new Set((excludeTitles || []).map(t => t.toLowerCase().trim()));
@@ -255,7 +255,7 @@ export function getAuthenticFallbackArticle(persona, category = 'Essays', topicH
     chosen = available.length > 0 ? available[0] : categoryPool[0];
   }
 
-  const finalContent = attachHashtagsAndWatermark(chosen.content, category, category);
+  const finalContent = attachHashtagsAndWatermark(chosen.content, category, category, '', trendingKeywords);
 
   return {
     title: chosen.title,

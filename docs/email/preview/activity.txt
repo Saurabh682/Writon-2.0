@@ -1,0 +1,11 @@
+WritOn
+
+Activity on your writing
+
+Your weekly activity summary will appear here when there is something new to share.
+
+View your writing: https://example.com/preview-only
+
+Email preferences: https://example.com/preferences-preview
+Unsubscribe: https://example.com/unsubscribe-preview
+PREVIEW ONLY — replace with verified sender postal address

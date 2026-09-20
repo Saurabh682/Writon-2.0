@@ -1,5 +1,7 @@
 package com.ibitvalley.writon.modern.feature.onboarding
 
+import androidx.annotation.StringRes
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -8,18 +10,19 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -32,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,7 +64,13 @@ private val PrimaryText = Color(0xFF151718)
 private val SecondaryText = Color(0xFF6D6963)
 private val Accent = Color(0xFFE75A2A)
 private val Border = Color(0xFFE9E1D7)
-private val MutedChip = Color(0xFFF2ECE4)
+
+private val ExpressionTopicIds = setOf(
+    "poetry", "short_stories", "fiction", "shayari", "essays", "journal", "humour", "satire", "reviews",
+)
+private val WorldTopicIds = setOf(
+    "tech", "culture", "journalism", "science_health", "business_finance", "sports", "entertainment", "philosophy",
+)
 
 private val InterestsEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
@@ -70,165 +78,219 @@ private val InterestsEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_semibold, FontWeight.Bold)
 )
 
-private data class Topic(val id: String, val title: String, val icon: Int)
-
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun InterestsScreen(
     initialSelectedTopicIds: Set<String>,
+    availableTopics: List<InterestTopicOption> = InterestTopicCatalog.fallbackTopics,
     isSaving: Boolean,
     errorMessage: String?,
     onBackClick: () -> Unit,
     onContinueClick: (Set<String>) -> Unit,
     onContinueWithSavedChoices: () -> Unit,
+    onSelectionEdited: () -> Unit = {},
     onSkipClick: () -> Unit
 ) {
-    val topics = remember {
-        listOf(
-            Topic("poetry", "Poetry", R.drawable.ic_write_quill_orange),
-            Topic("essays", "Essays", R.drawable.ic_book_orange),
-            Topic("philosophy", "Philosophy", R.drawable.ic_quote_orange),
-            Topic("short_stories", "Short Stories", R.drawable.ic_collection_open_orange),
-            Topic("shayari", "Shayari", R.drawable.ic_heart_orange),
-            Topic("journalism", "Journalism", R.drawable.ic_tag_orange),
-            Topic("humour", "Humour", R.drawable.ic_achievement_orange),
-            Topic("life_wellness", "Life & Wellness", R.drawable.ic_sun_orange),
-            Topic("sci_fi_fantasy", "Sci-Fi & Fantasy", R.drawable.ic_shuffle_orange),
-            Topic("travel", "Travel", R.drawable.ic_explore_orange),
-            Topic("career_growth", "Career & Growth", R.drawable.ic_folder_orange),
-            Topic("more_topics", "More Topics", R.drawable.ic_category_orange)
-        )
-    }
     var selectedTopicsCsv by rememberSaveable { mutableStateOf(initialSelectedTopicIds.sorted().joinToString(",")) }
+    var hasEdited by rememberSaveable { mutableStateOf(false) }
     val selectedTopics = selectedTopicsCsv
         .split(',')
         .filter(String::isNotBlank)
         .toSet()
 
     LaunchedEffect(initialSelectedTopicIds) {
-        selectedTopicsCsv = initialSelectedTopicIds.sorted().joinToString(",")
+        if (!hasEdited) selectedTopicsCsv = initialSelectedTopicIds.sorted().joinToString(",")
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = ScreenBackground) {
-        Column(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
-            InterestsHeader(onBackClick)
+        Column(
+            modifier = Modifier.fillMaxSize().navigationBarsPadding().padding(horizontal = 24.dp),
+        ) {
+            InterestsHeader(onBackClick = onBackClick, onSkipClick = onSkipClick, isSaving = isSaving)
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+            Column(
+                modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()),
             ) {
-                items(topics, key = Topic::id) { topic ->
-                    TopicCard(
-                        topic = topic,
-                        isSelected = topic.id in selectedTopics,
-                        onClick = {
-                            selectedTopicsCsv = (if (topic.id in selectedTopics) selectedTopics - topic.id else selectedTopics + topic.id)
-                                .sorted()
-                                .joinToString(",")
+                InterestGroup(
+                    title = stringResource(R.string.interests_group_expression),
+                    hint = stringResource(R.string.interests_group_expression_hint),
+                    topics = availableTopics.filter { it.id in ExpressionTopicIds },
+                    selectedTopics = selectedTopics,
+                ) { topic ->
+                    if (!isSaving) {
+                        hasEdited = true
+                        onSelectionEdited()
+                        selectedTopicsCsv = toggleTopic(selectedTopics, topic.id)
+                    }
+                }
+                InterestGroup(
+                    title = stringResource(R.string.interests_group_world),
+                    hint = stringResource(R.string.interests_group_world_hint),
+                    topics = availableTopics.filter { it.id in WorldTopicIds },
+                    selectedTopics = selectedTopics,
+                ) { topic ->
+                    if (!isSaving) {
+                        hasEdited = true
+                        onSelectionEdited()
+                        selectedTopicsCsv = toggleTopic(selectedTopics, topic.id)
+                    }
+                }
+                val uncategorized = availableTopics.filter { it.id !in ExpressionTopicIds && it.id !in WorldTopicIds }
+                if (uncategorized.isNotEmpty()) {
+                    InterestGroup(
+                        title = stringResource(R.string.interests_group_more),
+                        hint = null,
+                        topics = uncategorized,
+                        selectedTopics = selectedTopics,
+                    ) { topic ->
+                        if (!isSaving) {
+                            hasEdited = true
+                            onSelectionEdited()
+                            selectedTopicsCsv = toggleTopic(selectedTopics, topic.id)
                         }
-                    )
+                    }
                 }
             }
 
-            Text(
-                text = if (selectedTopics.isEmpty()) "Choose topics to personalize your feed." else "${selectedTopics.size} ${if (selectedTopics.size == 1) "topic" else "topics"} selected",
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                color = if (selectedTopics.isEmpty()) SecondaryText else Accent,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                textAlign = TextAlign.Center,
-            )
-
-            errorMessage?.let { message ->
+            Column(modifier = Modifier.fillMaxWidth().padding(top = 10.dp)) {
                 Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Accent,
-                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
-                    textAlign = TextAlign.Center,
+                    text = if (selectedTopics.isEmpty()) {
+                        stringResource(R.string.interests_empty_hint)
+                    } else {
+                        pluralStringResource(R.plurals.interests_selected_count, selectedTopics.size, selectedTopics.size)
+                    },
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                    color = if (selectedTopics.isEmpty()) SecondaryText else Accent,
                 )
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Image(painter = painterResource(R.drawable.ic_heart_orange), contentDescription = null, modifier = Modifier.size(20.dp))
-                Spacer(Modifier.width(8.dp))
                 Text(
-                    "You can always change these later in Settings.",
+                    stringResource(R.string.interests_change_anytime_hint),
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 13.sp),
                     color = SecondaryText,
-                    textAlign = TextAlign.Center
+                    modifier = Modifier.padding(top = 2.dp),
                 )
-            }
 
-            Button(
-                onClick = { onContinueClick(selectedTopics) },
-                enabled = !isSaving,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = SurfacePaper)
-            ) {
-                Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                    Text(if (isSaving) "Saving…" else stringResource(R.string.common_continue), style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp))
-                    Image(
-                        painter = painterResource(R.drawable.ic_forward_white),
-                        contentDescription = null,
-                        modifier = Modifier.align(Alignment.CenterEnd).size(27.dp)
-                    )
+                errorMessage?.let { message ->
+                    Text(message, style = MaterialTheme.typography.bodySmall, color = Accent, modifier = Modifier.padding(top = 6.dp))
                 }
-            }
 
-            if (errorMessage != null) {
-                TextButton(
-                    onClick = onContinueWithSavedChoices,
+                Button(
+                    onClick = { onContinueClick(selectedTopics) },
                     enabled = !isSaving,
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp).height(56.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Accent, contentColor = SurfacePaper),
                 ) {
-                    Text(
-                        "Continue with saved choices",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = Accent,
-                    )
+                    Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                        Text(
+                            when {
+                                isSaving -> stringResource(R.string.interests_saving)
+                                selectedTopics.isEmpty() -> stringResource(R.string.interests_explore_all)
+                                else -> stringResource(R.string.interests_find_reads)
+                            },
+                            style = MaterialTheme.typography.titleMedium.copy(fontSize = 18.sp),
+                        )
+                        Image(
+                            painter = painterResource(R.drawable.ic_forward_white),
+                            contentDescription = null,
+                            modifier = Modifier.align(Alignment.CenterEnd).size(27.dp),
+                        )
+                    }
                 }
-            }
 
-            TextButton(
-                onClick = onSkipClick,
-                enabled = !isSaving,
-                modifier = Modifier.align(Alignment.CenterHorizontally).padding(vertical = 8.dp)
-            ) {
-                Text(
-                    stringResource(R.string.common_skip),
-                    style = MaterialTheme.typography.titleMedium.copy(fontSize = 17.sp),
-                    color = SecondaryText,
-                    textDecoration = TextDecoration.Underline
-                )
+                if (errorMessage != null) {
+                    TextButton(
+                        onClick = onContinueWithSavedChoices,
+                        enabled = !isSaving,
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                    ) {
+                        Text(stringResource(R.string.interests_continue_saved), color = Accent)
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
             }
         }
     }
 }
 
+private fun toggleTopic(selectedTopics: Set<String>, topicId: String): String =
+    (if (topicId in selectedTopics) selectedTopics - topicId else selectedTopics + topicId)
+        .sorted()
+        .joinToString(",")
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun InterestsHeader(onBackClick: () -> Unit) {
+private fun InterestGroup(
+    title: String,
+    hint: String?,
+    topics: List<InterestTopicOption>,
+    selectedTopics: Set<String>,
+    onTopicClick: (InterestTopicOption) -> Unit,
+) {
+    if (topics.isEmpty()) return
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(top = 22.dp, bottom = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            title,
+            style = MaterialTheme.typography.headlineSmall.copy(fontFamily = InterestsEditorialFamily, fontWeight = FontWeight.SemiBold),
+            color = PrimaryText,
+        )
+        hint?.let {
+            Spacer(Modifier.weight(1f))
+            Text(it, style = MaterialTheme.typography.bodySmall, color = SecondaryText, textAlign = TextAlign.End)
+        }
+    }
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        topics.forEach { topic ->
+            TopicChip(
+                        topic = topic,
+                        isSelected = topic.id in selectedTopics,
+                onClick = { onTopicClick(topic) },
+                    )
+                }
+            }
+}
+
+@Composable
+private fun InterestsHeader(onBackClick: () -> Unit, onSkipClick: () -> Unit, isSaving: Boolean) {
     Box(modifier = Modifier.fillMaxWidth().padding(top = 14.dp)) {
         Image(
             painter = painterResource(R.drawable.ic_back),
-            contentDescription = "Back",
+            contentDescription = stringResource(R.string.common_back),
             modifier = Modifier.align(Alignment.TopStart).padding(top = 8.dp).size(30.dp).clip(CircleShape).clickable(onClick = onBackClick)
         )
+        TextButton(
+            onClick = onSkipClick,
+            enabled = !isSaving,
+            modifier = Modifier.align(Alignment.TopEnd),
+        ) {
+            Text(
+                stringResource(R.string.common_skip),
+                style = MaterialTheme.typography.titleMedium.copy(fontFamily = InterestsEditorialFamily),
+                color = PrimaryText,
+                textDecoration = TextDecoration.Underline,
+            )
+        }
         Image(
             painter = painterResource(R.drawable.welcome_feather),
             contentDescription = null,
-            modifier = Modifier.align(Alignment.TopEnd).padding(top = 4.dp).size(138.dp),
+            modifier = Modifier.align(Alignment.TopEnd).padding(top = 38.dp).size(120.dp),
             contentScale = ContentScale.Fit
         )
-        Column(modifier = Modifier.padding(top = 50.dp, end = 72.dp)) {
+        Column(modifier = Modifier.padding(top = 58.dp, end = 72.dp)) {
             Text(
-                "What do you\nlove reading?",
+                stringResource(R.string.interests_eyebrow),
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold, letterSpacing = 3.sp),
+                color = Accent,
+            )
+            Spacer(Modifier.height(14.dp))
+            Text(
+                stringResource(R.string.interests_title),
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontFamily = InterestsEditorialFamily,
                     fontSize = 38.sp,
@@ -239,7 +301,7 @@ private fun InterestsHeader(onBackClick: () -> Unit) {
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                "Choose a few topics that inspire you.\nWe’ll personalize your experience.",
+                stringResource(R.string.interests_subtitle),
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp, lineHeight = 23.sp),
                 color = SecondaryText
             )
@@ -248,53 +310,57 @@ private fun InterestsHeader(onBackClick: () -> Unit) {
 }
 
 @Composable
-private fun TopicCard(topic: Topic, isSelected: Boolean, onClick: () -> Unit) {
-    Box(
+private fun TopicChip(topic: InterestTopicOption, isSelected: Boolean, onClick: () -> Unit) {
+    val title = topicTitle(topic)
+    val selectionState = stringResource(
+        if (isSelected) R.string.common_selected else R.string.common_not_selected,
+    )
+    Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(96.dp)
-            .clip(RoundedCornerShape(18.dp))
-            .background(if (isSelected) MutedChip else SurfacePaper)
-            .border(if (isSelected) 2.dp else 1.dp, if (isSelected) Accent else Border, RoundedCornerShape(18.dp))
+            .clip(RoundedCornerShape(28.dp))
+            .background(if (isSelected) Accent else SurfacePaper)
+            .border(1.dp, if (isSelected) Accent else Border, RoundedCornerShape(28.dp))
             .clickable(onClick = onClick)
             .semantics {
                 role = Role.Checkbox
-                contentDescription = "${topic.title}, ${if (isSelected) "selected" else "not selected"}"
+                contentDescription = "$title, $selectionState"
             }
-            .padding(8.dp)
+            .padding(horizontal = 18.dp, vertical = 13.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Surface(shape = CircleShape, color = MutedChip, modifier = Modifier.size(40.dp)) {
-                Box(contentAlignment = Alignment.Center) {
-                    Image(painterResource(topic.icon), contentDescription = null, modifier = Modifier.size(24.dp))
-                }
-            }
-            Spacer(Modifier.height(6.dp))
-            Text(
-                topic.title,
-                style = MaterialTheme.typography.titleMedium.copy(
-                    fontFamily = InterestsEditorialFamily,
-                    fontSize = if (topic.title.length > 13) 12.sp else 14.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    lineHeight = 15.sp
-                ),
-                color = PrimaryText,
-                maxLines = 2,
-                textAlign = TextAlign.Center
-            )
-        }
-        if (isSelected) {
-            Surface(shape = CircleShape, color = Accent, modifier = Modifier.align(Alignment.TopEnd).size(26.dp)) {
-                Box(contentAlignment = Alignment.Center) {
-                    Image(painterResource(R.drawable.ic_check_white), contentDescription = "Selected", modifier = Modifier.size(15.dp))
-                }
-            }
-        }
+        Text(if (isSelected) "✓" else "+", fontSize = 24.sp, color = if (isSelected) SurfacePaper else SecondaryText)
+        Spacer(Modifier.width(12.dp))
+        Text(
+            title,
+            style = MaterialTheme.typography.titleMedium.copy(fontFamily = InterestsEditorialFamily, fontWeight = FontWeight.SemiBold),
+            color = if (isSelected) SurfacePaper else PrimaryText,
+        )
     }
+}
+
+@Composable
+private fun topicTitle(topic: InterestTopicOption): String {
+    @StringRes val titleRes = when (topic.id) {
+        "reviews" -> R.string.topic_reviews
+        "tech" -> R.string.topic_tech
+        "culture" -> R.string.topic_culture
+        "essays" -> R.string.topic_essays
+        "humour" -> R.string.topic_humour
+        "poetry" -> R.string.topic_poetry
+        "short_stories" -> R.string.topic_short_stories
+        "journal" -> R.string.topic_journal
+        "journalism" -> R.string.topic_journalism
+        "science_health" -> R.string.topic_science_health
+        "business_finance" -> R.string.topic_business_finance
+        "sports" -> R.string.topic_sports
+        "entertainment" -> R.string.topic_entertainment
+        "shayari" -> R.string.topic_shayari
+        "philosophy" -> R.string.topic_philosophy
+        "satire" -> R.string.topic_satire
+        "fiction" -> R.string.topic_fiction
+        else -> return topic.canonicalName
+    }
+    return stringResource(titleRes)
 }
 
 @Preview(showBackground = true)

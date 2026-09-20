@@ -1,5 +1,7 @@
 package com.ibitvalley.writon.modern.data.sync
 
+import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
+
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -10,7 +12,11 @@ import com.ibitvalley.writon.modern.core.network.model.CreatePostRequestDto
 import com.ibitvalley.writon.modern.core.network.model.UpdatePostRequestDto
 import com.ibitvalley.writon.modern.core.network.model.AddCommentRequestDto
 import com.ibitvalley.writon.modern.core.network.model.RelationStateRequestDto
+import com.ibitvalley.writon.modern.core.network.model.ReadingProgressRequestDto
 import com.ibitvalley.writon.modern.core.database.model.DraftEntity
+import com.ibitvalley.writon.modern.core.database.model.GUEST_DRAFT_OWNER
+import com.ibitvalley.writon.modern.core.database.model.draftOwnerKey
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
@@ -19,6 +25,11 @@ import java.util.UUID
 
 internal fun stableOutboxUuid(kind: String, mutationId: Long): String =
     UUID.nameUUIDFromBytes("writon:$kind:$mutationId".toByteArray(StandardCharsets.UTF_8)).toString()
+
+internal fun readingProgressOutboxTarget(accountId: String, postId: String): String = "$accountId|$postId"
+
+internal fun parseReadingProgressOutboxTarget(target: String): Pair<String, String>? =
+    target.split('|', limit = 2).takeIf { it.size == 2 && it.all(String::isNotBlank) }?.let { it[0] to it[1] }
 
 class OutboxSyncWorker(
     context: Context,
@@ -36,9 +47,10 @@ class OutboxSyncWorker(
             return@withContext Result.success()
         }
 
-        var allSuccessful = true
+        WritOnTelemetry.trace("draft_sync") {
+            var allSuccessful = true
 
-        for (mutation in pendingMutations) {
+            for (mutation in pendingMutations) {
             try {
                 when (mutation.mutationType) {
                     "LIKE" -> {
@@ -119,8 +131,33 @@ class OutboxSyncWorker(
                             allSuccessful = false
                         }
                     }
+                    "READING_PROGRESS" -> {
+                        val target = parseReadingProgressOutboxTarget(mutation.targetId)
+                        if (target == null) {
+                            allSuccessful = false
+                            continue
+                        }
+                        val (ownerId, postId) = target
+                        if (FirebaseAuth.getInstance().currentUser?.uid != ownerId) continue
+                        val queuedRequest = gson.fromJson(mutation.payloadJson, ReadingProgressRequestDto::class.java)
+                        val request = if (queuedRequest.clientMutationId.isNullOrBlank()) {
+                            queuedRequest.copy(clientMutationId = stableOutboxUuid("reading", mutation.mutationId))
+                        } else {
+                            queuedRequest
+                        }
+                        val response = apiService.recordReadingProgress(postId, request)
+                        if (response.isSuccessful) {
+                            outboxDao.markMutationSynced(mutation.mutationId)
+                        } else {
+                            allSuccessful = false
+                        }
+                    }
                     "UPSERT_DRAFT", "PUBLISH_DRAFT" -> {
                         val draft = gson.fromJson(mutation.payloadJson, DraftEntity::class.java)
+                        val activeOwner = draftOwnerKey(FirebaseAuth.getInstance().currentUser?.uid)
+                        if (draft.ownerKey == GUEST_DRAFT_OWNER || draft.ownerKey != activeOwner) {
+                            continue
+                        }
                         val shouldPublish = mutation.mutationType == "PUBLISH_DRAFT"
                         val response = if (draft.remotePostId == null) {
                             apiService.createPost(
@@ -151,9 +188,9 @@ class OutboxSyncWorker(
                         val remote = response.body()?.post
                         if (response.isSuccessful && remote != null) {
                             if (shouldPublish) {
-                                db.draftDao().deleteById(draft.localId)
+                                db.draftDao().deleteById(draft.localId, draft.ownerKey)
                             } else {
-                                db.draftDao().markSynced(draft.localId, remote.id, "synced")
+                                db.draftDao().markSynced(draft.localId, draft.ownerKey, remote.id, "synced")
                             }
                             outboxDao.markMutationSynced(mutation.mutationId)
                         } else {
@@ -168,9 +205,10 @@ class OutboxSyncWorker(
             }
         }
 
-        outboxDao.clearSyncedMutations()
+            outboxDao.clearSyncedMutations()
 
-        if (allSuccessful) Result.success() else Result.retry()
+            if (allSuccessful) Result.success() else Result.retry()
+        }
     }
 
     private suspend fun relationStateFor(

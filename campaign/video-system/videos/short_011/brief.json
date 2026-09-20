@@ -1,0 +1,19 @@
+{
+  "video_id": "short_011",
+  "series": "WRITING HACK",
+  "episode_number": 11,
+  "craft_problem": "Adverb-stuffed dialogue tags (whispered menacingly, sneered cruelly, said angrily) attempting to do the work dialogue should do.",
+  "viewer_problem": "Writers know dialogue feels flat, so they overcompensate by attaching dramatic adverbs to speech tags.",
+  "bad_example": "\"Don't touch that,\" he whispered menacingly.",
+  "transformation": "Replace the adverb tag with an action beat that proves the threat physically.",
+  "desired_learning": "The dialogue and action must carry the threat. The tag cannot rescue it.",
+  "target_length_seconds": 24,
+  "difficulty": "beginner | intermediate",
+  "primary_keyword": "dialogue tags fiction writing",
+  "search_intent_title": "Stop Using Adverbs in Dialogue Tags",
+  "previous_similar_videos": [
+    "short_007 (deleting adjectives)",
+    "short_010 (filter words)"
+  ],
+  "novelty_reason": "First dedicated dialogue craft surgery in the franchise. Shifts focus from scene setting and internal perception to interpersonal conflict and tension."
+}

@@ -1,0 +1,19 @@
+{
+  "video_id": "short_010",
+  "series": "WRITING HACK",
+  "episode_number": 10,
+  "craft_problem": "Filter words ('he heard', 'she saw', 'there was') that cushion the impact of urgent scenes",
+  "viewer_problem": "My action and suspense scenes feel sluggish, reported, and distant",
+  "bad_example": "He heard the sound of heavy footsteps running down the hallway.",
+  "transformation": "Delete the observer filter and make the physical noise strike the ear directly",
+  "desired_learning": "Cut the sensory reporting buffer so the danger collides directly with the page",
+  "target_length_seconds": 24,
+  "difficulty": "beginner to intermediate",
+  "primary_keyword": "filter words writing",
+  "search_intent_title": "Stop Writing \u201cHe Heard\u201d and \u201cShe Noticed\u201d",
+  "previous_similar_videos": [
+    "short_007 (adjectives)",
+    "short_009 (nervousness)"
+  ],
+  "novelty_reason": "First video targeting sensory filter words and sentence momentum in suspense scenes"
+}

@@ -1,0 +1,13 @@
+{
+  "default": {
+    "provider": "vertexai",
+    "model": "gemini-2.5-flash",
+    "thinking_level": "low",
+    "fallback": {
+      "provider": "vertexai",
+      "model": "gemini-2.0-flash",
+      "thinking_level": "low"
+    }
+  },
+  "nodes": {}
+}

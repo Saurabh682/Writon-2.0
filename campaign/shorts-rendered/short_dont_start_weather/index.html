@@ -1,0 +1,591 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2160, height=3840" />
+    <title>WritOn — Don't Start With Weather #shorts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 2160px;
+        height: 3840px;
+        overflow: hidden;
+        background-color: #3b2014;
+        font-family: 'Playfair Display', Georgia, serif;
+        color: #0E0C0A;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 2160px;
+        height: 3840px;
+        overflow: hidden;
+      }
+
+      /* 1. Master Desk Photographic Background (Clean Parchment, NO inner box) */
+      .desk-photo {
+        position: absolute;
+        inset: 0;
+        width: 2160px;
+        height: 3840px;
+        background-image: url('assets/desk_coffee_card_nobox_4k.jpg');
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+      }
+
+      /* Warm ambient ray */
+      .warm-ambient {
+        position: absolute;
+        top: -100px;
+        right: -100px;
+        width: 1400px;
+        height: 1400px;
+        background: radial-gradient(circle, rgba(255, 230, 190, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* Left Margin Red Rule */
+      .card-left-rule {
+        position: absolute;
+        left: 244px;
+        top: 345px;
+        height: 2975px;
+        width: 5px;
+        background-color: #821D1A;
+        z-index: 5;
+        border-radius: 3px;
+      }
+
+      /* Header Row */
+      .card-header {
+        position: absolute;
+        top: 345px;
+        left: 310px;
+        width: 1540px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 5;
+        opacity: 0;
+      }
+
+      .inversion-pill {
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: 5px;
+        padding: 12px 34px;
+        border-radius: 14px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .brand-mark {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 88px;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+      }
+      .brand-mark em {
+        font-style: italic;
+        font-weight: 700;
+      }
+      .brand-mark span {
+        color: #821D1A;
+      }
+
+      /* =========================================
+         INITIAL 1S MASTER FRAME & DEFAULT THUMBNAIL (0:00 - 1.0s)
+         ========================================= */
+      .thumbnail-hero-layer {
+        position: absolute;
+        top: 860px;
+        left: 310px;
+        width: 1540px;
+        z-index: 15;
+      }
+      .series-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 18px;
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 38px;
+        font-weight: 800;
+        letter-spacing: 6px;
+        padding: 16px 40px;
+        border-radius: 16px;
+        text-transform: uppercase;
+        margin-bottom: 55px;
+      }
+      .main-series-title {
+        font-size: 175px;
+        line-height: 1.06;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -3px;
+        margin-bottom: 55px;
+      }
+      .main-series-title em {
+        font-style: italic;
+        color: #821D1A;
+      }
+      .thumb-divider {
+        width: 220px;
+        height: 8px;
+        background-color: #821D1A;
+        border-radius: 4px;
+        margin-bottom: 60px;
+      }
+      .topic-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: #8A766A;
+        margin-bottom: 24px;
+      }
+      .topic-quote {
+        font-size: 120px;
+        line-height: 1.18;
+        font-weight: 800;
+        color: #1A140E;
+        letter-spacing: -1.5px;
+        margin-bottom: 28px;
+      }
+      .topic-quote em {
+        font-style: italic;
+        color: #821D1A;
+      }
+      .topic-rule {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 52px;
+        font-weight: 600;
+        color: #5A483E;
+        line-height: 1.35;
+      }
+
+      /* =========================================
+         SECTION A: OPENING HOOK & PRINCIPLE (1.0s - 7s)
+         ========================================= */
+      .hook-hero-layer {
+        position: absolute;
+        top: 820px;
+        left: 310px;
+        width: 1540px;
+        z-index: 8;
+        opacity: 0;
+      }
+
+      .hook-headline {
+        font-size: 195px;
+        line-height: 1.10;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -3px;
+        margin-bottom: 90px;
+      }
+      .hook-row {
+        display: block;
+        opacity: 1;
+        transform: none;
+      }
+      .italic-crimson {
+        font-style: italic;
+        font-weight: 800;
+        color: #821D1A;
+      }
+
+      .hook-sub {
+        font-size: 125px;
+        line-height: 1.25;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+      }
+      .hook-sub-row {
+        display: block;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      /* =========================================
+         SECTION B: FLAWED DRAFT (7s - 15.5s)
+         ========================================= */
+      .draft-hero-layer {
+        position: absolute;
+        top: 860px;
+        left: 310px;
+        width: 1540px;
+        z-index: 10;
+        opacity: 0;
+      }
+
+      .draft-hero-label-row {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 45px;
+      }
+      .draft-hero-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #8A766A;
+      }
+      .draft-hero-cut-tag {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 40px;
+        font-weight: 800;
+        color: #821D1A;
+        background: #FCECEB;
+        padding: 10px 28px;
+        border-radius: 12px;
+        opacity: 0;
+      }
+
+      .draft-hero-quote {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 88px;
+        line-height: 1.28;
+        font-weight: 700;
+        color: #1A140E;
+        position: relative;
+        max-width: 1540px;
+      }
+
+      .draft-line-1, .draft-line-2 {
+        display: block;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      .draft-strike-svg {
+        position: absolute;
+        inset: -15px -20px;
+        width: calc(100% + 40px);
+        height: calc(100% + 30px);
+        pointer-events: none;
+      }
+      .draft-strike-line {
+        stroke: #821D1A;
+        stroke-width: 16;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+        stroke-dasharray: 3200;
+        stroke-dashoffset: 3200;
+      }
+
+      /* =========================================
+         SECTION C: REWRITE & GRAND PAYOFF (16s - 29.5s)
+         ========================================= */
+      .rewrite-hero-layer {
+        position: absolute;
+        top: 760px;
+        left: 310px;
+        width: 1540px;
+        z-index: 12;
+        opacity: 0;
+      }
+
+      .rewrite-lead-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #8A766A;
+        margin-bottom: 50px;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      .rewrite-title {
+        font-size: 155px;
+        line-height: 1.15;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -2px;
+        margin-bottom: 90px;
+      }
+      .rewrite-row {
+        display: block;
+        opacity: 0;
+        transform: translateY(35px);
+      }
+
+      /* Horizontal Rule */
+      .red-divider {
+        width: 180px;
+        height: 8px;
+        background-color: #821D1A;
+        border-radius: 4px;
+        margin-bottom: 90px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      /* Payoff Flow */
+      .payoff-flow {
+        width: 1540px;
+      }
+
+      .payoff-lead {
+        font-size: 160px;
+        font-weight: 900;
+        line-height: 1.08;
+        color: #0E0C0A;
+        letter-spacing: -2px;
+        margin-bottom: 18px;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .payoff-punch {
+        font-size: 205px;
+        font-weight: 900;
+        font-style: italic;
+        line-height: 1.08;
+        color: #821D1A;
+        letter-spacing: -2px;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      /* Footer Row */
+      .card-footer {
+        position: absolute;
+        top: 3320px;
+        left: 244px;
+        width: 1670px;
+        z-index: 5;
+      }
+      .footer-line {
+        width: 100%;
+        height: 3px;
+        background-color: rgba(130, 29, 26, 0.35);
+        margin-bottom: 40px;
+      }
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 65px;
+      }
+      .footer-handle {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 44px;
+        font-weight: 700;
+        color: #2D231E;
+        letter-spacing: 1px;
+      }
+      .footer-dots {
+        display: flex;
+        gap: 20px;
+      }
+      .footer-dot-sand {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: #D9C8B8;
+      }
+      .footer-dot-crimson {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: #821D1A;
+      }
+      .footer-url {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 44px;
+        font-weight: 700;
+        color: #821D1A;
+        letter-spacing: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="29.5"
+      data-width="2160"
+      data-height="3840"
+    >
+      <!-- Audio Track -->
+      <audio id="voiceTrack" src="audio_mixed.mp3" data-start="0" data-duration="29.5"></audio>
+
+      <!-- 1. Background Image -->
+      <div class="desk-photo"></div>
+      <div class="warm-ambient"></div>
+
+      <!-- Left Crimson Margin Rule -->
+      <div class="card-left-rule"></div>
+
+      <!-- Header Row -->
+      <div class="card-header" id="cardHeader">
+        <div class="inversion-pill">CRAFT / INVERSION</div>
+        <div class="brand-mark"><em>WritOn</em><span>.</span></div>
+      </div>
+
+      <!-- 1-SECOND INITIAL FRAME & DEFAULT THUMBNAIL (0:00 - 1.0s) -->
+      <div class="thumbnail-hero-layer" id="thumbnailLayer">
+        <div class="series-pill">CRAFT SERIES • #06</div>
+        <div class="main-series-title">
+          Writing Hack<br>
+          <em>with WritOn.</em>
+        </div>
+        <div class="thumb-divider"></div>
+        <div class="topic-label">Lesson: How to Open a Scene</div>
+        <div class="topic-quote">
+          “Don’t start<br>
+          with <em>weather.”</em>
+        </div>
+        <div class="topic-rule">
+          Start with a decision someone can’t undo.
+        </div>
+      </div>
+
+      <!-- SECTION A: OPENING HOOK (1.0s - 7.5s) -->
+      <div class="hook-hero-layer" id="hookLayer">
+        <div class="hook-headline">
+          <div class="hook-row" id="hr1">Don’t start</div>
+          <div class="hook-row" id="hr2">with <span class="italic-crimson">weather.</span></div>
+        </div>
+        <div class="hook-sub">
+          <div class="hook-sub-row" id="hsr1">A scene begins with a</div>
+          <div class="hook-sub-row" id="hsr2"><span class="italic-crimson">consequence—</span></div>
+          <div class="hook-sub-row" id="hsr3">not ambient temperature.</div>
+        </div>
+      </div>
+
+      <!-- SECTION B: FLAWED DRAFT (7.5s - 15.5s) -->
+      <div class="draft-hero-layer" id="draftLayer">
+        <div class="draft-hero-label-row">
+          <span class="draft-hero-label">Draft 1 / Flawed Opening</span>
+          <span class="draft-hero-cut-tag" id="cutTag">Cut: Zero Stakes</span>
+        </div>
+        <div class="draft-hero-quote" id="draftQuote">
+          <span class="draft-line-1" id="draftL1">“The morning sun rose slowly</span>
+          <span class="draft-line-2" id="draftL2">over misty gray hills.”</span>
+          <!-- Dynamic 2-line Red Strike SVG -->
+          <svg class="draft-strike-svg" viewBox="0 0 1580 260" preserveAspectRatio="none">
+            <path id="strikePath" class="draft-strike-line" d="M 10,58 Q 780,48 1540,62 M 1530,175 Q 780,188 10,170" />
+          </svg>
+        </div>
+      </div>
+
+      <!-- SECTION C: REWRITE & PAYOFF (16s - 29.5s) -->
+      <div class="rewrite-hero-layer" id="rewriteLayer">
+        <div class="rewrite-lead-label" id="rwLabel">Line 2 / The Real Opening</div>
+        
+        <div class="rewrite-title" id="rwTitle">
+          <div class="rewrite-row" id="rr1">“She packed the</div>
+          <div class="rewrite-row italic-crimson" id="rr2">silver teapot</div>
+          <div class="rewrite-row" id="rr3">and left the keys.”</div>
+        </div>
+
+        <!-- Divider Line -->
+        <div class="red-divider" id="redDivider"></div>
+
+        <!-- Payoff Punchline (Line by Line) -->
+        <div class="payoff-flow" id="payoffFlow">
+          <div class="payoff-lead" id="pl1">Start with a decision</div>
+          <div class="payoff-punch" id="pl2">someone can’t undo.</div>
+        </div>
+      </div>
+
+      <!-- Footer Row -->
+      <div class="card-footer" id="cardFooter">
+        <div class="footer-line"></div>
+        <div class="footer-content">
+          <div class="footer-handle">@writon_app</div>
+          <div class="footer-dots">
+            <div class="footer-dot-sand"></div>
+            <div class="footer-dot-crimson"></div>
+          </div>
+          <div class="footer-url">writon.cc ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ============================================================
+      // BEAT 1: 0:00 - 0:07.5 (Hook & Principle)
+      // Nicole: "Don't start with weather. A scene begins with a consequence, not ambient temperature."
+      // ============================================================
+      // 0:00 - 1.0s: Master Thumbnail Layer is on screen.
+      // Nicole speaks immediately at 0:00: "Don't start with weather."
+      // At 1.0s, thumbnail layer glides up and dissolves into the workbench
+      tl.to("#thumbnailLayer", { opacity: 0, y: -45, duration: 0.45, ease: "power2.in" }, 1.0)
+        .to("#cardHeader", { opacity: 1, duration: 0.4, ease: "power2.out" }, 1.1)
+        .to("#hookLayer", { opacity: 1, duration: 0.4, ease: "power2.out" }, 1.1);
+
+      // Nicole at 2.0s: "A scene begins with a consequence, not ambient temperature."
+      tl.to("#hsr1", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 2.0)
+        .to("#hsr2", { opacity: 1, y: 0, duration: 0.60, ease: "power3.out" }, 2.9)
+        .to("#hsr3", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 3.9);
+
+      // Transition from Section A to Section B
+      tl.to("#hookLayer", { opacity: 0, y: -40, duration: 0.6, ease: "power2.in" }, 6.8);
+
+      // ============================================================
+      // BEAT 2: 0:07.5 - 0:15.5 (The Flawed Draft & Active Strikethrough)
+      // Nicole: "Look at draft one: the morning sun rose slowly over misty gray hills. It carries zero stakes."
+      // ============================================================
+      tl.to("#draftLayer", { opacity: 1, duration: 0.1 }, 7.4)
+        .to("#draftL1", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 7.8)
+        .to("#draftL2", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 9.2)
+        .to("#cutTag", { opacity: 1, duration: 0.4, ease: "power2.out" }, 13.5)
+        .to("#strikePath", { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut" }, 13.8)
+        .to("#draftQuote", { color: "#8E7D72", duration: 0.5 }, 14.3);
+
+      // Transition from Section B to Section C
+      tl.to("#draftLayer", { opacity: 0, y: -40, duration: 0.6, ease: "power2.in" }, 15.6);
+
+      // ============================================================
+      // BEAT 3: 0:16.0 - 0:26.5 (The Live Move Rewrite & Payoff)
+      // Nicole: "Now line two: she packed the silver teapot and left the keys. Start with a decision someone can't undo."
+      // ============================================================
+      tl.to("#rewriteLayer", { opacity: 1, duration: 0.1 }, 16.2)
+        .to("#rwLabel", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 16.4)
+        .to("#rr1", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 17.0)
+        .to("#rr2", { opacity: 1, y: 0, duration: 0.65, ease: "back.out(1.2)" }, 18.2)
+        .to("#rr3", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 19.4);
+
+      // Divider Line draws
+      tl.to("#redDivider", { scaleX: 1, duration: 0.6, ease: "power2.out" }, 22.2);
+
+      // Final climactic payoff reveals line by line
+      tl.to("#pl1", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 23.0)
+        .to("#pl2", { opacity: 1, y: 0, duration: 0.7, ease: "back.out(1.2)" }, 24.2);
+
+      // Ambient desk push-in across full 29.5 seconds
+      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.02, duration: 29.5, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

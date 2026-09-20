@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +36,8 @@ import androidx.compose.ui.unit.sp
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.EmailAuthProvider
+import com.google.firebase.auth.FirebaseAuth
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager
 import com.ibitvalley.writon.modern.core.auth.GoogleSignInErrorMapper
@@ -54,17 +57,63 @@ fun SignupScreen(
     onCreateAccountClick: () -> Unit
 ) {
     val context = LocalContext.current
-    var fullName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
+    var fullName by rememberSaveable { mutableStateOf("") }
+    var email by rememberSaveable { mutableStateOf("") }
+    var username by rememberSaveable { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var agreeToTerms by remember { mutableStateOf(false) }
+    var agreeToTerms by rememberSaveable { mutableStateOf(false) }
     var isSubmitting by remember { mutableStateOf(false) }
     var authError by remember { mutableStateOf<String?>(null) }
+    var pendingProfileKind by rememberSaveable {
+        mutableStateOf(
+            if (FirebaseAuth.getInstance().currentUser?.providerData?.any {
+                    it.providerId == EmailAuthProvider.PROVIDER_ID
+                } == true
+            ) "email" else null
+        )
+    }
     val coroutineScope = rememberCoroutineScope()
+
+    val googleUnavailable = stringResource(R.string.auth_google_unavailable)
+    val sessionVerificationFailed = stringResource(R.string.auth_session_verification_failed)
+    val googleProfileFailed = stringResource(R.string.auth_google_profile_failed)
+    val alreadyHaveAccount = stringResource(R.string.auth_already_have_account)
+    val signIn = stringResource(R.string.auth_sign_in)
+    val termsPrefix = stringResource(R.string.auth_terms_prefix)
+    val termsAnd = stringResource(R.string.auth_terms_and)
+    val terms = stringResource(R.string.welcome_terms)
+    val privacy = stringResource(R.string.welcome_privacy)
+    val accountSessionPending = stringResource(R.string.auth_account_session_pending)
+    val accountProfileFailed = stringResource(R.string.auth_account_profile_failed)
+
+    fun finishEmailProfileSetup() {
+        FirebaseAuthManager.syncNetworkAuthToken { hasToken ->
+            if (!hasToken) {
+                isSubmitting = false
+                authError = accountSessionPending
+                return@syncNetworkAuthToken
+            }
+
+            coroutineScope.launch {
+                val profileError = ProfileSyncManager.syncProfile(
+                    UpsertMyProfileRequestDto(
+                        penName = username,
+                        fullName = fullName
+                    )
+                )
+                isSubmitting = false
+                if (profileError == null) {
+                    pendingProfileKind = null
+                    onCreateAccountClick()
+                } else {
+                    authError = accountProfileFailed.format(profileError)
+                }
+            }
+        }
+    }
 
     val webClientId = stringResource(R.string.default_web_client_id)
     val googleSignInClient = remember(webClientId) {
@@ -92,14 +141,14 @@ fun SignupScreen(
                             FirebaseAuthManager.syncNetworkAuthToken { hasToken ->
                                 if (!hasToken) {
                                     isSubmitting = false
-                                    authError = "Session verification failed."
+                                    authError = sessionVerificationFailed
                                     return@syncNetworkAuthToken
                                 }
                                 coroutineScope.launch {
                                     val profileError = ProfileSyncManager.syncGoogleProfile()
                                     isSubmitting = false
                                     if (profileError == null) onCreateAccountClick()
-                                    else authError = "Google Sign-In succeeded, but $profileError"
+                                    else authError = googleProfileFailed.format(profileError)
                                 }
                             }
                         },
@@ -109,12 +158,12 @@ fun SignupScreen(
                         }
                     )
                 } else {
-                    authError = "Google Sign-In token could not be retrieved."
+                    authError = googleUnavailable
                 }
             } catch (e: ApiException) {
                 authError = GoogleSignInErrorMapper.messageFor(e.statusCode, e.localizedMessage)
             } catch (e: Exception) {
-                authError = e.localizedMessage ?: "Google Sign-In failed."
+                authError = e.localizedMessage ?: googleUnavailable
             }
         }
     }
@@ -140,7 +189,7 @@ fun SignupScreen(
                 IconButton(onClick = onBackClick) {
                     Image(
                         painterResource(R.drawable.ic_back),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.common_back),
                         modifier = Modifier.size(24.dp),
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                     )
@@ -148,9 +197,10 @@ fun SignupScreen(
 
                 Text(
                     text = buildAnnotatedString {
-                        append("Already have an account? ")
+                        append(alreadyHaveAccount)
+                        append(" ")
                         withStyle(style = SpanStyle(color = BrandRedColor, fontWeight = FontWeight.Bold)) {
-                            append("Sign in")
+                            append(signIn)
                         }
                     },
                     style = MaterialTheme.typography.bodyMedium,
@@ -162,7 +212,7 @@ fun SignupScreen(
 
             // Header
             Text(
-                text = "Create your\nWritOn account",
+                text = stringResource(R.string.auth_signup_heading),
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontSize = 36.sp,
                     lineHeight = 44.sp,
@@ -172,7 +222,7 @@ fun SignupScreen(
             )
 
             Text(
-                text = "Join a community of writers and readers.",
+                text = stringResource(R.string.auth_signup_community),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color(0xFF6D6963),
                 modifier = Modifier.padding(top = 12.dp)
@@ -190,47 +240,53 @@ fun SignupScreen(
 
             // Form Fields
             SignupTextField(
-                label = "Full name",
+                label = stringResource(R.string.auth_full_name_hint),
                 value = fullName,
                 onValueChange = { fullName = it },
-                placeholder = "Enter your full name",
+                placeholder = stringResource(R.string.auth_full_name_placeholder),
                 leadingIcon = R.drawable.ic_profile
             )
 
             SignupTextField(
-                label = "Email address",
+                label = stringResource(R.string.auth_email_hint),
                 value = email,
                 onValueChange = { email = it },
-                placeholder = "Enter your email address",
+                placeholder = stringResource(R.string.auth_email_or_user_hint),
                 leadingIcon = R.drawable.ic_email
             )
 
             SignupTextField(
-                label = "Username",
+                label = stringResource(R.string.auth_username_hint),
                 value = username,
                 onValueChange = { username = it },
-                placeholder = "Choose a username",
+                placeholder = stringResource(R.string.auth_username_placeholder),
                 leadingIcon = R.drawable.ic_mention,
-                helperText = "This will be your unique identity on WritOn."
+                helperText = stringResource(R.string.auth_username_helper)
             )
 
             SignupPasswordField(
-                label = "Password",
+                label = stringResource(R.string.auth_password_hint),
                 value = password,
                 onValueChange = { password = it },
-                placeholder = "Create a password",
+                placeholder = stringResource(R.string.auth_create_password_placeholder),
                 visible = passwordVisible,
                 onVisibilityToggle = { passwordVisible = !passwordVisible },
-                helperText = "At least 8 characters with a mix of letters, numbers and symbols."
+                visibilityDescription = stringResource(
+                    if (passwordVisible) R.string.auth_hide_password else R.string.auth_show_password
+                ),
+                helperText = stringResource(R.string.auth_password_requirements)
             )
 
             SignupPasswordField(
-                label = "Confirm password",
+                label = stringResource(R.string.auth_confirm_password_hint),
                 value = confirmPassword,
                 onValueChange = { confirmPassword = it },
-                placeholder = "Confirm your password",
+                placeholder = stringResource(R.string.auth_confirm_password_placeholder),
                 visible = confirmPasswordVisible,
-                onVisibilityToggle = { confirmPasswordVisible = !confirmPasswordVisible }
+                onVisibilityToggle = { confirmPasswordVisible = !confirmPasswordVisible },
+                visibilityDescription = stringResource(
+                    if (confirmPasswordVisible) R.string.auth_hide_password else R.string.auth_show_password
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -247,13 +303,14 @@ fun SignupScreen(
                 )
                 Text(
                     text = buildAnnotatedString {
-                        append("By creating an account, I agree to WritOn’s\n")
+                        append(termsPrefix)
+                        append("\n")
                         withStyle(style = SpanStyle(color = BrandRedColor)) {
-                            append("Terms of Service")
+                            append(terms)
                         }
-                        append(" and ")
+                        append(" $termsAnd ")
                         withStyle(style = SpanStyle(color = BrandRedColor)) {
-                            append("Privacy Policy")
+                            append(privacy)
                         }
                         append(".")
                     },
@@ -270,38 +327,32 @@ fun SignupScreen(
                 onClick = {
                     authError = null
                     isSubmitting = true
-                    FirebaseAuthManager.createAccount(
-                        email = email,
-                        password = password,
-                        onSuccess = {
-                            FirebaseAuthManager.syncNetworkAuthToken { hasToken ->
-                                if (!hasToken) {
-                                    isSubmitting = false
-                                    authError = "Your account was created, but the session could not be verified."
-                                    return@syncNetworkAuthToken
-                                }
-
-                                coroutineScope.launch {
-                                    val profileError = ProfileSyncManager.syncProfile(
-                                        UpsertMyProfileRequestDto(
-                                            penName = username,
-                                            fullName = fullName
-                                        )
-                                    )
-                                    isSubmitting = false
-                                    if (profileError == null) onCreateAccountClick()
-                                    else authError = "Your account was created, but $profileError"
-                                }
+                    if (shouldCreateFirebaseIdentity(pendingProfileKind)) {
+                        FirebaseAuthManager.createAccount(
+                            email = email,
+                            password = password,
+                            onSuccess = {
+                                pendingProfileKind = "email"
+                                finishEmailProfileSetup()
+                            },
+                            onError = { message ->
+                                isSubmitting = false
+                                authError = message
                             }
-                        },
-                        onError = { message ->
-                            isSubmitting = false
-                            authError = message
-                        }
-                    )
+                        )
+                    } else {
+                        finishEmailProfileSetup()
+                    }
                 },
-                enabled = fullName.isNotBlank() && email.isNotBlank() && username.isNotBlank() &&
-                    password.length >= 8 && password == confirmPassword && agreeToTerms && !isSubmitting,
+                enabled = canSubmitSignupForm(
+                    pendingProfileKind = pendingProfileKind,
+                    fullName = fullName,
+                    email = email,
+                    username = username,
+                    password = password,
+                    confirmPassword = confirmPassword,
+                    agreedToTerms = agreeToTerms,
+                ) && !isSubmitting,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -309,7 +360,11 @@ fun SignupScreen(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    text = if (isSubmitting) "Creating account…" else "Create Account",
+                    text = when {
+                        isSubmitting -> stringResource(R.string.auth_creating_account)
+                        pendingProfileKind != null -> stringResource(R.string.auth_finish_setup)
+                        else -> stringResource(R.string.auth_create_account)
+                    },
                     style = MaterialTheme.typography.titleMedium,
                     color = Color(0xFFFFFDF9)
                 )
@@ -334,7 +389,7 @@ fun SignupScreen(
             ) {
                 HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE9E1D7))
                 Text(
-                    text = "or sign up with",
+                    text = stringResource(R.string.auth_or_sign_up_with),
                     modifier = Modifier.padding(horizontal = 16.dp),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFF6D6963)
@@ -346,7 +401,7 @@ fun SignupScreen(
 
             // Social Button
             SocialSignupButton(
-                text = "Continue with Google",
+                text = stringResource(R.string.auth_google_sign_in),
                 icon = R.drawable.googleicon,
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {
@@ -414,6 +469,7 @@ fun SignupPasswordField(
     placeholder: String,
     visible: Boolean,
     onVisibilityToggle: () -> Unit,
+    visibilityDescription: String,
     helperText: String? = null
 ) {
     Column(modifier = Modifier.padding(vertical = 8.dp)) {
@@ -432,7 +488,11 @@ fun SignupPasswordField(
             trailingIcon = {
                 val icon = if (visible) R.drawable.ic_eye else R.drawable.ic_eye_off
                 IconButton(onClick = onVisibilityToggle) {
-                    Image(painterResource(icon), contentDescription = null, modifier = Modifier.size(22.dp))
+                    Image(
+                        painterResource(icon),
+                        contentDescription = visibilityDescription,
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
             },
             visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -495,3 +555,19 @@ fun SignupScreenPreview() {
         SignupScreen(onBackClick = {}, onSignInClick = {}, onCreateAccountClick = {})
     }
 }
+
+internal fun shouldCreateFirebaseIdentity(pendingProfileKind: String?): Boolean = pendingProfileKind == null
+
+internal fun canSubmitSignupForm(
+    pendingProfileKind: String?,
+    fullName: String,
+    email: String,
+    username: String,
+    password: String,
+    confirmPassword: String,
+    agreedToTerms: Boolean,
+): Boolean = fullName.isNotBlank() && username.isNotBlank() && agreedToTerms && (
+    pendingProfileKind != null || (
+        email.isNotBlank() && password.length >= 8 && password == confirmPassword
+    )
+)

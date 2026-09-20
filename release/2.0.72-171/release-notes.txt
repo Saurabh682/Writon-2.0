@@ -1,0 +1,27 @@
+WritOn 2.0.72 — Writer Safety & Recognition
+
+<en-US>
+• Added Undo and Redo controls to protect changes while writing.
+• Fixed profile-photo uploading and saving.
+• Added support for numbered Founding Writer recognition and email-confirmed indicators.
+</en-US>
+<en-IN>
+• Added Undo and Redo controls to protect changes while writing.
+• Fixed profile-photo uploading and saving.
+• Added support for numbered Founding Writer recognition and email-confirmed indicators.
+</en-IN>
+<hi-IN>
+• लिखते समय बदलाव सुरक्षित रखने के लिए Undo और Redo नियंत्रण जोड़े गए हैं।
+• प्रोफ़ाइल फ़ोटो अपलोड और सेव करने की समस्या ठीक की गई है।
+• क्रमांकित Founding Writer पहचान और ईमेल-पुष्टि संकेतों के लिए समर्थन जोड़ा गया है।
+</hi-IN>
+<mr-IN>
+• लिहिताना बदल सुरक्षित ठेवण्यासाठी Undo आणि Redo नियंत्रणे जोडली आहेत.
+• प्रोफाइल फोटो अपलोड आणि सेव्ह करण्याची समस्या दुरुस्त केली आहे.
+• क्रमांकित Founding Writer ओळख आणि ईमेल-पुष्टी चिन्हांसाठी समर्थन जोडले आहे.
+</mr-IN>
+<bn-BD>
+• লেখার সময় পরিবর্তন সুরক্ষিত রাখতে Undo ও Redo নিয়ন্ত্রণ যোগ করা হয়েছে।
+• প্রোফাইল ছবি আপলোড ও সেভ করার সমস্যা ঠিক করা হয়েছে।
+• নম্বরযুক্ত Founding Writer স্বীকৃতি ও ইমেইল-নিশ্চিতকরণ চিহ্নের সমর্থন যোগ করা হয়েছে।
+</bn-BD>

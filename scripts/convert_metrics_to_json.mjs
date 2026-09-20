@@ -14,3 +14,4 @@ main().catch((err) => {
   console.error('❌ Error generating metrics JSON:', err);
   process.exit(1);
 });
+

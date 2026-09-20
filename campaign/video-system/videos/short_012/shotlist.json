@@ -1,0 +1,50 @@
+[
+  {
+    "time_start": 0.0,
+    "time_end": 2.2,
+    "beat": "frame_zero_problem",
+    "on_screen_text": "She was furious at him for lying.",
+    "pills": [
+      "WRITING HACK #12",
+      "Abstract Emotion"
+    ],
+    "voice": "This sentence says she was furious. It forgets to make her terrifying."
+  },
+  {
+    "time_start": 2.2,
+    "time_end": 5.8,
+    "beat": "diagnosis",
+    "voice": "Stop making angry characters shout. Dangerous fury lowers its voice and organizes the room."
+  },
+  {
+    "time_start": 5.8,
+    "time_end": 8.2,
+    "beat": "dissolve",
+    "motion": "draft_dissolves_into_parchment"
+  },
+  {
+    "time_start": 8.2,
+    "time_end": 16.5,
+    "beat": "healed_rewrite",
+    "on_screen_text": "She refolded his napkin into a sharp triangle, and slid the salt cellar two inches to the left.",
+    "pills": [
+      "Healed Sentence",
+      "Lethal Restraint"
+    ],
+    "voice": "Watch the rewrite: She refolded his napkin into a sharp triangle, and slid the salt cellar two inches to the left."
+  },
+  {
+    "time_start": 16.5,
+    "time_end": 19.5,
+    "beat": "consequence",
+    "on_screen_text": "Now the silence is colder than any slammed door.",
+    "voice": "Now the silence is colder than any slammed door."
+  },
+  {
+    "time_start": 19.5,
+    "time_end": 25.5,
+    "beat": "craft_rule_loop",
+    "on_screen_text": "Loud anger makes noise. Lethal anger organizes the cutlery.",
+    "voice": "Loud anger makes noise. Lethal anger organizes the cutlery."
+  }
+]

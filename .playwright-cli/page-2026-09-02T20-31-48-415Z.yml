@@ -1,0 +1,271 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - navigation "Page Header" [ref=f1e3]:
+      - link "Google Play logo" [ref=f1e4] [cursor=pointer]:
+        - /url: /store/games
+        - generic [aria-hidden] [ref=f1e12]: google_logo Play
+      - navigation "Main" [ref=f1e14]:
+        - tablist [ref=f1e16]:
+          - generic [ref=f1e19]:
+            - tab "Games" [ref=f1e20] [cursor=pointer]
+            - tab "Apps" [selected] [ref=f1e22] [cursor=pointer]
+            - tab "Books" [ref=f1e24] [cursor=pointer]
+            - tab "Kids" [ref=f1e26] [cursor=pointer]
+      - generic [ref=f1e28]:
+        - button "Search" [ref=f1e30] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f1e31]: search
+        - button "Help Center" [ref=f1e33] [cursor=pointer]:
+          - generic [aria-hidden] [ref=f1e34]: help_outline
+        - button "Open account menu" [ref=f1e39] [cursor=pointer]
+  - generic [ref=f1e45]:
+    - generic [ref=f1e48]:
+      - generic [ref=f1e53]:
+        - generic [ref=f1e56]:
+          - 'heading "WritOn: Story Writing & Reads" [level=1] [ref=f1e58]'
+          - generic [ref=f1e59]:
+            - link "Writon" [ref=f1e61] [cursor=pointer]:
+              - /url: /store/apps/dev?id=8058395127347425367
+            - generic [ref=f1e62]: Contains ads
+        - region "Information badges" [ref=f1e65]:
+          - generic [ref=f1e66]:
+            - generic [ref=f1e67]:
+              - img "Rated 3.3 stars out of five stars" [ref=f1e70]:
+                - generic [aria-hidden] [ref=f1e71]: "3.3"
+                - generic [aria-hidden] [ref=f1e72]: star
+              - generic [ref=f1e73]: 135 reviews
+            - generic [ref=f1e74]:
+              - generic [ref=f1e75]: 50K+
+              - generic [ref=f1e76]: Downloads
+      - generic [ref=f1e77]:
+        - button "Install" [ref=f1e85]
+        - generic [ref=f1e89]:
+          - button "Share" [ref=f1e95]
+          - button "Add to wishlist" [ref=f1e107]
+    - generic [ref=f1e115]:
+      - generic [ref=f1e116]:
+        - generic [ref=f1e117]:
+          - generic [ref=f1e120]:
+            - list [ref=f1e121]:
+              - listitem [ref=f1e122]:
+                - button "Screenshot image" [ref=f1e124] [cursor=pointer]
+              - listitem [ref=f1e125]:
+                - button "Screenshot image" [ref=f1e127] [cursor=pointer]
+              - listitem [ref=f1e128]:
+                - button "Screenshot image" [ref=f1e130] [cursor=pointer]
+              - listitem [ref=f1e131]:
+                - button "Screenshot image" [ref=f1e133] [cursor=pointer]
+              - listitem [ref=f1e134]:
+                - button "Screenshot image" [ref=f1e136] [cursor=pointer]
+              - listitem [ref=f1e137]:
+                - button "Screenshot image" [ref=f1e139] [cursor=pointer]
+              - listitem [ref=f1e140]:
+                - button "Screenshot image" [ref=f1e142] [cursor=pointer]
+              - listitem [ref=f1e143]:
+                - button "Screenshot image" [ref=f1e145] [cursor=pointer]
+            - button "Scroll Next" [ref=f1e147] [cursor=pointer]:
+              - generic [aria-hidden] [ref=f1e149]: chevron_right
+          - generic [ref=f1e152]:
+            - generic [ref=f1e154]:
+              - heading "About this app" [level=2] [ref=f1e156]
+              - button "See more information on About this app" [ref=f1e158] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f1e159]: arrow_forward
+            - generic [ref=f1e160]:
+              - generic [ref=f1e161]: "WritOn is a modern creative writing and reading platform crafted for thinkers, storytellers, poets, and avid readers worldwide. Whether you want to write your first short story, publish thoughtful essays, craft poetry, or read captivating narratives, WritOn provides a clean, distraction-free creative home.✨ WHAT MAKES WRITON DIFFERENT?📖 Read Captivating Stories & Articles• Explore thousands of original short stories, poems, essays, thought pieces, and personal blogs.• Clean, customizable reading experience with custom font sizing, line spacing, and elegant Dark Mode.• Personalized feed tailored to your reading interests and favorite genres.✍️ Distraction-Free Creative Writing Studio• Minimalist, high-performance editor designed to keep you focused on your words.• Support for drafts, instant publishing, custom tags, and genre categorization.• Write freely knowing your drafts are safely saved offline and synced seamlessly across devices.🌍 Read & Write in 6+ Languages• Immerse yourself in stories and poetry across English, Hindi (हिन्दी), Spanish (Español), French (Français), Bengali (বাংলা), and Marathi (मराठी).• Switch UI languages instantly with native localization.🤝 Join a Thriving Creative Community• Connect with authors and passionate readers from all over the world.• Leave thoughtful applauds, share feedback, bookmark favorites, and follow your favorite creators.• Discover emerging voices across fiction, romance, thriller, poetry, shayari, and philosophy.⚡ Offline First & Lightning Fast• Enjoy uninterrupted reading anywhere — even without an internet connection.• Built with modern Android architecture for buttery-smooth performance and low battery usage.🌟 KEY FEATURES:• 100% Free to read, write, and explore• Distraction-free typography and Reader Mode• Dark & Light theme with dynamic system styling• Offline reading library & reading history• Seamless bookmarking and story sharing• Daily inspiration, prompts, and diverse categoriesJoin the WritOn community today. Read. Reflect. Rise.Have feedback or feature requests? Reach out to us at help@writon.coWebsite: https://writon.co"
+              - note "Read and write inspiring stories, poems, and blogs in a creative community." [ref=f1e163]
+              - generic [ref=f1e165]:
+                - generic [ref=f1e166]: Updated on
+                - generic [ref=f1e167]: Aug 31, 2026
+              - generic [ref=f1e170]:
+                - generic [aria-hidden] [ref=f1e172]: Social
+                - link "Social" [ref=f1e173] [cursor=pointer]:
+                  - /url: /store/apps/category/SOCIAL
+          - generic [ref=f1e175]:
+            - generic [ref=f1e177]:
+              - heading "Data safety" [level=2] [ref=f1e179]
+              - generic [ref=f1e180] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f1e181]: arrow_forward
+                - link "See more information on Data safety" [ref=f1e182]:
+                  - /url: /store/apps/datasafety?id=com.ibitvalley.writon
+            - generic [ref=f1e183]:
+              - text: Safety starts with understanding how developers collect and share your data. Data privacy and security practices may vary based on your use, region, and age. The developer provided this information and may update it over time.
+              - generic [ref=f1e184]:
+                - list [ref=f1e185]:
+                  - listitem [ref=f1e186]:
+                    - generic [ref=f1e188]:
+                      - text: No data shared with third parties
+                      - generic [ref=f1e189]:
+                        - link "Learn more" [ref=f1e190] [cursor=pointer]:
+                          - /url: https://support.google.com/googleplay?p=data-safety&hl=en
+                        - text: about how developers declare sharing
+                  - listitem [ref=f1e191]:
+                    - generic [ref=f1e193]:
+                      - text: This app may collect these data types
+                      - generic [ref=f1e194]: Personal info, Photos and videos, and Device or other IDs
+                  - listitem [ref=f1e195]:
+                    - generic [ref=f1e197]: Data is encrypted in transit
+                  - listitem [ref=f1e198]:
+                    - generic [ref=f1e200]: You can request that data be deleted
+                - generic [ref=f1e203]:
+                  - generic [aria-hidden] [ref=f1e205]: See details
+                  - link "See more details on data safety" [ref=f1e206] [cursor=pointer]:
+                    - /url: /store/apps/datasafety?id=com.ibitvalley.writon
+          - generic [ref=f1e208]:
+            - generic [ref=f1e210]:
+              - heading "Ratings and reviews" [level=2] [ref=f1e212]
+              - button "See more information on Ratings and reviews" [ref=f1e214] [cursor=pointer]:
+                - generic [aria-hidden] [ref=f1e215]: arrow_forward
+              - button "Ratings and reviews are verified" [ref=f1e219]:
+                - generic [aria-hidden] [ref=f1e223]: info_outline
+            - generic [ref=f1e224]:
+              - list [ref=f1e228]:
+                - listitem [ref=f1e229]:
+                  - button "Phone" [pressed] [ref=f1e230] [cursor=pointer]:
+                    - generic [aria-hidden] [ref=f1e232]:
+                      - generic [aria-hidden] [ref=f1e234]: phone_android
+                      - generic [ref=f1e235]: Phone
+              - generic [ref=f1e236]:
+                - generic [ref=f1e239]:
+                  - generic [ref=f1e240]:
+                    - generic [aria-hidden] [ref=f1e241]: "3.3"
+                    - img "Rated 3.3 stars out of five stars" [ref=f1e242]
+                    - generic [ref=f1e273]: 133 reviews
+                  - generic [ref=f1e274]:
+                    - img "66 reviews for star rating 5" [ref=f1e275]:
+                      - generic [aria-hidden] [ref=f1e276]: "5"
+                    - img "7 reviews for star rating 4" [ref=f1e279]:
+                      - generic [aria-hidden] [ref=f1e280]: "4"
+                    - img "7 reviews for star rating 3" [ref=f1e283]:
+                      - generic [aria-hidden] [ref=f1e284]: "3"
+                    - img "6 reviews for star rating 2" [ref=f1e287]:
+                      - generic [aria-hidden] [ref=f1e288]: "2"
+                    - img "45 reviews for star rating 1" [ref=f1e291]:
+                      - generic [aria-hidden] [ref=f1e292]: "1"
+                - generic [ref=f1e295]:
+                  - generic [ref=f1e296]:
+                    - generic [ref=f1e297]:
+                      - generic [ref=f1e298]: A Google user
+                      - button "More review actions" [ref=f1e304] [cursor=pointer]:
+                        - generic [aria-hidden] [ref=f1e305]: more_vert
+                    - generic [ref=f1e306]:
+                      - img "Rated 2 stars out of five stars" [ref=f1e307]
+                      - text: February 3, 2019
+                  - generic [ref=f1e338]: I have been looking for an app like this for some time. When I finally saw this, I got excited that Id found exactly what I wanted. Then i went to log on. My excitement and joy got crushed because it didnt work. After spending 30 minuets trying to figure out what I did wrong, I deleted the app. If this issue could be fixed, I would be more than happy to download again. For those of you that are interested in this app, go an download it, but dont be surprised when it doesnt work. Best of luck! :)
+                  - generic [ref=f1e339]:
+                    - generic [ref=f1e340]: 55 people found this review helpful
+                    - generic [ref=f1e341]:
+                      - generic [ref=f1e342]: Did you find this helpful?
+                      - generic [ref=f1e344]:
+                        - button "Yes" [ref=f1e345] [cursor=pointer]:
+                          - generic [ref=f1e348]: "Yes"
+                        - button "No" [ref=f1e349] [cursor=pointer]:
+                          - generic [ref=f1e352]: "No"
+                - generic [ref=f1e353]:
+                  - generic [ref=f1e354]:
+                    - generic [ref=f1e355]:
+                      - generic [ref=f1e356]: Divya Karnani
+                      - button "More review actions" [ref=f1e362] [cursor=pointer]:
+                        - generic [aria-hidden] [ref=f1e363]: more_vert
+                    - generic [ref=f1e364]:
+                      - img "Rated 1 stars out of five stars" [ref=f1e365]
+                      - text: September 20, 2020
+                  - generic [ref=f1e396]: Pagal pan aap please dont waste your time in downloading this aap. Such a irritating one. I have made account in this aap but bymistake it get uninstall from my phone. And now m tring to login on my previous account its not showing any response and did not open it after so many trials. Please resolve my problem as quick as you can. Since 1 week iit was working nicely. And while writting and posting it i was getting good responses while from public. But right now its not working it properly.
+                  - generic [ref=f1e397]:
+                    - generic [ref=f1e398]: 33 people found this review helpful
+                    - generic [ref=f1e399]:
+                      - generic [ref=f1e400]: Did you find this helpful?
+                      - generic [ref=f1e402]:
+                        - button "Yes" [ref=f1e403] [cursor=pointer]:
+                          - generic [ref=f1e406]: "Yes"
+                        - button "No" [ref=f1e407] [cursor=pointer]:
+                          - generic [ref=f1e410]: "No"
+                  - generic [ref=f1e411]:
+                    - generic [ref=f1e412]:
+                      - generic [ref=f1e413]: Writon
+                      - generic [ref=f1e414]: September 20, 2020
+                    - generic [ref=f1e415]: We are extremely sorry for the inconvenience caused. Please mail your registered email id to help@writon.co and we will resolve your issue ASAP.
+                - generic [ref=f1e417]:
+                  - generic [ref=f1e418]:
+                    - generic [ref=f1e419]:
+                      - generic [ref=f1e420]: Rainbow learners
+                      - button "More review actions" [ref=f1e426] [cursor=pointer]:
+                        - generic [aria-hidden] [ref=f1e427]: more_vert
+                    - generic [ref=f1e428]:
+                      - img "Rated 5 stars out of five stars" [ref=f1e429]
+                      - text: April 29, 2020
+                  - generic [ref=f1e460]: It is good for the it guy who is going on with the English grammar and you can revise from this morning and expressions properly and I can help in any idea what you are outside of plants ets2 simple you can get the same as last time you is crystallized
+                  - generic [ref=f1e461]:
+                    - generic [ref=f1e462]: 17 people found this review helpful
+                    - generic [ref=f1e463]:
+                      - generic [ref=f1e464]: Did you find this helpful?
+                      - generic [ref=f1e466]:
+                        - button "Yes" [ref=f1e467] [cursor=pointer]:
+                          - generic [ref=f1e470]: "Yes"
+                        - button "No" [ref=f1e471] [cursor=pointer]:
+                          - generic [ref=f1e474]: "No"
+                - button "See all reviews" [ref=f1e478]
+          - generic [ref=f1e483]:
+            - heading "What’s new" [level=2] [ref=f1e487]
+            - generic [ref=f1e488]: "🎉 What's New in WritOn 2.0:• Story Studio: Distraction-free manuscript editor with instant autosave & drafting.• Focused Reading: Explore curated short stories, essays, and poetry with Dark Mode.• Multi-Lingual Sanctuary: Read and write across English, Hindi, and regional languages.• Offline Writing: Draft stories anywhere without an internet connection.• Performance: Ultra-fast app launch and smoother typography.Enjoying WritOn? Please leave us a review on Google Play!"
+        - link "Flag as inappropriate (opens in new window)" [ref=f1e493] [cursor=pointer]:
+          - /url: https://support.google.com/googleplay/?p=report_content
+          - generic [aria-hidden] [ref=f1e494]: flag
+          - text: Flag as inappropriate
+      - generic [ref=f1e495]:
+        - generic [ref=f1e496]:
+          - img "Content rating" [ref=f1e497]
+          - generic [ref=f1e498]:
+            - generic [ref=f1e499]: Rated for 12+
+            - generic [ref=f1e500]: Parental Guidance Recommended
+            - generic [ref=f1e501]: Users Interact
+            - link "Learn more about content ratings (opens in new window)" [ref=f1e502] [cursor=pointer]:
+              - /url: https://support.google.com/googleplay?p=appgame_ratings
+              - text: Learn more
+        - generic [ref=f1e506]:
+          - heading "App support" [level=2] [ref=f1e508]
+          - button "Expand" [ref=f1e510] [cursor=pointer]:
+            - generic [aria-hidden] [ref=f1e511]: expand_more
+  - contentinfo [ref=f1e513]:
+    - generic [ref=f1e515]:
+      - generic [ref=f1e517]:
+        - text: Google Play
+        - link [ref=f1e519] [cursor=pointer]:
+          - /url: /store/pass/getstarted
+          - paragraph [ref=f1e520]: Play Pass
+        - link [ref=f1e522] [cursor=pointer]:
+          - /url: /store/points/enroll
+          - paragraph [ref=f1e523]: Play Points
+        - link [ref=f1e525] [cursor=pointer]:
+          - /url: https://play.google.com/about/giftcards
+          - paragraph [ref=f1e526]: Gift cards
+        - link [ref=f1e528] [cursor=pointer]:
+          - /url: /redeem
+          - paragraph [ref=f1e529]: Redeem
+        - link [ref=f1e531] [cursor=pointer]:
+          - /url: https://support.google.com/googleplay/answer/134336
+          - paragraph [ref=f1e532]: Refund policy
+      - generic [ref=f1e534]:
+        - text: Kids & family
+        - link [ref=f1e536] [cursor=pointer]:
+          - /url: https://support.google.com/googleplay?p=pff_parentguide
+          - paragraph [ref=f1e537]: Parent Guide
+        - link [ref=f1e539] [cursor=pointer]:
+          - /url: https://support.google.com/googleplay/answer/7007852
+          - paragraph [ref=f1e540]: Family sharing
+    - generic [ref=f1e541]:
+      - link [ref=f1e543] [cursor=pointer]:
+        - /url: https://play.google.com/intl/en-US_in/about/play-terms.html
+        - paragraph [ref=f1e544]: Terms of Service
+      - link [ref=f1e546] [cursor=pointer]:
+        - /url: https://policies.google.com/privacy
+        - paragraph [ref=f1e547]: Privacy
+      - link [ref=f1e549] [cursor=pointer]:
+        - /url: https://support.google.com/googleplay/?p=about_play
+        - paragraph [ref=f1e550]: About Google Play
+      - link [ref=f1e552] [cursor=pointer]:
+        - /url: http://developer.android.com/index.html
+        - paragraph [ref=f1e553]: Developers
+      - link [ref=f1e555] [cursor=pointer]:
+        - /url: https://store.google.com/?playredirect=true&utm_source=play&utm_medium=google_oo&utm_campaign=GS106288
+        - paragraph [ref=f1e556]: Google Store
+      - generic [ref=f1e557]: All prices include GST.
+      - generic [ref=f1e558]: India (English (United States))

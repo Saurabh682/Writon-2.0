@@ -2,33 +2,36 @@
 <html lang="en">
 <head>
   <title>Privacy Policy — WritOn</title>
-  <meta name="description" content="Read the WritOn Privacy Policy. Learn how we handle your personal data, protect your privacy rights, and secure your writer account.">
+  <meta name="description" content="Read the WritOn Privacy Policy. Learn how we handle your personal data, local drafts, diagnostic telemetry, and protect your privacy rights.">
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 
   <!-- Favicon & Brand Icons -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png?v=2" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png?v=2" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260913_thicker" />
+  <link rel="shortcut icon" href="/favicon.ico?v=20260913_thicker" />
 
   <!-- Open Graph / Social -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="WritOn" />
-  <meta property="og:url" content="https://writon.cc/privacy-policy.html" />
+  <meta property="og:url" content="https://writon.cc/privacy-policy" />
   <meta property="og:title" content="Privacy Policy — WritOn" />
-  <meta property="og:description" content="Read the WritOn Privacy Policy. Learn how we handle your personal data, protect your privacy rights, and secure your writer account." />
+  <meta property="og:description" content="Read the WritOn Privacy Policy. Learn how we handle your personal data, local drafts, diagnostic telemetry, and protect your privacy rights." />
   <meta property="og:image" content="https://writon.cc/assets/hero-banner.webp" />
 
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:site" content="@WritOn_Social" />
   <meta name="twitter:title" content="Privacy Policy — WritOn" />
-  <meta name="twitter:description" content="Read the WritOn Privacy Policy. Learn how we handle your personal data, protect your privacy rights, and secure your writer account." />
+  <meta name="twitter:description" content="Read the WritOn Privacy Policy. Learn how we handle your personal data, local drafts, diagnostic telemetry, and protect your privacy rights." />
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <link rel="canonical" href="https://writon.cc/privacy-policy.html">
+  <link rel="canonical" href="https://writon.cc/privacy-policy">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -53,7 +56,7 @@
       padding: 40px 20px;
     }
     .container {
-      max-width: 800px;
+      max-width: 820px;
       margin: 0 auto;
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
@@ -61,50 +64,152 @@
       padding: 48px 40px;
       box-shadow: 0 10px 30px -10px rgba(28, 25, 23, 0.05);
     }
-    .header-nav { margin-bottom: 32px; }
+    .header-nav { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; }
     .header-nav a { text-decoration: none; color: var(--brand-terracotta); font-weight: 600; font-size: 14px; }
-    h1 { font-family: 'Newsreader', serif; font-size: 36px; margin-bottom: 8px; color: var(--text-primary); }
+    h1 { font-family: 'Newsreader', serif; font-size: 38px; margin-bottom: 8px; color: var(--text-primary); }
     .last-updated { font-size: 13px; color: var(--text-muted); margin-bottom: 32px; }
-    h2 { font-family: 'Newsreader', serif; font-size: 24px; margin: 28px 0 12px; color: var(--text-primary); }
-    p, li { font-size: 15px; color: var(--text-secondary); margin-bottom: 16px; }
-    ul { padding-left: 24px; margin-bottom: 20px; }
+    h2 { font-family: 'Newsreader', serif; font-size: 24px; margin: 32px 0 12px; color: var(--text-primary); border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px; }
+    h3 { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; font-weight: 700; margin: 18px 0 8px; color: var(--text-primary); }
+    p, li { font-size: 15px; color: var(--text-secondary); margin-bottom: 14px; }
+    ul, ol { padding-left: 24px; margin-bottom: 18px; }
+    li { margin-bottom: 8px; }
     a { color: var(--brand-terracotta); text-decoration: none; }
     a:hover { text-decoration: underline; }
-    .alert-box { background: var(--bg-surface); border-left: 4px solid var(--brand-terracotta); padding: 16px 20px; border-radius: 8px; margin: 24px 0; }
+    .alert-box { background: var(--bg-surface); border-left: 4px solid var(--brand-terracotta); padding: 18px 22px; border-radius: 8px; margin: 24px 0; }
+    .table-container { overflow-x: auto; margin: 20px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border-subtle); }
+    th { background: var(--bg-surface); font-weight: 600; color: var(--text-primary); }
     footer { text-align: center; margin-top: 40px; font-size: 13px; color: var(--text-muted); }
   </style>
-
 </head>
 <body>
   <div class="container">
     <div class="header-nav">
       <a href="/">← Back to WritOn</a>
+      <a href="/terms.html">Terms of Service →</a>
     </div>
     <h1>Privacy Policy</h1>
-    <div class="last-updated">Last Updated: August 29, 2026</div>
+    <div class="last-updated">Effective Date: September 15, 2026 | Last Updated: September 15, 2026</div>
 
-    <p>This Privacy Policy explains how WritOn ("we", "our", or "us") collects, uses, and safeguards your information when you use our mobile application and website at <strong>writon.cc</strong>.</p>
+    <p>WritOn ("we", "our", or "us", operated via <strong>writon.cc</strong>) respects your personal privacy. This Privacy Policy describes clearly and accurately what information we collect, how that information is stored, processed, and shared, and how you can exercise full control over your data across our website and Android mobile applications.</p>
 
     <h2>1. Information We Collect</h2>
+    <p>Depending on how you use WritOn, we collect and process the following categories of information:</p>
+
+    <h3>A. Account and Profile Information</h3>
     <ul>
-      <li><strong>Account Information</strong>: When you sign up, we collect your email address, display name, and optional profile bio via secure Firebase Authentication.</li>
-      <li><strong>User Content</strong>: Stories, poems, comments, tags, and drafts you write or publish.</li>
-      <li><strong>Usage &amp; Diagnostics</strong>: Anonymous app usage statistics, crash logs, and session durations collected via Google Analytics &amp; Firebase Crashlytics to improve app performance.</li>
+      <li><strong>Authentication Details</strong>: When you register or sign in using Firebase Authentication, we receive your email address, unique account identifier, authentication tokens, and authentication timestamp.</li>
+      <li><strong>Public Profile Information</strong>: Your chosen author pen name (display name), unique username handle, optional bio description, and optional profile avatar image URL.</li>
+      <li><strong>Guest &amp; Unregistered Readers</strong>: You can browse, read public stories, and search published content without creating an account or providing an email address.</li>
+    </ul>
+
+    <h3>B. User-Generated Content and Draft Storage</h3>
+    <ul>
+      <li><strong>Published Content</strong>: Stories, poems, essays, chapter episodes, cover images, genre tags, and public comments you deliberately choose to publish. These are stored on our secure cloud database servers and made publicly visible to readers.</li>
+      <li><strong>Local Offline Drafts (On-Device Storage)</strong>: Any story or poem drafts that you create in the WritOn Android editor remain stored locally on your device in a secure private Room (SQLite) database. Unfinished drafts <strong>are not uploaded or synced to our cloud servers</strong> until you explicitly tap "Publish". If you uninstall the app or clear app storage before publishing, local drafts stored only on that device are cleared with the app package.</li>
+    </ul>
+
+    <h3>C. Reading History, Bookmarks, and Social Interactions</h3>
+    <ul>
+      <li><strong>Bookmarks &amp; Library</strong>: Stories saved to your reading list.</li>
+      <li><strong>Interactions</strong>: Applauds, follower relationships, and reading history (scroll progress and completion status) stored to restore your reading position and suggest relevant independent literature.</li>
+    </ul>
+
+    <h3>D. Push Notification Tokens</h3>
+    <p>If you grant notification permissions on your Android device, we receive a Firebase Cloud Messaging (FCM) registration token. This token allows us to send editorial digests, notifications when followed authors release new pieces, and important system alerts. You can revoke notification permissions at any time via Android device Settings.</p>
+
+    <h3>E. Usage, Device, and Diagnostic Data</h3>
+    <p>To ensure application stability, resolve bugs, and monitor service availability, we collect diagnostic and performance telemetry via Google Analytics for Firebase, Firebase Crashlytics, and Firebase Performance Monitoring:</p>
+    <ul>
+      <li><strong>Diagnostic Crash Logs</strong>: Stack traces, operating system version (e.g. Android 14), device model/manufacturer, battery state, and memory headroom at the moment of an unhandled exception or Application Not Responding (ANR) event.</li>
+      <li><strong>App &amp; Performance Telemetry</strong>: App version code/name, cold-start latency, network request failure rates, screen view counts, and feature interactions (e.g. font size adjustments, reading theme toggles).</li>
+      <li><strong>Install Attribution</strong>: Campaign attribution parameters and Google Play Install Referrer tokens to understand which distribution channels or organic discoveries brought readers to WritOn.</li>
     </ul>
 
     <h2>2. How We Use Your Information</h2>
+    <p>We use the data we collect solely for the following legitimate purposes:</p>
     <ul>
-      <li>To deliver, maintain, and personalize your reading and writing experience.</li>
-      <li>To sync your offline drafts seamlessly with your account.</li>
-      <li>To prevent spam, abuse, and maintain community safety.</li>
-      <li>We <strong>never sell</strong> your personal data to third parties or data brokers.</li>
+      <li><strong>Core Service Delivery</strong>: Authenticating your identity, rendering stories with high typographical fidelity, and managing your author profile.</li>
+      <li><strong>App Performance &amp; Reliability</strong>: Investigating crashes, preventing ANRs, and optimizing app performance to meet Google Play Android Vitals thresholds (crash rate &lt; 0.3%).</li>
+      <li><strong>Safety &amp; Abuse Prevention</strong>: Enforcing community standards, detecting spam bots, preventing automated scraping, and investigating reports of prohibited material.</li>
+      <li><strong>Editorial &amp; Service Notifications</strong>: Delivering opt-in reading digests and author publishing notifications through Firebase Cloud Messaging.</li>
+      <li><strong>No Sale of Personal Data</strong>: We <strong>never sell, rent, or trade</strong> your personal information, reading history, drafts, or email addresses to data brokers, advertising networks, or third-party telemarketers.</li>
     </ul>
 
-    <h2>3. Data Retention &amp; Deletion</h2>
-    <p>You can delete your account and all associated publications at any time directly in the app settings or by visiting our <a href="/delete-account.html">Account Deletion</a> page.</p>
+    <h2>3. Third-Party Service Providers and Infrastructure</h2>
+    <p>We work with vetted enterprise cloud infrastructure providers to host our services. Each provider processes data under strict confidentiality and security commitments:</p>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Provider &amp; Purpose</th>
+            <th>Data Processed</th>
+            <th>Privacy Reference</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Google Cloud Platform &amp; Firebase</strong><br>(Auth, Crashlytics, FCM, Hosting)</td>
+            <td>Email, auth tokens, push tokens, crash stack traces, diagnostic analytics</td>
+            <td><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a></td>
+          </tr>
+          <tr>
+            <td><strong>Supabase &amp; PostgreSQL</strong><br>(Active Database &amp; API Layer)</td>
+            <td>User profile, published stories, comments, bookmarks, reading progress</td>
+            <td><a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy</a></td>
+          </tr>
+          <tr>
+            <td><strong>Cloudflare</strong><br>(CDN &amp; DDoS Protection)</td>
+            <td>IP address, HTTP request headers (cached ephemerally at edge for network security)</td>
+            <td><a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">Cloudflare Privacy Policy</a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <h2>4. Contact Us</h2>
-    <p>If you have any questions regarding this Privacy Policy, please contact us at <a href="mailto:help@writon.cc">help@writon.cc</a>.</p>
+    <h2>4. Public Information vs. Private Data</h2>
+    <ul>
+      <li><strong>Publicly Visible</strong>: Your display name, username, bio, published stories, published poems, comments, applauds, follower/following counts, and public reading lists. Anyone on the internet or within the WritOn app can view this content.</li>
+      <li><strong>Strictly Private</strong>: Your account email address, password hashes, on-device unsubmitted drafts, private device tokens, and raw crash telemetry. These are never displayed publicly.</li>
+    </ul>
+
+    <h2>5. Data Retention, Account Deletion &amp; Exceptions</h2>
+    <p>We retain your personal data for as long as your account remains active.</p>
+    <ul>
+      <li><strong>In-App Deletion</strong>: You can permanently delete your account directly inside the app (Settings &rarr; Delete Account). When confirmed, your profile, authentication record, published stories, comments, bookmarks, and reading history are immediately and permanently removed from our live production database.</li>
+      <li><strong>Local Device Retention</strong>: Because drafts are stored locally on your device in SQLite, deleting your server account does not automatically erase unpublished drafts from your phone. You should clear app data or uninstall the app to remove local storage.</li>
+      <li><strong>Automated Backup Purging</strong>: Routine encrypted database snapshot backups retain records for disaster recovery and system integrity for up to 30 days, after which they are systematically overwritten and permanently purged.</li>
+      <li><strong>Legal &amp; Abuse Prevention Exceptions</strong>: We may retain limited technical identifiers or moderation logs where strictly necessary to comply with applicable legal obligations, resolve active disputes, prevent repeat severe community harm, or enforce legal terms.</li>
+    </ul>
+    <p>For complete step-by-step instructions and web-based deletion requests, please review our <a href="/delete-account.html">Account &amp; Data Deletion page</a>.</p>
+
+    <h2>6. Your Privacy Rights and Choices</h2>
+    <p>Under applicable global data protection regulations (including GDPR, UK GDPR, and CCPA/CPRA where applicable), you possess the following rights:</p>
+    <ul>
+      <li><strong>Right of Access &amp; Portability</strong>: You may request an export of your personal information and published stories.</li>
+      <li><strong>Right to Rectification</strong>: You can update or correct your profile, name, and bio directly in the app at any time.</li>
+      <li><strong>Right to Erasure (Right to Be Forgotten)</strong>: You can delete your account and all associated creative works via in-app settings or via email.</li>
+      <li><strong>Notification Preferences</strong>: You can disable push notifications at any moment via your device system settings.</li>
+      <li><strong>Exercise Rights</strong>: To make a formal privacy request, email us at <a href="mailto:help@writon.cc">help@writon.cc</a>. We respond to verified requests within 30 days without charge.</li>
+    </ul>
+
+    <h2>7. Children's Privacy</h2>
+    <p>WritOn is a general-audience literary platform and is not directed to children under the age of 13 (or 16 in certain European jurisdictions). We do not knowingly collect personal information from children under 13. If we discover that a child under 13 has created an account, we take prompt steps to terminate the account and delete their personal data. For more information, read our <a href="/child-safety.html">Child Safety Standards</a> or contact our safety desk at <a href="mailto:safety@writon.cc">safety@writon.cc</a>.</p>
+
+    <h2>8. Security and International Transfers</h2>
+    <p>We implement industry-standard encryption protocols (TLS/HTTPS in transit and AES-256 at rest) to safeguard your personal information. However, no electronic transmission over the internet or cloud storage system can be guaranteed to be 100% secure. WritOn operates servers located in secure cloud regions across the United States, Europe, and Asia. By using our service, you acknowledge that your information may be processed in these jurisdictions in compliance with applicable transfer mechanisms.</p>
+
+    <h2>9. Policy Changes &amp; Contact</h2>
+    <p>We may update this Privacy Policy from time to time to reflect improvements to our service, new Android features, or changing legal standards. We will notify users of material modifications by updating the "Effective Date" at the top of this policy and, where appropriate, displaying an in-app notice.</p>
+
+    <div class="alert-box">
+      <strong>Contact Our Privacy Team</strong><br>
+      For privacy inquiries, data export requests, or legal concerns, reach us at:<br>
+      Email: <a href="mailto:help@writon.cc">help@writon.cc</a><br>
+      Child Safety &amp; Content Integrity: <a href="mailto:safety@writon.cc">safety@writon.cc</a><br>
+      Website: <a href="https://writon.cc">https://writon.cc</a>
+    </div>
   </div>
   <footer>&copy; 2026 WritOn (writon.cc). All rights reserved.</footer>
 </body>

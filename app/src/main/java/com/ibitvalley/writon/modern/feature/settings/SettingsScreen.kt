@@ -1,7 +1,10 @@
 package com.ibitvalley.writon.modern.feature.settings
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -38,6 +41,7 @@ import com.ibitvalley.writon.modern.core.locale.LocaleManager
 import retrofit2.Response
 import com.ibitvalley.writon.modern.core.network.model.AccountDeletionResponseDto
 import com.ibitvalley.writon.modern.core.preferences.UserPreferences
+import com.google.firebase.appdistribution.FirebaseAppDistribution
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -194,16 +198,26 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showAboutDialog = false },
             title = {
-                Text(
-                    stringResource(R.string.settings_about_title),
-                    fontFamily = SettingsEditorialFamily,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    WritOnBrandMark(width = 124.dp)
+                    Text(
+                        stringResource(R.string.settings_about_title),
+                        fontFamily = SettingsEditorialFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp
+                    )
+                }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.settings_about_desc, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE), fontWeight = FontWeight.SemiBold)
+                    Surface(shape = RoundedCornerShape(14.dp), color = BrandRed.copy(alpha = 0.10f)) {
+                        Text(
+                            stringResource(R.string.settings_about_desc, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            color = BrandRed,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                     Text(stringResource(R.string.settings_about_platform_desc), style = MaterialTheme.typography.bodyMedium)
                     Spacer(Modifier.height(4.dp))
                     Text(stringResource(R.string.settings_about_android), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -403,13 +417,6 @@ fun SettingsScreen(
                     onClick = onNotificationsClick
                 )
                 SettingsRow(
-                    title = stringResource(R.string.settings_applause_title),
-                    subtitle = stringResource(R.string.settings_applause_desc),
-                    icon = null,
-                    useApplaudIcon = true,
-                    enabled = false
-                )
-                SettingsRow(
                     title = stringResource(R.string.settings_saving_title),
                     subtitle = stringResource(R.string.settings_saving_desc),
                     icon = R.drawable.ic_bookmark_orange,
@@ -467,17 +474,48 @@ fun SettingsScreen(
                     onClick = { showDeleteAccountDialog = true }
                 )
                 SettingsRow(
-                    title = stringResource(R.string.settings_account_title),
-                    subtitle = stringResource(R.string.settings_account_desc),
-                    avatar = "AK",
-                    enabled = false
+                    title = stringResource(R.string.settings_rate_writon_title),
+                    subtitle = stringResource(R.string.settings_rate_writon_desc),
+                    icon = R.drawable.ic_heart_orange,
+                    onClick = {
+                        val pkg = context.packageName
+                        val playIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$pkg")).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                        }
+                        try {
+                            context.startActivity(playIntent)
+                        } catch (_: ActivityNotFoundException) {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$pkg")))
+                        }
+                    }
                 )
                 SettingsRow(
-                    title = stringResource(R.string.settings_privacy_title),
-                    subtitle = stringResource(R.string.settings_privacy_desc),
-                    icon = R.drawable.ic_shield_orange,
-                    enabled = false
+                    title = stringResource(R.string.settings_feedback_title),
+                    subtitle = stringResource(R.string.settings_feedback_desc),
+                    icon = R.drawable.ic_help_orange,
+                    onClick = {
+                        val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
+                            data = Uri.parse("mailto:support@writon.cc")
+                            putExtra(Intent.EXTRA_SUBJECT, "WritOn App Feedback (v${BuildConfig.VERSION_NAME})")
+                        }
+                        try {
+                            context.startActivity(emailIntent)
+                        } catch (_: Exception) {
+                            android.widget.Toast.makeText(context, "Contact: support@writon.cc", android.widget.Toast.LENGTH_LONG).show()
+                        }
+                    }
                 )
+                if (BuildConfig.FIREBASE_TESTER_FEEDBACK_ENABLED) {
+                    SettingsRow(
+                        title = stringResource(R.string.settings_tester_feedback_title),
+                        subtitle = stringResource(R.string.settings_tester_feedback_desc),
+                        icon = R.drawable.ic_help_orange,
+                        onClick = {
+                            FirebaseAppDistribution.getInstance()
+                                .startFeedback(R.string.settings_tester_feedback_notice)
+                        }
+                    )
+                }
                 SettingsRow(
                     title = stringResource(R.string.settings_guide_title),
                     subtitle = stringResource(R.string.settings_guide_desc),
@@ -573,14 +611,10 @@ private fun SettingsRow(
     title: String,
     subtitle: String,
     icon: Int? = null,
-    useApplaudIcon: Boolean = false,
-    avatar: String? = null,
     accent: Boolean = false,
-    enabled: Boolean = true,
     onClick: () -> Unit = {}
 ) {
     val color = when {
-        !enabled -> MaterialTheme.colorScheme.onSurfaceVariant
         accent -> BrandRed
         else -> MaterialTheme.colorScheme.onSurface
     }
@@ -589,16 +623,12 @@ private fun SettingsRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(WritOnRadius.field))
-                .clickable(enabled = enabled, onClick = onClick)
+                .clickable(onClick = onClick)
                 .padding(horizontal = WritOnSpacing.md, vertical = WritOnSpacing.xs),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            when {
-                avatar != null -> Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(40.dp)) {
-                    Box(contentAlignment = Alignment.Center) { Text(avatar, style = MaterialTheme.typography.labelLarge) }
-                }
-                useApplaudIcon -> Image(painterResource(R.drawable.ic_applaud_muted), contentDescription = null, modifier = Modifier.size(26.dp))
-                icon != null -> Surface(
+            if (icon != null) {
+                Surface(
                     shape = RoundedCornerShape(WritOnRadius.field),
                     color = BrandRed.copy(alpha = 0.12f),
                     modifier = Modifier.size(40.dp)
@@ -632,13 +662,11 @@ private fun SettingsRow(
                 }
             }
 
-            if (enabled) {
-                Text(
-                    text = "›",
-                    style = MaterialTheme.typography.headlineMedium.copy(fontSize = 24.sp),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            Text(
+                text = "›",
+                style = MaterialTheme.typography.headlineMedium.copy(fontSize = 24.sp),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
         HorizontalDivider(
             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),

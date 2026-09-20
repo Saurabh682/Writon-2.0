@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WritOn Instagram Studio &amp; Tracker • Meta Graph API v26.0</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="stylesheet" href="/css/instagram-studio.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;600;700&display=swap');
+    :root {
+      --parchment: #FAF5EE;
+      --ink: #1C1917;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--parchment);
+      color: var(--ink);
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen">
+  <header class="max-w-7xl mx-auto mb-6 flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-[#E8DFD3] gap-4">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">📸</span>
+        <h1 class="text-2xl font-serif font-bold text-[#1C1917]">WritOn Instagram Studio &amp; Bot Tracker</h1>
+      </div>
+      <p class="text-xs text-[#6E655B] font-serif italic mt-0.5">
+        Meta Graph API v26.0 Hardened Subsystem • Brain-Governed • PostgreSQL Truth • Views-Centric
+      </p>
+    </div>
+    <div class="flex items-center gap-3 text-xs">
+      <a href="/canvas.html" class="px-3 py-1.5 rounded-xl border border-[#E8DFD3] bg-white text-[#1C1917] hover:bg-[#FAF5EE] font-semibold transition">
+        ← Open Global Editorial Canvas
+      </a>
+      <span class="px-3 py-1 rounded-full bg-[#E8F3ED] text-[#2D6A4F] font-semibold">
+        ✓ Database Runtime Synced
+      </span>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto">
+    <!-- Root mount target for Instagram Studio component -->
+    <div id="instagram-studio-root"></div>
+  </main>
+
+  <script type="module">
+    import { InstagramStudio } from '/js/instagram-studio.js';
+    const studio = new InstagramStudio({ containerId: 'instagram-studio-root' });
+    window.instagramStudioInstance = studio;
+    studio.mount();
+  </script>
+</body>
+</html>

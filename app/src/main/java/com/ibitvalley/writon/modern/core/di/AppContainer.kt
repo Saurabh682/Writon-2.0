@@ -20,12 +20,14 @@ class AppContainer(context: Context) {
         apiService = apiService,
         postDao = database.postDao(),
         commentDao = database.commentDao(),
-        outboxDao = database.outboxDao()
+        outboxDao = database.outboxDao(),
+        userPreferences = userPreferences
     )
     val draftRepository = DraftRepository(
         apiService = apiService,
         draftDao = database.draftDao(),
-        outboxDao = database.outboxDao()
+        outboxDao = database.outboxDao(),
+        userPreferences = userPreferences
     )
     val mediaRepository = MediaRepository(apiService)
 }

@@ -1,0 +1,847 @@
+[
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-08T05:30:07.260Z",
+    "date": "2026-09-08",
+    "indiaTrends": [
+      {
+        "topic": "വി.ഡി. സതീശന്",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "എന്റെ പ്രിയപ്പെട്ട ആശാൻ, ഈ വിളി എങ്ങനെ തുടങ്ങിയെന്നറിയില്ല, മമ്മൂട്ടിയുമായി വർഷങ്ങളുടെ ബന്ധം-കെ. മധു",
+        "snippet": null,
+        "source": "Mathrubhumi"
+      },
+      {
+        "topic": "सत्या निकेतन",
+        "geo": "IN",
+        "approxTraffic": "5000+",
+        "headline": "लापरवाही की इमारत में पांच सपनों का मर जाना... रक्षाबंधन मनाकर लौटा था अर्पित, पिता का इकलौता सहारा था युवराज",
+        "snippet": null,
+        "source": "AajTak"
+      },
+      {
+        "topic": "glass wall systems ipo",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Glass Wall Systems IPO GMP: What Grey Market Suggests As Issue Opens For Subscription",
+        "snippet": null,
+        "source": "NDTV Profit"
+      },
+      {
+        "topic": "मनोज जरांगे",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "जिद पर अड़े जरांगे, फडणवीस और शिंदे को घेरा; मुंबई कूच और महाराष्ट्र बंद की चेतावनी",
+        "snippet": null,
+        "source": "Hindustan"
+      },
+      {
+        "topic": "shiprocket share price",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Shiprocket shares in focus as Q1 net loss narrows to Rs 14 crore in first earnings post IPO; revenue up 34",
+        "snippet": null,
+        "source": "The Economic Times"
+      },
+      {
+        "topic": "deepa jewellers share price",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "Deepa Jewellers IPO listing: Shares debut at Rs 221 on NSE, 25% premium to issue price",
+        "snippet": null,
+        "source": "Moneycontrol.com"
+      },
+      {
+        "topic": "earthquake",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "New method predicts where massive earthquakes will strike",
+        "snippet": null,
+        "source": "University of California, Riverside"
+      },
+      {
+        "topic": "ifci share",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "NSE IPO could be worth Rs 30,000 crore after Sebi gives green signal",
+        "snippet": null,
+        "source": "The Times of India"
+      },
+      {
+        "topic": "polycab share price",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "कुमार मंगलम बिड़ला की एक चाल से बाजार में हाहाकार, Polycab और KEI Industries में 9% गिरावट",
+        "snippet": null,
+        "source": "Navbharat Times"
+      },
+      {
+        "topic": "sterlite technologies share price",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Sterlite Technologies Aims for Rs 20,000 Cr Revenue by FY29",
+        "snippet": null,
+        "source": "Rediff MoneyWiz"
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "matthew mcconaughey",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Tsitsipas the last hope for a 150-year one-hander record… Stef has a streak to save!",
+        "snippet": null,
+        "source": "ATP Tour"
+      },
+      {
+        "topic": "christian gonzalez",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "Sources: Christian Gonzalez, Patriots reach 4-year, $135M deal",
+        "snippet": null,
+        "source": "ESPN"
+      },
+      {
+        "topic": "kate middleton",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "Prince William and Kate Middleton &apos;playing it cool&apos; as Prince Harry and Meghan Markle return to the UK: expert",
+        "snippet": null,
+        "source": "Fox News"
+      },
+      {
+        "topic": "mike norvell buyout",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "What is Mike Norvell’s Buyout? What it Would Cost Florida State to Fire Coach",
+        "snippet": null,
+        "source": "Yahoo Sports"
+      },
+      {
+        "topic": "osama bin laden",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "CAIR K-12 Guide Linked to Curriculum Blaming 9/11 on US Support for Israel, Recommending Bin Laden Manifesto",
+        "snippet": null,
+        "source": "Combat Antisemitism Movement"
+      },
+      {
+        "topic": "trump canada",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Canada braces for prolonged trade war as counter-tariffs on US take effect",
+        "snippet": null,
+        "source": "BBC"
+      },
+      {
+        "topic": "charlie kirk death day",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Georgetown students plan Charlie Kirk &apos;lookalike contest&apos; on anniversary of his assassination",
+        "snippet": null,
+        "source": "Fox News"
+      },
+      {
+        "topic": "when did charlie kirk die",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "Erika Kirk recounts Usha Vance’s advice after husband’s death: ‘Her words are seared into my heart’",
+        "snippet": null,
+        "source": "The Hill"
+      },
+      {
+        "topic": "spencer pratt",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Spencer Pratt rips George Clooney&apos;s &apos;woke scold lecture&apos; after Amal&apos;s lavish Venice look",
+        "snippet": null,
+        "source": "Yahoo"
+      },
+      {
+        "topic": "atlético nacional - deportivo cali",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Copa BetPlay: Así quedó el camino a la final tras el triunfo de Nacional vs. Cali",
+        "snippet": null,
+        "source": "ESPN Deportes"
+      }
+    ]
+  },
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-08T09:30:10.066Z",
+    "date": "2026-09-08",
+    "indiaTrends": [
+      {
+        "topic": "பாரதிராஜா",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "கதை நாயகனாக பாரதிராஜா நடித்த படம் செப்., 25ம் தேதி ரிலீஸ்",
+        "snippet": null,
+        "source": "Dinamalar"
+      },
+      {
+        "topic": "పొదరిల్లు",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Podarillu Serial Today 08 september Episode: చక్రిని చితకబాదిన మహా.. శైలుని పట్టించుకోని కేశవ.. మాధవ పెళ్లి విషయం మనీషా గుండె ముక్కలు",
+        "snippet": null,
+        "source": "Samayam Telugu"
+      },
+      {
+        "topic": "ಸಕ್ಕರೆ",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "ಮಾರ್ಕೆಟ್‌ನಲ್ಲಿ ಸಕ್ಕರೆ ದರ ದಿಢೀರ್‌ 20ರೂ ಇಳಿಕೆ: ಕೆ.ಜಿ.ಗೆ ₹70 ಇದ್ದ ಸಕ್ಕರೆ ಈಗ ₹50, ಚೌತಿಗೆ ಗ್ರಾಹಕರಿಗೆ ಸಿಹಿಯಾದ ದರ ಕುಸಿತ!",
+        "snippet": null,
+        "source": "Vijay Karnataka"
+      },
+      {
+        "topic": "जंतर मंतर",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "स्वतंत्र भारद्वाज के वकील बोले- गिरफ्तारी की हिम्मत कैसे की: कहा- सुप्रीम कोर्ट ने जंतर-मंतर से जुड़े मामले...",
+        "snippet": null,
+        "source": "Dainik Bhaskar"
+      },
+      {
+        "topic": "രാഹുല് ഗാന്ധി",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "പ്രധാനമന്ത്രിക്കെതിരായ അപകീർത്തി പരാമർശം; കേസ് റദ്ദാക്കണമെന്നുളള രാഹുൽ ഗാന്ധിയുടെ ഹർജി തളളി കോടതി",
+        "snippet": null,
+        "source": "Asianet News Malayalam"
+      },
+      {
+        "topic": "नरेन्द्र मोदी",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "गुजरात में PM मोदी का जेन-जी से संवाद: प्रधानमंत्री रैंप पर चलकर युवाओं के बीच पहुंचे; महाराष्ट्र के CM फडण...",
+        "snippet": null,
+        "source": "Dainik Bhaskar"
+      },
+      {
+        "topic": "ચીન",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "ચીન અરૂણાચલ પર ભારતીય સૈન્ય નહીં કુદરતના કારણે હુમલો નથી કરતું, સરહદ પર ચીનનું દુશ્મન કુદરત",
+        "snippet": null,
+        "source": "GSTV News"
+      },
+      {
+        "topic": "भारतीय थलसेना",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "द्वाबा के धीरज बने सेना में लेफ्टिनेंट: सुरेमनपुर रेलवे स्टेशन पर ढोल-नगाड़ों से किया स्वागत",
+        "snippet": null,
+        "source": "Dainik Bhaskar"
+      },
+      {
+        "topic": "నష్రా సంధు",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Asia Cup 2026: మొన్న ఇచ్చిన షాక్ సరిపోలేదేమో.. పాక్‌కు టీమ్ఇండియా ఫ్యాన్స్ కౌంటర్",
+        "snippet": null,
+        "source": "Eenadu"
+      },
+      {
+        "topic": "मतदाता",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "शहर में 24.33 लाख मतदाता: SIR से 2.50 लाख बढ़े; 90 प्रतिशत वोटिंग हुई तो 21.90 लाख, 95 फिसदी पर 23.12 लाख वो...",
+        "snippet": null,
+        "source": "Dainik Bhaskar"
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "middle east",
+        "geo": "US",
+        "approxTraffic": "100+",
+        "headline": "Military and intelligence officials discuss smaller presence in the Middle East as US looks for another post-9/11 strategy",
+        "snippet": null,
+        "source": "CNN"
+      },
+      {
+        "topic": "artificial intelligence news",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Making sovereign, open-weight AI the technology frontier",
+        "snippet": null,
+        "source": "Mistral AI"
+      },
+      {
+        "topic": "sarah khalifá",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "TV presenter among 12 sentenced to death in Egypt drugs case",
+        "snippet": null,
+        "source": "BBC"
+      },
+      {
+        "topic": "iran war hormuz",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Iran war live: Qatar warns of ‘industrial catastrophe’ if crisis continues",
+        "snippet": null,
+        "source": "Al Jazeera"
+      },
+      {
+        "topic": "driverless taxis",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Uber Technologies, Inc. - Wayve and Uber Launch First-Ever Autonomous Rides in the UK",
+        "snippet": null,
+        "source": "Uber Investor Relations"
+      },
+      {
+        "topic": "navier stokes",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Mathematician Alleges OpenAI Pursued Navier–Stokes Breakthrough After Learning of His Work",
+        "snippet": null,
+        "source": "Analytics India Magazine"
+      },
+      {
+        "topic": "billy joel collaborator jon small",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Billy Joel Announces Death of Early Bandmate Jon Small",
+        "snippet": null,
+        "source": "Rolling Stone"
+      },
+      {
+        "topic": "youtube tv settlement",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Days left to apply for $50 million settlement over Disney, streaming prices",
+        "snippet": null,
+        "source": "WGN-TV"
+      },
+      {
+        "topic": "matthew mcconaughey",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Matthew McConaughey’s Secret to a Full Head of Hair at 56? This Serum From a Jennifer Aniston-Loved Brand",
+        "snippet": null,
+        "source": "InStyle"
+      },
+      {
+        "topic": "christian gonzalez",
+        "geo": "US",
+        "approxTraffic": "5000+",
+        "headline": "Sources: Christian Gonzalez, Patriots reach 4-year, $135M deal",
+        "snippet": null,
+        "source": "ESPN"
+      }
+    ]
+  },
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-08T09:31:46.374Z",
+    "date": "2026-09-08",
+    "indiaTrends": [
+      {
+        "topic": "பாரதிராஜா",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "கதை நாயகனாக பாரதிராஜா நடித்த படம் செப்., 25ம் தேதி ரிலீஸ்",
+        "snippet": null,
+        "source": "Dinamalar"
+      },
+      {
+        "topic": "పొదరిల్లు",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Podarillu Serial Today 08 september Episode: చక్రిని చితకబాదిన మహా.. శైలుని పట్టించుకోని కేశవ.. మాధవ పెళ్లి విషయం మనీషా గుండె ముక్కలు",
+        "snippet": null,
+        "source": "Samayam Telugu"
+      },
+      {
+        "topic": "ಸಕ್ಕರೆ",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "ಮಾರ್ಕೆಟ್‌ನಲ್ಲಿ ಸಕ್ಕರೆ ದರ ದಿಢೀರ್‌ 20ರೂ ಇಳಿಕೆ: ಕೆ.ಜಿ.ಗೆ ₹70 ಇದ್ದ ಸಕ್ಕರೆ ಈಗ ₹50, ಚೌತಿಗೆ ಗ್ರಾಹಕರಿಗೆ ಸಿಹಿಯಾದ ದರ ಕುಸಿತ!",
+        "snippet": null,
+        "source": "Vijay Karnataka"
+      },
+      {
+        "topic": "जंतर मंतर",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "स्वतंत्र भारद्वाज के वकील बोले- गिरफ्तारी की हिम्मत कैसे की: कहा- सुप्रीम कोर्ट ने जंतर-मंतर से जुड़े मामले...",
+        "snippet": null,
+        "source": "Dainik Bhaskar"
+      },
+      {
+        "topic": "രാഹുല് ഗാന്ധി",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "പ്രധാനമന്ത്രിക്കെതിരായ അപകീർത്തി പരാമർശം; കേസ് റദ്ദാക്കണമെന്നുളള രാഹുൽ ഗാന്ധിയുടെ ഹർജി തളളി കോടതി",
+        "snippet": null,
+        "source": "Asianet News Malayalam"
+      },
+      {
+        "topic": "नरेन्द्र मोदी",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "गुजरात में PM मोदी का जेन-जी से संवाद: प्रधानमंत्री रैंप पर चलकर युवाओं के बीच पहुंचे; महाराष्ट्र के CM फडण...",
+        "snippet": null,
+        "source": "Dainik Bhaskar"
+      },
+      {
+        "topic": "ચીન",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "ચીન અરૂણાચલ પર ભારતીય સૈન્ય નહીં કુદરતના કારણે હુમલો નથી કરતું, સરહદ પર ચીનનું દુશ્મન કુદરત",
+        "snippet": null,
+        "source": "GSTV News"
+      },
+      {
+        "topic": "भारतीय थलसेना",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "द्वाबा के धीरज बने सेना में लेफ्टिनेंट: सुरेमनपुर रेलवे स्टेशन पर ढोल-नगाड़ों से किया स्वागत",
+        "snippet": null,
+        "source": "Dainik Bhaskar"
+      },
+      {
+        "topic": "నష్రా సంధు",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Asia Cup 2026: మొన్న ఇచ్చిన షాక్ సరిపోలేదేమో.. పాక్‌కు టీమ్ఇండియా ఫ్యాన్స్ కౌంటర్",
+        "snippet": null,
+        "source": "Eenadu"
+      },
+      {
+        "topic": "मतदाता",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "शहर में 24.33 लाख मतदाता: SIR से 2.50 लाख बढ़े; 90 प्रतिशत वोटिंग हुई तो 21.90 लाख, 95 फिसदी पर 23.12 लाख वो...",
+        "snippet": null,
+        "source": "Dainik Bhaskar"
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "middle east",
+        "geo": "US",
+        "approxTraffic": "100+",
+        "headline": "Military and intelligence officials discuss smaller presence in the Middle East as US looks for another post-9/11 strategy",
+        "snippet": null,
+        "source": "CNN"
+      },
+      {
+        "topic": "artificial intelligence news",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Making sovereign, open-weight AI the technology frontier",
+        "snippet": null,
+        "source": "Mistral AI"
+      },
+      {
+        "topic": "sarah khalifá",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "TV presenter among 12 sentenced to death in Egypt drugs case",
+        "snippet": null,
+        "source": "BBC"
+      },
+      {
+        "topic": "iran war hormuz",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Iran war live: Qatar warns of ‘industrial catastrophe’ if crisis continues",
+        "snippet": null,
+        "source": "Al Jazeera"
+      },
+      {
+        "topic": "driverless taxis",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Uber Technologies, Inc. - Wayve and Uber Launch First-Ever Autonomous Rides in the UK",
+        "snippet": null,
+        "source": "Uber Investor Relations"
+      },
+      {
+        "topic": "navier stokes",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Mathematician Alleges OpenAI Pursued Navier–Stokes Breakthrough After Learning of His Work",
+        "snippet": null,
+        "source": "Analytics India Magazine"
+      },
+      {
+        "topic": "billy joel collaborator jon small",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Billy Joel Announces Death of Early Bandmate Jon Small",
+        "snippet": null,
+        "source": "Rolling Stone"
+      },
+      {
+        "topic": "youtube tv settlement",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Days left to apply for $50 million settlement over Disney, streaming prices",
+        "snippet": null,
+        "source": "WGN-TV"
+      },
+      {
+        "topic": "matthew mcconaughey",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Matthew McConaughey’s Secret to a Full Head of Hair at 56? This Serum From a Jennifer Aniston-Loved Brand",
+        "snippet": null,
+        "source": "InStyle"
+      },
+      {
+        "topic": "christian gonzalez",
+        "geo": "US",
+        "approxTraffic": "5000+",
+        "headline": "Sources: Christian Gonzalez, Patriots reach 4-year, $135M deal",
+        "snippet": null,
+        "source": "ESPN"
+      }
+    ]
+  },
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-08T12:30:10.296Z",
+    "date": "2026-09-08",
+    "indiaTrends": [
+      {
+        "topic": "नमन धीर",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "16 चौके, 12 छक्के... 64 गेंदों में 173 रन, नमन धीर ने किया T20 में धुआं-धुआं, रचा इत‍िहास, बना ये महार‍िकॉर्ड",
+        "snippet": null,
+        "source": "AajTak"
+      },
+      {
+        "topic": "வெப் சீரிஸ்",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "‘அருள்வான்’ முதல் ‘டிசி’ வரை - ஓடிடியில் இந்த வாரம் என்ன பார்க்கலாம்?",
+        "snippet": null,
+        "source": "Hindu Tamil Thisai"
+      },
+      {
+        "topic": "టాక్సిక్",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "Toxic OTT: థియేటర్లలో డిజాస్టర్.. అప్పుడే ఓటీటీలోకి యశ్ ‘టాక్సిక్’! స్ట్రీమింగ్...",
+        "snippet": null,
+        "source": "TV9 Telugu"
+      },
+      {
+        "topic": "train",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "Mumbai To Ahmedabad In 90 Minutes: Bullet Train Trials Set For May-June 2027",
+        "snippet": null,
+        "source": "NDTV"
+      },
+      {
+        "topic": "নির্বাচন",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Humayun Kabir : নন্দীগ্রামে বিজেপিই জিতবে ! বলে দিলেন হুমায়ুন, রেজিনগরে হাওয়া কোনদিকে?",
+        "snippet": null,
+        "source": "ABP Ananda"
+      },
+      {
+        "topic": "ballon d&apos;or 2026",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "The Ballon d&apos;Or lands on DAZN: the event broadcast globally",
+        "snippet": null,
+        "source": "Goal.com"
+      },
+      {
+        "topic": "जितेंद्र कुमार",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "‘पंचायत 5’ में दिखेगा नया फुलेरा, रिलीज को लेकर बड़ा अपडेट, प्रधान जी और सचिव की जिंदगी लेगी नई करवट",
+        "snippet": null,
+        "source": "India TV Hindi"
+      },
+      {
+        "topic": "juhi mui",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Exclusive - Eisha Singh on Juhi Mui going off-air: I knew the story had an ending, but I wasn’t ready to",
+        "snippet": null,
+        "source": "The Times of India"
+      },
+      {
+        "topic": "आंधी",
+        "geo": "IN",
+        "approxTraffic": "100000+",
+        "headline": "सावधान! फिर आ रहा नया विलेन, इन राज्यों में खूब बरसेंगे बदरा; आंधी-तूफान और बिजली गिरने का भी अलर्ट",
+        "snippet": null,
+        "source": "Hindustan"
+      },
+      {
+        "topic": "सोने",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": null,
+        "snippet": null,
+        "source": null
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "sandra bullock",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "For Sandra Bullock and Nicole Kidman, ‘Practical Magic 2&apos; heals old wounds",
+        "snippet": null,
+        "source": "AP News"
+      },
+      {
+        "topic": "nicole kidman",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Nicole Kidman, 59, Radiates in a Lacy Crop Top With Rarely-Seen Daughter Faith, 15",
+        "snippet": null,
+        "source": "InStyle"
+      },
+      {
+        "topic": "jaclyn smith",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "Charlie&apos;s Angels star Jaclyn Smith, 80, leaves fans doing a double take in ageless new photos",
+        "snippet": null,
+        "source": "HELLO! Magazine"
+      },
+      {
+        "topic": "oil prices",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "U.S.-Iran War Updates: Oil nears $100 a barrel as Strait of Hormuz stalemate keeps ship traffic down",
+        "snippet": null,
+        "source": "CBS News"
+      },
+      {
+        "topic": "unemployment",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Canadian Employment Retreats in August, Though Jobless Rate Holds Steady",
+        "snippet": null,
+        "source": "WSJ"
+      },
+      {
+        "topic": "good morning america",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Lindsay Clancy&apos;s attorney Kevin Reddington asks Trump for pardon after mistrial",
+        "snippet": null,
+        "source": "ABC News - Breaking News, Latest News and Videos"
+      },
+      {
+        "topic": "democrats 2026 midterms gop territory",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Democrats enter the midterms looking to conquer red territory",
+        "snippet": null,
+        "source": "CNN"
+      },
+      {
+        "topic": "good morning america live",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Meet the chefs who kept Ground Zero workers fueled after the 9/11 attacks",
+        "snippet": null,
+        "source": "Yahoo"
+      },
+      {
+        "topic": "mike tomlin",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "‘He’s built for it’ – Mike Tomlin names the QB that would be his first pick in the entire NFL",
+        "snippet": null,
+        "source": "Yahoo Sports"
+      },
+      {
+        "topic": "six flags",
+        "geo": "US",
+        "approxTraffic": "5000+",
+        "headline": "Six Flags announces they’ve acquired the ArieForce One roller coaster, but a big mystery about the ride’s future remains: Where is it going?",
+        "snippet": null,
+        "source": "WKYC"
+      }
+    ]
+  },
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-08T15:30:05.352Z",
+    "date": "2026-09-08",
+    "indiaTrends": [
+      {
+        "topic": "amd share price",
+        "geo": "IN",
+        "approxTraffic": "100+",
+        "headline": "AMD at Citi’s 2026 Global TMT Conference: ai push lifts outlook",
+        "snippet": null,
+        "source": "Investing.com"
+      },
+      {
+        "topic": "kl rahul delhi capitals ipl",
+        "geo": "IN",
+        "approxTraffic": "100+",
+        "headline": "Delhi Capitals Confirm K L Rahul For IPL 2027",
+        "snippet": null,
+        "source": "Rediff"
+      },
+      {
+        "topic": "गौरव भाटिया",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "सौरव दास पर 2 करोड़ का मानहानि का केस, गौरव भाटिया का फेक फोटो शेयर कर फंस गए CJP नेता",
+        "snippet": null,
+        "source": "Hindustan"
+      },
+      {
+        "topic": "নেপাল",
+        "geo": "IN",
+        "approxTraffic": "5000+",
+        "headline": "নেপালের হড়পা বানে অনিশ্চিত চিনের স্বপ্নের প্রকল্প, রেলপথে নেপাল এবং তিব্বতকে আর জোড়া যাবে কি? সংশয়ে বেজিং",
+        "snippet": null,
+        "source": "Anandabazar Patrika"
+      },
+      {
+        "topic": "अरुणाचल प्रदेश",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "यूएन में पास हुए नक़्शे के समर्थन में भारत ने दिया वोट फिर अब क्यों जताई आपत्ति",
+        "snippet": null,
+        "source": "BBC"
+      },
+      {
+        "topic": "ఆవు",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Palnadu: యూరియా కలిసిన దాణా తిని 18 ఆవుల మృత్యువాత",
+        "snippet": null,
+        "source": "Eenadu"
+      },
+      {
+        "topic": "ગુજરાત",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "Gujarat Rain: રાજ્યના ખેડૂતો માટે સારા સમાચાર, ભારે વરસાદના નવા રાઉન્ડને લઈ હવામાન વિભાગની",
+        "snippet": null,
+        "source": "ABP Asmita"
+      },
+      {
+        "topic": "haiwaan",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "Akshay Kumar and Saif Ali Khan starrer ‘Haiwaan’ cleared with U/A 16+ certificate ahead of September 11 t",
+        "snippet": null,
+        "source": "The Times of India"
+      },
+      {
+        "topic": "dow jones",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "Stock Market Today: Dow Futures Dip, Oil Climbs — Live Updates",
+        "snippet": null,
+        "source": "WSJ"
+      },
+      {
+        "topic": "champions league games",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "Liverpool news conference: Lot of time to talk about new Mac Allister contract - Iraola",
+        "snippet": null,
+        "source": "BBC"
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "the voice uk",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "&apos;I didn&apos;t want to leave The Voice&apos;, says Sir Tom Jones",
+        "snippet": null,
+        "source": "BBC"
+      },
+      {
+        "topic": "gta6 release date",
+        "geo": "US",
+        "approxTraffic": "10000+",
+        "headline": "GTA 6&apos;s Worldwide Release Times Revealed - with New Zealand Set to Receive Access 19 Hours Before Mexico and Central America",
+        "snippet": null,
+        "source": "Digital Foundry"
+      },
+      {
+        "topic": "cruise ship",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Outraged cruise passengers sound off about &apos;immense disappointment&apos; after abrupt cancellation",
+        "snippet": null,
+        "source": "Fox News"
+      },
+      {
+        "topic": "holtec nuclear corporation",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Holtec Nuclear targets $10.2 billion valuation in US IPO as fall window kicks off",
+        "snippet": null,
+        "source": "Reuters"
+      },
+      {
+        "topic": "ocarina of time remake",
+        "geo": "US",
+        "approxTraffic": "20000+",
+        "headline": "The Legend of Zelda: Ocarina of Time Remake Fully Revealed, Release Date Announced",
+        "snippet": null,
+        "source": "IGN"
+      },
+      {
+        "topic": "godzilla minus zero",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Humanity fights atomic breath with fire in trailer for Godzilla Minus Zero",
+        "snippet": null,
+        "source": "A.V. Club"
+      },
+      {
+        "topic": "early season fantasy football trades",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Dave Richard&apos;s Week 1 Trade Chart and rest of season Fantasy Football rankings help you win now",
+        "snippet": null,
+        "source": "CBS Sports"
+      },
+      {
+        "topic": "intc",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "ASML Wins Over Top Chipmakers for New EUV Machines",
+        "snippet": null,
+        "source": "Bloomberg.com"
+      },
+      {
+        "topic": "crwv stock",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Why is CoreWeave stock rallying today?",
+        "snippet": null,
+        "source": "Investing.com"
+      },
+      {
+        "topic": "djia today",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Stock Market Today: Dow Opens Lower, Oil Nears $100 — Live Updates",
+        "snippet": null,
+        "source": "WSJ"
+      }
+    ]
+  }
+]

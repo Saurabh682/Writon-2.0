@@ -1,0 +1,11 @@
+id,language,concept,copy,status,reviewed_by,reviewed_at,asset_path
+em_en_01,en,writing_prompt,"Describe a room that remembers everyone who has left it. Write for ten quiet minutes, then continue the piece on WritOn.",copy_ready,,,
+em_en_02,en,reading_prompt,"What makes you stay with a story: its voice, its world, or the question it leaves behind? Read deeply on WritOn.",copy_ready,,,
+em_en_03,en,brand,"Less noise. More words. A focused home for thoughtful readers and writers.",copy_ready,,,
+em_en_04,en,community,"One honest paragraph is enough to begin. Save the draft today; return when the next line arrives.",copy_ready,,,
+em_hi_01,hi,writing_prompt,"उस खिड़की के बाहर हर रात एक नई कहानी दिखाई देती थी। आगे क्या हुआ? दस मिनट लिखिए।",copy_ready,,,
+em_hi_02,hi,brand,"कम शोर। ज़्यादा शब्द। सोच-समझकर पढ़ने और लिखने की एक शांत जगह।",copy_ready,,,
+em_bn_01,bn,writing_prompt,"পুরোনো বইটির শেষ পাতায় একটি অচেনা ঠিকানা লেখা ছিল। তারপর কী হলো?",copy_ready,,,
+em_bn_02,bn,brand,"কম কোলাহল। আরও শব্দ। মন দিয়ে পড়া ও লেখার একটি শান্ত জায়গা।",copy_ready,,,
+em_mr_01,mr,writing_prompt,"जुन्या वहीच्या शेवटच्या पानावर एक अनोळखी पत्ता लिहिला होता. पुढे काय झाले?",copy_ready,,,
+em_mr_02,mr,brand,"कमी गोंधळ. अधिक शब्द. मनापासून वाचण्यासाठी आणि लिहिण्यासाठी एक शांत जागा.",copy_ready,,,

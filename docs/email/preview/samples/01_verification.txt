@@ -1,0 +1,9 @@
+WritOn
+
+Confirm your email
+
+Welcome to WritOn, Saurabh. Confirm this address to activate your account and begin publishing.
+
+Confirm email: https://writon.cc/auth/verify?token=sample_verify_token_123
+
+This email concerns your WritOn account. If you did not request it, you can ignore it.

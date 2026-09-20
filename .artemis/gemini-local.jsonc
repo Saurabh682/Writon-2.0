@@ -1,0 +1,13 @@
+{
+  "default": {
+    "provider": "google",
+    "model": "gemini-3.6-flash",
+    "thinking_level": "low",
+    "fallback": {
+      "provider": "google",
+      "model": "gemini-3-flash-preview",
+      "thinking_level": "low"
+    }
+  },
+  "nodes": {}
+}

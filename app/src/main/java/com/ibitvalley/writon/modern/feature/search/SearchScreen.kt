@@ -14,6 +14,9 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
 
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,6 +37,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.R
@@ -96,6 +100,7 @@ fun SearchScreen(
     onExploreClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onAuthorClick: (String) -> Unit = {},
+    onLogoClick: () -> Unit = {},
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var selectedTab by rememberSaveable { mutableStateOf(SearchTab.Stories) }
@@ -111,7 +116,7 @@ fun SearchScreen(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = WritOnSpacing.lg, end = WritOnSpacing.lg, top = WritOnSpacing.md, bottom = WritOnSpacing.lg)
     ) {
-        item { SearchHeader(onNotificationsClick) }
+        item { SearchHeader(onNotificationsClick = onNotificationsClick, onLogoClick = onLogoClick) }
         item { SearchHero() }
         item {
             SearchField(value = query, onValueChange = { query = it })
@@ -147,11 +152,33 @@ fun SearchScreen(
                     )
                 }
             }
+        } else if (viewModel.resultState == SearchResultState.ERROR) {
+            item {
+                SearchFailure(onRetry = { viewModel.search(query, selectedTab.key) })
+            }
         } else {
+            if (viewModel.resultState == SearchResultState.CACHED) {
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = WritOnSpacing.md),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.search_saved_results),
+                            modifier = Modifier.weight(1f),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        TextButton(onClick = { viewModel.search(query, selectedTab.key) }) {
+                            Text(stringResource(R.string.common_retry), color = BrandRed)
+                        }
+                    }
+                }
+            }
             when (selectedTab) {
                 SearchTab.Stories -> {
                     if (stories.isEmpty()) {
-                        item { EmptyResults("stories", query) }
+                        item { EmptyResults(query, onClear = { query = "" }, onExplore = onExploreClick) }
                     } else {
                         items(stories.size) { index ->
                             SearchResultCard(story = stories[index], onClick = { onStoryClick(stories[index].id) })
@@ -160,7 +187,7 @@ fun SearchScreen(
                 }
                 SearchTab.Writers -> {
                     if (writers.isEmpty()) {
-                        item { EmptyResults("writers", query) }
+                        item { EmptyResults(query, onClear = { query = "" }, onExplore = onExploreClick) }
                     } else {
                         items(writers.size) { index ->
                             SearchWriterCard(
@@ -172,7 +199,7 @@ fun SearchScreen(
                 }
                 SearchTab.Tags -> {
                     if (tags.isEmpty()) {
-                        item { EmptyResults("tags", query) }
+                        item { EmptyResults(query, onClear = { query = "" }, onExplore = onExploreClick) }
                     } else {
                         items(tags.size) { index ->
                             SearchTagCard(
@@ -192,14 +219,44 @@ fun SearchScreen(
     }
 }
 
+@Composable
+private fun SearchFailure(onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 54.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            stringResource(R.string.search_failed_title),
+            style = MaterialTheme.typography.titleLarge.copy(fontFamily = SearchEditorialFamily),
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Text(
+            stringResource(R.string.search_failed_desc),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        Spacer(Modifier.height(WritOnSpacing.md))
+        Button(onClick = onRetry) { Text(stringResource(R.string.common_retry)) }
+    }
+}
+
 
 @Composable
-private fun SearchHeader(onNotificationsClick: () -> Unit) {
+private fun SearchHeader(onNotificationsClick: () -> Unit, onLogoClick: () -> Unit = {}) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        WritOnBrandMark(width = 108.dp)
+        Box(
+            modifier = Modifier.clickable(
+                onClick = onLogoClick,
+                interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null
+            )
+        ) {
+            WritOnBrandMark(width = 108.dp)
+        }
         Spacer(Modifier.weight(1f))
         IconButton(onClick = onNotificationsClick) {
             Image(
@@ -498,7 +555,7 @@ private fun SearchTagCard(tag: TagDto, onClick: () -> Unit) {
 }
 
 @Composable
-private fun EmptyResults(category: String, query: String) {
+private fun EmptyResults(query: String, onClear: () -> Unit, onExplore: () -> Unit) {
     Column(
         modifier = Modifier.fillMaxWidth().padding(vertical = 54.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -516,10 +573,19 @@ private fun EmptyResults(category: String, query: String) {
             color = MaterialTheme.colorScheme.onSurface
         )
         Text(
-            stringResource(R.string.search_empty_desc),
+            if (query.isBlank()) stringResource(R.string.search_empty_desc)
+            else stringResource(R.string.search_empty_desc_query, query),
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = TextAlign.Center
         )
+        Spacer(Modifier.height(WritOnSpacing.md))
+        Row(horizontalArrangement = Arrangement.spacedBy(WritOnSpacing.sm)) {
+            if (query.isNotBlank()) {
+                OutlinedButton(onClick = onClear) { Text(stringResource(R.string.search_clear)) }
+            }
+            Button(onClick = onExplore) { Text(stringResource(R.string.search_explore_topics)) }
+        }
     }
 }
 

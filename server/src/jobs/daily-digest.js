@@ -6,10 +6,68 @@ function isInvalidPushToken(error) {
     || code.includes('messaging/invalid-registration-token');
 }
 
-export async function runDailyDigest(pool, firebaseMessaging, log) {
+export function resolveDailyDigestSlot(slot, now = new Date()) {
+  if (slot === 'morning' || slot === 'evening') return slot;
+  const indiaHour = Number(new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Kolkata', hour: '2-digit', hourCycle: 'h23',
+  }).format(now));
+  return indiaHour < 14 ? 'morning' : 'evening';
+}
+
+function getDigestCopy(slot, language, topStory, totalStories) {
+  const remaining = Math.max(0, totalStories - 1);
+  const isMorning = slot === 'morning';
+
+  let title = isMorning ? 'Morning Trending Read' : 'Tonight’s quiet read';
+  let body = isMorning
+    ? (remaining > 0
+      ? `“${topStory.title}” — ${topStory.authorName} • Trending on WritOn`
+      : `“${topStory.title}” — ${topStory.authorName}`)
+    : (remaining > 0
+      ? `“${topStory.title}” — ${topStory.authorName} • ${remaining} more today`
+      : `“${topStory.title}” — ${topStory.authorName}`);
+
+  if (language === 'hi') {
+    title = isMorning ? 'आज सुबह का चर्चित पाठ' : 'आज का चुनिंदा पाठ';
+    body = isMorning
+      ? (remaining > 0
+        ? `“${topStory.title}” — ${topStory.authorName} • राइटऑन पर ट्रेंडिंग`
+        : `“${topStory.title}” — ${topStory.authorName}`)
+      : (remaining > 0
+        ? `“${topStory.title}” — ${topStory.authorName} • आज ${remaining} और रचनाएँ`
+        : `“${topStory.title}” — ${topStory.authorName}`);
+  } else if (language === 'bn') {
+    title = isMorning ? 'সকালের ট্রেন্ডিং পাঠ' : 'আজকের বাছাই করা পাঠ';
+    body = isMorning
+      ? (remaining > 0
+        ? `“${topStory.title}” — ${topStory.authorName} • রাইটঅনে ট্রেন্ডিং`
+        : `“${topStory.title}” — ${topStory.authorName}`)
+      : (remaining > 0
+        ? `“${topStory.title}” — ${topStory.authorName} • আজ আরও ${remaining}টি লেখা`
+        : `“${topStory.title}” — ${topStory.authorName}`);
+  } else if (language === 'mr') {
+    title = isMorning ? 'सकाळचे ट्रेंडिंग वाचन' : 'आजचे निवडक वाचन';
+    body = isMorning
+      ? (remaining > 0
+        ? `“${topStory.title}” — ${topStory.authorName} • राइटऑनवर ट्रेंडिंग`
+        : `“${topStory.title}” — ${topStory.authorName}`)
+      : (remaining > 0
+        ? `“${topStory.title}” — ${topStory.authorName} • आज आणखी ${remaining} लेखन`
+        : `“${topStory.title}” — ${topStory.authorName}`);
+  }
+
+  return { title, body };
+}
+
+export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now = new Date(), forceBypass = false } = {}) {
   let dispatchKey = null;
+  const resolvedSlot = resolveDailyDigestSlot(slot, now);
+  const isMorning = resolvedSlot === 'morning';
+
   try {
-    // 1. Count only eligible, verified-human stories published today.
+    // 1. Count eligible stories published in the relevant window.
+    // Evening strictly targets verified-human stories.
+    // Morning counts published stories eligible for trending (human or verified synthetic).
     const countRes = await pool.query(`
       select coalesce(sum(cnt), 0)::int as total,
              json_object_agg(coalesce(category, 'uncategorized'), cnt) as by_category
@@ -17,26 +75,32 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
         select p.category, count(*)::int as cnt
         from public.posts p
         inner join public.profiles author
-          on author.id = p.author_id and author.account_type = 'human'
+          on author.id = p.author_id
+          ${isMorning ? "and author.account_type in ('human', 'editorial_bot')" : "and author.account_type = 'human'"}
         where p.status = 'published' and p.is_public = true
-          and p.provenance = 'human_verified'
+          ${isMorning ? "and p.provenance in ('human_verified', 'synthetic')" : "and p.provenance = 'human_verified'"}
           and coalesce(p.published_at, p.created_at) >= now() - interval '24 hours'
         group by p.category
       ) sub
     `);
-    const totalStories = countRes.rows[0]?.total || 0;
-    if (totalStories === 0) {
-      return { skipped: true, reason: 'No new stories today' };
-    }
+    let totalStories = countRes.rows[0]?.total || 0;
 
-    // 2. Get the top story of the day
+    // 2. Get the top story of the day.
+    // Morning: Trending story ranked by engagement velocity (likes, recency, deep reading).
+    // Evening: Human-written deep reading story.
+    // In both slots, stories not pushed in the last 30 days are prioritized first via the ledger cooldown subquery.
+    const storySelectFields = `
+      p.id::text, p.title, p.summary, p.category, p.language_code,
+      author.full_name as "authorName", author.pen_name as "authorPenName",
+      coalesce(read_quality.deep_read_score, 0) as deep_read_score
+    `;
+
     const topStoryRes = await pool.query(`
-      select p.id::text, p.title, p.summary, p.category, p.language_code,
-             author.full_name as "authorName", author.pen_name as "authorPenName",
-             coalesce(read_quality.deep_read_score, 0) as deep_read_score
+      select ${storySelectFields}
       from public.posts p
       inner join public.profiles author
-        on author.id = p.author_id and author.account_type = 'human'
+        on author.id = p.author_id
+        ${isMorning ? "and author.account_type in ('human', 'editorial_bot')" : "and author.account_type = 'human'"}
       left join lateral (
         select coalesce(sum(
           case when history.read_seconds >= 30 then 2 else 0 end
@@ -57,37 +121,125 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
         where history.post_id = p.id
       ) read_quality on true
       where p.status = 'published' and p.is_public = true
-        and p.provenance = 'human_verified'
+        ${isMorning ? "and p.provenance in ('human_verified', 'synthetic')" : "and p.provenance = 'human_verified'"}
         and coalesce(p.published_at, p.created_at) >= now() - interval '24 hours'
-      order by deep_read_score desc,
+      order by (
+                 select count(*)
+                 from public.notification_dispatch_ledger ndl
+                 where ndl.dispatch_kind = 'daily_digest'
+                   and ndl.status = 'completed'
+                   and ndl.completed_at >= now() - interval '30 days'
+                   and ndl.result->>'topStoryId' = p.id::text
+               ) asc,
+               ${isMorning ? 'p.likes_count desc, deep_read_score desc' : 'deep_read_score desc'},
                coalesce(p.published_at, p.created_at) desc,
                p.likes_count desc
       limit 1
     `);
-    const overallTopStory = topStoryRes.rows[0];
-    // Content can disappear between the count and selection queries.
+    let overallTopStory = topStoryRes?.rows?.[0];
+
+    // Fallback if no stories in last 24 hours: pick the best historical human story
+    // prioritizing unpushed stories from the last 30 days to ensure daily archive rotation
     if (!overallTopStory) {
-      return { skipped: true, reason: 'No eligible story available' };
+      let fallbackRes = await pool.query(`
+        select ${storySelectFields}
+        from public.posts p
+        inner join public.profiles author
+          on author.id = p.author_id
+          and author.account_type = 'human'
+        left join lateral (
+          select coalesce(sum(
+            case when history.read_seconds >= 30 then 2 else 0 end
+            + case when history.progress >= 0.70 then 4 else 0 end
+            + case when history.progress >= 0.95 then 5 else 0 end
+            + case when history.first_read_at::date < history.last_read_at::date then 6 else 0 end
+          ), 0)::numeric
+          + coalesce((
+            select count(*) * 5
+            from public.bookmarks bookmark
+            inner join public.profiles reader
+              on reader.id = bookmark.user_id and reader.account_type = 'human'
+            where bookmark.post_id = p.id
+          ), 0)::numeric as deep_read_score
+          from public.reading_history history
+          inner join public.profiles reader
+            on reader.id = history.user_id and reader.account_type = 'human'
+          where history.post_id = p.id
+        ) read_quality on true
+        where p.status = 'published' and p.is_public = true
+          and p.provenance = 'human_verified'
+        order by (
+                   select count(*)
+                   from public.notification_dispatch_ledger ndl
+                   where ndl.dispatch_kind = 'daily_digest'
+                     and ndl.status = 'completed'
+                     and ndl.completed_at >= now() - interval '30 days'
+                     and ndl.result->>'topStoryId' = p.id::text
+                 ) asc,
+                 deep_read_score desc,
+                 coalesce(p.published_at, p.created_at) desc,
+                 p.likes_count desc
+        limit 1
+      `);
+      overallTopStory = fallbackRes?.rows?.[0];
+
+      // If no human-verified post found, fall back to any published story
+      if (!overallTopStory) {
+        fallbackRes = await pool.query(`
+          select p.id::text, p.title, p.summary, p.category, p.language_code,
+                 author.full_name as "authorName", author.pen_name as "authorPenName",
+                 0 as deep_read_score
+          from public.posts p
+          inner join public.profiles author
+            on author.id = p.author_id
+          where p.status = 'published' and p.is_public = true
+          order by (
+                     select count(*)
+                     from public.notification_dispatch_ledger ndl
+                     where ndl.dispatch_kind = 'daily_digest'
+                       and ndl.status = 'completed'
+                       and ndl.completed_at >= now() - interval '30 days'
+                       and ndl.result->>'topStoryId' = p.id::text
+                   ) asc,
+                   p.likes_count desc,
+                   coalesce(p.published_at, p.created_at) desc
+          limit 1
+        `);
+        overallTopStory = fallbackRes?.rows?.[0];
+      }
+
+      if (overallTopStory) {
+        totalStories = 1;
+      }
     }
 
-    // Claim the India-local editorial date before the first external FCM call.
-    // ON CONFLICT makes concurrent scheduler invocations at-most-once. We do
-    // not retry a claimed date automatically because FCM sends cannot be made
-    // transactionally atomic with Postgres.
+    if (!overallTopStory) {
+      return { skipped: true, reason: 'No eligible story available', slot: resolvedSlot };
+    }
+
+    // Claim the India-local editorial date and slot before the first external FCM call.
+    // Slotted ledger key: 'daily_digest:YYYY-MM-DD:morning' or 'daily_digest:YYYY-MM-DD:evening'
+    const localDate = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(now);
+    const targetDispatchKey = forceBypass
+      ? `daily_digest:${localDate}:${resolvedSlot}:test_${Date.now()}`
+      : `daily_digest:${localDate}:${resolvedSlot}`;
+
     const claimRes = await pool.query(`
       insert into public.notification_dispatch_ledger (
         dispatch_key, dispatch_kind, status
       ) values (
-        'daily_digest:' || to_char(now() at time zone 'Asia/Kolkata', 'YYYY-MM-DD'),
+        $1,
         'daily_digest',
         'claimed'
       )
       on conflict (dispatch_key) do nothing
       returning dispatch_key as "dispatchKey"
-    `);
+    `, [targetDispatchKey]);
     dispatchKey = claimRes.rows[0]?.dispatchKey || null;
     if (!dispatchKey) {
-      return { skipped: true, reason: 'Daily digest already claimed' };
+      return { skipped: true, reason: 'Daily digest already claimed', slot: resolvedSlot };
     }
 
     // 3. Get per-language top stories
@@ -98,7 +250,8 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
              coalesce(read_quality.deep_read_score, 0) as deep_read_score
       from public.posts p
       inner join public.profiles author
-        on author.id = p.author_id and author.account_type = 'human'
+        on author.id = p.author_id
+        ${isMorning ? "and author.account_type in ('human', 'editorial_bot')" : "and author.account_type = 'human'"}
       left join lateral (
         select coalesce(sum(
           case when history.read_seconds >= 30 then 2 else 0 end
@@ -119,9 +272,10 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
         where history.post_id = p.id
       ) read_quality on true
       where p.status = 'published' and p.is_public = true
-        and p.provenance = 'human_verified'
+        ${isMorning ? "and p.provenance in ('human_verified', 'synthetic')" : "and p.provenance = 'human_verified'"}
         and coalesce(p.published_at, p.created_at) >= now() - interval '24 hours'
-      order by p.language_code, deep_read_score desc,
+      order by p.language_code,
+               ${isMorning ? 'p.likes_count desc, deep_read_score desc' : 'deep_read_score desc'},
                coalesce(p.published_at, p.created_at) desc,
                p.likes_count desc
     `);
@@ -147,8 +301,7 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
       ) rfs on true
       where dpt.revoked_at is null
         and dpt.notification_permission = 'granted'
-        and coalesce(np.editorial_enabled, true) = true
-        and dpt.last_seen_at < now() - interval '6 hours'
+        and coalesce(np.daily_digest_enabled, np.editorial_enabled, true) = true
       order by dpt.profile_id, dpt.last_seen_at desc
     `);
     const recipients = recipientsRes.rows;
@@ -168,33 +321,14 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
         continue;
       }
 
-      const remaining = totalStories - 1;
-      let title = 'Tonight’s quiet read';
-      let body = `“${topStory.title}” — ${topStory.authorName} • ${remaining} more today`;
-
-      if (remaining === 0) {
-        body = `“${topStory.title}” — ${topStory.authorName}`;
-      }
-
-      if (preferredLanguage === 'hi') {
-        title = 'आज का चुनिंदा पाठ';
-        body = `“${topStory.title}” — ${topStory.authorName} • आज ${remaining} और रचनाएँ`;
-        if (remaining === 0) body = `“${topStory.title}” — ${topStory.authorName}`;
-      } else if (preferredLanguage === 'bn') {
-        title = 'আজকের বাছাই করা পাঠ';
-        body = `“${topStory.title}” — ${topStory.authorName} • আজ আরও ${remaining}টি লেখা`;
-        if (remaining === 0) body = `“${topStory.title}” — ${topStory.authorName}`;
-      } else if (preferredLanguage === 'mr') {
-        title = 'आजचे निवडक वाचन';
-        body = `“${topStory.title}” — ${topStory.authorName} • आज आणखी ${remaining} लेखन`;
-        if (remaining === 0) body = `“${topStory.title}” — ${topStory.authorName}`;
-      }
+      const copy = getDigestCopy(resolvedSlot, preferredLanguage, topStory, totalStories);
 
       const payload = {
         token: recipient.token,
-        notification: { title, body },
+        notification: { title: copy.title, body: copy.body },
         data: {
           kind: 'daily_digest',
+          edition: resolvedSlot,
           storyId: topStory.id,
           storyTitle: topStory.title,
           storySummary: topStory.summary || '',
@@ -203,17 +337,17 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
           dailyCount: String(totalStories),
         },
         fcmOptions: {
-          analyticsLabel: toFcmAnalyticsLabel('daily_digest', recipient.preferredLanguage || 'en'),
+          analyticsLabel: toFcmAnalyticsLabel('daily_digest', resolvedSlot, recipient.preferredLanguage || 'en'),
         },
         android: {
-          priority: 'normal',
+          priority: 'high',
           notification: {
             channelId: 'writon_editorial_channel',
             icon: 'ic_stat_writon',
             color: '#E75A2A',
           },
           fcmOptions: {
-            analyticsLabel: toFcmAnalyticsLabel('daily_digest', recipient.preferredLanguage || 'en'),
+            analyticsLabel: toFcmAnalyticsLabel('daily_digest', resolvedSlot, recipient.preferredLanguage || 'en'),
           },
         },
       };
@@ -239,17 +373,16 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
     // 6. Broadcast to the general FCM topic 'daily_digest' so all installed readers (including guest readers) receive it
     if (firebaseMessaging && overallTopStory) {
       try {
-        const remaining = totalStories - 1;
+        const topicCopy = getDigestCopy(resolvedSlot, 'en', overallTopStory, totalStories);
         const topicPayload = {
           topic: 'daily_digest',
           notification: {
-            title: 'Tonight’s quiet read',
-            body: remaining > 0
-              ? `“${overallTopStory.title}” — ${overallTopStory.authorName} • ${remaining} more today`
-              : `“${overallTopStory.title}” — ${overallTopStory.authorName}`,
+            title: topicCopy.title,
+            body: topicCopy.body,
           },
           data: {
             kind: 'daily_digest',
+            edition: resolvedSlot,
             storyId: overallTopStory.id,
             storyTitle: overallTopStory.title,
             storySummary: overallTopStory.summary || '',
@@ -258,17 +391,17 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
             dailyCount: String(totalStories),
           },
           fcmOptions: {
-            analyticsLabel: toFcmAnalyticsLabel('daily_digest', 'topic'),
+            analyticsLabel: toFcmAnalyticsLabel('daily_digest', resolvedSlot, 'topic'),
           },
           android: {
-            priority: 'normal',
+            priority: 'high',
             notification: {
               channelId: 'writon_editorial_channel',
               icon: 'ic_stat_writon',
               color: '#E75A2A',
             },
             fcmOptions: {
-              analyticsLabel: toFcmAnalyticsLabel('daily_digest', 'topic'),
+              analyticsLabel: toFcmAnalyticsLabel('daily_digest', resolvedSlot, 'topic'),
             },
           },
         };
@@ -284,6 +417,7 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
     // never the unknown number of devices subscribed to that topic.
     log?.info?.({
       event: 'daily_digest_dispatch_summary',
+      slot: resolvedSlot,
       eligibleDirectRecipients: recipients.length,
       directAttempted,
       directAccepted: sent,
@@ -300,14 +434,17 @@ export async function runDailyDigest(pool, firebaseMessaging, log) {
              updated_at = now()
        where dispatch_key = $1
     `, [dispatchKey, JSON.stringify({
+      slot: resolvedSlot,
       eligibleDirectRecipients: recipients.length,
       directAttempted,
       directAccepted: sent,
       directSkippedOrFailed: skipped,
       topicAttempted,
       topicAccepted,
+      topStoryId: overallTopStory.id,
+      topStoryTitle: overallTopStory.title,
     })]);
-    return { sent, skipped, totalStories, topStory: overallTopStory.title };
+    return { sent, skipped, totalStories, topStory: overallTopStory.title, slot: resolvedSlot };
   } catch (error) {
     if (dispatchKey) {
       try {

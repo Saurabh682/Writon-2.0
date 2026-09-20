@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Feather, Sun, Moon, Search, PenTool, User as UserIcon, LogOut, Bookmark } from 'lucide-react';
+import { Sun, Moon, Search, PenTool, User as UserIcon, LogOut, Bookmark } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
@@ -38,9 +38,13 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={onNavigateHome}
             className="flex items-center gap-2 text-left group focus:outline-none"
           >
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#B83A24] to-amber-600 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
-              <Feather className="w-5 h-5" />
-            </div>
+            <img
+              src="/assets/writon-nav-logo.webp"
+              alt="WritOn"
+              width={38}
+              height={38}
+              className="w-[38px] h-[38px] rounded-full object-cover shadow-sm ring-1 ring-editorial-border/60 group-hover:scale-105 transition-transform"
+            />
             <div>
               <span className="font-serif text-2xl font-bold tracking-tight text-gray-900 dark:text-white block leading-none">
                 WritOn

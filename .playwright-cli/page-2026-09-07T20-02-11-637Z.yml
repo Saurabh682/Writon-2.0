@@ -1,0 +1,468 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]: WritOn Global Command Center
+          - generic [ref=e7]: ● Sprint 2 Active (Days 1–14)
+          - generic [ref=e8]: 🎨 Watercolor Aesthetic Locked
+        - heading "Social Media Editorial Canvas" [level=1] [ref=e9]
+        - paragraph [ref=e10]: Visible, steerable, and bidirectional editorial board for all 70 sprint deliveries.
+      - generic [ref=e11]:
+        - button "🔐 Connect" [ref=e12] [cursor=pointer]
+        - button "🕘 History" [ref=e13] [cursor=pointer]
+        - button "💾 Save Edits" [ref=e14] [cursor=pointer]:
+          - generic [ref=e15]: 💾
+          - text: Save Edits
+        - button "📥 Export CSV" [ref=e16] [cursor=pointer]:
+          - generic [ref=e17]: 📥
+          - text: Export CSV
+        - button "📋 Copy Day Brief" [ref=e18] [cursor=pointer]:
+          - generic [ref=e19]: 📋
+          - text: Copy Day Brief
+        - button "⚡ Dry Run" [ref=e20] [cursor=pointer]:
+          - generic [ref=e21]: ⚡
+          - text: Dry Run
+    - generic [ref=e22]:
+      - navigation [ref=e23]:
+        - button "🗓️ Daily Dispatcher" [ref=e24] [cursor=pointer]
+        - button "📊 Sprint Overview (All 14 Days)" [ref=e25] [cursor=pointer]
+        - button "📡 Trend Radar & SEO" [ref=e26] [cursor=pointer]
+        - button "🎨 Watercolor Spec" [ref=e27] [cursor=pointer]
+        - button "🩺 Operations" [ref=e28] [cursor=pointer]
+      - generic [ref=e29]: ✓ Bidirectional state in sync
+  - generic [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: Select Sprint Day (Sept 6 – Sept 19)
+        - generic [ref=e34]: Day 3 of 14 Active
+      - generic [ref=e35]:
+        - button "Day 1 ✅ Start with one paragraph" [ref=e36] [cursor=pointer]:
+          - generic [ref=e37]:
+            - generic [ref=e38]: Day 1
+            - generic [ref=e39]: ✅
+          - generic [ref=e40]: Start with one paragraph
+        - button "Day 2 ✅ Hindi opening-line prompt" [ref=e41] [cursor=pointer]:
+          - generic [ref=e42]:
+            - generic [ref=e43]: Day 2
+            - generic [ref=e44]: ✅
+          - generic [ref=e45]: Hindi opening-line prompt
+        - button "Day 3 🔥 Show emotion through action" [ref=e46] [cursor=pointer]:
+          - generic [ref=e47]:
+            - generic [ref=e48]: Day 3
+            - generic [ref=e49]: 🔥
+          - generic [ref=e50]: Show emotion through action
+        - button "Day 4 📝 Marathi memory prompt" [ref=e51] [cursor=pointer]:
+          - generic [ref=e52]:
+            - generic [ref=e53]: Day 4
+            - generic [ref=e54]: 📝
+          - generic [ref=e55]: Marathi memory prompt
+        - button "Day 5 📝 Opening-line lab; optional verified author feature" [ref=e56] [cursor=pointer]:
+          - generic [ref=e57]:
+            - generic [ref=e58]: Day 5
+            - generic [ref=e59]: 📝
+          - generic [ref=e60]: Opening-line lab; optional verified author feature
+        - button "Day 6 📝 Reader preferences" [ref=e61] [cursor=pointer]:
+          - generic [ref=e62]:
+            - generic [ref=e63]: Day 6
+            - generic [ref=e64]: 📝
+          - generic [ref=e65]: Reader preferences
+        - button "Day 7 📝 Week-one practice recap" [ref=e66] [cursor=pointer]:
+          - generic [ref=e67]:
+            - generic [ref=e68]: Day 7
+            - generic [ref=e69]: 📝
+          - generic [ref=e70]: Week-one practice recap
+        - button "Day 8 📝 Hindi dialogue challenge" [ref=e71] [cursor=pointer]:
+          - generic [ref=e72]:
+            - generic [ref=e73]: Day 8
+            - generic [ref=e74]: 📝
+          - generic [ref=e75]: Hindi dialogue challenge
+        - button "Day 9 📝 Verified writing walkthrough" [ref=e76] [cursor=pointer]:
+          - generic [ref=e77]:
+            - generic [ref=e78]: Day 9
+            - generic [ref=e79]: 📝
+          - generic [ref=e80]: Verified writing walkthrough
+        - button "Day 10 📝 Bengali unsent-letter prompt" [ref=e81] [cursor=pointer]:
+          - generic [ref=e82]:
+            - generic [ref=e83]: Day 10
+            - generic [ref=e84]: 📝
+          - generic [ref=e85]: Bengali unsent-letter prompt
+        - button "Day 11 📝 Hindi sensory writing" [ref=e86] [cursor=pointer]:
+          - generic [ref=e87]:
+            - generic [ref=e88]: Day 11
+            - generic [ref=e89]: 📝
+          - generic [ref=e90]: Hindi sensory writing
+        - button "Day 12 📝 One scene, two perspectives; optional verified author feature" [ref=e91] [cursor=pointer]:
+          - generic [ref=e92]:
+            - generic [ref=e93]: Day 12
+            - generic [ref=e94]: 📝
+          - generic [ref=e95]: One scene, two perspectives; optional verified author feature
+        - button "Day 13 📝 Find your next read" [ref=e96] [cursor=pointer]:
+          - generic [ref=e97]:
+            - generic [ref=e98]: Day 13
+            - generic [ref=e99]: 📝
+          - generic [ref=e100]: Find your next read
+        - button "Day 14 📝 Two-week recap and next preference" [ref=e101] [cursor=pointer]:
+          - generic [ref=e102]:
+            - generic [ref=e103]: Day 14
+            - generic [ref=e104]: 📝
+          - generic [ref=e105]: Two-week recap and next preference
+    - generic [ref=e106]:
+      - generic [ref=e107]:
+        - generic [ref=e108]:
+          - 'heading "Day 3: Show emotion through action" [level=2] [ref=e109]'
+          - generic [ref=e110]: EN
+        - paragraph [ref=e111]: 2026-09-08 • 5 Deliveries
+      - generic [ref=e112]:
+        - combobox [ref=e113]:
+          - option "All Platforms (5)" [selected]
+          - option "X / Twitter"
+          - option "Instagram Feed & Story"
+          - option "Threads"
+        - combobox [ref=e114]:
+          - option "All Statuses" [selected]
+          - option "Published"
+          - option "Approved"
+          - option "Ready / Verified"
+          - option "Planned Draft"
+    - generic [ref=e115]:
+      - article [ref=e116]:
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - generic [ref=e119]: 𝕏
+            - generic [ref=e120]:
+              - generic [ref=e121]:
+                - generic [ref=e122]: 09:00 IST
+                - generic [ref=e123]: • X (card)
+              - generic [ref=e124]: 2609_d08_x_card_en_sprint2_am_show_emotion_through_action
+          - generic [ref=e125]: ● Ready for Review
+        - generic [ref=e126]:
+          - generic [ref=e128] [cursor=pointer]:
+            - img "Card Preview" [ref=e129]
+            - generic [ref=e130]: 🔍 Click to Zoom Card
+          - generic [ref=e131]:
+            - generic [ref=e132]:
+              - group [ref=e133]:
+                - generic "View Creative Brief & Hook Instructions" [ref=e134] [cursor=pointer]
+              - generic [ref=e135]:
+                - generic [ref=e136]:
+                  - generic [ref=e137]: Caption (Direct Editable)
+                  - generic [ref=e138]: 150 chars
+                - textbox [ref=e139]: "Writing exercise: replace “He was happy” with one action a reader could see. No emotion words. What would he do? #writon #writingcommunity #amwriting"
+              - generic [ref=e140]:
+                - generic [ref=e141]: "#writon"
+                - generic [ref=e142]: "#writingcommunity"
+                - generic [ref=e143]: "#amwriting"
+              - generic [ref=e144]:
+                - generic [ref=e145]: https://writon.cc/go/2609_d08_x_card_en_sprint2_am_show_emotion_through_action
+                - button "Copy Link" [ref=e146] [cursor=pointer]
+              - group [ref=e147]:
+                - generic "Workflow, owner & approval evidence" [ref=e148] [cursor=pointer]
+                - option "idea"
+                - option "planned draft" [selected]
+                - option "ready"
+                - option "sourced"
+                - option "rights verified"
+                - option "copy ready"
+                - option "localized"
+                - option "designed"
+                - option "qa passed"
+                - option "approved"
+                - option "scheduled"
+                - option "published"
+                - option "measured"
+                - option "blocked"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+            - generic [ref=e149]:
+              - generic [ref=e150]:
+                - button "Approve" [ref=e151] [cursor=pointer]
+                - button "Copy Caption" [ref=e152] [cursor=pointer]
+              - button "Reset" [ref=e153] [cursor=pointer]
+      - article [ref=e154]:
+        - generic [ref=e155]:
+          - generic [ref=e156]:
+            - generic [ref=e157]: 📸 🧵
+            - generic [ref=e158]:
+              - generic [ref=e159]:
+                - generic [ref=e160]: 12:30 IST
+                - generic [ref=e161]: • IG (story)
+              - generic [ref=e162]: 2609_d08_ig_story_en_sprint2_midday_show_emotion_through_action
+          - generic [ref=e163]: ● Ready for Review
+        - generic [ref=e164]:
+          - generic [ref=e165]:
+            - generic [ref=e166] [cursor=pointer]:
+              - img "Card Preview" [ref=e167]
+              - generic [ref=e168]: 🔍 Click to Zoom Card
+            - button "+ View Frame 2 (3 frames total)" [ref=e170] [cursor=pointer]
+          - generic [ref=e171]:
+            - generic [ref=e172]:
+              - group [ref=e173]:
+                - generic "View Creative Brief & Hook Instructions" [ref=e174] [cursor=pointer]
+              - generic [ref=e175]:
+                - generic [ref=e176]:
+                  - generic [ref=e177]: Caption (Direct Editable)
+                  - generic [ref=e178]: 108 chars
+                - textbox [ref=e179]: "What do you notice first in a scene? #writon #writingcommunity #amwriting #storytelling #writersofinstagram"
+              - generic [ref=e180]:
+                - generic [ref=e181]: "#writon"
+                - generic [ref=e182]: "#writingcommunity"
+                - generic [ref=e183]: "#amwriting"
+                - generic [ref=e184]: "#storytelling"
+                - generic [ref=e185]: "#writersofinstagram"
+              - generic [ref=e186]:
+                - generic [ref=e187]: https://writon.cc/go/2609_d08_ig_story_en_sprint2_midday_show_emotion_through_action
+                - button "Copy Link" [ref=e188] [cursor=pointer]
+              - group [ref=e189]:
+                - generic "Workflow, owner & approval evidence" [ref=e190] [cursor=pointer]
+                - option "idea"
+                - option "planned draft" [selected]
+                - option "ready"
+                - option "sourced"
+                - option "rights verified"
+                - option "copy ready"
+                - option "localized"
+                - option "designed"
+                - option "qa passed"
+                - option "approved"
+                - option "scheduled"
+                - option "published"
+                - option "measured"
+                - option "blocked"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+            - generic [ref=e191]:
+              - generic [ref=e192]:
+                - button "Approve" [ref=e193] [cursor=pointer]
+                - button "Copy Caption" [ref=e194] [cursor=pointer]
+              - button "Reset" [ref=e195] [cursor=pointer]
+      - article [ref=e196]:
+        - generic [ref=e197]:
+          - generic [ref=e198]:
+            - generic [ref=e199]: 📸 🧵
+            - generic [ref=e200]:
+              - generic [ref=e201]:
+                - generic [ref=e202]: 19:30 IST
+                - generic [ref=e203]: • IG (carousel)
+              - generic [ref=e204]: 2609_d08_ig_carousel_en_sprint2_main_show_emotion_through_action
+          - generic [ref=e205]: ● Ready for Review
+        - generic [ref=e206]:
+          - generic [ref=e208] [cursor=pointer]:
+            - img "Card Preview" [ref=e209]
+            - generic [ref=e210]: 🔍 Click to Zoom Card
+          - generic [ref=e211]:
+            - generic [ref=e212]:
+              - group [ref=e213]:
+                - generic "View Creative Brief & Hook Instructions" [ref=e214] [cursor=pointer]
+              - generic [ref=e215]:
+                - generic [ref=e216]:
+                  - generic [ref=e217]: Caption (Direct Editable)
+                  - generic [ref=e218]: 288 chars
+                - textbox [ref=e219]: "A small action can carry an emotion. Instead of naming a feeling, let the reader notice a gesture. Swipe for a brand-written example, then try the exercise in your next draft. Save this for your next writing session. #writon #writingcommunity #amwriting #storytelling #writersofinstagram"
+              - generic [ref=e220]:
+                - generic [ref=e221]: "#writon"
+                - generic [ref=e222]: "#writingcommunity"
+                - generic [ref=e223]: "#amwriting"
+                - generic [ref=e224]: "#storytelling"
+                - generic [ref=e225]: "#writersofinstagram"
+              - generic [ref=e226]:
+                - generic [ref=e227]: https://writon.cc/go/2609_d08_ig_carousel_en_sprint2_main_show_emotion_through_action
+                - button "Copy Link" [ref=e228] [cursor=pointer]
+              - group [ref=e229]:
+                - generic "Workflow, owner & approval evidence" [ref=e230] [cursor=pointer]
+                - option "idea"
+                - option "planned draft" [selected]
+                - option "ready"
+                - option "sourced"
+                - option "rights verified"
+                - option "copy ready"
+                - option "localized"
+                - option "designed"
+                - option "qa passed"
+                - option "approved"
+                - option "scheduled"
+                - option "published"
+                - option "measured"
+                - option "blocked"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+            - generic [ref=e231]:
+              - generic [ref=e232]:
+                - button "Approve" [ref=e233] [cursor=pointer]
+                - button "Copy Caption" [ref=e234] [cursor=pointer]
+              - button "Reset" [ref=e235] [cursor=pointer]
+      - article [ref=e236]:
+        - generic [ref=e237]:
+          - generic [ref=e238]:
+            - generic [ref=e239]: 𝕏
+            - generic [ref=e240]:
+              - generic [ref=e241]:
+                - generic [ref=e242]: 20:30 IST
+                - generic [ref=e243]: • X (card)
+              - generic [ref=e244]: 2609_d08_x_card_en_sprint2_pm_show_emotion_through_action
+          - generic [ref=e245]: ● Ready for Review
+        - generic [ref=e246]:
+          - generic [ref=e248] [cursor=pointer]:
+            - img "Card Preview" [ref=e249]
+            - generic [ref=e250]: 🔍 Click to Zoom Card
+          - generic [ref=e251]:
+            - generic [ref=e252]:
+              - group [ref=e253]:
+                - generic "View Creative Brief & Hook Instructions" [ref=e254] [cursor=pointer]
+              - generic [ref=e255]:
+                - generic [ref=e256]:
+                  - generic [ref=e257]: Caption (Direct Editable)
+                  - generic [ref=e258]: 180 chars
+                - textbox [ref=e259]: "Draft check: underline one sentence that names an emotion. Try a gesture in its place. Keep whichever version sounds more like your character. #writon #writingcommunity #amwriting"
+              - generic [ref=e260]:
+                - generic [ref=e261]: "#writon"
+                - generic [ref=e262]: "#writingcommunity"
+                - generic [ref=e263]: "#amwriting"
+              - generic [ref=e264]:
+                - generic [ref=e265]: https://writon.cc/go/2609_d08_x_card_en_sprint2_pm_show_emotion_through_action
+                - button "Copy Link" [ref=e266] [cursor=pointer]
+              - group [ref=e267]:
+                - generic "Workflow, owner & approval evidence" [ref=e268] [cursor=pointer]
+                - option "idea"
+                - option "planned draft" [selected]
+                - option "ready"
+                - option "sourced"
+                - option "rights verified"
+                - option "copy ready"
+                - option "localized"
+                - option "designed"
+                - option "qa passed"
+                - option "approved"
+                - option "scheduled"
+                - option "published"
+                - option "measured"
+                - option "blocked"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+            - generic [ref=e269]:
+              - generic [ref=e270]:
+                - button "Approve" [ref=e271] [cursor=pointer]
+                - button "Copy Caption" [ref=e272] [cursor=pointer]
+              - button "Reset" [ref=e273] [cursor=pointer]
+      - article [ref=e274]:
+        - generic [ref=e275]:
+          - generic [ref=e276]:
+            - generic [ref=e277]: 📸 🧵
+            - generic [ref=e278]:
+              - generic [ref=e279]:
+                - generic [ref=e280]: 20:45 IST
+                - generic [ref=e281]: • IG (story)
+              - generic [ref=e282]: 2609_d08_ig_story_en_sprint2_evening_show_emotion_through_action
+          - generic [ref=e283]: ● Ready for Review
+        - generic [ref=e284]:
+          - generic [ref=e285]:
+            - generic [ref=e286] [cursor=pointer]:
+              - img "Card Preview" [ref=e287]
+              - generic [ref=e288]: 🔍 Click to Zoom Card
+            - button "+ View Frame 2 (2 frames total)" [ref=e290] [cursor=pointer]
+          - generic [ref=e291]:
+            - generic [ref=e292]:
+              - group [ref=e293]:
+                - generic "View Creative Brief & Hook Instructions" [ref=e294] [cursor=pointer]
+              - generic [ref=e295]:
+                - generic [ref=e296]:
+                  - generic [ref=e297]: Caption (Direct Editable)
+                  - generic [ref=e298]: 162 chars
+                - textbox [ref=e299]: "Show the worry before you name it. Use tonight's exercise or question from the feed post. #writon #writingcommunity #amwriting #storytelling #writersofinstagram"
+              - generic [ref=e300]:
+                - generic [ref=e301]: "#writon"
+                - generic [ref=e302]: "#writingcommunity"
+                - generic [ref=e303]: "#amwriting"
+                - generic [ref=e304]: "#storytelling"
+                - generic [ref=e305]: "#writersofinstagram"
+              - generic [ref=e306]:
+                - generic [ref=e307]: https://writon.cc/go/2609_d08_ig_story_en_sprint2_evening_show_emotion_through_action
+                - button "Copy Link" [ref=e308] [cursor=pointer]
+              - group [ref=e309]:
+                - generic "Workflow, owner & approval evidence" [ref=e310] [cursor=pointer]
+                - option "idea"
+                - option "planned draft" [selected]
+                - option "ready"
+                - option "sourced"
+                - option "rights verified"
+                - option "copy ready"
+                - option "localized"
+                - option "designed"
+                - option "qa passed"
+                - option "approved"
+                - option "scheduled"
+                - option "published"
+                - option "measured"
+                - option "blocked"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+                - option "pending" [selected]
+                - option "passed"
+                - option "not applicable"
+            - generic [ref=e311]:
+              - generic [ref=e312]:
+                - button "Approve" [ref=e313] [cursor=pointer]
+                - button "Copy Caption" [ref=e314] [cursor=pointer]
+              - button "Reset" [ref=e315] [cursor=pointer]

@@ -4,6 +4,9 @@
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-L3H0RQ5ZQY"></script>
   <script>
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      window['ga-disable-G-L3H0RQ5ZQY'] = true;
+    }
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
@@ -30,12 +33,12 @@
   <link rel="alternate" hreflang="en" href="https://writon.cc/" />
   <link rel="alternate" hreflang="x-default" href="https://writon.cc/" />
   <link rel="alternate" type="application/rss+xml" title="WritOn — Stories &amp; Essays" href="https://writon.cc/feed.xml" />
-  <meta id="meta-desc" name="description" content="On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but only after paying full price." />
+  <meta id="meta-desc" name="description" content="On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but it had to be defended every minute." />
   <meta property="og:type" content="article" />
   <meta id="og-locale" property="og:locale" content="en_US" />
   <meta property="og:site_name" content="WritOn" />
   <meta id="og-title" property="og:title" content="Four Hours Inside a Foregone Conclusion — WritOn" />
-  <meta id="og-desc" property="og:description" content="On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but only after paying full price." />
+  <meta id="og-desc" property="og:description" content="On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but it had to be defended every minute." />
   <meta id="og-img" property="og:image" content="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -44,7 +47,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@WritOn_Social" />
   <meta id="twitter-title" name="twitter:title" content="Four Hours Inside a Foregone Conclusion — WritOn" />
-  <meta id="twitter-desc" name="twitter:description" content="On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but only after paying full price." />
+  <meta id="twitter-desc" name="twitter:description" content="On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but it had to be defended every minute." />
   <meta id="twitter-img" name="twitter:image" content="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" />
 
   <link rel="manifest" href="/manifest.webmanifest" />
@@ -97,7 +100,7 @@
     ]
   }
   </script>
-  <script id="story-jsonld" type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://writon.cc/"},{"@type":"ListItem","position":2,"name":"Essays","item":"https://writon.cc/stories?category=Essays"},{"@type":"ListItem","position":3,"name":"Four Hours Inside a Foregone Conclusion","item":"https://writon.cc/stories/four-hours-inside-a-foregone-conclusion-a6e1d2d7"}]},{"@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://writon.cc/stories/four-hours-inside-a-foregone-conclusion-a6e1d2d7"},"headline":"Four Hours Inside a Foregone Conclusion","description":"On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but only after paying full price.","image":["https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&auto=format&fit=crop&q=80"],"datePublished":"2026-09-17T17:31:08.042Z","author":{"@type":"Person","name":"Dr. Sunita Banerjee","url":"https://writon.cc/stories?author=sunita_banerjee"},"publisher":{"@type":"Organization","name":"WritOn","url":"https://writon.cc","logo":{"@type":"ImageObject","url":"https://writon.cc/assets/writon_app_icon.png"}},"articleSection":"Essays"}]}</script>
+  <script id="story-jsonld" type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://writon.cc/"},{"@type":"ListItem","position":2,"name":"Essays","item":"https://writon.cc/stories?category=Essays"},{"@type":"ListItem","position":3,"name":"Four Hours Inside a Foregone Conclusion","item":"https://writon.cc/stories/four-hours-inside-a-foregone-conclusion-a6e1d2d7"}]},{"@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://writon.cc/stories/four-hours-inside-a-foregone-conclusion-a6e1d2d7"},"headline":"Four Hours Inside a Foregone Conclusion","description":"On paper, Alexander Zverev vs Quentin Halys at the US Open was a predictable second-round fixture. Four hours and thirty-three minutes later, hierarchy had survived, but it had to be defended every minute.","image":["https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&auto=format&fit=crop&q=80"],"datePublished":"2026-09-17T17:31:08.042Z","author":{"@type":"Person","name":"Dr. Sunita Banerjee","url":"https://writon.cc/stories?author=sunita_banerjee"},"publisher":{"@type":"Organization","name":"WritOn","url":"https://writon.cc","logo":{"@type":"ImageObject","url":"https://writon.cc/assets/writon_app_icon.png"}},"articleSection":"Essays"}]}</script>
 </head>
 <body>
     <main>
@@ -125,17 +128,13 @@
 
       <div id="story-content" class="story-content">
 <h3>Four Hours Inside a Foregone Conclusion</h3>
-<p>The brass paperweight on my desk holds down three batches of tutorial assignments from first-year literature students. In the margin of an essay on Rabindranath Tagore&#39;s educational pamphlets, I have penciled a provisional grade: <em>B-plus</em>. It is an administrative prediction. It suggests the student’s thinking will occupy a known, comfortable tier—competent, predictable, settled. </p>
-<p>On the screen propped beside my bookshelf, a tennis match at the US Open between Alexander Zverev and Quentin Halys has just passed midnight in New York. </p>
-<p>On paper, this second-round fixture had already been resolved before the players walked out onto the blue court in Flushing Meadows. Zverev was seeded third in the world, backed by betting markets that favored him heavily at odds around -650 against Halys’s +431. The previews treated the contest as an inevitability: a top-tier contender moving systematically through an opponent ranked near fiftieth. In the logic of rankings, the hierarchy was clean.</p>
-<p>Yet the contest on the court refused to agree with the paper forecast.</p>
-<p>Instead of a routine progression, the match stretched into a four-hour, thirty-three-minute war of attrition. Halys struck eighteen aces, matched Zverev stroke for stroke through long tiebreak sets, and forced the contest into a deciding fifth set that finished well past two in the morning. Zverev fired twenty-nine aces of his own, surviving 6–4, 4–6, 7–6(3), 6–7(3), 6–3 in his second consecutive five-set struggle of the week. The favorite won, but the victory arrived stripped of every illusion of ease.</p>
-<p>Watching the fifth set unfold, I kept thinking of the student essays stacked beneath my paperweight.</p>
-<p>Rankings and grades share a seductive administrative promise: they persuade us that hierarchy is an established state of being rather than an hourly expenditure of energy. A tournament ranking tells you who is supposed to prevail. It says nothing about the physical resistance required to make that expectation come true. It cannot measure the strain in a player’s knees after midnight, or the stubborn refusal of an unseeded opponent who decides that his assigned place in the bracket is only an opinion.</p>
-<p>The drama of the night was not that velocity conquered finesse. It was that hierarchy had to pay full price for its survival. Every ace, every lunging volley on the net cord, was an argument about the cost of maintaining a pre-ordained conclusion.</p>
-<p>I shut the monitor. </p>
-<p>The Delhi humidity outside the windowpane is thick and still. The fan above my desk turns with a quiet, dry flutter against the ceiling. I pick up my fountain pen and unthread the cap. </p>
-<p>The nib leaves a dark blue stroke across the margin of the first student paper, right through the provisional grade.</p>
+<p>The result looks simple now: Alexander Zverev, seeded fourth, defeated Quentin Halys in the second round of the US Open. The score occupies one line: 6–4, 4–6, 7–6(3), 6–7(3), 6–3. The match occupied four hours and thirty-three minutes of Arthur Ashe Stadium, ending past 2 a.m.</p>
+<p>The brass paperweight on my desk holds down three batches of tutorial assignments from first-year literature students. In the marks ledger beside the stack, one student&#39;s name had carried a penciled note since August: &quot;probable B-plus.&quot; The student had received a B or B-plus on every assignment across the previous term. It was an administrative forecast. It suggested the student’s thinking would occupy a settled tier before the new submission had even been read.</p>
+<p>Watching the fifth set unfold beside my bookshelf, I kept thinking of that forecast.</p>
+<p>A tournament seed establishes the hierarchy from which expectations are built. It says nothing about the resistance required to preserve that hierarchy once play begins. It cannot measure the cost of holding an established outcome together under stadium lights after midnight.</p>
+<p>Halys struck eighteen aces and dragged the contest into two tiebreaks. Zverev answered with twenty-nine of his own, surviving his second consecutive five-set struggle of the week. The favorite won, but the victory arrived stripped of every illusion of ease.</p>
+<p>The hierarchy survived, but it had to be defended for four hours and thirty-three minutes.</p>
+<p>I turn back to the student&#39;s essay and begin reading the final page again.</p>
 <h3>Sources</h3>
 <ul>
 <li><a href="https://www.usopen.org/en_US/news/articles/2026-09-04/alexander_zverev_wins_another_2026_us_open_five-set_marathon.html">US Open — Alexander Zverev Wins Another 2026 US Open Five-Set Marathon Against Quentin Halys</a></li>

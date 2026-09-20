@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "default": "writon-app-2020"
+  },
+  "targets": {
+    "writon-app-2020": {
+      "hosting": {
+        "writon-canvas-staging": [
+          "writon-canvas-staging"
+        ],
+        "writon-prod": [
+          "writon-app-2020"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

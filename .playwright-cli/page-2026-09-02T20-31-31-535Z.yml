@@ -1,0 +1,151 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "WritOn home" [ref=e4] [cursor=pointer]:
+        - /url: "#top"
+        - img "WritOn" [ref=e5]
+      - navigation "Primary navigation" [ref=e6]:
+        - link "Explore" [ref=e7] [cursor=pointer]:
+          - /url: "#explore"
+        - link "For Writers" [ref=e8] [cursor=pointer]:
+          - /url: "#writers"
+        - link "For Readers" [ref=e9] [cursor=pointer]:
+          - /url: "#readers"
+        - link "About" [ref=e10] [cursor=pointer]:
+          - /url: "#about"
+      - link "Get the App" [ref=e11] [cursor=pointer]:
+        - /url: https://play.google.com/store/apps/details?id=com.ibitvalley.writon&referrer=utm_source%3Dinstagram%26utm_medium%3Dbio%26utm_campaign%3Dwriton_growth_2026_09%26utm_content%3Dheader_cta
+        - generic [aria-hidden] [ref=e12]: ▶
+        - text: Get the App
+  - main [ref=e13]:
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - generic [ref=e18]: ✦
+          - generic [ref=e20]: WRITON EDITORIAL 2.0
+          - generic [ref=e21]: ✦
+        - heading "Words worth remembering." [level=1] [ref=e23]: Words worthremembering.
+        - paragraph [ref=e24]: WritOn is a home for writers and readers. Discover thoughtful stories, essays, and poetry. Share your voice. Earn applause. Belong.
+        - generic [ref=e25]:
+          - link "Get it on Google Play" [ref=e26] [cursor=pointer]:
+            - /url: https://play.google.com/store/apps/details?id=com.ibitvalley.writon&referrer=utm_source%3Dinstagram%26utm_medium%3Dbio%26utm_campaign%3Dwriton_growth_2026_09%26utm_content%3Dhero_cta
+          - link "Explore Stories" [ref=e30] [cursor=pointer]:
+            - /url: "#explore"
+        - generic [ref=e31]: Available exclusively on Google Play.
+      - generic "WritOn app preview" [ref=e35]:
+        - generic "WritOn Story Editor Screen" [ref=e36]:
+          - img "WritOn Story Editor Screen" [ref=e38]
+        - generic "WritOn Discover Feed Screen" [ref=e39]:
+          - img "WritOn Discover & Explore Feed Screen" [ref=e41]
+    - region "WritOn benefits" [ref=e42]:
+      - heading "Core Platform Highlights" [level=2] [ref=e43]
+      - article [ref=e44]:
+        - generic [ref=e45]: ✒
+        - generic [ref=e46]:
+          - heading "A home for writers." [level=3] [ref=e47]
+          - paragraph [ref=e48]: Write, publish and grow with your words.
+      - article [ref=e49]:
+        - generic [ref=e50]: ▤
+        - generic [ref=e51]:
+          - heading "A space for readers." [level=3] [ref=e52]
+          - paragraph [ref=e53]: Discover stories that stay with you.
+      - article [ref=e54]:
+        - generic [ref=e55]: 👏
+        - generic [ref=e56]:
+          - heading "A community that applauds." [level=3] [ref=e57]
+          - paragraph [ref=e58]: Celebrate words. Support voices.
+    - generic [ref=e60]:
+      - generic [ref=e61]:
+        - generic [ref=e62]: DISCOVER
+        - heading "Discover stories, thinking & expertise" [level=2] [ref=e63]: Discover stories,thinking & expertise
+        - paragraph [ref=e64]: Curated independent essays, craft reflections, stories and ideas across topics.
+      - tablist "Story categories" [ref=e65]:
+        - tab "All Stories" [selected] [ref=e66] [cursor=pointer]
+        - tab "Tech" [ref=e67] [cursor=pointer]
+        - tab "Essays" [ref=e68] [cursor=pointer]
+        - tab "Poetry" [ref=e69] [cursor=pointer]
+        - tab "Shayari" [ref=e70] [cursor=pointer]
+        - tab "Humour" [ref=e71] [cursor=pointer]
+        - tab "Culture" [ref=e72] [cursor=pointer]
+        - tab "Short Stories" [ref=e73] [cursor=pointer]
+        - tab "Philosophy" [ref=e74] [cursor=pointer]
+    - generic [ref=e78]:
+      - img "WritOn writing editor" [ref=e81]
+      - generic [ref=e82]:
+        - generic [ref=e83]: FOR WRITERS
+        - heading "A calm place to shape your ideas." [level=2] [ref=e84]
+        - paragraph [ref=e85]: Start with a title and a blank page. Draft, format, save, and publish without a wall of controls getting between you and the words.
+        - list [ref=e86]:
+          - listitem [ref=e87]: ✓ Distraction-light editorial writing experience
+          - listitem [ref=e88]: ✓ Offline draft saving and seamless cloud sync
+          - listitem [ref=e89]: ✓ Clean formatting tools when you need them
+          - listitem [ref=e90]: ✓ Build a body of work readers can return to
+        - link "Start writing on WritOn →" [ref=e91] [cursor=pointer]:
+          - /url: https://play.google.com/store/apps/details?id=com.ibitvalley.writon&referrer=utm_source%3Dinstagram%26utm_medium%3Dbio%26utm_campaign%3Dwriton_growth_2026_09%26utm_content%3Dwriters_cta
+    - generic [ref=e93]:
+      - generic [ref=e94]:
+        - generic [ref=e95]: FOR READERS
+        - heading "Find stories beyond the endless feed." [level=2] [ref=e96]
+        - paragraph [ref=e97]: Explore curated writing, follow your reading history, bookmark the pieces that matter, and discover voices outside your usual comfort zone.
+        - list [ref=e98]:
+          - listitem [ref=e99]: ✓ Personalized discovery across categories
+          - listitem [ref=e100]: ✓ Reading history and offline bookmarks
+          - listitem [ref=e101]: ✓ Short reads and deeper essays
+          - listitem [ref=e102]: ✓ A calmer, ad-free reading environment
+      - generic [ref=e104]:
+        - img "WritOn story card" [ref=e106]
+        - img "WritOn reading history" [ref=e108]
+    - generic [ref=e110]:
+      - generic [ref=e111]:
+        - generic [ref=e112]: COMMUNITY
+        - heading "Applaud the words that move you." [level=2] [ref=e113]
+        - paragraph [ref=e114]: "WritOn is built around thoughtful participation: read, respond, applaud, follow, and help good writing find the audience it deserves."
+      - generic [ref=e115]:
+        - strong [ref=e116]: Read
+        - generic [ref=e117]: Discover voices
+      - generic [ref=e118]:
+        - strong [ref=e119]: Write
+        - generic [ref=e120]: Publish your work
+      - generic [ref=e121]:
+        - strong [ref=e122]: Applaud
+        - generic [ref=e123]: Support writers
+    - generic [ref=e127]:
+      - img "WritOn app icon" [ref=e128]
+      - generic [ref=e129]:
+        - generic [ref=e130]: AVAILABLE ON ANDROID
+        - heading "Carry the writing space with you." [level=2] [ref=e131]
+        - paragraph [ref=e132]: Download WritOn from Google Play and start exploring, reading, and writing.
+      - link "▶ Google Play" [ref=e133] [cursor=pointer]:
+        - /url: https://play.google.com/store/apps/details?id=com.ibitvalley.writon&referrer=utm_source%3Dinstagram%26utm_medium%3Dbio%26utm_campaign%3Dwriton_growth_2026_09%26utm_content%3Dcommunity_banner_cta
+        - generic [ref=e134]: ▶
+        - text: Google Play
+  - contentinfo [ref=e135]:
+    - generic [ref=e136]:
+      - generic [ref=e137]:
+        - img "WritOn" [ref=e138]
+        - paragraph [ref=e139]: A quiet sanctuary for writers, poets, and avid story readers worldwide.
+      - generic [ref=e140]:
+        - heading "Legal & Policy" [level=3] [ref=e141]
+        - link "Google Play Store App" [ref=e142] [cursor=pointer]:
+          - /url: https://play.google.com/store/apps/details?id=com.ibitvalley.writon&referrer=utm_source%3Dinstagram%26utm_medium%3Dbio%26utm_campaign%3Dwriton_growth_2026_09%26utm_content%3Dfooter_link
+        - link "Privacy Policy" [ref=e143] [cursor=pointer]:
+          - /url: /privacy-policy.html
+        - link "Terms of Service" [ref=e144] [cursor=pointer]:
+          - /url: /terms.html
+        - link "Child Safety Standards" [ref=e145] [cursor=pointer]:
+          - /url: /child-safety.html
+        - link "Account & Data Deletion" [ref=e146] [cursor=pointer]:
+          - /url: /delete-account.html
+      - generic [ref=e147]:
+        - heading "WritOn" [level=3] [ref=e148]
+        - link "Explore" [ref=e149] [cursor=pointer]:
+          - /url: "#explore"
+        - link "For Writers" [ref=e150] [cursor=pointer]:
+          - /url: "#writers"
+        - link "For Readers" [ref=e151] [cursor=pointer]:
+          - /url: "#readers"
+        - link "Community" [ref=e152] [cursor=pointer]:
+          - /url: "#about"
+        - link "Medium Story" [ref=e153] [cursor=pointer]:
+          - /url: https://medium.com/@saurabh.682/why-modern-writing-apps-lost-their-soul-and-why-we-spent-two-years-rebuilding-one-1d3035a84ede
+    - generic [ref=e154]: © 2026 WritOn (writon.cc). All rights reserved.

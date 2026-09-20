@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2160, height=3840" />
+    <title>WritOn — Never Write About Grief in the Abstract #shorts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 2160px;
+        height: 3840px;
+        overflow: hidden;
+        background-color: #3b2014;
+        font-family: 'Playfair Display', Georgia, serif;
+        color: #0E0C0A;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 2160px;
+        height: 3840px;
+        overflow: hidden;
+      }
+
+      /* 1. Master Desk Photographic Background (Clean Parchment, NO inner box) */
+      .desk-photo {
+        position: absolute;
+        inset: 0;
+        width: 2160px;
+        height: 3840px;
+        background-image: url('assets/desk_coffee_card_nobox_4k.jpg');
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+      }
+
+      /* Warm ambient ray */
+      .warm-ambient {
+        position: absolute;
+        top: -100px;
+        right: -100px;
+        width: 1400px;
+        height: 1400px;
+        background: radial-gradient(circle, rgba(255, 230, 190, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* Left Margin Red Rule */
+      .card-left-rule {
+        position: absolute;
+        left: 244px;
+        top: 345px;
+        height: 2975px;
+        width: 5px;
+        background-color: #821D1A;
+        z-index: 5;
+        border-radius: 3px;
+      }
+
+      /* Header Row */
+      .card-header {
+        position: absolute;
+        top: 345px;
+        left: 310px;
+        width: 1540px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 5;
+      }
+
+      .inversion-pill {
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: 5px;
+        padding: 12px 34px;
+        border-radius: 14px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .brand-mark {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 88px;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+      }
+      .brand-mark em {
+        font-style: italic;
+        font-weight: 700;
+      }
+      .brand-mark span {
+        color: #821D1A;
+      }
+
+      /* 2. Beat 1: Large Prominent Flawed Draft (Frame Zero Visible, NO BOX, Smooth Fade-Out) */
+      .draft-hero-layer {
+        position: absolute;
+        top: 980px;
+        left: 310px;
+        width: 1540px;
+        z-index: 10;
+      }
+
+      .draft-hero-label-row {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 45px;
+      }
+      .draft-hero-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #8A766A;
+      }
+
+      .draft-hero-quote {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 92px;
+        line-height: 1.28;
+        font-weight: 700;
+        color: #1A140E;
+        position: relative;
+        max-width: 1540px;
+      }
+
+      .draft-line-1, .draft-line-2 {
+        display: block;
+      }
+
+      /* 3. Master Editorial Typography (Centered, Continuous Flow, NO BOX!) */
+      .card-content {
+        position: absolute;
+        top: 740px;
+        left: 310px;
+        width: 1540px;
+        z-index: 6;
+      }
+
+      /* Main Title */
+      .main-title {
+        font-size: 175px;
+        line-height: 1.12;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -2px;
+        margin-bottom: 90px;
+      }
+      .title-row {
+        display: block;
+        opacity: 0;
+        transform: translateY(35px);
+      }
+      .main-title .italic-crimson {
+        font-style: italic;
+        font-weight: 800;
+        color: #821D1A;
+      }
+
+      /* Subtitle */
+      .sub-title {
+        font-size: 125px;
+        line-height: 1.22;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 90px;
+      }
+      .sub-row {
+        display: block;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      .sub-title .italic-crimson {
+        font-style: italic;
+        font-weight: 800;
+        color: #821D1A;
+      }
+
+      /* Horizontal Rule */
+      .red-divider {
+        width: 180px;
+        height: 8px;
+        background-color: #821D1A;
+        border-radius: 4px;
+        margin-bottom: 90px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      /* Payoff Flow */
+      .payoff-flow {
+        width: 1540px;
+      }
+
+      .payoff-lead {
+        font-size: 165px;
+        font-weight: 900;
+        line-height: 1.06;
+        color: #0E0C0A;
+        letter-spacing: -2px;
+        margin-bottom: 18px;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .payoff-punch {
+        font-size: 205px;
+        font-weight: 900;
+        font-style: italic;
+        line-height: 1.06;
+        color: #821D1A;
+        letter-spacing: -2px;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      /* Footer Row (Clear of corner leather pen case) */
+      .card-footer {
+        position: absolute;
+        top: 3320px;
+        left: 244px;
+        width: 1670px;
+        z-index: 5;
+      }
+      .footer-line {
+        width: 100%;
+        height: 3px;
+        background-color: rgba(130, 29, 26, 0.35);
+        margin-bottom: 40px;
+      }
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 70px 0 170px;
+      }
+      .footer-handle {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 44px;
+        font-weight: 700;
+        color: #2D231E;
+        letter-spacing: 1px;
+      }
+      .footer-dots {
+        display: flex;
+        gap: 20px;
+      }
+      .footer-dot-sand {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: #D9C8B8;
+      }
+      .footer-dot-crimson {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background-color: #821D1A;
+      }
+      .footer-url {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 46px;
+        font-weight: 800;
+        color: #821D1A;
+        letter-spacing: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="26"
+      data-width="2160"
+      data-height="3840"
+    >
+      <!-- Background Photo -->
+      <div class="desk-photo"></div>
+      <div class="warm-ambient"></div>
+
+      <!-- Audio Track -->
+      <audio id="voiceTrack" src="assets/voiceover_mixed.mp3" data-start="0" data-duration="26"></audio>
+
+      <!-- Left Accent Rule -->
+      <div class="card-left-rule" id="leftRule"></div>
+
+      <!-- Header Row -->
+      <div class="card-header" id="headerRow">
+        <div class="inversion-pill">CRAFT / SENSORY DETAIL</div>
+        <div class="brand-mark"><em>Writ</em>On<span>.</span></div>
+      </div>
+
+      <!-- 1. Beat 1: Large Prominent Flawed Line (Frame Zero Visible, NO STRIKETHROUGH, Smooth Fade Out) -->
+      <div class="draft-hero-layer" id="draftLayer">
+        <div class="draft-hero-label-row">
+          <span class="draft-hero-label">Draft 1 (Telling)</span>
+        </div>
+        <div class="draft-hero-quote" id="draftQuote">
+          <span class="draft-line-1" id="draftL1">“He felt an overwhelming wave</span>
+          <span class="draft-line-2" id="draftL2">of grief in the empty house.”</span>
+        </div>
+      </div>
+
+      <!-- 2. Master Editorial Typography (Line by line reveal, NO BOX!) -->
+      <div class="card-content" id="cardContent">
+        <!-- Main Headline (Animated Line by Line) -->
+        <div class="main-title" id="mainTitle">
+          <div class="title-row" id="tl1">His father’s glasses</div>
+          <div class="title-row" id="tl2">were still folded</div>
+        </div>
+
+        <!-- Subtitle (Animated Line by Line) -->
+        <div class="sub-title" id="subTitle">
+          <div class="sub-row" id="sl1">on top of the</div>
+          <div class="sub-row" id="sl2"><span class="italic-crimson">unfinished crossword.</span></div>
+        </div>
+
+        <!-- Divider Line -->
+        <div class="red-divider" id="redDivider"></div>
+
+        <!-- Payoff Punchline (Animated Line by Line) -->
+        <div class="payoff-flow" id="payoffFlow">
+          <div class="payoff-lead" id="pl1">Put the object on the table.</div>
+          <div class="payoff-punch" id="pl2">Let the reader do the math.</div>
+        </div>
+      </div>
+
+      <!-- Footer Row -->
+      <div class="card-footer" id="cardFooter">
+        <div class="footer-line"></div>
+        <div class="footer-content">
+          <div class="footer-handle">@writon_app</div>
+          <div class="footer-dots">
+            <div class="footer-dot-sand"></div>
+            <div class="footer-dot-crimson"></div>
+          </div>
+          <div class="footer-url">writon.cc ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial state setup
+      gsap.set("#cardContent", { opacity: 0 });
+
+      // 0:00 - 2.13s: Nicole: "Never write about grief in the abstract."
+      // 3.17s - 5.15s: Nicole: "Find the one object left behind."
+      // 6.29s - 7.95s: Nicole: "Draft one names the feeling,"
+      // 8.85s - 10.90s: Nicole: "but leaves the page completely blank."
+      // AT 7.2s - 9.8s: Draft 1 gently dims and FADES OUT completely (NO STRIKETHROUGH):
+      tl.to("#draftLayer", { opacity: 0, y: -45, duration: 1.4, ease: "power2.inOut" }, 7.2)
+        .to("#cardContent", { opacity: 1, duration: 0.1 }, 10.5);
+
+      // 12.21s - 13.48s: Nicole: "Now watch the rewrite:"
+      // 14.43s - 18.85s: Nicole: "His father's reading glasses were still folded on top of the unfinished crossword."
+      tl.to("#tl1", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 13.8)
+        .to("#tl2", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 14.8)
+        .to("#sl1", { opacity: 1, y: 0, duration: 0.50, ease: "power3.out" }, 16.0)
+        .to("#sl2", { opacity: 1, y: 0, duration: 0.65, ease: "back.out(1.2)" }, 16.8);
+
+      // 19.0s: Crimson divider line draws across:
+      tl.to("#redDivider", { scaleX: 1, duration: 0.5, ease: "power2.out" }, 19.0);
+
+      // 19.93s - 21.27s: Nicole: "Put the object on the table."
+      tl.to("#pl1", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 19.7);
+
+      // 22.31s - 23.61s: Nicole: "Let the reader do the math."
+      tl.to("#pl2", { opacity: 1, y: 0, duration: 0.70, ease: "back.out(1.2)" }, 22.1);
+
+      // 24.53s - 25.49s: Nicole: "That is why you.." -> seamless loop to "Never write about grief in the abstract."
+
+      // Subtle organic ambient desk push-in over 26 seconds
+      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.018, duration: 26.0, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

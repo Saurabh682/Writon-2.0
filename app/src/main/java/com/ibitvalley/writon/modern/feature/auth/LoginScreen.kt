@@ -63,6 +63,14 @@ fun LoginScreen(
     var resetSuccessMessage by remember { mutableStateOf<String?>(null) }
     var resetErrorMessage by remember { mutableStateOf<String?>(null) }
 
+    val googleUnavailable = stringResource(R.string.auth_google_unavailable)
+    val sessionVerificationFailed = stringResource(R.string.auth_session_verification_failed)
+    val googleProfileFailed = stringResource(R.string.auth_google_profile_failed)
+    val resetInvalidEmail = stringResource(R.string.auth_invalid_email)
+    val resetSent = stringResource(R.string.auth_reset_sent)
+    val noAccount = stringResource(R.string.auth_no_account)
+    val signUp = stringResource(R.string.auth_create_account)
+
     val webClientId = stringResource(R.string.default_web_client_id)
     val googleSignInClient = remember(webClientId) {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -89,14 +97,14 @@ fun LoginScreen(
                             FirebaseAuthManager.syncNetworkAuthToken { hasToken ->
                                 if (!hasToken) {
                                     isSubmitting = false
-                                    authError = "Session verification failed."
+                                    authError = sessionVerificationFailed
                                     return@syncNetworkAuthToken
                                 }
                                 coroutineScope.launch {
                                     val profileError = ProfileSyncManager.syncGoogleProfile()
                                     isSubmitting = false
                                     if (profileError == null) onSignInClick()
-                                    else authError = "Google Sign-In succeeded, but $profileError"
+                                    else authError = googleProfileFailed.format(profileError)
                                 }
                             }
                         },
@@ -106,12 +114,12 @@ fun LoginScreen(
                         }
                     )
                 } else {
-                    authError = "Google Sign-In token could not be retrieved."
+                    authError = googleUnavailable
                 }
             } catch (e: ApiException) {
                 authError = GoogleSignInErrorMapper.messageFor(e.statusCode, e.localizedMessage)
             } catch (e: Exception) {
-                authError = e.localizedMessage ?: "Google Sign-In failed."
+                authError = e.localizedMessage ?: googleUnavailable
             }
         }
     }
@@ -123,7 +131,7 @@ fun LoginScreen(
             },
             title = {
                 Text(
-                    "Reset Password",
+                    stringResource(R.string.auth_reset_title),
                     style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                     color = Color(0xFF151718)
                 )
@@ -131,7 +139,7 @@ fun LoginScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Text(
-                        "Enter your registered email address and we'll send you a link to reset your password.",
+                        stringResource(R.string.auth_reset_description),
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color(0xFF6D6963)
                     )
@@ -143,7 +151,7 @@ fun LoginScreen(
                             resetErrorMessage = null
                             resetSuccessMessage = null
                         },
-                        placeholder = { Text("Enter your email") },
+                        placeholder = { Text(stringResource(R.string.auth_email_hint)) },
                         singleLine = true,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                         modifier = Modifier.fillMaxWidth(),
@@ -181,7 +189,7 @@ fun LoginScreen(
                     Button(
                         onClick = {
                             if (resetEmail.isBlank() || !resetEmail.contains("@")) {
-                                resetErrorMessage = "Please enter a valid email address."
+                                resetErrorMessage = resetInvalidEmail
                                 return@Button
                             }
                             isSendingReset = true
@@ -190,7 +198,7 @@ fun LoginScreen(
                                 email = resetEmail,
                                 onSuccess = {
                                     isSendingReset = false
-                                    resetSuccessMessage = "Password reset email sent! Check your inbox (and spam folder)."
+                                    resetSuccessMessage = resetSent
                                 },
                                 onError = { msg ->
                                     isSendingReset = false
@@ -210,7 +218,10 @@ fun LoginScreen(
                             )
                             Spacer(Modifier.width(8.dp))
                         }
-                        Text(if (isSendingReset) "Sending…" else "Send Reset Link")
+                        Text(
+                            if (isSendingReset) stringResource(R.string.auth_sending)
+                            else stringResource(R.string.auth_send_reset_link)
+                        )
                     }
                 } else {
                     Button(
@@ -218,7 +229,7 @@ fun LoginScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = BrandRedColor),
                         shape = RoundedCornerShape(10.dp)
                     ) {
-                        Text("Done")
+                        Text(stringResource(R.string.common_done))
                     }
                 }
             },
@@ -228,7 +239,7 @@ fun LoginScreen(
                         onClick = { showResetDialog = false },
                         enabled = !isSendingReset
                     ) {
-                        Text("Cancel", color = Color(0xFF6D6963))
+                        Text(stringResource(R.string.common_cancel), color = Color(0xFF6D6963))
                     }
                 }
             },
@@ -256,13 +267,13 @@ fun LoginScreen(
                 IconButton(onClick = onBackClick) {
                     Image(
                         painterResource(R.drawable.ic_back),
-                        contentDescription = "Back",
+                        contentDescription = stringResource(R.string.common_back),
                         modifier = Modifier.size(24.dp),
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                     )
                 }
                 TextButton(onClick = onBackClick) {
-                    Text("Skip", color = BrandRedColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.common_skip), color = BrandRedColor, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -270,7 +281,7 @@ fun LoginScreen(
 
             // Header
             Text(
-                text = "Welcome back",
+                text = stringResource(R.string.auth_welcome_back),
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Normal
@@ -279,7 +290,7 @@ fun LoginScreen(
             )
 
             Text(
-                text = "Glad to see you again.",
+                text = stringResource(R.string.auth_login_greeting),
                 style = MaterialTheme.typography.bodyLarge,
                 color = Color(0xFF6D6963),
                 modifier = Modifier.padding(top = 8.dp)
@@ -297,7 +308,7 @@ fun LoginScreen(
 
             // Form
             Text(
-                text = "Email or Username",
+                text = stringResource(R.string.auth_email_or_username),
                 style = MaterialTheme.typography.labelLarge,
                 color = Color(0xFF151718),
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -306,7 +317,7 @@ fun LoginScreen(
                 value = email,
                 onValueChange = { email = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Enter your email or username") },
+                placeholder = { Text(stringResource(R.string.auth_email_or_user_hint)) },
                 leadingIcon = { Image(painterResource(R.drawable.ic_email), contentDescription = null, modifier = Modifier.size(22.dp)) },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -324,7 +335,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Password",
+                text = stringResource(R.string.auth_password_hint),
                 style = MaterialTheme.typography.labelLarge,
                 color = Color(0xFF151718),
                 modifier = Modifier.padding(bottom = 8.dp)
@@ -333,12 +344,18 @@ fun LoginScreen(
                 value = password,
                 onValueChange = { password = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Enter your password") },
+                placeholder = { Text(stringResource(R.string.auth_password_placeholder)) },
                 leadingIcon = { Image(painterResource(R.drawable.ic_lock), contentDescription = null, modifier = Modifier.size(22.dp)) },
                 trailingIcon = {
                     val image = if (passwordVisible) R.drawable.ic_eye else R.drawable.ic_eye_off
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Image(painterResource(image), contentDescription = null, modifier = Modifier.size(22.dp))
+                        Image(
+                            painterResource(image),
+                            contentDescription = stringResource(
+                                if (passwordVisible) R.string.auth_hide_password else R.string.auth_show_password
+                            ),
+                            modifier = Modifier.size(22.dp)
+                        )
                     }
                 },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -357,7 +374,7 @@ fun LoginScreen(
             )
 
             Text(
-                text = "Forgot password?",
+                text = stringResource(R.string.auth_forgot_password),
                 color = BrandRedColor,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                 textAlign = TextAlign.End,
@@ -400,7 +417,7 @@ fun LoginScreen(
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Text(
-                    text = if (isSubmitting) "Signing in…" else "Sign In",
+                    text = if (isSubmitting) stringResource(R.string.auth_signing_in) else stringResource(R.string.auth_sign_in),
                     style = MaterialTheme.typography.titleMedium,
                     color = Color(0xFFFFFDF9)
                 )
@@ -426,7 +443,7 @@ fun LoginScreen(
             ) {
                 HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE9E1D7))
                 Text(
-                    text = "or continue with",
+                    text = stringResource(R.string.auth_or_continue_with),
                     modifier = Modifier.padding(horizontal = 16.dp),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFF6D6963)
@@ -438,7 +455,7 @@ fun LoginScreen(
 
             // Social Button
             SocialButton(
-                text = "Continue with Google",
+                text = stringResource(R.string.auth_google_sign_in),
                 icon = R.drawable.googleicon,
                 onClick = {
                     googleSignInClient.signOut().addOnCompleteListener {
@@ -452,9 +469,10 @@ fun LoginScreen(
             // Footer
             Text(
                 text = buildAnnotatedString {
-                    append("Don't have an account? ")
+                    append(noAccount)
+                    append(" ")
                     withStyle(style = SpanStyle(color = BrandRedColor, fontWeight = FontWeight.Bold)) {
-                        append("Sign up")
+                        append(signUp)
                     }
                 },
                 style = MaterialTheme.typography.bodyLarge,

@@ -1,0 +1,531 @@
+{
+  "source": "Live PostgreSQL Database",
+  "generatedAt": "2026-09-12T18:05:50.800Z",
+  "corpusOverview": {
+    "totalPosts": 623,
+    "totalComments": 797,
+    "totalWords": 152348,
+    "totalSentences": 5872,
+    "avgWordsPerPost": 245
+  },
+  "burstinessAndCadence": {
+    "sentenceLength": {
+      "mean": 16.78,
+      "stdDev": 37.66,
+      "min": 1,
+      "max": 1874,
+      "median": 11
+    },
+    "burstinessIndex": 37.66,
+    "interpretation": "High Burstiness: Natural human variance between short punchy statements and long expressive clauses."
+  },
+  "lexicalRichness": {
+    "totalWords": 152348,
+    "uniqueWords": 15442,
+    "typeTokenRatio": 0.1014
+  },
+  "punctuationFingerprint": {
+    "counts": {
+      "emDash": 1841,
+      "semicolon": 84,
+      "colon": 850,
+      "question": 846,
+      "ellipsis": 1210,
+      "exclamation": 495
+    },
+    "per1000Words": {
+      "emDash": 12.08,
+      "semicolon": 0.55,
+      "colon": 5.58,
+      "question": 5.55,
+      "ellipsis": 7.94,
+      "exclamation": 3.25
+    }
+  },
+  "aiTropePrevalence": {
+    "totalTropeHits": 11,
+    "topHits": {
+      "moreover": 5,
+      "dynamic": 2,
+      "realm": 1,
+      "crucial": 1,
+      "landscape": 1,
+      "intertwined": 1
+    },
+    "prevalenceRatePer10kWords": 0.72,
+    "zeroUsageTropes": [
+      "delve",
+      "delving",
+      "tapestry",
+      "beacon",
+      "testament",
+      "unwavering",
+      "bustling",
+      "pivotal",
+      "furthermore",
+      "in conclusion",
+      "it is important to remember",
+      "serves as a reminder",
+      "beacon of hope",
+      "rich tapestry",
+      "vital role",
+      "paramount",
+      "multifaceted",
+      "ever-evolving",
+      "embark",
+      "unfurl",
+      "poignant reminder",
+      "testament to",
+      "game-changer",
+      "fostering",
+      "holistic",
+      "nuanced",
+      "resonates deeply",
+      "seamlessly",
+      "shedding light"
+    ]
+  },
+  "categoryBreakdown": {
+    "Short Stories": {
+      "postCount": 160,
+      "totalWords": 106136,
+      "avgWordsPerPost": 663,
+      "sentenceLengthStats": {
+        "mean": 18.71,
+        "stdDev": 46.85,
+        "min": 1,
+        "max": 1874,
+        "median": 12
+      },
+      "lexicalStats": {
+        "totalTokens": 106136,
+        "uniqueTokens": 10853,
+        "ttr": 0.1023
+      }
+    },
+    "Reviews": {
+      "postCount": 22,
+      "totalWords": 2078,
+      "avgWordsPerPost": 94,
+      "sentenceLengthStats": {
+        "mean": 15.85,
+        "stdDev": 10.57,
+        "min": 1,
+        "max": 90,
+        "median": 16
+      },
+      "lexicalStats": {
+        "totalTokens": 2078,
+        "uniqueTokens": 649,
+        "ttr": 0.3123
+      }
+    },
+    "Essays": {
+      "postCount": 89,
+      "totalWords": 13302,
+      "avgWordsPerPost": 149,
+      "sentenceLengthStats": {
+        "mean": 13.96,
+        "stdDev": 13.82,
+        "min": 1,
+        "max": 279,
+        "median": 11
+      },
+      "lexicalStats": {
+        "totalTokens": 13302,
+        "uniqueTokens": 3239,
+        "ttr": 0.2435
+      }
+    },
+    "Poetry": {
+      "postCount": 163,
+      "totalWords": 18744,
+      "avgWordsPerPost": 115,
+      "sentenceLengthStats": {
+        "mean": 15.47,
+        "stdDev": 21.98,
+        "min": 1,
+        "max": 227,
+        "median": 10
+      },
+      "lexicalStats": {
+        "totalTokens": 18744,
+        "uniqueTokens": 3966,
+        "ttr": 0.2116
+      }
+    },
+    "Humour": {
+      "postCount": 48,
+      "totalWords": 5236,
+      "avgWordsPerPost": 109,
+      "sentenceLengthStats": {
+        "mean": 12.55,
+        "stdDev": 16.04,
+        "min": 1,
+        "max": 158,
+        "median": 9
+      },
+      "lexicalStats": {
+        "totalTokens": 5236,
+        "uniqueTokens": 1067,
+        "ttr": 0.2038
+      }
+    },
+    "Shayari": {
+      "postCount": 120,
+      "totalWords": 4873,
+      "avgWordsPerPost": 41,
+      "sentenceLengthStats": {
+        "mean": 10.38,
+        "stdDev": 10,
+        "min": 1,
+        "max": 151,
+        "median": 8
+      },
+      "lexicalStats": {
+        "totalTokens": 4873,
+        "uniqueTokens": 1346,
+        "ttr": 0.2762
+      }
+    },
+    "Tech": {
+      "postCount": 5,
+      "totalWords": 1100,
+      "avgWordsPerPost": 220,
+      "sentenceLengthStats": {
+        "mean": 14.53,
+        "stdDev": 6.73,
+        "min": 3,
+        "max": 37,
+        "median": 14
+      },
+      "lexicalStats": {
+        "totalTokens": 1100,
+        "uniqueTokens": 656,
+        "ttr": 0.5964
+      }
+    },
+    "Philosophy": {
+      "postCount": 2,
+      "totalWords": 156,
+      "avgWordsPerPost": 78,
+      "sentenceLengthStats": {
+        "mean": 14.78,
+        "stdDev": 9.98,
+        "min": 5,
+        "max": 39,
+        "median": 12
+      },
+      "lexicalStats": {
+        "totalTokens": 156,
+        "uniqueTokens": 129,
+        "ttr": 0.8269
+      }
+    },
+    "Journalism": {
+      "postCount": 14,
+      "totalWords": 723,
+      "avgWordsPerPost": 52,
+      "sentenceLengthStats": {
+        "mean": 14.93,
+        "stdDev": 12.86,
+        "min": 2,
+        "max": 51,
+        "median": 13
+      },
+      "lexicalStats": {
+        "totalTokens": 723,
+        "uniqueTokens": 357,
+        "ttr": 0.4938
+      }
+    }
+  },
+  "commentBehavior": {
+    "count": 797,
+    "lengthStats": {
+      "mean": 2.74,
+      "stdDev": 3.51,
+      "min": 0,
+      "max": 19,
+      "median": 2
+    },
+    "avgWordsPerComment": 2.74
+  },
+  "topExemplars": [
+    {
+      "id": "72286de1-1635-4c15-8fd9-7d9459f1f52c",
+      "title": "Vivo X100 Ultra: The Long-Term Verdict",
+      "authorName": "tanya_flagship_specs",
+      "category": "Tech",
+      "engagement": 82,
+      "likes": 73,
+      "bookmarks": 0,
+      "comments": 3,
+      "excerpt": "### Vivo X100 Ultra: The Long-Term Hardware Verdict\n*By Tanya Mehra (@tanya_flagship_specs) • Specialist: Flagship Smartphones*\n\n#### The 30-Second Verdict\n> **Score: 9.1 / 10**\n> **Who it's for:** Mobile photographers demanding 1-inch sensor fidelity and 200MP periscope telephoto sharpness.\n> **The Dealbreaker:** OriginOS international bloat and occasional high-contrast HDR sharpening.\n\n*(Referenced reporting: \"vivo confirms X100 Ultra will remain exclusive to China - GSMArena.com news - gsmare"
+    },
+    {
+      "id": "02bbba36-e86b-438c-bc7d-bfc59d4b46f1",
+      "title": "Tata Curvv.ev 55 kWh: The Long-Term Verdict",
+      "authorName": "kabir_ev_pulse",
+      "category": "Tech",
+      "engagement": 65,
+      "likes": 56,
+      "bookmarks": 0,
+      "comments": 3,
+      "excerpt": "### Tata Curvv.ev 55 kWh: The Long-Term Hardware Verdict\n*By Kabir Sen (@kabir_ev_pulse) • Specialist: EVs & Battery Tech*\n\n#### The 30-Second Verdict\n> **Score: 8.6 / 10**\n> **Who it's for:** Highway commuters seeking a real-world 380km range without luxury EV markups.\n> **The Dealbreaker:** Rear seat headroom for anyone over 5 foot 11 due to the aggressive coupe roofline.\n\n*(Referenced reporting: \"Tata Curvv EV Empowered X 55 On Road Price (Electric(Battery)), Features & Specs, Images - CarDek"
+    },
+    {
+      "id": "ac6ec5ab-da47-419b-8c6e-f0b9d444bcf6",
+      "title": "Recitation of Sundarkand",
+      "authorName": "rajeshrana",
+      "category": "Essays",
+      "engagement": 54,
+      "likes": 22,
+      "bookmarks": 1,
+      "comments": 10,
+      "excerpt": "Reciting the Sunderkand chapter from the Ramcharitmanas brings mental peace, removes obstacles, drives away fear and negative energy, and invites the blessings of Lord Rama and Hanuman. \nMental and Emotional Benefits\nCalms the mind: Lowers stress and anxiety through rhythmic chanting.\nBuilds courage: Instills bravery and self-belief by remembering Hanuman's journey.\nRemoves fear: Helps clear worries about enemies, obstacles, or bad planetary effects. \n\nThe Divine Tales\n +3\nSpiritual and Family B"
+    },
+    {
+      "id": "c49c88f1-79cd-5adf-a89e-c8ae87e1a816",
+      "title": "Interest of International Investors to Invest in Pakistan n",
+      "authorName": "asma",
+      "category": "Reviews",
+      "engagement": 49,
+      "likes": 0,
+      "bookmarks": 2,
+      "comments": 15,
+      "excerpt": "---\n\n---\n\n#InterestInternational #InvestorsInvest #Pakistan #Essays #Philosophy #SlowReading\n\n​﻿#writon​"
+    },
+    {
+      "id": "78de780b-4b44-54aa-8b7d-30b1a9cec193",
+      "title": "stotry",
+      "authorName": "ram",
+      "category": "Short Stories",
+      "engagement": 44,
+      "likes": 1,
+      "bookmarks": 8,
+      "comments": 9,
+      "excerpt": "चश्मा साफ़ करते हुए उस बुज़ुर्ग ने \nअपनी पत्नी से कहा : हमारे ज़माने में\nमोबाइल नहीं थे..\n\n*पत्नी* : पर ठीक पाँच बजकर पचपन\nमिनट पर मैं पानी का ग्लास लेकर\nदरवाज़े पे आती और आप आ पहुँचते..\n\n*पति* : हाँ मैंने तीस साल नौकरी की\nपर आज तक मैं ये नहीं समझ\nपाया कि मैं आता इसलिए तुम\nपानी लाती थी या तुम पानी लेकर\nआती थी इसलिये मैं आता था..\n\n*पत्नी* : हाँ.. और याद है.. तुम्हारे\nरिटायर होने से पहले जब तुम्हें\nडायबीटीज़ नहीं थी और मैं तुम्हारी\nमनपसन्द खीर बनाती तब तुम कहते\nकि आज दोपहर में ही ख़याल आया\nकि खीर"
+    },
+    {
+      "id": "edf6462e-0df1-5eac-9d88-f8845d9fca78",
+      "title": "i'll be waiting for you",
+      "authorName": "shweta_srivastava",
+      "category": "Poetry",
+      "engagement": 42,
+      "likes": 0,
+      "bookmarks": 6,
+      "comments": 10,
+      "excerpt": "From the first time we met, I knew we would be friends\n\n---\n\n#Waiting #You #Poetry #QuietVerses #MidnightMusings #WordCraft\n\n​﻿#writon​"
+    },
+    {
+      "id": "a89aa898-e853-57ab-ae1a-a45a029015f1",
+      "title": "Railway ki Suvidha",
+      "authorName": "shelby",
+      "category": "Humour",
+      "engagement": 39,
+      "likes": 0,
+      "bookmarks": 6,
+      "comments": 9,
+      "excerpt": "ट्रेन से एक यात्री नें ट्वीट करके \nशिकायत भेजी :\n   ''बाकी सुविधायें भले ही न बढ़ायें\n      पर लैट्रिन में मग्गे की चैन की\n     लंबाई इतनी तो बढ़ा दें कि जहाँ\n    इस्तेमाल करना है वहाँ तक \n     पहुंच सके |\" \n\nरेल्वे की तरफ से रिप्लाई आया :\n    \"मग्गा चैन से बंधा है, आप नहीं \"\n\n---\n\n#RailwaySuvidha #Humour #Satire #WorkplaceChronicles #DailyLife\n\n​﻿#writon​"
+    },
+    {
+      "id": "4165b261-b104-51d3-9dd9-ea23c0c5fe10",
+      "title": "माँ",
+      "authorName": "runa_lucknawi",
+      "category": "Poetry",
+      "engagement": 33,
+      "likes": 0,
+      "bookmarks": 3,
+      "comments": 9,
+      "excerpt": "क्षण भर भी देर हो जाती तो किवाड़ पे टकटकी लगाये रहती, हमारी माँ,\nप्रशंसा करते न थकती..आगे बढ़ने को प्रोत्साहित करती..ऐसी थी हमारी माँ।\n\nइन आँखों की उदासी पल भर में भाँप लेती,\nनए नए नामों से हमें बुलाती..\nहमेशा हँसती-मुस्कुराती रहती- ऐसी थी हमारी माँ।\n\nपिछले कुछ सालों में, गिरते-संभालते आगे बढ़ते, रिश्तों की पहचान हुई...\nएक छोटी सी खरोंच भी लगती तो 'आहा रे-आहा रे', बोलती हमारी माँ।\n\nअब उस तरह का इंतज़ार कोई न करता।\nअब उस तरह का प्यार कोई न करता,\nजैसे करती थी हमारी प्यारी माँ।\n\n---\n\n#Poetry #QuietVers"
+    },
+    {
+      "id": "989c57f6-0cfa-5f7d-886b-2195d3441a46",
+      "title": "Mann ki awaaz",
+      "authorName": "being_anki",
+      "category": "Essays",
+      "engagement": 33,
+      "likes": 0,
+      "bookmarks": 3,
+      "comments": 9,
+      "excerpt": "From past few days I am going thru some hard things. I am trying to come out from all this. So, yesterday I got \"Mann ki awaaz\" saying to me Anki come on it's been high time you are avoiding yourself n giving more importance to others who don't even care for you. Come on, buck up! Start thinking bout yourself. U shud work on yourself, do some workout, read some books, increase your knowledge, look good, think good, work on your weakness, stay focused blah blah blah!! I answered to my 'mann' yes"
+    },
+    {
+      "id": "5c5d9e3f-2e0d-5133-9442-aed21ae98c13",
+      "title": "Help - Easily Used hardly Understood...",
+      "authorName": "pratyush",
+      "category": "Journalism",
+      "engagement": 32,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 8,
+      "excerpt": "Hi,Guys am Teenager who is very shy guy who doesn't even know how to handle a social situation and I behave so  girlish.I have face body shaming issues in my school from my so called 'FRIENDS'. Today I heard a news that a senior of my school committed a suicide. I don't know the reason but am sure of one thing that suicide in not a solution  I have so many family issues and yes am making it public because am a teenager..And don't even think that I ever not tried to suicide....I HAVE a trillion"
+    },
+    {
+      "id": "dce9d90f-7501-48c2-ae6c-1b93cd6126be",
+      "title": "The Silent Failure Modes of Distributed Consensus",
+      "authorName": "kevin_silicon_benchmarks",
+      "category": "Tech",
+      "engagement": 31,
+      "likes": 19,
+      "bookmarks": 0,
+      "comments": 4,
+      "excerpt": "### The Silent Failure Modes of Distributed Consensus\n\n*By Kevin Vance*\n\nEvery backend engineer eventually learns that simplicity is not merely an aesthetic preference. It is an operational control. Splitting a working application into networked services replaces local function calls and database transactions with timeouts, retries, partial completion, duplicated messages, and state that can disagree across machines.\n\nThat trade can be worthwhile when a real boundary demands independent scale,"
+    },
+    {
+      "id": "e6aa17d9-c0bc-51ef-9cda-c9bd4a31aacf",
+      "title": "rain drops",
+      "authorName": "ekalyva",
+      "category": "Short Stories",
+      "engagement": 31,
+      "likes": 1,
+      "bookmarks": 0,
+      "comments": 10,
+      "excerpt": "Its a rainy day... Mostly like all other boys im in my bed struggling to wake up.i can clearly see the sky going darker....rain drops falls on top of rose kept on my table..the petals licking the tears of mine.its the same rose which is ignored by a princes... I took it in my hand and smiled. The rose smiled backkk...the rain began to fall heavily.taking deep breath i walked out of my room remembering the last words frm my girl.....\" Get lost u idiot\"... Idiot the title given to a boy who was ma"
+    },
+    {
+      "id": "9817b914-4a4f-512c-ba20-933645787949",
+      "title": "Love or lust",
+      "authorName": "pooooja",
+      "category": "Journalism",
+      "engagement": 30,
+      "likes": 0,
+      "bookmarks": 0,
+      "comments": 10,
+      "excerpt": "Kya aise insan k saath puri zindagi rishta nibhaya ja sakta hai jisey aapke mann ke dukh ya taqlif se ki aap kya chahte ho usse koi mtlb nahi hota bas wo aapki body pe apna haq jatana chahta ho kya wo puri life aapka saath nibha payega.\nIs this right or wrong plz tell me\n\n---\n\n#LoveLust #Essays #Philosophy #SlowReading #Reflections\n\n​﻿#writon​"
+    },
+    {
+      "id": "439120f2-25bc-57d9-b296-1fe5cf5ffdee",
+      "title": "first night alone after watching the conjuring2. some resolutions-",
+      "authorName": "megha",
+      "category": "Essays",
+      "engagement": 29,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 7,
+      "excerpt": "1. I will not close my eyes even while washing my face. Who knows what might happen when i open my eyes. Its ok if my eyes sting with the face wash.\n\n2. From today onwards i will again sleep keeping bathroom lights on till i visit my home next.\n\n3. Will start going temple again.\n\n4. Will reply all messenger and whatsapp message. it might be a torture but it is my saviour during such terror night.\n\n5. Will make a list of people. I can call during the night if I am scared and be nice to them and s"
+    },
+    {
+      "id": "2bf938f1-452a-54b4-b48e-ec48c281ac88",
+      "title": "آج پاکستان کی تاریخ کا اہم ترین دن۔",
+      "authorName": "rajaashiq",
+      "category": "Journalism",
+      "engagement": 28,
+      "likes": 0,
+      "bookmarks": 2,
+      "comments": 8,
+      "excerpt": "میرے پاکستانیو مجھے فخر ہے آپ پر\n\n---\n\n#Essays #Philosophy #SlowReading #Reflections\n\n​﻿#writon​"
+    },
+    {
+      "id": "db4815c5-e492-574f-a4c3-4145b399c1e3",
+      "title": "Power VS Money",
+      "authorName": "noor",
+      "category": "Essays",
+      "engagement": 27,
+      "likes": 0,
+      "bookmarks": 0,
+      "comments": 9,
+      "excerpt": "Hy friends:\nI ask you a question??\nIf someone ask you to select one from Power and Money,what would you like to select???\nPlease tell me your point of view.i want to know how many people prefer money over power or power over money.it's my research work.And also if you like to tell me why are you prefering someone.... \nIt's my pleasure if you help me.\n\n---\n\n#PowerMoney #Essays #Philosophy #SlowReading #Reflections\n\n​﻿#writon​"
+    },
+    {
+      "id": "eb3c355c-f1ee-5c14-9040-e941371e598d",
+      "title": "मोहब्बत",
+      "authorName": "megha",
+      "category": "Shayari",
+      "engagement": 27,
+      "likes": 0,
+      "bookmarks": 3,
+      "comments": 7,
+      "excerpt": "बेपनाह मोहब्बत का एक ही उसूल है...मिले या ना मिले तू हर हाल में कबूल है\n\n---\n\n#Shayari #UrduPoetry #Ghazal #Sukhan\n\n​﻿#writon​"
+    },
+    {
+      "id": "916f8164-5757-5c06-9933-51a4a36d04bf",
+      "title": "The Four wives",
+      "authorName": "frozen_song",
+      "category": "Short Stories",
+      "engagement": 27,
+      "likes": 0,
+      "bookmarks": 6,
+      "comments": 5,
+      "excerpt": "The 4 WivesMotivational Stories – THE 4 WIVES\n\nThere was a rich merchant who had 4 wives. He loved the 4th wife the most and adorned her with rich robes and treated her to delicacies. He took great care of her and gave her nothing but the best.\n\nHe also loved the 3rd wife very much. He’s very proud of her and always wanted to show off her to his friends. However, the merchant is always in great fear that she might run away with some other men.\n\n\n\nHe too, loved his 2nd wife. She is a very conside"
+    },
+    {
+      "id": "c1588b2f-def8-5cb5-b337-fa857d8860fd",
+      "title": "The lion fell in love with the Lamb",
+      "authorName": "van",
+      "category": "Short Stories",
+      "engagement": 26,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 6,
+      "excerpt": "This is a story of Lina my twin sister….and my name is Tina…you must be thinking whats going on\n\nLet me make it easy for you…I felt like narrating her love story to all as it seemed beautiful and strange to me……\n\nSo let me take you few years from now…..\n\nI was in college finishing my graduation….i was living in Moroco at that time…life was pretty perfect and one fact changed my life\n\nSince this story is about my beloved sister Lina let me tell you about her\n\nShe was this very beautiful fair skin"
+    },
+    {
+      "id": "27f49e1f-602f-512e-9680-16721be36db2",
+      "title": "alone",
+      "authorName": "knightprinces",
+      "category": "Essays",
+      "engagement": 24,
+      "likes": 0,
+      "bookmarks": 0,
+      "comments": 8,
+      "excerpt": "Whats the advantage of being alone?. Can anyone tell me please.\n\n---\n\n#Alone #Essays #Philosophy #SlowReading #Reflections\n\n​﻿#writon​"
+    },
+    {
+      "id": "5e1fdd10-0388-5f82-bf68-38ff3d50e2e9",
+      "title": "Definition of Love",
+      "authorName": "devashish_somani",
+      "category": "Essays",
+      "engagement": 23,
+      "likes": 20,
+      "bookmarks": 0,
+      "comments": 1,
+      "excerpt": "Since I was in school, I was fond of collecting quotations from books, newspapers, articles and of course Internet too. For me, every line of those sentences contains truth that we never realize. Like a puzzle, it took me time to put the pieces at one until I come up with this whole picture of what those people are trying to say together.\nWhile I was walking I stopped for a while and thought of the things that I don't have, and then I realized that the happiest of all people, don't really necess"
+    },
+    {
+      "id": "2fa65cfe-2852-5d2d-a2ea-d5624b35f8ca",
+      "title": "Sardar",
+      "authorName": "rajeshrana",
+      "category": "Humour",
+      "engagement": 23,
+      "likes": 0,
+      "bookmarks": 1,
+      "comments": 7,
+      "excerpt": "पेपर देते समय एक पंजाबीं बच्चा गुमसुम सा था ........\n\nMadam: तुम   confused क्यों हो ? \n\nबच्चा : चुप रहा \n\nMadam: क्या तुम पैन भूल गए ?\n\nबच्चा फिर चुप रहा \n\nMadam: क्या रोल नं भूल गए ?\n\nबच्चा फिर चुपचाप रहा.\n\nMadam: क्या कैल्कुलेटर भूल गये हो ?\n\nPunjabi Kid: ओये चोप्प कर जा माता !! एत्थे मैं पर्चियाँ गल्त सब्जेक्ट दियाँ ले आया ते तैनू पेन, पेंसिल दी अग्ग लग्गी ए...\n\n---\n\n#Sardar #Humour #Satire #WorkplaceChronicles #DailyLife\n\n​﻿#writon​"
+    },
+    {
+      "id": "f80f8ae8-56ce-5b26-8113-8936823d7b44",
+      "title": "#1 Does It Hurt?",
+      "authorName": "krystalized",
+      "category": "Humour",
+      "engagement": 23,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 5,
+      "excerpt": "Boyfriend : Baby, does it hurt? \n\nGirlfriend : Uh-huh. \n\nBoyfriend : Does it still hurt?\n\nGirlfriend : AH! \n\nBoyfriend : Ok, let's try another shoe size.\n\n---\n\n#DoesHurt #Humour #Satire #WorkplaceChronicles #DailyLife\n\n​﻿#writon​"
+    },
+    {
+      "id": "32d08a88-41ba-504b-b1fd-f0a6ad18140f",
+      "title": "काश",
+      "authorName": "yasir",
+      "category": "Shayari",
+      "engagement": 23,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 5,
+      "excerpt": "आज परिंदे उड़ान पर हैं ,\nकाश पतंगों को रोक ले कोई...!!\n\nहाथ सबके म्यान पर हैं ,\nकाश जंगों को रोक ले कोई...!!!\n\n---\n\n#Shayari #UrduPoetry #Ghazal #Sukhan\n\n​﻿#writon​"
+    },
+    {
+      "id": "85b547c3-7913-51f2-b995-65a539746b58",
+      "title": "ek khayal hai tu",
+      "authorName": "grv",
+      "category": "Poetry",
+      "engagement": 23,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 5,
+      "excerpt": "Ek khyal hai tu...jise sochta bhi hoon aur  likhna b pasand karta.\n\nYuh toh kayi hazar hain, \nAur lakho me ek sirf tu..\nteri ginati bhi karta toh kese karta...           \n\nNa dhundh pane ka gam tha na pane ki talash..\nEk chhuan hai tu.... tab bhi tujhe mehasoos toh zarur karta...                            \nandar hi andar sulag raha hai tu.                                                               Ek agan hai tu...tere liye kya sholo pe na chalta...       \n\nTu jasbati hai...ek udata hua pari"
+    }
+  ]
+}

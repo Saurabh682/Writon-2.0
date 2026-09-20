@@ -18,6 +18,7 @@ const runtimeEnvironmentSchema = z.object({
   GEMINI_MODEL: z.string().trim().default('gemini-3.5-flash'),
   GEMINI_PRO_MODEL: z.string().trim().default('gemini-3.1-pro-preview'),
   ADMIN_SECRET_KEY: z.string().trim().optional(),
+  TREND_INGEST_SECRET: z.string().trim().min(16).optional(),
   RENDER: z.enum(['true', 'false']).optional(),
   SPARK_AUTOMATION_ENABLED: z.enum(['true', 'false']).optional(),
   LATEST_APP_VERSION_CODE: z.coerce.number().int().min(1).default(119),
@@ -26,6 +27,9 @@ const runtimeEnvironmentSchema = z.object({
   PLAY_STORE_APP_URL: z.string().url().default('https://play.google.com/store/apps/details?id=com.ibitvalley.writon'),
   PUSH_DELIVERY_ENABLED: z.enum(['true', 'false']).default('true'),
   PUSH_DELIVERY_POLL_INTERVAL_MS: z.coerce.number().int().min(5_000).max(300_000).default(30_000),
+  GUEST_PUSH_REGISTRATION_ENABLED: z.enum(['true', 'false']).default('false'),
+  TIMERS_DISABLED: z.enum(['true', 'false']).optional(),
+  K_SERVICE: z.string().optional(),
   FEED_PERSONALIZATION_ENABLED: z.enum(['true', 'false']).default('true'),
   FEED_BEHAVIOR_ROLLOUT_PERCENT: z.coerce.number().int().min(0).max(90).default(0),
   FEED_HOLDOUT_PERCENT: z.coerce.number().int().min(0).max(50).default(10),
@@ -54,7 +58,30 @@ const runtimeEnvironmentSchema = z.object({
   DISCORD_WEBHOOK_URL: z.string().optional(),
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_CHAT_ID: z.string().optional(),
+  WRITON_SERVICE_ROLE: z.enum(['public', 'worker', 'all']).default('all'),
+  WRITON_EMAIL_DELIVERY_ENABLED: z.enum(['true', 'false']).default('false'),
+  WRITON_EMAIL_MODE: z.enum(['internal', 'production']).default('internal'),
+  WRITON_EMAIL_TEST_RECIPIENTS: z.string().optional(),
+  WRITON_EMAIL_DAILY_CAPACITY: z.coerce.number().int().min(1).max(10_000).default(80),
+  WRITON_EMAIL_BATCH_SIZE: z.coerce.number().int().min(1).max(500).default(25),
+  WRITON_EMAIL_LEASE_SECONDS: z.coerce.number().int().min(30).max(3600).default(300),
+  WRITON_EMAIL_FROM: z.string().optional(),
+  WRITON_EMAIL_REPLY_TO: z.string().optional(),
+  RESEND_API_KEY: z.string().optional(),
+  RESEND_WEBHOOK_SECRET: z.string().optional(),
+  WRITON_UNSUBSCRIBE_BASE_URL: z.string().url().optional(),
+  WRITON_UNSUBSCRIBE_KEYS_JSON: z.string().optional(),
 });
+
+function parseKeyring(raw) {
+  try {
+    const parsed = JSON.parse(raw || '[]');
+    if (!Array.isArray(parsed) || parsed.length === 0) return [];
+    return parsed.filter(k => k && typeof k.kid === 'string' && typeof k.secret === 'string' && k.secret.length >= 16);
+  } catch {
+    return [];
+  }
+}
 
 function parseServiceAccount(serializedAccount, source) {
   try {
@@ -96,6 +123,13 @@ export function loadRuntimeConfig(environment = process.env) {
     geminiModel: values.GEMINI_MODEL,
     geminiProModel: values.GEMINI_PRO_MODEL,
     adminSecretKey: values.ADMIN_SECRET_KEY || null,
+    trendIngestSecret: (() => {
+      if (values.TREND_INGEST_SECRET) return values.TREND_INGEST_SECRET;
+      if (values.NODE_ENV === 'production') {
+        throw new Error('TREND_INGEST_SECRET is required in production.');
+      }
+      return values.ADMIN_SECRET_KEY || null;
+    })(),
     sparkAutomationEnabled: values.SPARK_AUTOMATION_ENABLED
       ? values.SPARK_AUTOMATION_ENABLED === 'true'
       : values.RENDER !== 'true',
@@ -105,6 +139,8 @@ export function loadRuntimeConfig(environment = process.env) {
     playStoreAppUrl: values.PLAY_STORE_APP_URL,
     pushDeliveryEnabled: values.PUSH_DELIVERY_ENABLED === 'true',
     pushDeliveryPollIntervalMs: values.PUSH_DELIVERY_POLL_INTERVAL_MS,
+    guestPushRegistrationEnabled: values.GUEST_PUSH_REGISTRATION_ENABLED === 'true',
+    timersDisabled: Boolean(values.TIMERS_DISABLED === 'true' || values.K_SERVICE),
     feedPersonalizationEnabled: values.FEED_PERSONALIZATION_ENABLED === 'true',
     feedBehaviorRolloutPercent: values.FEED_BEHAVIOR_ROLLOUT_PERCENT,
     feedHoldoutPercent: values.FEED_HOLDOUT_PERCENT,
@@ -135,6 +171,21 @@ export function loadRuntimeConfig(environment = process.env) {
     discordWebhookUrl: values.DISCORD_WEBHOOK_URL || null,
     telegramBotToken: values.TELEGRAM_BOT_TOKEN || null,
     telegramChatId: values.TELEGRAM_CHAT_ID || null,
+    serviceRole: values.WRITON_SERVICE_ROLE,
+    email: {
+      enabled: values.WRITON_EMAIL_DELIVERY_ENABLED === 'true',
+      mode: values.WRITON_EMAIL_MODE,
+      testRecipients: new Set((values.WRITON_EMAIL_TEST_RECIPIENTS || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean)),
+      dailyCapacity: values.WRITON_EMAIL_DAILY_CAPACITY,
+      batchSize: values.WRITON_EMAIL_BATCH_SIZE,
+      leaseSeconds: values.WRITON_EMAIL_LEASE_SECONDS,
+      from: values.WRITON_EMAIL_FROM || null,
+      replyTo: values.WRITON_EMAIL_REPLY_TO || null,
+      resendApiKey: values.RESEND_API_KEY || null,
+      resendWebhookSecret: values.RESEND_WEBHOOK_SECRET || null,
+      unsubscribeBaseUrl: values.WRITON_UNSUBSCRIBE_BASE_URL || 'https://writon.cc/email/unsubscribe',
+      unsubscribeKeys: parseKeyring(values.WRITON_UNSUBSCRIBE_KEYS_JSON),
+    },
   };
 }
 

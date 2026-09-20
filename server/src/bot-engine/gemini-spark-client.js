@@ -1064,9 +1064,10 @@ FACTUAL GROUNDING & LITERARY TRUTH RULES:
       // Model failover ladder
       const candidateModels = [
         targetModel,
-        'gemini-3.5-flash',
-        'gemini-3.6-flash',
         'gemini-3.8-flash',
+        'gemini-3.7-flash',
+        'gemini-3.6-flash',
+        'gemini-3.5-flash',
         'gemini-3.1-flash-lite',
         'gemini-flash-latest'
       ].filter((m, idx, arr) => m && arr.indexOf(m) === idx);

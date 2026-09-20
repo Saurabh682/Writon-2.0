@@ -1,0 +1,167 @@
+{
+  "timestamp": "2026-09-12T13:40:13.835Z",
+  "corpusOverview": {
+    "totalRawPosts": 630,
+    "totalRawComments": 804,
+    "totalRegisteredUsers": 3946,
+    "totalLikes": 6,
+    "totalBookmarks": 440
+  },
+  "dataHygiene": {
+    "duplicatePostsIdentified": 64,
+    "postDuplicatesSummary": [
+      {
+        "type": "duplicate_title",
+        "originalId": "post_UG0XBzSaLed0",
+        "duplicateId": "post_J9iQCLBwM-pk",
+        "title": "The Art of Minimalist CodeCraft"
+      },
+      {
+        "type": "duplicate_content_opening",
+        "originalId": "post_UG0XBzSaLed0",
+        "duplicateId": "post_J9iQCLBwM-pk",
+        "title": "The Art of Minimalist CodeCraft"
+      },
+      {
+        "type": "duplicate_title",
+        "originalId": "post_UG0XBzSaLed0",
+        "duplicateId": "post_3SipoD1pQKIS",
+        "title": "The Art of Minimalist CodeCraft"
+      },
+      {
+        "type": "duplicate_content_opening",
+        "originalId": "post_UG0XBzSaLed0",
+        "duplicateId": "post_3SipoD1pQKIS",
+        "title": "The Art of Minimalist CodeCraft"
+      },
+      {
+        "type": "duplicate_title",
+        "originalId": "post_UG0XBzSaLed0",
+        "duplicateId": "post_IIhAYT4rqeiT",
+        "title": "The Art of Minimalist CodeCraft"
+      }
+    ],
+    "htmlContaminatedPostsCount": 149,
+    "orphanCommentsCount": 0
+  },
+  "distributions": {
+    "genres": {
+      "Essays": 85,
+      "Tech": 6,
+      "Poetry": 166,
+      "Philosophy": 1,
+      "Humour": 49,
+      "Short Stories": 163,
+      "Shayari": 126,
+      "Reviews": 20,
+      "Journalism": 14
+    },
+    "postLanguages": {
+      "English": 359,
+      "Hindi (Devanagari)": 76,
+      "Romanized Hindi/Urdu (Shayari/Poetry)": 183,
+      "Undetermined": 12
+    },
+    "commentLanguages": {
+      "English": 745,
+      "Undetermined": 28,
+      "Romanized Hindi/Urdu (Shayari/Poetry)": 27,
+      "Hindi (Devanagari)": 4
+    },
+    "totalUniqueAuthors": 196,
+    "top10AuthorConcentration": [
+      {
+        "authorId": "usr_leg_172",
+        "penName": "arshzee",
+        "fullName": "arsh zee",
+        "postsCount": 122,
+        "shareOfCorpus": "19.4%"
+      },
+      {
+        "authorId": "usr_leg_3647",
+        "penName": "kelly_miracle",
+        "fullName": "Kelly Miracle",
+        "postsCount": 43,
+        "shareOfCorpus": "6.8%"
+      },
+      {
+        "authorId": "usr_leg_68",
+        "penName": "shelby",
+        "fullName": "Ashi Srivastava",
+        "postsCount": 22,
+        "shareOfCorpus": "3.5%"
+      },
+      {
+        "authorId": "usr_leg_444",
+        "penName": "batman",
+        "fullName": "Amal Sri",
+        "postsCount": 17,
+        "shareOfCorpus": "2.7%"
+      },
+      {
+        "authorId": "usr_leg_476",
+        "penName": "lalit",
+        "fullName": "Lalit Khatri",
+        "postsCount": 16,
+        "shareOfCorpus": "2.5%"
+      },
+      {
+        "authorId": "usr_leg_1485",
+        "penName": "short_story_ninja",
+        "fullName": "Short Story Ninja",
+        "postsCount": 16,
+        "shareOfCorpus": "2.5%"
+      },
+      {
+        "authorId": "usr_leg_73",
+        "penName": "frozen_song",
+        "fullName": "Kumar Saurabh",
+        "postsCount": 15,
+        "shareOfCorpus": "2.4%"
+      },
+      {
+        "authorId": "usr_leg_3602",
+        "penName": "mehfuza",
+        "fullName": "MehfuZa",
+        "postsCount": 13,
+        "shareOfCorpus": "2.1%"
+      },
+      {
+        "authorId": "usr_leg_3184",
+        "penName": "kanu",
+        "fullName": "kAnu",
+        "postsCount": 12,
+        "shareOfCorpus": "1.9%"
+      },
+      {
+        "authorId": "usr_leg_2381",
+        "penName": "one",
+        "fullName": "One",
+        "postsCount": 9,
+        "shareOfCorpus": "1.4%"
+      }
+    ]
+  },
+  "provenanceSummary": {
+    "knownBotPostsCount": 0,
+    "unconfirmedLegacyHumanPostsCount": 630,
+    "knownBotCommentsCount": 0,
+    "unconfirmedLegacyHumanCommentsCount": 804
+  },
+  "dataLimitationsAndProvisionality": {
+    "thinCategories": [
+      {
+        "category": "Tech",
+        "count": 6,
+        "notice": "Provisional findings only: sample size too small for statistical generalization."
+      },
+      {
+        "category": "Philosophy",
+        "count": 1,
+        "notice": "Provisional findings only: sample size too small for statistical generalization."
+      }
+    ],
+    "exposureBiasNotice": "Engagement metrics (likes/comments/bookmarks) are exposure-unadjusted and historical. They must be used as a stratified sampling axis, not as an absolute gold-standard of craft quality.",
+    "provenanceNotice": "All legacy users in this export lack bot markers, but are cataloged as \"unconfirmed_legacy_human\" rather than unconditionally certified human to preserve scientific rigor."
+  }
+}

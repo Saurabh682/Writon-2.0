@@ -1,0 +1,27 @@
+WritOn 2.0.73 — Consistent Reading & Founder Identity
+
+<en-US>
+• Stories now preserve headings and lists with a consistent reading style.
+• Founding Writer and email-confirmed marks remain fully visible on profile photos.
+• Founding Writer profiles now include a clear numbered WritOn label.
+</en-US>
+<en-IN>
+• Stories now preserve headings and lists with a consistent reading style.
+• Founding Writer and email-confirmed marks remain fully visible on profile photos.
+• Founding Writer profiles now include a clear numbered WritOn label.
+</en-IN>
+<hi-IN>
+• कहानियों में अब शीर्षक और सूचियाँ एक समान पढ़ने की शैली में सुरक्षित रहती हैं।
+• Founding Writer और ईमेल-पुष्टि चिह्न अब प्रोफ़ाइल फ़ोटो पर पूरी तरह दिखाई देते हैं।
+• Founding Writer प्रोफ़ाइल में अब स्पष्ट क्रमांकित WritOn लेबल है।
+</hi-IN>
+<mr-IN>
+• कथांमधील शीर्षके आणि याद्या आता एकसमान वाचन शैलीत जतन होतात.
+• Founding Writer आणि ईमेल-पुष्टी चिन्हे आता प्रोफाइल फोटोवर पूर्ण दिसतात.
+• Founding Writer प्रोफाइलवर आता स्पष्ट क्रमांकित WritOn लेबल दिसते.
+</mr-IN>
+<bn-BD>
+• গল্পের শিরোনাম ও তালিকা এখন একই পাঠশৈলীতে সংরক্ষিত থাকে।
+• Founding Writer ও ইমেইল-নিশ্চিত চিহ্ন এখন প্রোফাইল ছবিতে সম্পূর্ণ দেখা যায়।
+• Founding Writer প্রোফাইলে এখন স্পষ্ট নম্বরযুক্ত WritOn লেবেল রয়েছে।
+</bn-BD>

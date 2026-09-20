@@ -1,0 +1,357 @@
+# Firebase App Testing Agent Test Cases for WritOn
+# Format specification: https://firebase.google.com/docs/app-distribution/android/app-testing-agent#test-cases-yaml
+
+tests:
+  - displayName: Personalized onboarding intent and interests
+    id: test-personalized-onboarding-v2
+    steps:
+      - goal: Create a disposable new tester account and continue after authentication
+        hint: Use the Join WritOn screen and a staging-only Firebase account. Do not reuse a production account.
+        finalScreenAssertion: A screen titled What brings you here today? appears and shows 1 of 2.
+      - goal: Choose Read and continue
+        hint: Select Read, then tap Continue.
+        finalScreenAssertion: The interests screen opens with its topic choices and no notification permission prompt appears.
+      - goal: Select Poetry and Essays, then continue
+        hint: Choose both topics and tap Find my reads. Choices are optional; verify Explore all stories appears when none are selected.
+        finalScreenAssertion: Home opens successfully with the bottom navigation visible.
+      - goal: Restart the app and verify onboarding does not repeat
+        hint: Close and reopen WritOn without clearing app data.
+        finalScreenAssertion: Home opens without showing the intent or interests step again.
+
+  - displayName: Sign-in exposes account creation
+    id: test-sign-in-create-account
+    steps:
+      - goal: Open the sign-in screen on a compact-height Android device
+        hint: Enter from onboarding or from a guest action that requires an account.
+        finalScreenAssertion: Create Account is visible directly below Sign In.
+      - goal: Open account creation
+        hint: Tap Create Account.
+        finalScreenAssertion: The Join WritOn account-creation screen opens.
+
+  - displayName: Fresh Guest Opens a Shared Story Directly
+    id: test-fresh-guest-shared-story-entry
+    steps:
+      - goal: Open a current writon.cc story link on a fresh signed-out installation
+        hint: Use a real public story URL supplied for this test. Clear WritOn app data first, then choose WritOn when Android asks which app should open the link.
+        finalScreenAssertion: The linked story is the first WritOn screen shown; Welcome, intent, interests, sign-in, and notification permission do not appear first.
+      - goal: Return from the shared story
+        hint: Tap the reader back arrow without signing in.
+        finalScreenAssertion: Home opens with readable story cards and guest browsing remains available.
+
+  - displayName: Localized account entry
+    id: test-localized-account-entry
+    steps:
+      - goal: Set the app language to Hindi using a dedicated signed-in tester, then sign out
+        hint: Open Profile, Settings, Language, choose Hindi, and sign out. Do not change account profile data.
+        finalScreenAssertion: WritOn returns to its signed-out entry journey in Hindi.
+      - goal: Open Sign In and inspect the complete screen
+        hint: Scroll once if the device height requires it. Do not submit credentials.
+        finalScreenAssertion: The heading, email or username label, password label, Forgot password, Sign In, Google, and account-creation actions are shown in Hindi with no embedded English control copy.
+      - goal: Open password recovery, then close it
+        hint: Tap the Hindi Forgot password action and do not submit an address.
+        finalScreenAssertion: The reset title, guidance, email field, cancel action, and reset action are shown in Hindi.
+      - goal: Open account creation and inspect the form
+        hint: Close password recovery, then use the Hindi account-creation action. Do not enter or submit personal data.
+        finalScreenAssertion: Signup labels, password guidance, terms copy, Google action, and password visibility descriptions are localized and the form remains scrollable.
+
+
+  - displayName: Credential Manager Google authentication
+    id: test-google-credential-manager-auth
+    steps:
+      - goal: Open Sign In and start Google authentication
+        hint: Use a tester device with Google Play services and at least one Google account. Tap Continue with Google.
+        finalScreenAssertion: Android's Credential Manager account chooser appears without opening the deprecated Google Sign-In activity.
+      - goal: Cancel the account chooser
+        hint: Dismiss the chooser without selecting an account.
+        finalScreenAssertion: WritOn remains on Sign In, shows no failure message, and the Google button can be used again.
+      - goal: Authenticate with an authorized Google account
+        hint: Tap Continue with Google again and select the designated tester account.
+        finalScreenAssertion: Authentication completes, the WritOn profile synchronizes, and Home opens once without duplicate navigation.
+      - goal: Sign out and verify account choice is cleared
+        hint: Sign out from Settings, return to Sign In, and tap Continue with Google.
+        finalScreenAssertion: Credential Manager offers account selection again instead of silently restoring the signed-out session.
+
+  # Requires a physical Play-installed tester device and an operator sending
+  # one targeted message. Never invoke the all-audience digest endpoint here.
+  - displayName: Targeted Notification Permission and Deep Link
+    id: test-targeted-notification-delivery
+    steps:
+      - goal: Open Notifications on the signed-in tester account
+        hint: Use the designated test account. Open Notifications and accept permission if Android offers it. If previously denied, enable notifications in Android settings.
+        finalScreenAssertion: The notification inbox opens without a crash and Android settings show WritOn notifications enabled.
+      - goal: Receive one operator-targeted test notification with the app in the background
+        hint: Return to the launcher without force-stopping WritOn. The operator must send only to this tester installation and record the message acceptance separately.
+        finalScreenAssertion: Exactly one visible WritOn notification appears with the expected test text.
+      - goal: Open the test notification
+        hint: Tap the notification from the Android notification shade.
+        finalScreenAssertion: WritOn opens the exact story or inbox specified by the operator test, without duplicate navigation.
+      - goal: Check disabled notifications are respected
+        hint: Disable WritOn notifications in Android settings, reopen WritOn to synchronize permission, then background it. Ask the operator for a second targeted test.
+        finalScreenAssertion: No visible WritOn notification is shown while notifications are disabled.
+
+  - displayName: Resume an Unfinished Story
+    id: test-reading-continuation
+    steps:
+      - goal: Open a long story and read partway through it
+        hint: Browse as a guest or signed-in tester. Choose a story that scrolls, move about halfway down, and note the visible paragraph. Do not reach the end.
+        finalScreenAssertion: The reader shows a paragraph below the title and above the end of the story.
+      - goal: Return to Home and resume the story
+        hint: Use the reader back arrow, then tap Resume beside the story counter.
+        finalScreenAssertion: The same story opens near the previously visible paragraph rather than at the title.
+      - goal: Verify continuation survives restarting the app
+        hint: Return Home, close and reopen the app without clearing storage, and tap Resume again.
+        finalScreenAssertion: The same unfinished story opens near the saved position.
+      - goal: Dismiss the Home reading reminder without deleting history
+        hint: Return Home, tap the close icon beside Resume, then open Library and History.
+        finalScreenAssertion: Resume is no longer shown on Home, while the unfinished story remains available in reading history.
+      - goal: Finish the story and return Home
+        hint: Open the same story from Library History, scroll to the bottom, and use the back arrow.
+        finalScreenAssertion: Home no longer offers Continue reading for that completed story.
+
+  # Use a dedicated signed-in tester; this journey changes only that tester's interests.
+  - displayName: Interest Choices Survive Reopening and Skip
+    id: test-interest-preference-preservation
+    steps:
+      - goal: Open reading interests from the signed-in account settings
+        hint: Open Profile, then Settings, then Interests. Use the dedicated tester account and keep the app language English for this journey.
+        finalScreenAssertion: The grouped interests screen is visible with localized category names, Skip, and either Find my reads or Explore all stories.
+      - goal: Save Poetry and Essays as interests
+        hint: Disable network access, select Poetry and Essays if not already selected, then tap Find my reads. Do not change other saved choices.
+        finalScreenAssertion: The app returns to settings immediately from the locally saved choices; it does not leave Find my reads and Skip disabled while waiting for account synchronization.
+      - goal: Restore connectivity and allow the pending account choices to synchronize
+        hint: Re-enable network access and wait briefly without changing the selected interests.
+        finalScreenAssertion: The app remains usable and any device-saved synchronization notice clears without reopening onboarding.
+      - goal: Reopen interests and confirm the saved selection
+        hint: Open Interests again and scroll if necessary to find Poetry and Essays.
+        finalScreenAssertion: Both Poetry and Essays are still visibly selected.
+      - goal: Skip without clearing saved choices
+        hint: Tap Skip, then reopen Interests.
+        finalScreenAssertion: Poetry and Essays remain selected; skipping did not erase the saved interests.
+
+  # Regression fixture: this story is confirmed absent from the production API.
+  # Run this journey on an upgraded installation when possible so an older Room
+  # cache is present and the test exercises cache reconciliation, not only search.
+  - displayName: Deleted Stories Do Not Survive Refresh
+    id: test-deleted-story-cache-reconciliation
+    steps:
+      - goal: Reach the Home feed without clearing the app's existing data
+        hint: Prefer upgrading an installation that previously browsed stories. If Welcome is shown, tap Start reading.
+        finalScreenAssertion: The Home feed is visible and the app remains responsive while existing local data is retained.
+      - goal: Refresh the first Home story card from the server
+        hint: Return to the first story card if needed, then pull downward on the card to refresh the feed and wait for loading to finish.
+        finalScreenAssertion: The refreshed Home feed is visible and does not display a story titled The Architecture of Tech.
+      - goal: Search for the exact removed story title
+        hint: Tap Explore, open Search using the magnifying-glass icon, and enter The Architecture of Tech exactly.
+        finalScreenAssertion: The removed story is not offered as a result; a clear empty-result state or unrelated valid results are shown without crashing.
+      - goal: Return to Home and open an available story
+        hint: Clear the search or use the bottom navigation to return Home, then open any visible story card.
+        finalScreenAssertion: A currently available story opens normally with its title, author, and story text, proving valid content still works after reconciliation.
+
+  # Non-destructive UI coverage. Use a signed-in tester account that already has
+  # at least one published story; this journey opens and cancels the delete flow.
+  - displayName: Published Story Delete Safety
+    id: test-published-story-delete-safety
+    steps:
+      - goal: Reach the signed-in writer's Profile screen
+        hint: Use the configured tester account, then tap Profile in the bottom navigation.
+        finalScreenAssertion: Writer Studio is visible with the signed-in writer's profile and published-story count.
+      - goal: Open the writer's Stories tab and reveal a published story's options
+        hint: Tap Stories, then tap the three-dot options button on one of this account's own published story cards.
+        finalScreenAssertion: A menu is visible with a Delete story action for the selected published story.
+      - goal: Open the permanent-delete confirmation without deleting the story
+        hint: Tap Delete story, but do not tap Delete permanently.
+        finalScreenAssertion: A confirmation dialog names the selected story, warns that deletion cannot be undone, and offers Cancel and Delete permanently actions.
+      - goal: Cancel the deletion
+        hint: Tap Cancel.
+        finalScreenAssertion: The dialog closes and the selected story remains visible in the writer's Stories tab.
+
+  - displayName: Continue as a Guest and Browse a Story
+    id: test-browse-read-story
+    steps:
+      - goal: Reach the Home feed without signing in
+        hint: If Welcome is shown, tap Start reading.
+        finalScreenAssertion: The Home feed is visible with the WritOn bottom navigation.
+      - goal: Browse the editorial story cards on the Home feed
+        hint: Scroll through the feed to view story cards with titles and authors.
+        finalScreenAssertion: At least one story card with a title and author is clearly visible.
+      - goal: Open any available story card
+        hint: Tap directly on a story title or its card.
+        finalScreenAssertion: The reader screen displays the selected story title, author, and story text.
+      - goal: Read part of the story and return to Home
+        hint: Scroll through the story, then tap the back arrow at the top-left.
+        finalScreenAssertion: The app returns to the Home feed.
+
+  - displayName: Search for Stories and Writers
+    id: test-search-discovery
+    steps:
+      - goal: Reach the Explore screen as a guest
+        hint: If Welcome appears, tap Start reading. Then tap Explore in the bottom navigation.
+        finalScreenAssertion: The Explore screen is visible with the WritOn header and discovery card.
+      - goal: Open Search from the Explore header
+        hint: Tap the magnifying-glass icon at the top-right of the Explore screen.
+        finalScreenAssertion: The Search screen is displayed with a search text input.
+      - goal: Search with a literary keyword
+        hint: Type Poetry into the search field and submit or wait for results.
+        finalScreenAssertion: The screen shows matching results or a clear empty-result state without crashing.
+
+  - displayName: Explore Curated Discoveries
+    id: test-explore-discoveries
+    steps:
+      - goal: Navigate to Explore as a guest
+        hint: Tap Start reading if Welcome appears, then tap the Explore compass in the bottom navigation.
+        finalScreenAssertion: The Explore screen displays its editorial heading and a discovery story card.
+      - goal: Move to the next discovery
+        hint: Tap the circular forward arrow or the next-discovery control on the discovery card.
+        finalScreenAssertion: A discovery card remains visible and the app stays responsive.
+      - goal: Open the displayed discovery
+        hint: Tap the main discovery story card.
+        finalScreenAssertion: The reader screen opens for the selected story.
+
+  - displayName: Protect Writing Behind Authentication
+    id: test-editor-authentication-gate
+    steps:
+      - goal: Reach the Home feed as a guest
+        hint: Tap Start reading if Welcome appears.
+        finalScreenAssertion: The Home feed and center Write button are visible.
+      - goal: Try to open the story editor while signed out
+        hint: Tap the orange center Write button.
+        finalScreenAssertion: A Sign in or Keep reading prompt appears; the editor does not open.
+      - goal: Return safely to the guest experience
+        hint: Tap Keep reading to dismiss the prompt without signing in.
+        finalScreenAssertion: The app returns to the previous guest screen without losing navigation.
+
+  - displayName: Protect Account Settings Behind Authentication
+    id: test-profile-authentication-gate
+    steps:
+      - goal: Reach the Home feed as a guest
+        hint: Tap Start reading if Welcome appears.
+        finalScreenAssertion: The Home feed and bottom navigation are visible.
+      - goal: Try to open Profile while signed out
+        hint: Tap Profile in the bottom navigation.
+        finalScreenAssertion: A Sign in or Keep reading prompt appears because profile settings require an account.
+      - goal: Return to the guest feed
+        hint: Tap Keep reading to dismiss the prompt.
+        finalScreenAssertion: The app returns to the guest experience without crashing.
+
+  - displayName: First-page visitor access and dismissible social gate
+    id: test-first-page-visitor-social-gate
+    steps:
+      - goal: Start reading without completing the tutorial or signing in
+        hint: On a fresh Welcome screen tap Start reading. If already onboarded, stay signed out on Home.
+        finalScreenAssertion: Home opens without requiring interests or authentication.
+      - goal: Open a story and attempt to bookmark it as a visitor
+        hint: Open a public story, then tap Save or the bookmark icon.
+        finalScreenAssertion: Sign in and Keep reading are offered; the story is not bookmarked.
+      - goal: Dismiss the gate without losing the story
+        hint: Tap Keep reading.
+        finalScreenAssertion: The same story remains visible at the reading position.
+      - goal: Verify applause is also protected
+        hint: Tap Applaud while still signed out, then dismiss with Keep reading.
+        finalScreenAssertion: The prompt appears and no applause is added.
+      - goal: Exercise navigation without a layout crash
+        hint: Return to Home, open Explore and a story, go back, background and resume the app; repeat three times.
+        finalScreenAssertion: WritOn remains responsive without closing or displaying a crash dialog.
+
+  - displayName: Guest reading notification permission
+    id: test-guest-reading-permission
+    steps:
+      - goal: Read meaningfully without an account
+        hint: Use an Android 13+ fresh tester installation with notification permission not yet decided. Tap Start reading, open a scrollable story, read actively for at least 30 seconds and reach at least 70 percent progress.
+        finalScreenAssertion: The story remains readable without any sign-in requirement.
+      - goal: Leave the story and allow reading notifications
+        hint: Use the reader back button. Allow the native notification permission prompt if shown. Do not sign in. A recently declined prompt is deliberately suppressed for 14 days.
+        finalScreenAssertion: Permission can be granted without creating an account and the app remains responsive.
+
+  - displayName: Edit a Published Story
+    id: test-edit-published-story
+    steps:
+      - goal: Open one of the signed-in writer's published stories from Profile
+        hint: Open Profile, select the Stories tab, open the story options menu, and tap Edit story.
+        finalScreenAssertion: The existing title and body open in Writer Studio without creating a blank story.
+      - goal: Change the story and review the update
+        hint: Add a small, recognizable sentence and tap Review update.
+        finalScreenAssertion: The publication preview shows the edited story and an Update story action.
+      - goal: Confirm the update
+        hint: Tap Update story, then reopen the same published story.
+        finalScreenAssertion: The changed text is visible and the story is marked Updated.
+
+  - displayName: Edit and Delete Owned Comments
+    id: test-owned-comment-management
+    steps:
+      - goal: Open a story containing a comment made by the signed-in tester
+        hint: Open the story's comments and locate the tester's own comment.
+        finalScreenAssertion: Edit and Delete actions appear only on the tester's comment.
+      - goal: Edit the owned comment
+        hint: Tap Edit, change the text, and submit it.
+        finalScreenAssertion: The revised text appears with an Edited label.
+      - goal: Delete the owned comment
+        hint: Tap Delete and confirm the deletion dialog.
+        finalScreenAssertion: The comment and any replies beneath it disappear and the comments count is updated.
+
+  - displayName: Profile Photo Upload and Session Restoration
+    id: test-profile-photo-session-restoration
+    steps:
+      - goal: Sign in with the dedicated staging tester and upload a new profile photo
+        hint: Open Profile, choose Edit Profile & Bio, select a non-sensitive image from the test device, and save. Do not alter the tester's name or username.
+        finalScreenAssertion: The new photo appears on the writer profile without a validation error.
+      - goal: Reopen WritOn after normal process termination
+        hint: Return to the launcher, allow Android to terminate the app normally, then reopen it. Do not clear storage or force-stop the package.
+        finalScreenAssertion: The tester remains signed in and the uploaded profile photo is still visible.
+      - goal: Sign out and sign back in with the same staging tester
+        hint: Use Settings to sign out, then use the normal sign-in route. Never use a production account for this journey.
+        finalScreenAssertion: The same profile and uploaded photo are restored without repeating account creation.
+
+  - displayName: Account Switching Keeps Profiles Isolated
+    id: test-account-switching-isolation
+    steps:
+      - goal: Sign in with staging tester A and record the visible profile identity
+        hint: Use one of the two authorized staging-only tester accounts and open Profile.
+        finalScreenAssertion: Tester A's name, username, and profile image are shown together.
+      - goal: Sign out and sign in with staging tester B
+        hint: Complete sign-out before selecting the second authorized staging-only tester account.
+        finalScreenAssertion: Tester B's profile appears and no name, photo, draft, or account state from tester A is shown.
+      - goal: Switch back to staging tester A
+        hint: Sign out tester B, sign in tester A, and reopen Profile.
+        finalScreenAssertion: Tester A's original profile and photo are restored and tester B's private state is absent.
+
+  - displayName: Notification Delivery Across App States
+    id: test-notification-app-state-matrix
+    steps:
+      - goal: Receive one tester-targeted notification while WritOn is open
+        hint: Keep WritOn in the foreground. The operator must target only this installation; never invoke an audience or topic broadcast.
+        finalScreenAssertion: WritOn remains stable, the in-app inbox updates once, and no duplicate system notification is created.
+      - goal: Receive one tester-targeted notification while WritOn is in the background
+        hint: Return to the launcher without force-stopping WritOn, then have the operator target only this installation.
+        finalScreenAssertion: Exactly one branded WritOn notification appears and tapping it opens the intended destination once.
+      - goal: Receive one tester-targeted notification after normal process termination
+        hint: Let Android remove the process normally; do not use Force stop. The operator must target only this installation.
+        finalScreenAssertion: Exactly one WritOn notification appears and its deep link restores the intended screen without a crash.
+      - goal: Verify a muted channel is respected
+        hint: Mute the relevant WritOn notification channel in Android settings, return to the app so permission state can reconcile, and run one installation-targeted test.
+        finalScreenAssertion: No visible notification is posted through the muted channel and WritOn remains usable.
+      - goal: Verify logout revokes account-targeted delivery
+        hint: Sign out completely, then generate an interaction for the former account from the other staging tester. Do not send a guest topic broadcast.
+        finalScreenAssertion: The signed-out installation receives no account-targeted notification for its former user.
+
+  - displayName: Accessibility and Large Text Smoke
+    id: test-accessibility-large-text
+    steps:
+      - goal: Navigate the first-use journey with TalkBack enabled
+        hint: On a clean staging installation, enable TalkBack and move through welcome, reading intent, interests, visitor entry, Home, and one story using accessibility actions.
+        finalScreenAssertion: Every actionable control has an understandable spoken label, focus order follows the screen, and no control requires sight alone.
+      - goal: Repeat the core journey at the largest supported Android font size
+        hint: Set Android font size and display size to their largest supported values, then revisit onboarding, Home, Reader, sign-in, Profile, and Settings.
+        finalScreenAssertion: Primary actions remain reachable, text is not clipped into unusable fragments, and content can scroll where necessary.
+
+  - displayName: Six-Language Layout and Navigation Smoke
+    id: test-six-language-layout-smoke
+    steps:
+      - goal: Check the core signed-out journey in every supported app language
+        hint: In Settings, test English, Hindi, Marathi, Bengali, Spanish, and French one at a time. For each language, inspect welcome, interests, sign-in, and account creation, then return to Settings.
+        finalScreenAssertion: Each screen uses the selected language, primary actions are visible, and no placeholder key or severe truncation appears.
+      - goal: Check the core signed-in journey in every supported app language
+        hint: With the staging tester, inspect Home, Explore, Reader, Library, Profile, notification preferences, and story actions in each language. Do not edit or publish content.
+        finalScreenAssertion: Navigation remains usable, dynamic story data renders correctly, and switching languages does not sign the tester out or lose preferences.
+      - goal: Restore the test device to English
+        hint: Select English in Settings after completing the language matrix.
+        finalScreenAssertion: The app returns to English and retains the staging tester's account and preferences.

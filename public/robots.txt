@@ -2,6 +2,20 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /go/
+Disallow: /auth/
+Disallow: /email/
+Disallow: /settings/
+Disallow: /instagram
+Disallow: /ig
+Disallow: /x
+Disallow: /twitter
+Disallow: /threads
+Disallow: /youtube
+Disallow: /yt
+Disallow: /linkedin
+Disallow: /reddit
+Disallow: /medium
+
+Sitemap: https://writon.cc/sitemap_index.xml
 Sitemap: https://writon.cc/sitemap.xml
 Sitemap: https://writon.cc/news-sitemap.xml
-Sitemap: https://writon.cc/feed.xml

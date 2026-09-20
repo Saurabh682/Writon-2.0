@@ -12,6 +12,9 @@ interface CommentDao {
     @Query("SELECT * FROM comments WHERE postId = :postId ORDER BY createdAt ASC")
     fun getCommentsByPostId(postId: String): Flow<List<CommentEntity>>
 
+    @Query("SELECT * FROM comments WHERE id = :commentId LIMIT 1")
+    suspend fun getCommentById(commentId: String): CommentEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertComments(comments: List<CommentEntity>)
 

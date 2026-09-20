@@ -5,5 +5,6 @@ export default defineConfig({
     // The retired Hono implementation has its own dependency tree and is not part
     // of the production Fastify server verification surface.
     exclude: ['legacy_hono/**', 'node_modules/**'],
+    setupFiles: ['./vitest.setup.js'],
   },
 });

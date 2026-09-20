@@ -1,0 +1,475 @@
+{
+  "generatedAt": "2026-09-12T18:04:30.188Z",
+  "corpusOverview": {
+    "totalPosts": 630,
+    "totalComments": 804,
+    "totalWords": 176344,
+    "totalSentences": 6181,
+    "avgWordsPerPost": 280
+  },
+  "burstinessAndCadence": {
+    "sentenceLength": {
+      "mean": 18.83,
+      "stdDev": 38.29,
+      "min": 1,
+      "max": 1562,
+      "median": 11
+    },
+    "burstinessIndex": 38.29,
+    "interpretation": "High Burstiness: Natural human variance between short punchy statements and long expressive clauses."
+  },
+  "lexicalRichness": {
+    "totalWords": 176344,
+    "uniqueWords": 15032,
+    "typeTokenRatio": 0.0852
+  },
+  "punctuationFingerprint": {
+    "counts": {
+      "emDash": 1194,
+      "semicolon": 5274,
+      "colon": 6001,
+      "question": 877,
+      "ellipsis": 1245,
+      "exclamation": 519
+    },
+    "per1000Words": {
+      "emDash": 6.77,
+      "semicolon": 29.91,
+      "colon": 34.03,
+      "question": 4.97,
+      "ellipsis": 7.06,
+      "exclamation": 2.94
+    }
+  },
+  "aiTropePrevalence": {
+    "totalTropeHits": 13,
+    "topHits": {
+      "moreover": 5,
+      "realm": 2,
+      "crucial": 2,
+      "dynamic": 2,
+      "landscape": 1,
+      "intertwined": 1
+    },
+    "prevalenceRatePer10kWords": 0.74,
+    "zeroUsageTropes": [
+      "delve",
+      "delving",
+      "tapestry",
+      "beacon",
+      "testament",
+      "unwavering",
+      "bustling",
+      "pivotal",
+      "furthermore",
+      "in conclusion",
+      "it is important to remember",
+      "serves as a reminder",
+      "beacon of hope",
+      "rich tapestry",
+      "vital role",
+      "paramount",
+      "multifaceted",
+      "ever-evolving",
+      "embark",
+      "unfurl",
+      "poignant reminder",
+      "testament to",
+      "game-changer",
+      "fostering",
+      "holistic",
+      "nuanced",
+      "resonates deeply",
+      "seamlessly",
+      "shedding light"
+    ]
+  },
+  "categoryBreakdown": {
+    "Essays": {
+      "postCount": 85,
+      "totalWords": 12982,
+      "avgWordsPerPost": 153,
+      "sentenceLengthStats": {
+        "mean": 13.94,
+        "stdDev": 13.71,
+        "min": 1,
+        "max": 272,
+        "median": 11
+      },
+      "lexicalStats": {
+        "totalTokens": 12982,
+        "uniqueTokens": 3141,
+        "ttr": 0.242
+      }
+    },
+    "Tech": {
+      "postCount": 6,
+      "totalWords": 212,
+      "avgWordsPerPost": 35,
+      "sentenceLengthStats": {
+        "mean": 11.45,
+        "stdDev": 5.81,
+        "min": 6,
+        "max": 22,
+        "median": 10
+      },
+      "lexicalStats": {
+        "totalTokens": 212,
+        "uniqueTokens": 144,
+        "ttr": 0.6792
+      }
+    },
+    "Poetry": {
+      "postCount": 166,
+      "totalWords": 24837,
+      "avgWordsPerPost": 150,
+      "sentenceLengthStats": {
+        "mean": 21.95,
+        "stdDev": 65.64,
+        "min": 1,
+        "max": 1562,
+        "median": 11
+      },
+      "lexicalStats": {
+        "totalTokens": 24837,
+        "uniqueTokens": 3911,
+        "ttr": 0.1575
+      }
+    },
+    "Philosophy": {
+      "postCount": 1,
+      "totalWords": 131,
+      "avgWordsPerPost": 131,
+      "sentenceLengthStats": {
+        "mean": 17.29,
+        "stdDev": 9.97,
+        "min": 6,
+        "max": 39,
+        "median": 15
+      },
+      "lexicalStats": {
+        "totalTokens": 131,
+        "uniqueTokens": 111,
+        "ttr": 0.8473
+      }
+    },
+    "Humour": {
+      "postCount": 49,
+      "totalWords": 5123,
+      "avgWordsPerPost": 105,
+      "sentenceLengthStats": {
+        "mean": 13.26,
+        "stdDev": 16.65,
+        "min": 2,
+        "max": 158,
+        "median": 10
+      },
+      "lexicalStats": {
+        "totalTokens": 5123,
+        "uniqueTokens": 938,
+        "ttr": 0.1831
+      }
+    },
+    "Short Stories": {
+      "postCount": 163,
+      "totalWords": 125994,
+      "avgWordsPerPost": 773,
+      "sentenceLengthStats": {
+        "mean": 20.1,
+        "stdDev": 35.14,
+        "min": 1,
+        "max": 898,
+        "median": 12
+      },
+      "lexicalStats": {
+        "totalTokens": 125994,
+        "uniqueTokens": 11097,
+        "ttr": 0.0881
+      }
+    },
+    "Shayari": {
+      "postCount": 126,
+      "totalWords": 5152,
+      "avgWordsPerPost": 41,
+      "sentenceLengthStats": {
+        "mean": 12.03,
+        "stdDev": 22.42,
+        "min": 1,
+        "max": 241,
+        "median": 8
+      },
+      "lexicalStats": {
+        "totalTokens": 5152,
+        "uniqueTokens": 1350,
+        "ttr": 0.262
+      }
+    },
+    "Reviews": {
+      "postCount": 20,
+      "totalWords": 1262,
+      "avgWordsPerPost": 63,
+      "sentenceLengthStats": {
+        "mean": 16.3,
+        "stdDev": 17.4,
+        "min": 1,
+        "max": 110,
+        "median": 12
+      },
+      "lexicalStats": {
+        "totalTokens": 1262,
+        "uniqueTokens": 540,
+        "ttr": 0.4279
+      }
+    },
+    "Journalism": {
+      "postCount": 14,
+      "totalWords": 651,
+      "avgWordsPerPost": 47,
+      "sentenceLengthStats": {
+        "mean": 13.93,
+        "stdDev": 12.7,
+        "min": 2,
+        "max": 51,
+        "median": 11
+      },
+      "lexicalStats": {
+        "totalTokens": 651,
+        "uniqueTokens": 342,
+        "ttr": 0.5253
+      }
+    }
+  },
+  "commentBehavior": {
+    "count": 804,
+    "lengthStats": {
+      "mean": 5.19,
+      "stdDev": 11.92,
+      "min": 0,
+      "max": 219,
+      "median": 2
+    },
+    "avgWordsPerComment": 5.19
+  },
+  "topExemplars": [
+    {
+      "id": "post_leg_628",
+      "title": "Interest of International Investors to Invest in Pakistan n",
+      "authorName": "asma",
+      "category": "Reviews",
+      "engagement": 49,
+      "likes": 0,
+      "bookmarks": 2,
+      "comments": 15,
+      "excerpt": "<div style=\"text-align: left;\"><span style=\"font-size: 20px;\">Interest of international investors in Pakistan e-commerce is making the right way instead of tremendous and hypocritical views of Pakistan e-commerce based relation with foreign countries.Chairman Alibaba group Jack ma shows his interest in investing in Pakistan e commerce sector.Paypal and Alibaba are the two giants which break the repeated disastrous stones of Pakistan foreign policy interest of making the pak-china relation more p"
+    },
+    {
+      "id": "post_leg_196",
+      "title": "stotry",
+      "authorName": "ram",
+      "category": "Short Stories",
+      "engagement": 43,
+      "likes": 0,
+      "bookmarks": 8,
+      "comments": 9,
+      "excerpt": "चश्मा साफ़ करते हुए उस बुज़ुर्ग ने \nअपनी पत्नी से कहा : हमारे ज़माने में\nमोबाइल नहीं थे..\n\n*पत्नी* : पर ठीक पाँच बजकर पचपन\nमिनट पर मैं पानी का ग्लास लेकर\nदरवाज़े पे आती और आप आ पहुँचते..\n\n*पति* : हाँ मैंने तीस साल नौकरी की\nपर आज तक मैं ये नहीं समझ\nपाया कि मैं आता इसलिए तुम\nपानी लाती थी या तुम पानी लेकर\nआती थी इसलिये मैं आता था..\n\n*पत्नी* : हाँ.. और याद है.. तुम्हारे\nरिटायर होने से पहले जब तुम्हें\nडायबीटीज़ नहीं थी और मैं तुम्हारी\nमनपसन्द खीर बनाती तब तुम कहते\nकि आज दोपहर में ही ख़याल आया\nकि खीर"
+    },
+    {
+      "id": "post_leg_190",
+      "title": "i'll be waiting for you",
+      "authorName": "shweta_srivastava",
+      "category": "Poetry",
+      "engagement": 42,
+      "likes": 0,
+      "bookmarks": 6,
+      "comments": 10,
+      "excerpt": "From the first time we met, I knew we would be friends<br style=\"color: rgb(102, 102, 102); font-family: \"Trebuchet MS\", Trebuchet, Verdana, sans-serif; font-size: 15.84px; background-color: rgb(255, 255, 255);\"><span style=\"color: rgb(102, 102, 102); font-family: \"Trebuchet MS\", Trebuchet, Verdana, sans-serif; font-size: 15.84px; background-color: rgb(255, 255, 255);\">You had a different air than others that I knew</span><br style=\"color: rgb(102, 102, 102); font-family: \"Trebuchet MS\", Trebuch"
+    },
+    {
+      "id": "post_leg_175",
+      "title": "Railway ki Suvidha",
+      "authorName": "shelby",
+      "category": "Humour",
+      "engagement": 39,
+      "likes": 0,
+      "bookmarks": 6,
+      "comments": 9,
+      "excerpt": "ट्रेन से एक यात्री नें ट्वीट करके \nशिकायत भेजी :\n   ''बाकी सुविधायें भले ही न बढ़ायें\n      पर लैट्रिन में मग्गे की चैन की\n     लंबाई इतनी तो बढ़ा दें कि जहाँ\n    इस्तेमाल करना है वहाँ तक \n     पहुंच सके |\" \n\nरेल्वे की तरफ से रिप्लाई आया :\n    \"मग्गा चैन से बंधा है, आप नहीं \""
+    },
+    {
+      "id": "post_leg_272",
+      "title": "माँ",
+      "authorName": "runa_lucknawi",
+      "category": "Poetry",
+      "engagement": 33,
+      "likes": 0,
+      "bookmarks": 3,
+      "comments": 9,
+      "excerpt": "<p dir=\"ltr\" style=\"font-size: 13.696px;\">क्षण भर भी देर हो जाती तो किवाड़ पे टकटकी लगाये रहती, हमारी माँ,\nप्रशंसा करते न थकती..आगे बढ़ने को प्रोत्साहित करती..ऐसी थी हमारी माँ।\n\n<p dir=\"ltr\" style=\"font-size: 13.696px;\">इन आँखों की उदासी पल भर में भाँप लेती,\nनए नए नामों से हमें बुलाती..\nहमेशा हँसती-मुस्कुराती रहती- ऐसी थी हमारी माँ।\n\n<p dir=\"ltr\" style=\"font-size: 13.696px;\">पिछले कुछ सालों में, गिरते-संभालते आगे बढ़ते, रिश्तों की पहचान हुई...\nएक छोटी सी खरोंच भी लगती तो 'आहा रे-आहा रे', बोलती हमार"
+    },
+    {
+      "id": "post_leg_379",
+      "title": "Mann ki awaaz",
+      "authorName": "being_anki",
+      "category": "Essays",
+      "engagement": 33,
+      "likes": 0,
+      "bookmarks": 3,
+      "comments": 9,
+      "excerpt": "From past few days I am going thru some hard things. I am trying to come out from all this. So, yesterday I got \"Mann ki awaaz\" saying to me Anki come on it's been high time you are avoiding yourself n giving more importance to others who don't even care for you. Come on, buck up! Start thinking bout yourself. U shud work on yourself, do some workout, read some books, increase your knowledge, look good, think good, work on your weakness, stay focused blah blah blah!! I answered to my 'mann' yes"
+    },
+    {
+      "id": "post_leg_506",
+      "title": "Help - Easily Used hardly Understood...",
+      "authorName": "pratyush",
+      "category": "Journalism",
+      "engagement": 32,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 8,
+      "excerpt": "Hi,Guys am Teenager who is very shy guy who doesn't even know how to handle a social situation and I behave so  girlish.I have face body shaming issues in my school from my so called 'FRIENDS'. Today I heard a news that a senior of my school committed a suicide. I don't know the reason but am sure of one thing that suicide in not a solution  I have so many family issues and yes am making it public because am a teenager..And don't even think that I ever not tried to suicide....I HAVE a trillion"
+    },
+    {
+      "id": "post_leg_923",
+      "title": "Love or lust",
+      "authorName": "pooooja",
+      "category": "Journalism",
+      "engagement": 30,
+      "likes": 0,
+      "bookmarks": 0,
+      "comments": 10,
+      "excerpt": "Kya aise insan k saath puri zindagi rishta nibhaya ja sakta hai jisey aapke mann ke dukh ya taqlif se ki aap kya chahte ho usse koi mtlb nahi hota bas wo aapki body pe apna haq jatana chahta ho kya wo puri life aapka saath nibha payega.\nIs this right or wrong plz tell me"
+    },
+    {
+      "id": "post_leg_1019",
+      "title": "rain drops",
+      "authorName": "ekalyva",
+      "category": "Short Stories",
+      "engagement": 30,
+      "likes": 0,
+      "bookmarks": 0,
+      "comments": 10,
+      "excerpt": "Its a rainy day... Mostly like all other boys im in my bed struggling to wake up.i can clearly see the sky going darker....rain drops falls on top of rose kept on my table..the petals licking the tears of mine.its the same rose which is ignored by a princes... I took it in my hand and smiled. The rose smiled backkk...the rain began to fall heavily.taking deep breath i walked out of my room remembering the last words frm my girl.....\" Get lost u idiot\"... Idiot the title given to a boy who was ma"
+    },
+    {
+      "id": "post_leg_352",
+      "title": "first night alone after watching the conjuring2. some resolutions-",
+      "authorName": "megha",
+      "category": "Essays",
+      "engagement": 29,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 7,
+      "excerpt": "1. I will not close my eyes even while washing my face. Who knows what might happen when i open my eyes. Its ok if my eyes sting with the face wash.\n\n2. From today onwards i will again sleep keeping bathroom lights on till i visit my home next.\n\n3. Will start going temple again.\n\n4. Will reply all messenger and whatsapp message. it might be a torture but it is my saviour during such terror night.\n\n5. Will make a list of people. I can call during the night if I am scared and be nice to them and s"
+    },
+    {
+      "id": "post_leg_737",
+      "title": "آج پاکستان کی تاریخ کا اہم ترین دن۔",
+      "authorName": "rajaashiq",
+      "category": "Journalism",
+      "engagement": 28,
+      "likes": 0,
+      "bookmarks": 2,
+      "comments": 8,
+      "excerpt": "<div style=\"text-align: right;\">میرے پاکستانیو مجھے فخر ہے آپ پر"
+    },
+    {
+      "id": "post_leg_188",
+      "title": "The Four wives",
+      "authorName": "frozen_song",
+      "category": "Short Stories",
+      "engagement": 27,
+      "likes": 0,
+      "bookmarks": 6,
+      "comments": 5,
+      "excerpt": "<header class=\"entry-header\" style=\"color: rgb(85, 85, 85); font-family: \"Open Sans\", sans-serif-light, sans-serif; font-size: 16px; line-height: 26px; widows: 1; border: 0px none rgb(85, 85, 85); background-color: rgb(255, 255, 255);\"><h1 class=\"entry-title\" style=\"margin-top: 0px; margin-bottom: 13px; padding-left: 0px; padding-right: 0px; word-wrap: break-word; font-weight: 300; text-align: center; line-height: 28px; font-size: 24px; font-family: \"Roboto Slab\", sans-serif-light, sans-serif; b"
+    },
+    {
+      "id": "post_leg_362",
+      "title": "मोहब्बत",
+      "authorName": "megha",
+      "category": "Shayari",
+      "engagement": 27,
+      "likes": 0,
+      "bookmarks": 3,
+      "comments": 7,
+      "excerpt": "बेपनाह मोहब्बत का एक ही उसूल है...मिले या ना मिले तू हर हाल में कबूल है"
+    },
+    {
+      "id": "post_leg_872",
+      "title": "Power VS Money",
+      "authorName": "noor",
+      "category": "Essays",
+      "engagement": 27,
+      "likes": 0,
+      "bookmarks": 0,
+      "comments": 9,
+      "excerpt": "Hy friends:\nI ask you a question??\nIf someone ask you to select one from Power and Money,what would you like to select???\nPlease tell me your point of view.i want to know how many people prefer money over power or power over money.it's my research work.And also if you like to tell me why are you prefering someone.... \nIt's my pleasure if you help me."
+    },
+    {
+      "id": "post_leg_340",
+      "title": "The lion fell in love with the Lamb",
+      "authorName": "van",
+      "category": "Short Stories",
+      "engagement": 26,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 6,
+      "excerpt": "<p style=\"margin: 0px; border: 0px; font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 13px; outline: 0px; padding: 0px; vertical-align: baseline; color: rgb(102, 102, 102); line-height: 20px; font-variant-ligatures: normal; orphans: 2; widows: 2;\">This is a story of Lina my twin sister….and my name is Tina…you must be thinking whats going on\n\n<p style=\"margin: 0px; border: 0px; font-family: 'Open Sans', Helvetica, Arial, sans-serif; font-size: 13px; outline: 0px; padding: 0px; v"
+    },
+    {
+      "id": "post_leg_273",
+      "title": "MY CHILDHOOD DAYS",
+      "authorName": "bhakta_patgiri",
+      "category": "Poetry",
+      "engagement": 24,
+      "likes": 0,
+      "bookmarks": 3,
+      "comments": 6,
+      "excerpt": "In my childhood days I had tasted\nAn elixir of love and affection, and \nBoundless rights of doing anything. \n\nBut after becoming an adult,  I have \nLost every rights of my innocent days.\nAnd received another rights\nWhich bound me-up , in my every steps \nThat's makes me feel good or bad \nBut should have to obey it.\n\nOh ! God, how heavenly or innocent \nThat the childhood days were?\nI can't express that you gave me at all .\nOnly I can thank that you \nGave me a chance to taste the childhood days."
+    },
+    {
+      "id": "post_leg_762",
+      "title": "alone",
+      "authorName": "knightprinces",
+      "category": "Essays",
+      "engagement": 24,
+      "likes": 0,
+      "bookmarks": 0,
+      "comments": 8,
+      "excerpt": "Whats the advantage of being alone?. Can anyone tell me please."
+    },
+    {
+      "id": "post_leg_178",
+      "title": "ek khayal hai tu",
+      "authorName": "grv",
+      "category": "Poetry",
+      "engagement": 23,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 5,
+      "excerpt": "Ek khyal hai tu...jise sochta bhi hoon aur  likhna b pasand karta.\n\nYuh toh kayi hazar hain, \nAur lakho me ek sirf tu..\nteri ginati bhi karta toh kese karta...           \n\nNa dhundh pane ka gam tha na pane ki talash..\nEk chhuan hai tu.... tab bhi tujhe mehasoos toh zarur karta...                            \nandar hi andar sulag raha hai tu.                                                               Ek agan hai tu...tere liye kya sholo pe na chalta...       \n\nTu jasbati hai...ek udata hua pari"
+    },
+    {
+      "id": "post_leg_288",
+      "title": "#1 Does It Hurt?",
+      "authorName": "krystalized",
+      "category": "Humour",
+      "engagement": 23,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 5,
+      "excerpt": "<b>Boyfriend : Baby, does it hurt? \n\nGirlfriend : Uh-huh. \n\nBoyfriend : Does it still hurt?\n\nGirlfriend : AH! \n\nBoyfriend : Ok, let's try another shoe size. \n\n \n\n<div style=\"text-align: center;\"><b>"
+    },
+    {
+      "id": "post_leg_355",
+      "title": "काश",
+      "authorName": "yasir",
+      "category": "Shayari",
+      "engagement": 23,
+      "likes": 0,
+      "bookmarks": 4,
+      "comments": 5,
+      "excerpt": "आज परिंदे उड़ान पर हैं ,\nकाश पतंगों को रोक ले कोई...!!\n\nहाथ सबके म्यान पर हैं ,\nकाश जंगों को रोक ले कोई...!!!"
+    }
+  ]
+}

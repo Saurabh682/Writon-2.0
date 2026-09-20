@@ -1,0 +1,50 @@
+[
+  {
+    "time_start": 0.0,
+    "time_end": 2.2,
+    "beat": "frame_zero_problem",
+    "on_screen_text": "\"Don't touch that,\" he whispered menacingly.",
+    "pills": [
+      "WRITING HACK #11",
+      "Adverb Tag"
+    ],
+    "voice": "This dialogue tag doesn't add tension. It's apologizing for it."
+  },
+  {
+    "time_start": 2.2,
+    "time_end": 5.5,
+    "beat": "diagnosis",
+    "voice": "If the line is dangerous, cut the adverb and make his hands prove it."
+  },
+  {
+    "time_start": 5.5,
+    "time_end": 8.0,
+    "beat": "dissolve",
+    "motion": "draft_dissolves_into_parchment"
+  },
+  {
+    "time_start": 8.0,
+    "time_end": 15.5,
+    "beat": "healed_rewrite",
+    "on_screen_text": "“Don't touch that.” His thumb clicked the deadbolt into place.",
+    "pills": [
+      "Healed Sentence",
+      "Physical Threat"
+    ],
+    "voice": "Watch the rewrite: “Don't touch that.” His thumb clicked the deadbolt into place."
+  },
+  {
+    "time_start": 15.5,
+    "time_end": 19.5,
+    "beat": "consequence",
+    "on_screen_text": "Now the threat is in the room, not in the modifier.",
+    "voice": "Now the threat is in the room, not in the modifier."
+  },
+  {
+    "time_start": 19.5,
+    "time_end": 24.5,
+    "beat": "craft_rule_loop",
+    "on_screen_text": "Dialogue carries the words. Action carries the threat.",
+    "voice": "Dialogue carries the words. Action carries the threat."
+  }
+]

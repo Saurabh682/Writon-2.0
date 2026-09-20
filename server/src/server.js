@@ -15,25 +15,42 @@ import { getStorage } from 'firebase-admin/storage';
 import { z } from 'zod';
 import { loadFirebaseServiceAccount, loadRuntimeConfig } from './config.js';
 import { adminBotsRoutes } from './routes/admin-bots.js';
+import { adminLinkedInRoutes } from './routes/admin-linkedin.js';
 import { adminReviewsRoutes } from './routes/admin-reviews.js';
+import { adminFoundingWriterRoutes } from './routes/admin-founding-writers.js';
 import { appMetaRoutes } from './routes/app-meta.js';
 import { seoRoutes, renderDiscoveryDeckHtml } from './routes/seo-routes.js';
 import { notificationRoutes } from './routes/notifications.js';
 import { engagementPreferenceRoutes } from './routes/engagement-preferences.js';
 import { triggerSparkReaction, triggerSparkCommentReaction, startSparkScheduler } from './bot-engine/spark-runner.js';
+import { enqueueStorySyndication } from './bot-engine/outbox-service.js';
 import { startMasterDailyScheduler } from './bot-engine/master-scheduler.js';
 import { mcpRoutes } from './routes/mcp-server.js';
 import { milestoneRoutes } from './routes/milestones.js';
 import { craftCoachRoutes } from './routes/craft-coach.js';
 import { campaignRedirectRoutes } from './routes/campaign-redirect.js';
+import { vanityRedirectRoutes } from './routes/vanity-redirects.js';
+import { editorialRoutes } from './routes/editorial-routes.js';
+import { trendRoutes } from './routes/trend-routes.js';
+import { runSyncTick } from './services/trend-cloud-sync.js';
+import { emailEngagementRoutes } from './routes/email-engagement.js';
+import { extensionBridgeRoutes } from './routes/extension-bridge.js';
+import { createResendClient } from './email/resend-client.js';
+import { createEmailWorker } from './email/worker.js';
+import { enqueueWelcomeEmail } from './email/queue.js';
+import { createWritonEmailAdapter } from './services/writon-email-adapter.js';
 import { feedRoutes } from './routes/feed.js';
 import { cleanExpiredFeedData } from './services/feed-service.js';
 import { toFcmAnalyticsLabel } from './services/fcm-analytics-label.js';
+import {
+  deriveStoryRecommendationMetadata,
+  EXPECTED_READING_SECONDS_SQL,
+} from './services/story-recommendation-metadata.js';
 import { runDailyDigest } from './jobs/daily-digest.js';
 import { runDiscoveryNotifications } from './jobs/discovery-notifications.js';
 import { runDailyCampaignPublish } from './jobs/social-campaign-publisher.js';
 import { runFollowedWriterNotifications } from './jobs/followed-writer-notifications.js';
-import { attachHashtagsAndWatermark, stripWatermark } from './bot-engine/watermark-service.js';
+import { attachHashtagsAndWatermark, stripWatermark, fetchTrendingKeywordsForCategory } from './bot-engine/watermark-service.js';
 import { PUBLISHABLE_STORY_CATEGORIES } from './domain/story-categories.js';
 import fs from 'node:fs/promises';
 
@@ -151,6 +168,7 @@ const collectionQuerySchema = z.object({
 const readingProgressInputSchema = z.object({
   progress: z.coerce.number().min(0).max(1).default(0.05),
   readSeconds: z.coerce.number().int().min(0).max(60).default(0),
+  clientMutationId: z.string().uuid().optional(),
 });
 
 const postIdSchema = z.string().uuid();
@@ -182,20 +200,20 @@ const storyShareCss = `
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 main{min-height:100vh;display:grid;place-items:center;padding:32px 20px;padding-bottom:80px}.story{width:min(680px,100%);border-top:4px solid var(--rust);padding:36px 0}
 .brand{font:600 18px Georgia,serif;letter-spacing:.02em}.eyebrow{margin:42px 0 14px;color:var(--rust);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
-h1{margin:0;font:600 clamp(36px,6vw,60px)/1.08 Georgia,"Times New Roman",serif;letter-spacing:-.025em}.summary{margin:20px 0 26px;font:400 20px/1.6 Georgia,"Times New Roman",serif;color:#4f4740}
+h1{margin:0;font:600 clamp(38px,6vw,60px)/1.2 "Source Serif 4",Georgia,serif;letter-spacing:-.025em}.summary{margin:20px 0 26px;font:600 18px/1.55 "Source Serif 4",Georgia,serif;color:#4f4740}
 .author{display:flex;align-items:center;gap:14px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.author img,.avatar-fallback{width:56px;height:56px;border-radius:50%;object-fit:cover;background:#eee3d6}
 .avatar-fallback{display:grid;place-items:center;color:var(--rust);font:600 20px Georgia,serif}.byline{margin:0 0 2px;color:var(--muted);font-size:12px}.author-name{margin:0;font-weight:700;font-size:15px}.author-link{text-decoration:none;color:inherit;display:flex;align-items:center;gap:14px}.author-link:hover .author-name{color:var(--rust)}
-.story-body{margin-top:28px;font:400 18px/1.8 Georgia,"Times New Roman",serif;color:#2c2621}
-.story-body h2{margin:36px 0 16px;font:600 26px/1.2 Georgia,serif}
-.story-body h3{margin:28px 0 12px;font:600 20px/1.3 Georgia,serif}
-.story-body h4{margin:22px 0 10px;font:600 18px/1.3 Georgia,serif}
-.story-body p{margin:0 0 20px}
+.story-body{margin-top:28px;font:400 20px/1.6 "Source Serif 4",Georgia,serif;color:#2c2621}
+.story-body h2{margin:36px 0 16px;font:600 28px/1.35 "Source Serif 4",Georgia,serif}
+.story-body h3{margin:28px 0 12px;font:600 22px/1.45 "Source Serif 4",Georgia,serif}
+.story-body h4{margin:22px 0 10px;font:600 20px/1.5 "Source Serif 4",Georgia,serif}
+.story-body p{margin:0 0 1.25em}.story-body>p:first-of-type::first-letter{float:left;font-size:2.8em;font-weight:600;line-height:.9;margin:.05em .14em 0 0}
 .story-body strong{color:var(--ink);font-weight:700}
 .story-body ol{margin:0 0 22px;padding-left:26px;line-height:1.75}
 .story-body ol li{margin-bottom:10px;padding-left:4px}
 .story-body ul{margin:0 0 22px;padding-left:26px;line-height:1.75}
 .story-body ul li{margin-bottom:8px}
-.story-body blockquote{margin:28px 0;padding:16px 22px;border-left:3px solid var(--rust);background:rgba(201,71,36,0.05);border-radius:0 10px 10px 0;font:italic 18px/1.65 Georgia,serif;color:#3f3730}
+.story-body blockquote{margin:28px 0;padding:0 0 0 22px;border-left:3px solid var(--rust);font:italic 20px/1.6 "Source Serif 4",Georgia,serif;color:#3f3730}
 .story-body pre{margin:24px 0;padding:18px 20px;background:#231f1c;color:#f3eee6;border-radius:12px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:14px;line-height:1.6;border:1px solid #3c352f}
 .story-body pre code{background:transparent;color:inherit;padding:0;border-radius:0;font-size:inherit;display:block;white-space:pre}
 .story-body code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;background:#eee3d6;padding:2px 6px;border-radius:4px;font-size:0.9em}
@@ -250,20 +268,70 @@ function toOgLocale(lang) {
 
 function formatContentToHtml(rawContent) {
   if (!rawContent) return '';
-  const hasWatermark = rawContent.includes('#writon');
-  const cleanRaw = rawContent
+  const normalized = String(rawContent)
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+  const hasWatermark = normalized.includes('#writon');
+  let cleanRaw = normalized
     .replace(/<!--\s*#writon\s*watermark\s*-->/gi, '')
     .replace(/<span\b[^>]*class=["']writon-watermark["'][^>]*>[\s\S]*?<\/span>/gi, '');
 
   // Extract fenced code blocks (``` or ~~~) first so syntax and indentation are preserved
   const codeBlocks = [];
-  const withPlaceholders = cleanRaw.replace(/(?:^|\n)(?:```|~~~)([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)\r?\n(?:```|~~~)/g, (_match, lang, code) => {
+  cleanRaw = cleanRaw.replace(/(?:^|\n)(?:```|~~~)([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)\r?\n(?:```|~~~)/g, (_match, lang, code) => {
     const token = `\n\nWRITONCODEBLOCK${codeBlocks.length}TOKEN\n\n`;
     codeBlocks.push({ lang: (lang || '').trim(), code });
     return token;
   });
 
-  const escaped = escapeHtml(withPlaceholders);
+  function formatInline(str) {
+    return str
+      .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/_(.*?)_/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\[(.*?)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  }
+
+  // Extract and render markdown tables
+  cleanRaw = cleanRaw.replace(/(?:^|\n)(\|[^\n]+\|\r?\n\|[-:\s|]+\|\r?\n(?:\|[^\n]+\|\r?\n?)+)/g, (_match, tableBlock) => {
+    const rows = tableBlock.trim().split(/\r?\n/).map(r => r.trim());
+    if (rows.length < 2) return tableBlock;
+
+    const parseCells = (row) => row.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+    const headerCells = parseCells(rows[0]);
+    const alignCells = parseCells(rows[1]).map(a => {
+      const left = a.startsWith(':');
+      const right = a.endsWith(':');
+      if (left && right) return 'center';
+      if (right) return 'right';
+      return 'left';
+    });
+
+    let tableHtml = '<div class="story-table-wrap"><table><thead><tr>';
+    headerCells.forEach((c, idx) => {
+      const align = alignCells[idx] ? ` style="text-align:${alignCells[idx]}"` : '';
+      tableHtml += `<th${align}>${formatInline(escapeHtml(c))}</th>`;
+    });
+    tableHtml += '</tr></thead><tbody>';
+
+    for (let i = 2; i < rows.length; i++) {
+      const cells = parseCells(rows[i]);
+      tableHtml += '<tr>';
+      cells.forEach((c, idx) => {
+        const align = alignCells[idx] ? ` style="text-align:${alignCells[idx]}"` : '';
+        tableHtml += `<td${align}>${formatInline(escapeHtml(c))}</td>`;
+      });
+      tableHtml += '</tr>';
+    }
+    tableHtml += '</tbody></table></div>';
+    return `\n\n${tableHtml}\n\n`;
+  });
+
+  const escaped = escapeHtml(cleanRaw);
   const formatted = escaped
     .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
     .replace(/^### (.*$)/gim, '<h3>$1</h3>')
@@ -280,6 +348,16 @@ function formatContentToHtml(rawContent) {
     .map(chunk => {
       const trimmed = chunk.trim();
       if (!trimmed) return '';
+
+      // Check if chunk is an already rendered table
+      if (trimmed.startsWith('&lt;div class=&quot;story-table-wrap&quot;&gt;') || trimmed.startsWith('<div class="story-table-wrap">')) {
+        // Unescape table markup since table cells were already safely escaped
+        return trimmed
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'");
+      }
 
       // Check if chunk is a code block placeholder
       const codeMatch = trimmed.match(/^WRITONCODEBLOCK(\d+)TOKEN$/);
@@ -471,7 +549,7 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
   <link rel="alternate" type="application/rss+xml" title="WritOn — Stories &amp; Essays" href="${origin || 'https://writon.cc'}/feed.xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
   <link rel="preload" as="image" href="/assets/favicon-48x48.png">
   <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
   <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2">
@@ -545,7 +623,7 @@ function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
 }
 
 export async function buildServer({ runtimeConfig, pool, auth, messaging, storageBucket } = {}) {
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({ logger: true, routerOptions: { maxParamLength: 1024 } });
 const config = runtimeConfig ?? loadRuntimeConfig();
 const serviceAccount = auth ? null : await loadFirebaseServiceAccount(config);
 const firebaseApp = auth
@@ -1198,10 +1276,10 @@ function mediaObjectPath(key) {
 
 function publicMediaBaseUrl(request) {
   if (config.publicApiBaseUrl) return new URL(config.publicApiBaseUrl).origin;
-  if (!request) return 'https://api.writon.cc';
-  const forwardedProto = request.headers['x-forwarded-proto'];
-  const protocol = typeof forwardedProto === 'string' ? forwardedProto.split(',')[0] : request.protocol;
-  return `${protocol}://${request.headers.host}`;
+  // Cloud Run revision hosts are implementation details and are intentionally
+  // rejected by the profile URL trust boundary. Always emit the stable public
+  // origin when an environment has not explicitly configured another one.
+  return 'https://api.writon.cc';
 }
 
 function publicMediaUrl(request, key) {
@@ -1414,7 +1492,9 @@ function postSelectSql(whereClause, extraColumns = '', includeContent = true) {
       'bio', author.bio,
       'quoteOfDay', alias.quote_of_day,
       'followersCnt', author.followers_count,
-      'followingCnt', author.following_count
+      'followingCnt', author.following_count,
+      'foundingWriterNumber', author.founding_writer_number,
+      'emailVerified', author.email_verified
     ) as author,
     exists(
       select 1 from public.post_applauds applause
@@ -1444,6 +1524,8 @@ function toAuthor(row) {
     quoteOfDay: row.quote_of_day ?? null,
     followersCnt: row.followers_count,
     followingCnt: row.following_count,
+    foundingWriterNumber: row.founding_writer_number ?? null,
+    emailVerified: row.email_verified === true,
   };
 }
 
@@ -1688,27 +1770,32 @@ async function createNotification(client, {
 
   try {
     const preferenceExpression = {
-      first_applause: 'coalesce(first_applause_enabled, interactions_enabled)',
-      applaud: 'coalesce(first_applause_enabled, interactions_enabled)',
-      comment: 'coalesce(comments_replies_enabled, interactions_enabled)',
-      reply: 'coalesce(comments_replies_enabled, interactions_enabled)',
-      new_follower: 'coalesce(new_followers_enabled, follows_enabled)',
-      follow: 'coalesce(new_followers_enabled, follows_enabled)',
-      followed_writer_published: 'coalesce(followed_writer_published_enabled, publishing_enabled)',
-      publishing: 'coalesce(followed_writer_published_enabled, publishing_enabled)',
-      reading_nudge: 'coalesce(reading_nudges_enabled, editorial_enabled)',
-      draft_nudge: 'coalesce(draft_nudges_enabled, editorial_enabled)',
-      weekly_prompt_live: 'coalesce(weekly_prompt_enabled, editorial_enabled)',
-      daily_digest: 'coalesce(daily_digest_enabled, editorial_enabled)',
-      editorial: 'editorial_enabled',
-    }[kind] ?? 'interactions_enabled';
+      first_applause: 'coalesce(preference.first_applause_enabled, preference.interactions_enabled, true)',
+      applaud: 'coalesce(preference.first_applause_enabled, preference.interactions_enabled, true)',
+      comment: 'coalesce(preference.comments_replies_enabled, preference.interactions_enabled, true)',
+      reply: 'coalesce(preference.comments_replies_enabled, preference.interactions_enabled, true)',
+      new_follower: 'coalesce(preference.new_followers_enabled, preference.follows_enabled, true)',
+      follow: 'coalesce(preference.new_followers_enabled, preference.follows_enabled, true)',
+      followed_writer_published: 'coalesce(preference.followed_writer_published_enabled, preference.publishing_enabled, true)',
+      publishing: 'coalesce(preference.followed_writer_published_enabled, preference.publishing_enabled, true)',
+      reading_nudge: 'coalesce(preference.reading_nudges_enabled, preference.editorial_enabled, true)',
+      draft_nudge: 'coalesce(preference.draft_nudges_enabled, preference.editorial_enabled, true)',
+      weekly_prompt_live: 'coalesce(preference.weekly_prompt_enabled, preference.editorial_enabled, true)',
+      daily_digest: 'coalesce(preference.daily_digest_enabled, preference.editorial_enabled, true)',
+      editorial: 'coalesce(preference.editorial_enabled, true)',
+    }[kind] ?? 'coalesce(preference.interactions_enabled, true)';
     const preference = await client.query(
-      `select ${preferenceExpression} as enabled
-         from public.notification_preferences
-        where profile_id = $1`,
-      [recipientId]
+      `select (recipient.account_type = 'human'
+               and actor.account_type = 'human'
+               and ${preferenceExpression}) as enabled
+         from public.profiles recipient
+         join public.profiles actor on actor.id = $2
+         left join public.notification_preferences preference
+           on preference.profile_id = recipient.id
+        where recipient.id = $1`,
+      [recipientId, actorId]
     );
-    if (preference.rowCount > 0 && preference.rows[0].enabled === false) return;
+    if (preference.rowCount === 0 || preference.rows[0].enabled !== true) return;
 
     await client.query(
       `insert into public.notification_delivery_outbox (notification_id, recipient_id)
@@ -1746,10 +1833,19 @@ async function deliverPendingPushNotifications({ limit = 20, maxSeconds = 20 } =
     `with candidates as (
        select id
          from public.notification_delivery_outbox
-        where status = 'pending' and next_attempt_at <= now()
+        where attempts < 5
+          and ((status = 'pending' and next_attempt_at <= now())
+            or (status = 'sending' and updated_at <= now() - interval '5 minutes'))
         order by created_at asc
         limit $1
         for update skip locked
+     ), exhausted as (
+       update public.notification_delivery_outbox
+          set status = 'failed', updated_at = now(),
+              last_error = coalesce(last_error, 'Delivery attempts exhausted.')
+        where status in ('pending', 'sending')
+          and attempts >= 5
+          and (status = 'pending' or updated_at <= now() - interval '5 minutes')
      )
      update public.notification_delivery_outbox delivery
         set status = 'sending', attempts = attempts + 1, updated_at = now()
@@ -1776,7 +1872,10 @@ async function deliverPendingPushNotifications({ limit = 20, maxSeconds = 20 } =
              left join public.posts post on post.id = notification.post_id
              left join public.profiles post_author on post_author.id = post.author_id
              left join public.profiles actor on actor.id = notification.actor_id
+             inner join public.profiles recipient on recipient.id = notification.recipient_id
             where notification.id = $1
+              and recipient.account_type = 'human'
+              and (notification.actor_id is null or actor.account_type = 'human')
               and (
                 notification.post_id is null
                 or (
@@ -1837,6 +1936,7 @@ async function deliverPendingPushNotifications({ limit = 20, maxSeconds = 20 } =
                   channelId: 'writon_interactions_channel',
                   icon: 'ic_stat_writon',
                   color: '#E75A2A',
+                  tag: delivery.notificationId,
                 },
                 fcmOptions: {
                   analyticsLabel: toFcmAnalyticsLabel('interaction', item.kind),
@@ -1956,11 +2056,14 @@ function toProfile(row) {
     followingCount: row.following_count,
     storiesCount: Number(row.stories_count ?? 0),
     applaudsReceived: Number(row.applauds_received ?? 0),
+    foundingWriterNumber: row.founding_writer_number ?? null,
+    emailVerified: row.email_verified === true,
   };
 }
 
 const profileReturningColumns = `
   id, email, pen_name, full_name, bio, avatar_url, location, joined_at,
+  founding_writer_number, email_verified,
   followers_count, following_count,
   (select attributes.quote_of_day
    from public.legacy_import_profile_attributes attributes
@@ -2226,21 +2329,33 @@ async function ensureProfileForId(decodedToken, profileId) {
     || 'WritOn writer';
 
   const result = await database.query(
-    `insert into public.profiles (id, email, pen_name, full_name, account_type)
-     values ($1, $2, $3, $4, 'human')
+    `insert into public.profiles (id, email, pen_name, full_name, account_type, email_verified)
+     values ($1, $2, $3, $4, 'human', $5)
      on conflict (id) do update
        set email = coalesce(excluded.email, public.profiles.email),
+           email_verified = public.profiles.email_verified or excluded.email_verified,
            account_type = case
              when public.profiles.account_type = 'unknown'
                and not exists (select 1 from public.bot_configs bot where bot.id = public.profiles.id)
              then 'human'
              else public.profiles.account_type
            end
-     returning ${profileReturningColumns}`,
-    [profileId, decodedToken.email ?? null, fallbackPenName, fallbackFullName]
+     returning ${profileReturningColumns}, (xmax = 0) as is_new_profile`,
+    [profileId, decodedToken.email ?? null, fallbackPenName, fallbackFullName, decodedToken.email_verified === true]
   );
 
-  return toProfile(result.rows[0]);
+  const row = result.rows[0];
+  if (row?.is_new_profile) {
+    enqueueWelcomeEmail(database, config, {
+      profileId,
+      recipientEmail: decodedToken.email ?? null,
+      fullName: fallbackFullName,
+    }).catch((err) => {
+      fastify.log.warn({ err: err?.message, profileId }, 'Failed to enqueue welcome email for new user');
+    });
+  }
+
+  return toProfile(row);
 }
 
 fastify.get(
@@ -2465,19 +2580,29 @@ fastify.post(
 
     await ensureProfileForId(request.user, request.profileId);
     const story = parsed.data;
-    const finalContent = story.isPublished
-      ? attachHashtagsAndWatermark(story.content, story.category, null)
-      : story.content;
+    let finalContent = story.content;
+    if (story.isPublished) {
+      const trendingKw = await fetchTrendingKeywordsForCategory(database, story.category, 3).catch(() => []);
+      finalContent = attachHashtagsAndWatermark(story.content, story.category, story.title, story.category, trendingKw);
+    }
+    const recommendationMetadata = deriveStoryRecommendationMetadata({
+      ...story,
+      content: stripWatermark(story.content),
+    });
     const result = await database.query(
       `insert into public.posts (
         slug, author_id, title, summary, content, category, cover_image_url,
-        status, is_public, reading_time_min, published_at, client_draft_id,
+        status, is_public, reading_time_min, published_at,
         language_code, language_source, language_confidence,
+        content_form, content_form_source, content_form_confidence,
+        word_count, word_count_source, script_code, script_source, script_confidence,
+        recommendation_metadata_updated_at, client_draft_id,
         provenance, provenance_verified_at, provenance_verified_by
       ) values (
         $1, $2, $3, $4, $5, $6, $7, $8, true, $9,
-        case when $8 = 'published' then now() else null end, $11,
+        case when $8 = 'published' then now() else null end,
         $10, 'author', 1,
+        $11, $12, $13, $14, $15, $16, $17, $18, now(), $19,
         case when (select account_type from public.profiles where id = $2) = 'human'
           then 'human_verified' else 'unknown' end,
         case when (select account_type from public.profiles where id = $2) = 'human'
@@ -2495,6 +2620,15 @@ fastify.post(
             language_code = excluded.language_code,
             language_source = excluded.language_source,
             language_confidence = excluded.language_confidence,
+            content_form = excluded.content_form,
+            content_form_source = excluded.content_form_source,
+            content_form_confidence = excluded.content_form_confidence,
+            word_count = excluded.word_count,
+            word_count_source = excluded.word_count_source,
+            script_code = excluded.script_code,
+            script_source = excluded.script_source,
+            script_confidence = excluded.script_confidence,
+            recommendation_metadata_updated_at = now(),
             provenance = excluded.provenance,
             provenance_verified_at = excluded.provenance_verified_at,
             provenance_verified_by = excluded.provenance_verified_by,
@@ -2516,6 +2650,14 @@ fastify.post(
         story.isPublished ? 'published' : 'draft',
         calculateReadingTime(finalContent),
         story.languageCode,
+        recommendationMetadata.contentForm,
+        recommendationMetadata.contentFormSource,
+        recommendationMetadata.contentFormConfidence,
+        recommendationMetadata.wordCount,
+        recommendationMetadata.wordCountSource,
+        recommendationMetadata.scriptCode,
+        recommendationMetadata.scriptSource,
+        recommendationMetadata.scriptConfidence,
         story.clientDraftId ?? null,
       ]
     );
@@ -2525,14 +2667,22 @@ fastify.post(
       [request.profileId, result.rows[0].id]
     );
 
-    if (story.isPublished && config.sparkAutomationEnabled) {
-      triggerSparkReaction(database, {
-        postId: result.rows[0].id,
-        authorId: request.profileId,
-        category: story.category,
-        title: story.title,
-        summary: story.summary
-      }).catch((err) => fastify.log.warn(`[Spark Trigger Exception] ${err.message}`));
+    if (story.isPublished) {
+      if (config.sparkAutomationEnabled) {
+        triggerSparkReaction(database, {
+          postId: result.rows[0].id,
+          authorId: request.profileId,
+          category: story.category,
+          title: story.title,
+          summary: story.summary
+        }).catch((err) => fastify.log.warn(`[Spark Trigger Exception] ${err.message}`));
+      }
+
+      const postRow = postResult.rows[0];
+      enqueueStorySyndication(database, postRow, {
+        fullName: postRow?.author_full_name,
+        penName: postRow?.author_pen_name,
+      }).catch((err) => fastify.log.warn(`[Syndication Enqueue Exception] ${err.message}`));
     }
 
     return reply.code(201).send({ post: toReaderPost(postResult.rows[0]) });
@@ -2574,9 +2724,15 @@ fastify.put(
       return reply.code(400).send({ error: 'Invalid story update', details: merged.error.flatten().fieldErrors });
     }
     const story = merged.data;
-    const storedContent = prior.status === 'published'
-      ? attachHashtagsAndWatermark(story.content, story.category, null)
-      : story.content;
+    let storedContent = story.content;
+    if (prior.status === 'published' || story.isPublished) {
+      const trendingKw = await fetchTrendingKeywordsForCategory(database, story.category, 3).catch(() => []);
+      storedContent = attachHashtagsAndWatermark(story.content, story.category, story.title, story.category, trendingKw);
+    }
+    const recommendationMetadata = deriveStoryRecommendationMetadata({
+      ...story,
+      content: stripWatermark(story.content),
+    });
     const result = await database.query(
       `update public.posts
        set title = $3, summary = $4, content = $5, category = $6, cover_image_url = $7,
@@ -2585,6 +2741,10 @@ fastify.put(
            status = case when $10 then 'published' else status end,
            published_at = case when $10 then coalesce(published_at, now()) else published_at end,
            language_code = $11, language_source = 'author', language_confidence = 1,
+           content_form = $12, content_form_source = $13, content_form_confidence = $14,
+           word_count = $15, word_count_source = $16,
+           script_code = $17, script_source = $18, script_confidence = $19,
+           recommendation_metadata_updated_at = now(),
            provenance = case
              when (select account_type from public.profiles where id = $2) = 'human'
              then 'human_verified' else provenance end,
@@ -2600,9 +2760,30 @@ fastify.put(
        returning id`,
       [postId, request.profileId, story.title, story.summary ?? null, storedContent, story.category,
         story.coverImage ?? null, story.clientDraftId ?? null, calculateReadingTime(storedContent),
-        story.isPublished, story.languageCode]
+        story.isPublished, story.languageCode,
+        recommendationMetadata.contentForm, recommendationMetadata.contentFormSource,
+        recommendationMetadata.contentFormConfidence, recommendationMetadata.wordCount,
+        recommendationMetadata.wordCountSource, recommendationMetadata.scriptCode,
+        recommendationMetadata.scriptSource, recommendationMetadata.scriptConfidence]
     );
     const postResult = await database.query(`${postSelectSql('where p.id = $2')}`, [request.profileId, result.rows[0].id]);
+    if (prior.status !== 'published' && story.isPublished) {
+      if (config.sparkAutomationEnabled) {
+        triggerSparkReaction(database, {
+          postId: result.rows[0].id,
+          authorId: request.profileId,
+          category: story.category,
+          title: story.title,
+          summary: story.summary
+        }).catch((err) => fastify.log.warn(`[Spark Trigger Exception] ${err.message}`));
+      }
+
+      const postRow = postResult.rows[0];
+      enqueueStorySyndication(database, postRow, {
+        fullName: postRow?.author_full_name,
+        penName: postRow?.author_pen_name,
+      }).catch((err) => fastify.log.warn(`[Syndication Enqueue Exception] ${err.message}`));
+    }
     return { post: toReaderPost(postResult.rows[0]) };
   }
 );
@@ -2637,7 +2818,13 @@ fastify.post(
         .catch((error) => fastify.log.warn(`[Spark Trigger Exception] ${error.message}`));
     }
     const postResult = await database.query(`${postSelectSql('where p.id = $2')}`, [request.profileId || 'public_view', post.id]);
-    return { post: toReaderPost(postResult.rows[0]) };
+    const postRow = postResult.rows[0];
+    enqueueStorySyndication(database, postRow, {
+      fullName: postRow?.author_full_name,
+      penName: postRow?.author_pen_name,
+    }).catch((err) => fastify.log.warn(`[Syndication Enqueue Exception] ${err.message}`));
+
+    return { post: toReaderPost(postRow) };
   }
 );
 
@@ -3028,12 +3215,11 @@ fastify.post(
       return reply.code(400).send({ error: 'Invalid reading progress', details: parsed.error.flatten().fieldErrors });
     }
     await ensureProfileForId(request.user, request.profileId);
-    const result = await database.query(
-      `insert into public.reading_history (user_id, post_id, progress, read_seconds)
+    const legacyQuery = `insert into public.reading_history (user_id, post_id, progress, read_seconds)
        select $1, p.id,
               case
                 when $3 >= 0.95
-                  and coalesce(history.read_seconds, 0) + $4 < greatest(30, p.reading_time_min * 30)
+                  and coalesce(history.read_seconds, 0) + $4 < ${EXPECTED_READING_SECONDS_SQL}
                 then 0.94
                 else $3
               end,
@@ -3045,8 +3231,51 @@ fastify.post(
          progress = greatest(public.reading_history.progress, excluded.progress),
          read_seconds = public.reading_history.read_seconds + excluded.read_seconds,
          last_read_at = now(), updated_at = now()
-       returning progress, read_seconds as "readSeconds", last_read_at as "lastReadAt"`,
-      [request.profileId, postId, parsed.data.progress, parsed.data.readSeconds]
+       returning progress, read_seconds as "readSeconds", last_read_at as "lastReadAt"`;
+    const idempotentQuery = `with expired as (
+         delete from public.reading_progress_mutations
+         where user_id = $1 and expires_at <= now()
+       ), accepted as (
+         insert into public.reading_progress_mutations (user_id, post_id, client_mutation_id)
+         select $1, p.id, $5
+         from public.posts p
+         where p.id = $2 and p.status = 'published' and p.is_public = true
+         on conflict (user_id, post_id, client_mutation_id) do nothing
+         returning post_id
+       ), updated as (
+         insert into public.reading_history (user_id, post_id, progress, read_seconds)
+         select $1, p.id,
+                case
+                  when $3 >= 0.95
+                    and coalesce(history.read_seconds, 0) + $4 < ${EXPECTED_READING_SECONDS_SQL}
+                  then 0.94
+                  else $3
+                end,
+                $4
+         from public.posts p
+         inner join accepted on accepted.post_id = p.id
+         left join public.reading_history history on history.user_id = $1 and history.post_id = p.id
+         on conflict (user_id, post_id) do update set
+           progress = greatest(public.reading_history.progress, excluded.progress),
+           read_seconds = public.reading_history.read_seconds + excluded.read_seconds,
+           last_read_at = now(), updated_at = now()
+         returning progress, read_seconds as "readSeconds", last_read_at as "lastReadAt"
+       )
+       select * from updated
+       union all
+       select history.progress, history.read_seconds as "readSeconds", history.last_read_at as "lastReadAt"
+       from public.reading_history history
+       where history.user_id = $1 and history.post_id = $2
+         and not exists (select 1 from updated)
+         and exists (
+           select 1 from public.reading_progress_mutations mutation
+           where mutation.user_id = $1 and mutation.post_id = $2 and mutation.client_mutation_id = $5
+         )
+       limit 1`;
+    const parameters = [request.profileId, postId, parsed.data.progress, parsed.data.readSeconds];
+    const result = await database.query(
+      parsed.data.clientMutationId ? idempotentQuery : legacyQuery,
+      parsed.data.clientMutationId ? [...parameters, parsed.data.clientMutationId] : parameters
     );
     if (result.rowCount === 0) return reply.code(404).send({ error: 'Story not found' });
     return result.rows[0];
@@ -3076,7 +3305,9 @@ fastify.get('/api/v1/comments/:postId', async (request, reply) => {
         'bio', author.bio,
         'quoteOfDay', alias.quote_of_day,
         'followersCnt', author.followers_count,
-        'followingCnt', author.following_count
+        'followingCnt', author.following_count,
+        'foundingWriterNumber', author.founding_writer_number,
+        'emailVerified', author.email_verified
       ) as author,
       '[]'::json as replies
     from public.comments comment
@@ -3289,7 +3520,8 @@ fastify.get('/api/v1/users', async (request) => {
   const offset = (page - 1) * limit;
 
   const result = await database.query(
-    `select p.id, p.pen_name, p.full_name, p.avatar_url, p.bio, p.followers_count, p.following_count, alias.quote_of_day
+    `select p.id, p.pen_name, p.full_name, p.avatar_url, p.bio, p.followers_count, p.following_count,
+            p.founding_writer_number, p.email_verified, alias.quote_of_day
      from public.profiles p
      left join public.legacy_import_profile_attributes alias on alias.profile_id = p.id
      where p.account_type = 'human'
@@ -3319,7 +3551,8 @@ fastify.get('/api/v1/users/:idOrPenName', async (request, reply) => {
   if (!identifier) return;
 
   const result = await database.query(
-    `select p.id, p.pen_name, p.full_name, p.avatar_url, p.bio, p.followers_count, p.following_count, alias.quote_of_day
+    `select p.id, p.pen_name, p.full_name, p.avatar_url, p.bio, p.followers_count, p.following_count,
+            p.founding_writer_number, p.email_verified, alias.quote_of_day
      from public.profiles p
      left join public.legacy_import_profile_attributes alias on alias.profile_id = p.id
      where p.id = $1 or lower(p.pen_name) = lower($1)
@@ -3937,10 +4170,16 @@ fastify.patch(
     normalizeAvatarUrl: normalizeStoredAvatarUrl,
   });
   await fastify.register(adminBotsRoutes, { pool: database, requireUser });
+  await fastify.register(adminLinkedInRoutes, { pool: database });
   await fastify.register(adminReviewsRoutes, { pool: database });
+  await fastify.register(adminFoundingWriterRoutes, { database, config });
   await fastify.register(mcpRoutes, { pool: database });
   await fastify.register(campaignRedirectRoutes, { config, database });
+  await fastify.register(vanityRedirectRoutes, { database });
   await fastify.register(craftCoachRoutes, { pool: database });
+  await fastify.register(editorialRoutes, { pool: database, config });
+  await fastify.register(trendRoutes, { database, config });
+  await fastify.register(extensionBridgeRoutes);
 
   fastify.decorate('deliverPushNotifications', deliverPendingPushNotifications);
 
@@ -3951,6 +4190,25 @@ fastify.patch(
     }
     return true;
   };
+
+  const writonEmailAdapter = createWritonEmailAdapter(database, { siteBaseUrl: config.publicApiBaseUrl || 'https://writon.cc' });
+  const resendClient = createResendClient(config.email || {});
+  const emailWorker = createEmailWorker({
+    pool: database,
+    resend: resendClient,
+    config,
+    writonAdapter: writonEmailAdapter,
+  });
+  fastify.decorate('emailWorker', emailWorker);
+
+  await fastify.register(emailEngagementRoutes, {
+    database,
+    config,
+    emailWorker,
+    writonAdapter: writonEmailAdapter,
+    requireUser,
+    verifyAdminKey,
+  });
 
   fastify.post('/api/v1/internal/notifications/drain-outbox', async (request, reply) => {
     if (!verifyAdminKey(request, reply)) return;
@@ -4073,6 +4331,33 @@ if (isEntrypoint) {
         void runPublicationFanout();
         setInterval(() => { void runPublicationFanout(); }, runtimeConfig.pushDeliveryPollIntervalMs).unref();
       }
+      if (runtimeConfig.email?.enabled && fastify.emailWorker) {
+        const runEmailQueue = async () => {
+          try {
+            const outcome = await fastify.emailWorker.runOnce();
+            if (outcome.sent > 0 || outcome.claimed > 0) {
+              fastify.log.info(outcome, 'Processed email outbox delivery pass');
+            }
+          } catch (error) {
+            fastify.log.error({ err: error }, 'Email queue delivery pass failed');
+          }
+        };
+        void runEmailQueue();
+        setInterval(() => { void runEmailQueue(); }, 60_000).unref();
+      }
+      // WritOn Trend Intelligence: Postgres -> GCP Durable Cloud Replication Worker
+      const runTrendCloudReplication = async () => {
+        try {
+          const outcome = await runSyncTick({ limit: 25 });
+          if (outcome.processed > 0) {
+            fastify.log.info(outcome, 'Processed trend cloud replication tick');
+          }
+        } catch (error) {
+          fastify.log.error({ err: error }, 'Trend cloud replication tick failed');
+        }
+      };
+      void runTrendCloudReplication();
+      setInterval(() => { void runTrendCloudReplication(); }, 60_000).unref();
       if (runtimeConfig.dailyDigestEnabled) {
         const scheduleSlotTimer = (slotName, hourUtc, minuteUtc) => {
           const now = new Date();

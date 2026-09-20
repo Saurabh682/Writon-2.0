@@ -16,11 +16,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -51,6 +53,7 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.designsystem.components.UserAvatar
 import com.ibitvalley.writon.modern.core.network.WritOnApiService
 import com.ibitvalley.writon.modern.core.network.model.AuthorDto
 import com.ibitvalley.writon.modern.core.network.model.PostDto
@@ -160,7 +163,7 @@ fun ProfileStatsDetailScreen(
                         )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
             )
         },
         containerColor = MaterialTheme.colorScheme.background,
@@ -198,10 +201,14 @@ fun ProfileStatsDetailScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize().padding(innerPadding),
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(WritOnSpacing.lg),
-                        verticalArrangement = Arrangement.spacedBy(WritOnSpacing.sm),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
                     ) {
                         items(state.users, key = AuthorDto::id) { author ->
-                            ProfileStatAuthorRow(author = author, onClick = { onAuthorClick(author.id) })
+                            ProfileStatAuthorRow(
+                                author = author,
+                                showFollowing = destination == ProfileStatsDestination.Following,
+                                onClick = { onAuthorClick(author.id) },
+                            )
                         }
                     }
                 }
@@ -241,24 +248,51 @@ private fun ProfileStatStoryRow(post: PostDto, showApplauds: Boolean, onClick: (
 }
 
 @Composable
-private fun ProfileStatAuthorRow(author: AuthorDto, onClick: () -> Unit) {
+private fun ProfileStatAuthorRow(author: AuthorDto, showFollowing: Boolean, onClick: () -> Unit) {
     Surface(
-        shape = RoundedCornerShape(WritOnRadius.card),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)),
+        shape = RoundedCornerShape(WritOnRadius.field),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f),
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .semantics { role = Role.Button; contentDescription = "Open ${author.fullName}'s profile" },
+            .semantics {
+                role = Role.Button
+                contentDescription = if (showFollowing) {
+                    "Open ${author.fullName}'s profile. Following"
+                } else {
+                    "Open ${author.fullName}'s profile"
+                }
+            },
     ) {
-        Row(modifier = Modifier.padding(WritOnSpacing.md), verticalAlignment = Alignment.CenterVertically) {
-            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.surfaceVariant, modifier = Modifier.size(48.dp)) {
-                Box(contentAlignment = Alignment.Center) { Text(initialsForProfileStat(author.fullName), style = MaterialTheme.typography.labelLarge) }
-            }
+        Row(
+            modifier = Modifier.padding(horizontal = WritOnSpacing.md, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            UserAvatar(url = author.avatarUrl, name = author.fullName, size = 52.dp)
             Spacer(Modifier.width(WritOnSpacing.md))
             Column(Modifier.weight(1f)) {
                 Text(author.fullName, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 author.penName.takeIf { it.isNotBlank() }?.let { Text("@$it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            }
+            if (showFollowing) {
+                Surface(
+                    shape = RoundedCornerShape(50),
+                    color = BrandRed.copy(alpha = 0.10f),
+                ) {
+                    Text(
+                        text = stringResource(R.string.author_following),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = BrandRed,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                }
+            } else {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }
@@ -321,6 +355,3 @@ private fun ProfileStatsEmpty(destination: ProfileStatsDestination, modifier: Mo
         }
     }
 }
-
-private fun initialsForProfileStat(name: String): String =
-    name.split(' ').mapNotNull { it.firstOrNull()?.uppercaseChar()?.toString() }.take(2).joinToString("")

@@ -1,0 +1,64 @@
+/* Instagram Studio Unified Component Stylesheet */
+:root {
+  --ig-parchment: #FAF5EE;
+  --ig-parchment-card: #FFFDF9;
+  --ig-ink: #1C1917;
+  --ig-ink-muted: #6E655B;
+  --ig-terracotta: #D45226;
+  --ig-terracotta-hover: #BA431C;
+  --ig-terracotta-subtle: #FAEDE7;
+  --ig-sage: #2D6A4F;
+  --ig-sage-subtle: #E8F3ED;
+  --ig-border: #E8DFD3;
+}
+
+.ig-studio-container {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  color: var(--ig-ink);
+}
+
+.ig-card {
+  background: var(--ig-parchment-card);
+  border: 1px solid var(--ig-border);
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px -2px rgba(92, 64, 40, 0.04);
+}
+
+.ig-badge-role {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border-radius: 9999px;
+}
+
+.ig-badge-hook { background: #FAEDE7; color: #D45226; }
+.ig-badge-tension { background: #FEF3C7; color: #B45309; }
+.ig-badge-proof { background: #E8F3ED; color: #2D6A4F; }
+.ig-badge-cta { background: #E0E7FF; color: #4338CA; }
+
+.ig-gauge {
+  height: 8px;
+  border-radius: 4px;
+  background: #E8DFD3;
+  overflow: hidden;
+}
+
+.ig-gauge-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.ig-slide-preview {
+  aspect-ratio: 4 / 5;
+  background-color: #FAF5EE;
+  border: 1px solid #E8DFD3;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+}

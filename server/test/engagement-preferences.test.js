@@ -71,6 +71,55 @@ describe('engagement preference routes', () => {
       'profile-1', 'write', 2, '2026-09-05T12:00:00.000Z', 'completed',
     ]);
     expect(captured.sql).toContain('on conflict (profile_id) do update');
+    expect(captured.sql).toContain('onboarding_version = greatest');
+    expect(captured.sql).toContain("preference_card_state = 'completed'");
+    expect(captured.sql).toContain("excluded.preference_card_state = 'dismissed'");
+  });
+
+  it('makes completion and dismissal monotonic across stale device uploads', async () => {
+    let capturedSql = '';
+    const app = await testApp({
+      query: async (sql) => {
+        capturedSql = sql;
+        return { rowCount: 1, rows: [{ ...defaultPreferences, preferenceCardState: 'completed' }] };
+      },
+    });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/me/engagement-preferences',
+      payload: { onboardingVersion: 0, preferenceCardState: 'unseen' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(capturedSql).toContain("when public.profile_engagement_preferences.preference_card_state = 'completed'");
+    expect(capturedSql).toContain("or excluded.preference_card_state = 'completed' then 'completed'");
+    expect(capturedSql).toContain('primary_intent = coalesce');
+    expect(capturedSql).toContain('onboarding_completed_at = coalesce');
+  });
+
+  it('accepts omitted nullable fields from Android JSON serialization', async () => {
+    let captured;
+    const app = await testApp({
+      query: async (_sql, params) => {
+        captured = params;
+        return {
+          rowCount: 1,
+          rows: [{ ...defaultPreferences, onboardingVersion: 0 }],
+        };
+      },
+    });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/me/engagement-preferences',
+      payload: { onboardingVersion: 0, preferenceCardState: 'unseen' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(captured).toEqual(['profile-1', null, 0, null, 'unseen']);
   });
 
   it.each([

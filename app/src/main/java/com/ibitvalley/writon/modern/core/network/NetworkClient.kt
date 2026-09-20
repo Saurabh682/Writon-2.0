@@ -73,9 +73,8 @@ object NetworkClient {
         .addInterceptor(authInterceptor)
         .authenticator(tokenAuthenticator)
         .addInterceptor(loggingInterceptor)
-        // The Render instance can cold-start after inactivity. Profile sync
-        // needs enough time for the first authenticated request to complete.
-        .connectTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
         .readTimeout(45, TimeUnit.SECONDS)
         .build()
 

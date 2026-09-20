@@ -14,6 +14,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,6 +62,7 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
+import com.ibitvalley.writon.modern.core.designsystem.components.PostCoverImage
 
 private val EditorEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
@@ -78,9 +80,12 @@ fun StoryEditorScreen(
     val title by viewModel.title.collectAsStateWithLifecycle()
     val content by viewModel.content.collectAsStateWithLifecycle()
     val draftStatus by viewModel.draftStatus.collectAsStateWithLifecycle()
+    val isEditingPublished by viewModel.isEditingPublished.collectAsStateWithLifecycle()
+    val legacyDraft by viewModel.legacyDraft.collectAsStateWithLifecycle()
     var bodyValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(TextFieldValue(content))
     }
+    val undoManager = androidx.compose.runtime.remember { EditorUndoManager(bodyValue) }
     val context = LocalContext.current
     val coverPicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         uri?.let { viewModel.uploadCover(context, it) }
@@ -89,6 +94,7 @@ fun StoryEditorScreen(
     LaunchedEffect(content) {
         if (content != bodyValue.text) {
             bodyValue = TextFieldValue(content, selection = TextRange(content.length))
+            undoManager.reset(bodyValue)
         }
     }
 
@@ -102,8 +108,18 @@ fun StoryEditorScreen(
                 wordCount = wordCount,
                 readTime = readTime,
                 savedStatus = draftStatus.label(),
+                canUndo = undoManager.canUndo,
+                canRedo = undoManager.canRedo,
+                onUndo = {
+                    bodyValue = undoManager.undo()
+                    viewModel.updateContent(bodyValue.text)
+                },
+                onRedo = {
+                    bodyValue = undoManager.redo()
+                    viewModel.updateContent(bodyValue.text)
+                },
                 onFormat = { action ->
-                    bodyValue = bodyValue.apply(action)
+                    bodyValue = undoManager.record(bodyValue.apply(action))
                     viewModel.updateContent(bodyValue.text)
                 },
                 onPickImage = {
@@ -124,7 +140,8 @@ fun StoryEditorScreen(
                 onBackClick = onBackClick,
                 onSaveClick = viewModel::saveDraft,
                 onPublishClick = onPublishClick,
-                canPublish = title.isNotBlank() && content.isNotBlank()
+                canPublish = validateStoryForPublish(title, content) == null,
+                isEditingPublished = isEditingPublished,
             )
 
             TextField(
@@ -136,7 +153,7 @@ fun StoryEditorScreen(
                     .heightIn(min = 96.dp),
                 placeholder = {
                     Text(
-                        "Add a title…",
+                        stringResource(R.string.editor_add_title),
                         style = editorTitleStyle(),
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -149,7 +166,7 @@ fun StoryEditorScreen(
             EditorBodyField(
                 value = bodyValue,
                 onValueChange = {
-                    bodyValue = it
+                    bodyValue = if (it.text == bodyValue.text) it else undoManager.record(it)
                     viewModel.updateContent(it.text)
                 },
                 modifier = Modifier
@@ -167,14 +184,33 @@ fun StoryEditorScreen(
             }
         }
     }
-}
 
+    if (legacyDraft != null) {
+        AlertDialog(
+            onDismissRequest = viewModel::dismissLegacyDraft,
+            title = { Text(stringResource(R.string.legacy_draft_title)) },
+            text = { Text(stringResource(R.string.legacy_draft_message)) },
+            confirmButton = {
+                TextButton(onClick = viewModel::restoreLegacyDraft) {
+                    Text(stringResource(R.string.legacy_draft_restore))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissLegacyDraft) {
+                    Text(stringResource(R.string.common_not_now))
+                }
+            }
+        )
+    }
+}
+@Composable
 private fun EditorDraftStatus.label(): String = when (this) {
-    EditorDraftStatus.Unsaved -> "Unsaved changes"
-    EditorDraftStatus.Saving -> "Saving…"
-    EditorDraftStatus.Saved -> "Saved"
-    EditorDraftStatus.Offline -> "Saved on this device"
-    is EditorDraftStatus.Failed -> "Save needs attention"
+    EditorDraftStatus.Unsaved -> stringResource(R.string.editor_status_unsaved)
+    EditorDraftStatus.Saving -> stringResource(R.string.editor_status_saving)
+    EditorDraftStatus.Saved -> stringResource(R.string.editor_status_saved)
+    EditorDraftStatus.Offline -> stringResource(R.string.editor_status_saved_device)
+    EditorDraftStatus.QueuedForPublish -> stringResource(R.string.editor_status_queued_short)
+    is EditorDraftStatus.Failed -> stringResource(R.string.editor_status_attention)
 }
 
 @Composable
@@ -182,7 +218,8 @@ private fun EditorWritingTopBar(
     onBackClick: () -> Unit,
     onSaveClick: () -> Unit,
     onPublishClick: () -> Unit,
-    canPublish: Boolean
+    canPublish: Boolean,
+    isEditingPublished: Boolean,
 ) {
     Row(
         modifier = Modifier
@@ -200,7 +237,7 @@ private fun EditorWritingTopBar(
         }
         Spacer(Modifier.weight(1f))
         TextButton(onClick = onSaveClick) {
-            Text("Save", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onBackground)
+            Text(stringResource(R.string.common_save), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onBackground)
         }
         Spacer(Modifier.width(6.dp))
         Button(
@@ -216,7 +253,10 @@ private fun EditorWritingTopBar(
             shape = RoundedCornerShape(WritOnRadius.pill),
             contentPadding = PaddingValues(horizontal = 19.dp, vertical = 0.dp)
         ) {
-            Text(stringResource(R.string.editor_publish), style = MaterialTheme.typography.labelLarge)
+            Text(
+                stringResource(if (isEditingPublished) R.string.editor_review_update else R.string.editor_publish),
+                style = MaterialTheme.typography.labelLarge
+            )
         }
     }
 }
@@ -231,11 +271,12 @@ private fun editorTitleStyle() = MaterialTheme.typography.displayMedium.copy(
 )
 
 @Composable
-private fun EditorBodyField(
+internal fun EditorBodyField(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val storyContentDescription = stringResource(R.string.editor_story_content)
     val bodyStyle = MaterialTheme.typography.bodyLarge.copy(
         fontFamily = EditorEditorialFamily,
         fontSize = 18.sp,
@@ -246,8 +287,9 @@ private fun EditorBodyField(
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier.semantics { contentDescription = "Story content" },
+        modifier = modifier.semantics { contentDescription = storyContentDescription },
         textStyle = bodyStyle,
+        visualTransformation = EditorMarkdownVisualTransformation,
         cursorBrush = SolidColor(BrandRed),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
         decorationBox = { innerTextField ->
@@ -261,7 +303,7 @@ private fun EditorBodyField(
                             )
                             Spacer(Modifier.width(10.dp))
                             Text(
-                                "Start writing your story…",
+                                stringResource(R.string.editor_start_writing),
                                 style = bodyStyle.copy(fontStyle = FontStyle.Italic, fontSize = 17.sp),
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -271,7 +313,7 @@ private fun EditorBodyField(
                             color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)
                         )
                         Text(
-                            "Every story starts somewhere.\nBegin with the moment you can see most clearly.",
+                            stringResource(R.string.editor_writing_prompt),
                             modifier = Modifier.padding(top = 22.dp),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 fontFamily = EditorEditorialFamily,
@@ -299,6 +341,49 @@ private fun editorTextFieldColors() = TextFieldDefaults.colors(
     cursorColor = BrandRed
 )
 
+internal class EditorUndoManager(initial: TextFieldValue, private val limit: Int = 100) {
+    private var current = initial
+    private val undo = ArrayDeque<TextFieldValue>()
+    private val redo = ArrayDeque<TextFieldValue>()
+
+    init {
+        require(limit > 0)
+    }
+
+    val canUndo: Boolean get() = undo.isNotEmpty()
+    val canRedo: Boolean get() = redo.isNotEmpty()
+
+    fun record(next: TextFieldValue): TextFieldValue {
+        if (next.text != current.text) {
+            if (undo.size == limit) undo.removeFirst()
+            undo.addLast(current)
+            redo.clear()
+        }
+        current = next
+        return current
+    }
+
+    fun undo(): TextFieldValue {
+        if (undo.isEmpty()) return current
+        redo.addLast(current)
+        current = undo.removeLast()
+        return current
+    }
+
+    fun redo(): TextFieldValue {
+        if (redo.isEmpty()) return current
+        undo.addLast(current)
+        current = redo.removeLast()
+        return current
+    }
+
+    fun reset(value: TextFieldValue) {
+        current = value
+        undo.clear()
+        redo.clear()
+    }
+}
+
 private enum class EditorFormatAction { Bold, Italic, Underline, Bullet, Quote }
 
 private fun TextFieldValue.apply(action: EditorFormatAction): TextFieldValue = when (action) {
@@ -319,9 +404,9 @@ private fun TextFieldValue.wrapSelection(marker: String): TextFieldValue {
     return TextFieldValue(updated, TextRange(cursor))
 }
 
-private fun TextFieldValue.prefixCurrentLine(prefix: String): TextFieldValue {
+internal fun TextFieldValue.prefixCurrentLine(prefix: String): TextFieldValue {
     val cursor = selection.start.coerceIn(0, text.length)
-    val lineStart = text.lastIndexOf('\n', (cursor - 1).coerceAtLeast(0)).let { if (it < 0) 0 else it + 1 }
+    val lineStart = text.lastIndexOf('\n', cursor - 1).let { if (it < 0) 0 else it + 1 }
     val lineEnd = text.indexOf('\n', cursor).let { if (it < 0) text.length else it }
     val line = text.substring(lineStart, lineEnd)
     val replacement = if (line.startsWith(prefix)) line.removePrefix(prefix) else prefix + line
@@ -334,6 +419,10 @@ private fun TextFieldValue.prefixCurrentLine(prefix: String): TextFieldValue {
 
 @Composable
 private fun EditorToolbar(
+    canUndo: Boolean,
+    canRedo: Boolean,
+    onUndo: () -> Unit,
+    onRedo: () -> Unit,
     onFormat: (EditorFormatAction) -> Unit,
     onPickImage: () -> Unit,
     modifier: Modifier = Modifier
@@ -346,13 +435,16 @@ private fun EditorToolbar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        ToolbarLabel("B", "Bold", FontWeight.Bold, onClick = { onFormat(EditorFormatAction.Bold) })
-        ToolbarLabel("I", "Italic", FontWeight.Normal, FontStyle.Italic, onClick = { onFormat(EditorFormatAction.Italic) })
-        ToolbarLabel("U", "Underline", onClick = { onFormat(EditorFormatAction.Underline) })
+        ToolbarLabel("↶", stringResource(R.string.editor_undo), enabled = canUndo, onClick = onUndo)
+        ToolbarLabel("↷", stringResource(R.string.editor_redo), enabled = canRedo, onClick = onRedo)
         VerticalDivider(modifier = Modifier.height(24.dp), color = MaterialTheme.colorScheme.outlineVariant)
-        ToolbarIcon(R.drawable.ic_bullet_list, "Bulleted list", onClick = { onFormat(EditorFormatAction.Bullet) })
-        ToolbarIcon(R.drawable.ic_quote, "Block quote", onClick = { onFormat(EditorFormatAction.Quote) })
-        ToolbarIcon(R.drawable.ic_image, "Add cover image", onClick = onPickImage)
+        ToolbarLabel("B", stringResource(R.string.editor_format_bold), FontWeight.Bold, onClick = { onFormat(EditorFormatAction.Bold) })
+        ToolbarLabel("I", stringResource(R.string.editor_format_italic), FontWeight.Normal, FontStyle.Italic, onClick = { onFormat(EditorFormatAction.Italic) })
+        ToolbarLabel("U", stringResource(R.string.editor_format_underline), onClick = { onFormat(EditorFormatAction.Underline) })
+        VerticalDivider(modifier = Modifier.height(24.dp), color = MaterialTheme.colorScheme.outlineVariant)
+        ToolbarIcon(R.drawable.ic_bullet_list, stringResource(R.string.editor_format_bullets), onClick = { onFormat(EditorFormatAction.Bullet) })
+        ToolbarIcon(R.drawable.ic_quote, stringResource(R.string.editor_format_quote), onClick = { onFormat(EditorFormatAction.Quote) })
+        ToolbarIcon(R.drawable.ic_image, stringResource(R.string.editor_add_cover_image), onClick = onPickImage)
     }
 }
 
@@ -362,16 +454,17 @@ private fun ToolbarLabel(
     description: String,
     weight: FontWeight = FontWeight.Medium,
     style: FontStyle = FontStyle.Normal,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .size(48.dp)
             .semantics { contentDescription = description }
-            .clickable(onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Text(text, color = MaterialTheme.colorScheme.onSurface, fontWeight = weight, fontStyle = style, fontSize = 16.sp)
+        Text(text, color = MaterialTheme.colorScheme.onSurface.copy(alpha = if (enabled) 1f else 0.35f), fontWeight = weight, fontStyle = style, fontSize = 18.sp)
     }
 }
 
@@ -397,6 +490,10 @@ private fun EditorWritingFooter(
     wordCount: Int,
     readTime: Int,
     savedStatus: String,
+    canUndo: Boolean,
+    canRedo: Boolean,
+    onUndo: () -> Unit,
+    onRedo: () -> Unit,
     onFormat: (EditorFormatAction) -> Unit,
     onPickImage: () -> Unit
 ) {
@@ -420,7 +517,7 @@ private fun EditorWritingFooter(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("$wordCount words", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.editor_words_count, wordCount), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.width(14.dp))
                 Image(
                     painter = painterResource(R.drawable.ic_clock_muted),
@@ -429,7 +526,7 @@ private fun EditorWritingFooter(
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
                 )
                 Spacer(Modifier.width(5.dp))
-                Text("$readTime min read", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.common_min_read, readTime), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.weight(1f))
                 Image(
                     painter = painterResource(R.drawable.ic_check_muted),
@@ -445,7 +542,9 @@ private fun EditorWritingFooter(
                 ) {
                     Image(
                         painterResource(if (formattingExpanded) R.drawable.ic_chevron_up else R.drawable.ic_chevron_down),
-                        contentDescription = if (formattingExpanded) "Hide formatting tools" else "Show formatting tools",
+                        contentDescription = stringResource(
+                            if (formattingExpanded) R.string.editor_hide_formatting else R.string.editor_show_formatting
+                        ),
                         modifier = Modifier.size(18.dp),
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
                     )
@@ -454,7 +553,14 @@ private fun EditorWritingFooter(
             if (formattingExpanded) {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
                 Spacer(Modifier.height(5.dp))
-                EditorToolbar(onFormat = onFormat, onPickImage = onPickImage)
+                EditorToolbar(
+                    canUndo = canUndo,
+                    canRedo = canRedo,
+                    onUndo = onUndo,
+                    onRedo = onRedo,
+                    onFormat = onFormat,
+                    onPickImage = onPickImage
+                )
             }
         }
     }
@@ -470,15 +576,15 @@ fun PublishStoryScreen(
     val summary by viewModel.summary.collectAsStateWithLifecycle()
     val category by viewModel.category.collectAsStateWithLifecycle()
     val content by viewModel.content.collectAsStateWithLifecycle()
+    val coverImage by viewModel.coverImage.collectAsStateWithLifecycle()
     val isPublishing by viewModel.isPublishing.collectAsStateWithLifecycle()
+    val isEditingPublished by viewModel.isEditingPublished.collectAsStateWithLifecycle()
+    val draftStatus by viewModel.draftStatus.collectAsStateWithLifecycle()
     val categories by viewModel.categories.collectAsStateWithLifecycle()
-    var selectedCover by rememberSaveable { mutableStateOf(1) }
-    var isPublic by rememberSaveable { mutableStateOf(true) }
     var categoryExpanded by rememberSaveable { mutableStateOf(false) }
-    var isScheduled by rememberSaveable { mutableStateOf(false) }
-    var tags by rememberSaveable { mutableStateOf(listOf("writing", "reflection", "story")) }
     val wordCount = content.trim().split(Regex("\\s+")).count { it.isNotBlank() }
     val readTime = if (wordCount == 0) 0 else maxOf(1, (wordCount + 199) / 200)
+    val validationMessage = validateStoryForPublish(title, content)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -486,14 +592,21 @@ fun PublishStoryScreen(
             Surface(color = MaterialTheme.colorScheme.background) {
                 Button(
                     onClick = { viewModel.publishStory(onPublished) },
-                    enabled = !isPublishing,
+                    enabled = !isPublishing && validationMessage == null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
                     colors = ButtonDefaults.buttonColors(containerColor = BrandRed, contentColor = Color.White),
                     shape = RoundedCornerShape(WritOnRadius.field)
                 ) {
-                    Text(if (isPublishing) "Publishing…" else "Publish Story", fontSize = 20.sp, fontWeight = FontWeight.SemiBold)
+                    Text(
+                        if (isPublishing) stringResource(R.string.editor_publishing)
+                        else if (draftStatus is EditorDraftStatus.QueuedForPublish) stringResource(R.string.editor_try_publish_now)
+                        else if (isEditingPublished) stringResource(R.string.editor_update_story)
+                        else stringResource(R.string.editor_publish_story),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }
@@ -506,12 +619,13 @@ fun PublishStoryScreen(
                 .padding(horizontal = WritOnSpacing.lg)
         ) {
             PublishHeader(onBackClick)
-            PublishPreview(title, summary, wordCount, readTime, selectedCover)
+            PublishPreview(title, summary, category, coverImage, wordCount, readTime)
             PublishTextEntry(
                 label = stringResource(R.string.editor_title_hint),
                 value = title,
                 maxLength = 100,
                 singleLine = true,
+                editorialStyle = true,
                 onValueChange = viewModel::updateTitle
             )
             PublishTextEntry(
@@ -519,6 +633,7 @@ fun PublishStoryScreen(
                 value = summary,
                 maxLength = 300,
                 singleLine = false,
+                editorialStyle = false,
                 onValueChange = viewModel::updateSummary
             )
             Text(stringResource(R.string.editor_category), modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -536,7 +651,7 @@ fun PublishStoryScreen(
                     ) {
                         Text(category, style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.weight(1f))
-                        Image(painterResource(R.drawable.ic_chevron_down), contentDescription = "Choose category", modifier = Modifier.size(24.dp))
+                        Image(painterResource(R.drawable.ic_chevron_down), contentDescription = stringResource(R.string.editor_choose_category), modifier = Modifier.size(24.dp))
                     }
                 }
                 DropdownMenu(expanded = categoryExpanded, onDismissRequest = { categoryExpanded = false }) {
@@ -548,79 +663,30 @@ fun PublishStoryScreen(
                     }
                 }
             }
-            Text(stringResource(R.string.editor_tags), modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                tags.forEach { tag ->
-                    Surface(
-                        onClick = { tags = tags - tag },
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(WritOnRadius.pill)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(start = 8.dp, end = 6.dp, top = 7.dp, bottom = 7.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(tag, fontSize = 16.sp)
-                            Spacer(Modifier.width(4.dp))
-                            Image(painterResource(R.drawable.ic_close), contentDescription = "Remove $tag", modifier = Modifier.width(15.dp))
-                        }
-                    }
-                }
-                TextButton(onClick = { tags = tags + "new tag" }, contentPadding = PaddingValues(horizontal = 4.dp)) {
-                    Image(painterResource(R.drawable.ic_add_orange), contentDescription = null, modifier = Modifier.size(20.dp))
-                    Text(stringResource(R.string.editor_add_tag), color = BrandRed, fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                }
+            val statusText = when (draftStatus) {
+                is EditorDraftStatus.Failed -> (draftStatus as EditorDraftStatus.Failed).message
+                EditorDraftStatus.Offline -> stringResource(R.string.editor_publish_status_offline)
+                EditorDraftStatus.Saving -> stringResource(R.string.editor_publish_status_saving)
+                EditorDraftStatus.Unsaved -> stringResource(R.string.editor_status_unsaved)
+                EditorDraftStatus.Saved -> stringResource(R.string.editor_publish_status_ready)
+                EditorDraftStatus.QueuedForPublish -> stringResource(R.string.editor_publish_status_queued)
             }
-            Text(stringResource(R.string.editor_visibility), modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Row(horizontalArrangement = Arrangement.spacedBy(WritOnSpacing.sm)) {
-                VisibilityChoice(
-                    modifier = Modifier.weight(1f),
-                    selected = isPublic,
-                    icon = R.drawable.ic_public,
-                    title = stringResource(R.string.editor_public),
-                    description = "Everyone on WritOn",
-                    onClick = { isPublic = true }
-                )
-                VisibilityChoice(
-                    modifier = Modifier.weight(1f),
-                    selected = !isPublic,
-                    icon = R.drawable.ic_lock,
-                    title = stringResource(R.string.editor_private),
-                    description = "Only you can see",
-                    onClick = { isPublic = false }
-                )
+            val localizedValidationMessage = when {
+                title.isBlank() && content.isBlank() -> stringResource(R.string.editor_validation_title_story)
+                title.isBlank() -> stringResource(R.string.editor_validation_title)
+                title.trim().length < 3 -> stringResource(R.string.editor_validation_title_length)
+                content.isBlank() -> stringResource(R.string.editor_validation_story)
+                else -> null
             }
-            Text(stringResource(R.string.editor_more_options), modifier = Modifier.padding(top = WritOnSpacing.lg, bottom = WritOnSpacing.sm), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Surface(
-                onClick = { isScheduled = !isScheduled },
-                modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface,
-                shape = RoundedCornerShape(WritOnRadius.field),
-                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = WritOnSpacing.md, vertical = 15.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        painterResource(R.drawable.ic_calendar),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
-                    )
-                    Spacer(Modifier.width(WritOnSpacing.md))
-                    Text(if (isScheduled) "Scheduled for later" else "Schedule for later", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurface)
-                    Spacer(Modifier.weight(1f))
-                    Image(
-                        painterResource(R.drawable.ic_chevron_right),
-                        contentDescription = "Schedule",
-                        modifier = Modifier.size(24.dp),
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
-                    )
+            Text(
+                text = localizedValidationMessage ?: statusText,
+                modifier = Modifier.padding(top = WritOnSpacing.lg),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (localizedValidationMessage != null || draftStatus is EditorDraftStatus.Failed) BrandRed else MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (draftStatus is EditorDraftStatus.QueuedForPublish) {
+                TextButton(onClick = viewModel::cancelQueuedPublish) {
+                    Text(stringResource(R.string.editor_keep_as_draft), color = BrandRed)
                 }
             }
             Spacer(Modifier.height(WritOnSpacing.xl))
@@ -639,24 +705,31 @@ private fun PublishHeader(onBackClick: () -> Unit) {
         IconButton(onClick = onBackClick) {
             Image(
                 painterResource(R.drawable.ic_back),
-                contentDescription = "Back to editor",
+                contentDescription = stringResource(R.string.editor_back_to_editor),
                 modifier = Modifier.size(24.dp),
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
             )
         }
         Text(
-            "Publish",
+            stringResource(R.string.editor_publish),
             modifier = Modifier.padding(start = WritOnSpacing.sm),
             style = MaterialTheme.typography.headlineLarge.copy(fontFamily = EditorEditorialFamily, fontWeight = FontWeight.Normal),
             color = MaterialTheme.colorScheme.onBackground
         )
         Spacer(Modifier.weight(1f))
-        TextButton(onClick = onBackClick) { Text("Save draft", color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Medium) }
+        TextButton(onClick = onBackClick) { Text(stringResource(R.string.editor_save_draft), color = MaterialTheme.colorScheme.onBackground, fontWeight = FontWeight.Medium) }
     }
 }
 
 @Composable
-private fun PublishPreview(title: String, summary: String, wordCount: Int, readTime: Int, cover: Int) {
+private fun PublishPreview(
+    title: String,
+    summary: String,
+    category: String,
+    coverImage: String?,
+    wordCount: Int,
+    readTime: Int
+) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surface,
@@ -665,14 +738,20 @@ private fun PublishPreview(title: String, summary: String, wordCount: Int, readT
         shadowElevation = WritOnElevation.raised
     ) {
         Row(modifier = Modifier.padding(WritOnSpacing.md), verticalAlignment = Alignment.CenterVertically) {
-            CoverArt(cover = cover, modifier = Modifier.width(104.dp).height(138.dp))
+            PostCoverImage(
+                imageUrl = coverImage,
+                category = category,
+                contentDescription = stringResource(R.string.editor_cover_preview),
+                modifier = Modifier.width(104.dp).height(138.dp),
+                categoryFontSize = 16.sp
+            )
             Spacer(Modifier.width(WritOnSpacing.md))
             Column(modifier = Modifier.weight(1f)) {
                 Text(title, style = MaterialTheme.typography.titleLarge.copy(fontFamily = EditorEditorialFamily, fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface, maxLines = 2)
                 if (summary.isNotBlank()) {
                     Text(summary, modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3)
                 } else {
-                    Text("Add a short description to help readers discover your story.", modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3)
+                    Text(stringResource(R.string.editor_summary_desc), modifier = Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3)
                 }
                 Row(modifier = Modifier.padding(top = WritOnSpacing.sm), verticalAlignment = Alignment.CenterVertically) {
                     Image(
@@ -682,8 +761,8 @@ private fun PublishPreview(title: String, summary: String, wordCount: Int, readT
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
                     )
                     Spacer(Modifier.width(5.dp))
-                    Text("$readTime min read", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("  •  $wordCount words", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.common_min_read, readTime), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("  •  ${stringResource(R.string.editor_words_count, wordCount)}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -691,14 +770,14 @@ private fun PublishPreview(title: String, summary: String, wordCount: Int, readT
 }
 
 @Composable
-private fun PublishTextEntry(label: String, value: String, maxLength: Int, singleLine: Boolean, onValueChange: (String) -> Unit) {
+private fun PublishTextEntry(label: String, value: String, maxLength: Int, singleLine: Boolean, editorialStyle: Boolean, onValueChange: (String) -> Unit) {
     Column(modifier = Modifier.padding(top = WritOnSpacing.lg)) {
         Text(label, style = MaterialTheme.typography.titleMedium, color = Color(0xFF6D6963))
         TextField(
             value = value,
             onValueChange = { if (it.length <= maxLength) onValueChange(it) },
             modifier = Modifier.fillMaxWidth().padding(top = 2.dp),
-            textStyle = MaterialTheme.typography.titleLarge.copy(fontFamily = if (label == "Title") EditorEditorialFamily else FontFamily.Default),
+            textStyle = MaterialTheme.typography.titleLarge.copy(fontFamily = if (editorialStyle) EditorEditorialFamily else FontFamily.Default),
             colors = editorTextFieldColors(),
             singleLine = singleLine,
             minLines = if (singleLine) 1 else 2
@@ -708,96 +787,5 @@ private fun PublishTextEntry(label: String, value: String, maxLength: Int, singl
             Text("${value.length}/$maxLength", style = MaterialTheme.typography.bodyMedium, color = Color(0xFF6D6963))
         }
         androidx.compose.material3.HorizontalDivider(color = Color(0xFFE9E1D7))
-    }
-}
-
-@Composable
-private fun CoverPicker(selectedCover: Int, onCoverSelected: (Int) -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = WritOnSpacing.sm)
-            .horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(WritOnSpacing.sm)
-    ) {
-        Surface(
-            onClick = { onCoverSelected(0) },
-            modifier = Modifier.width(104.dp).height(138.dp),
-            color = Color(0xFFFFFDF9),
-            shape = RoundedCornerShape(WritOnRadius.field),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE9E1D7))
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                Image(painterResource(R.drawable.ic_image_muted), contentDescription = "Add cover image", modifier = Modifier.size(24.dp))
-                Text("Add Image", modifier = Modifier.padding(top = 6.dp), color = Color(0xFF6D6963))
-            }
-        }
-        (1..3).forEach { cover ->
-            Box(modifier = Modifier.width(104.dp).height(138.dp).clickable { onCoverSelected(cover) }) {
-                CoverArt(cover = cover, modifier = Modifier.fillMaxSize())
-                if (selectedCover == cover) {
-                    Surface(
-                        modifier = Modifier.fillMaxSize(),
-                        color = Color.Transparent,
-                        shape = RoundedCornerShape(WritOnRadius.field),
-                        border = androidx.compose.foundation.BorderStroke(2.dp, BrandRed)
-                    ) {}
-                    Surface(
-                        modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
-                        shape = CircleShape,
-                        color = BrandRed
-                    ) { Image(painterResource(R.drawable.ic_check_white), contentDescription = "Selected cover", modifier = Modifier.padding(5.dp).width(16.dp)) }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CoverArt(cover: Int, modifier: Modifier = Modifier) {
-    val color = when (cover) {
-        1 -> Color(0xFF6D6963)
-        2 -> Color(0xFFF2ECE4)
-        else -> Color(0xFFE9E1D7)
-    }
-    Surface(modifier = modifier, color = color, shape = RoundedCornerShape(WritOnRadius.field)) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("W", color = Color(0xFFFFFDF9).copy(alpha = 0.8f), style = MaterialTheme.typography.headlineMedium.copy(fontFamily = EditorEditorialFamily))
-            Text(
-                if (cover == 1) "Quiet\nthoughts" else if (cover == 2) "Soft\nlight" else "Far\nhorizon",
-                color = Color(0xFFFFFDF9),
-                style = MaterialTheme.typography.titleMedium.copy(fontFamily = EditorEditorialFamily, lineHeight = 19.sp)
-            )
-        }
-    }
-}
-
-@Composable
-private fun VisibilityChoice(
-    modifier: Modifier,
-    selected: Boolean,
-    icon: Int,
-    title: String,
-    description: String,
-    onClick: () -> Unit
-) {
-    Surface(
-        onClick = onClick,
-        modifier = modifier,
-        color = Color(0xFFFFFDF9),
-        shape = RoundedCornerShape(WritOnRadius.field),
-        border = androidx.compose.foundation.BorderStroke(if (selected) 2.dp else 1.dp, if (selected) BrandRed else Color(0xFFE9E1D7))
-    ) {
-        Row(modifier = Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            Image(painterResource(if (selected) when (icon) { R.drawable.ic_public -> R.drawable.ic_public_orange; else -> R.drawable.ic_lock_orange } else icon), contentDescription = title, modifier = Modifier.size(24.dp))
-            Spacer(Modifier.width(9.dp))
-            Column {
-                Text(title, style = MaterialTheme.typography.titleMedium)
-                Text(description, style = MaterialTheme.typography.bodySmall, color = Color(0xFF6D6963), maxLines = 2)
-            }
-        }
     }
 }

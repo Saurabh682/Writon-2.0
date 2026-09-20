@@ -1,6 +1,7 @@
 package com.ibitvalley.writon.modern.data.repository
 
 import com.google.gson.Gson
+import com.google.firebase.auth.FirebaseAuth
 import com.ibitvalley.writon.modern.core.database.dao.CommentDao
 import com.ibitvalley.writon.modern.core.database.dao.OutboxDao
 import com.ibitvalley.writon.modern.core.database.dao.PostDao
@@ -8,11 +9,18 @@ import com.ibitvalley.writon.modern.core.database.model.CommentEntity
 import com.ibitvalley.writon.modern.core.database.model.OutboxMutationEntity
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.core.network.WritOnApiService
+import com.ibitvalley.writon.modern.core.network.model.PostDto
 import com.ibitvalley.writon.modern.core.network.model.CreatePostRequestDto
 import com.ibitvalley.writon.modern.core.network.model.AddCommentRequestDto
+import com.ibitvalley.writon.modern.core.network.model.UpdateCommentRequestDto
 import com.ibitvalley.writon.modern.core.network.model.RelationStateRequestDto
 import com.ibitvalley.writon.modern.core.network.model.ReadingProgressRequestDto
+import com.ibitvalley.writon.modern.core.network.model.FeedBehaviorBatchDto
+import com.ibitvalley.writon.modern.core.network.model.FeedBehaviorEventDto
+import com.ibitvalley.writon.modern.core.preferences.UserPreferences
+import com.ibitvalley.writon.modern.data.sync.readingProgressOutboxTarget
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -29,84 +37,57 @@ data class PostPageResult(
     val wasFetched: Boolean
 )
 
+data class PersonalizedFeedPageResult(
+    val items: List<PostEntity>,
+    val nextCursor: String?,
+    val feedSessionId: String?,
+    val rankingVersion: String?,
+    val isPersonalized: Boolean,
+    val wasFetched: Boolean
+)
+
+private const val MIN_PERSONALIZED_FIRST_PAGE_SIZE = 5
+
+internal fun isUsablePersonalizedPage(cursor: String?, itemCount: Int, limit: Int): Boolean =
+    cursor != null || itemCount >= minOf(MIN_PERSONALIZED_FIRST_PAGE_SIZE, limit)
+
+enum class PostDetailRefreshOutcome {
+    REFRESHED,
+    NOT_FOUND,
+    RETAINED_OFFLINE,
+    FAILED_NO_CACHE
+}
+
 class PostRepository(
     private val apiService: WritOnApiService,
     private val postDao: PostDao,
     private val commentDao: CommentDao,
     private val outboxDao: OutboxDao,
-    private val gson: Gson = Gson()
+    private val gson: Gson = Gson(),
+    private val userPreferences: UserPreferences? = null
 ) {
+    private var activeFeedSessionId: String? = null
+    private var activeRankingVersion: String? = null
     private fun utcNowIso(): String = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
         timeZone = TimeZone.getTimeZone("UTC")
     }.format(Date())
 
-    suspend fun seedInitialStoriesIfEmpty() = withContext(Dispatchers.IO) {
-        val count = postDao.getPostCount()
-        if (count == 0) {
-            val initialPosts = listOf(
-                PostEntity(
-                    id = "seed-1",
-                    authorId = "author-maya",
-                    authorName = "Maya Lin",
-                    authorPenName = "mayalin",
-                    authorAvatarUrl = null,
-                    title = "The Geometry of Silence",
-                    slug = "the-geometry-of-silence",
-                    summary = "Why the most enduring structures in modern architecture are defined by the spaces they deliberately leave empty.",
-                    content = "Architecture is often celebrated for what it contains—the stone, the timber, the soaring columns of steel. But true serenity lives in the voids between them.\n\nWhen we strip away ornamentation, we create room for thought to expand. Silence becomes the primary material of design.",
-                    category = "Essays",
-                    coverImage = null,
-                    readingTimeMin = 5,
-                    likesCnt = 342,
-                    commentsCnt = 28,
-                    bookmarksCnt = 89,
-                    isLiked = false,
-                    isBookmarked = false,
-                    createdAt = "2026-08-20T10:00:00Z"
-                ),
-                PostEntity(
-                    id = "seed-2",
-                    authorId = "author-vikram",
-                    authorName = "Vikram Desai",
-                    authorPenName = "vikramd",
-                    authorAvatarUrl = null,
-                    title = "On Slow Craft and Modern Software",
-                    slug = "on-slow-craft-and-modern-software",
-                    summary = "Reflections on building systems with permanence, patience, and intentional constraints.",
-                    content = "We have traded deliberate craftsmanship for frantic iteration. In this essay, I explore what software engineering can learn from master watchmakers and bookbinders.",
-                    category = "Tech",
-                    coverImage = null,
-                    readingTimeMin = 7,
-                    likesCnt = 512,
-                    commentsCnt = 44,
-                    bookmarksCnt = 160,
-                    isLiked = false,
-                    isBookmarked = false,
-                    createdAt = "2026-08-19T14:30:00Z"
-                ),
-                PostEntity(
-                    id = "seed-3",
-                    authorId = "author-meera",
-                    authorName = "Meera Iyer",
-                    authorPenName = "meeraiyer",
-                    authorAvatarUrl = null,
-                    title = "The Poetics of Ordinary Days",
-                    slug = "the-poetics-of-ordinary-days",
-                    summary = "Finding profound creative inspiration in morning routines, quiet tea, and unhurried observations.",
-                    content = "Great art does not require monumental events. The steam rising from an enamel kettle holds as much mystery as an ocean storm if you give it your undivided attention.",
-                    category = "Culture",
-                    coverImage = null,
-                    readingTimeMin = 4,
-                    likesCnt = 280,
-                    commentsCnt = 19,
-                    bookmarksCnt = 75,
-                    isLiked = false,
-                    isBookmarked = false,
-                    createdAt = "2026-08-18T09:15:00Z"
-                )
+    /** Removes placeholder rows and purged stories distributed to early WritOn 2.0 builds. */
+    suspend fun removeLegacySeedStories() = withContext(Dispatchers.IO) {
+        postDao.deletePostsByIds(
+            listOf(
+                "seed-1", "seed-2", "seed-3",
+                "4c1fb2fa-f99b-4694-8f4f-8ca5f0eb3516",
+                "72286de1-1635-4c15-8fd9-7d9459f1f52c",
+                "02bbba36-e86b-438c-bc7d-bfc59d4b46f1",
+                "e6936253-58f3-411f-ad64-cfb9e0c7ed02",
+                "57b8d913-dfad-41a7-bef6-0478e6845368",
+                "c1a59aa5-54de-4be1-8d34-f83879ca67b1",
+                "9187aa00-3e89-41c9-b66a-8f651410f780",
+                "f36c1e96-4c50-49c1-80ef-11261eeef719"
             )
-            postDao.insertPosts(initialPosts)
-        }
+        )
+        postDao.purgeDisallowedStories()
     }
 
     fun getPostsFlow(category: String = "All", query: String = ""): Flow<List<PostEntity>> {
@@ -125,35 +106,27 @@ class PostRepository(
         return commentDao.getCommentsByPostId(postId)
     }
 
-    suspend fun refreshPostDetail(postId: String) = withContext(Dispatchers.IO) {
+    suspend fun refreshPostDetail(postId: String): PostDetailRefreshOutcome = withContext(Dispatchers.IO) {
         try {
             val response = apiService.getPostDetail(postId)
             if (response.isSuccessful && response.body() != null) {
                 val dto = response.body()!!.post
-                val entity = PostEntity(
-                    id = dto.id,
-                    authorId = dto.author.id,
-                    authorName = dto.author.fullName,
-                    authorPenName = dto.author.penName,
-                    authorAvatarUrl = dto.author.avatarUrl,
-                    title = dto.title,
-                    slug = dto.slug,
-                    summary = dto.summary,
-                    content = dto.content,
-                    category = dto.category,
-                    coverImage = dto.coverImage,
-                    readingTimeMin = dto.readingTimeMin,
-                    likesCnt = dto.likesCnt,
-                    commentsCnt = dto.commentsCnt,
-                    bookmarksCnt = dto.bookmarksCnt,
-                    isLiked = dto.isLiked,
-                    isBookmarked = dto.isBookmarked,
-                    createdAt = dto.createdAt
-                )
+                val entity = dto.toEntity()
                 postDao.insertPost(entity)
+                return@withContext PostDetailRefreshOutcome.REFRESHED
+            }
+            if (response.code() == 404 || response.code() == 410) {
+                postDao.deletePostById(postId)
+                commentDao.deleteCommentsByPostId(postId)
+                return@withContext PostDetailRefreshOutcome.NOT_FOUND
             }
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+        if (postDao.getPostSnapshot(postId) != null) {
+            PostDetailRefreshOutcome.RETAINED_OFFLINE
+        } else {
+            PostDetailRefreshOutcome.FAILED_NO_CACHE
         }
     }
 
@@ -163,14 +136,18 @@ class PostRepository(
             if (response.isSuccessful && response.body() != null) {
                 val commentEntities = response.body()!!.comments.map { dto ->
                     CommentEntity(
-                        id = dto.id,
-                        postId = dto.postId,
-                        authorId = dto.authorId,
-                        authorName = dto.author.fullName,
-                        authorAvatarUrl = dto.author.avatarUrl,
-                        content = dto.content,
-                        createdAt = dto.createdAt,
-                        parentId = dto.parentId
+                        id = dto.id ?: "",
+                        postId = dto.postId ?: postId,
+                        authorId = dto.authorId ?: "author_unknown",
+                        authorName = dto.author?.fullName ?: dto.author?.penName ?: "WritOn Member",
+                        authorAvatarUrl = dto.author?.avatarUrl,
+                        content = dto.content ?: "",
+                        createdAt = dto.createdAt ?: "",
+                        parentId = dto.parentId,
+                        updatedAt = dto.updatedAt,
+                        isMine = dto.isMine,
+                        authorFoundingWriterNumber = dto.author?.foundingWriterNumber,
+                        authorEmailVerified = dto.author?.emailVerified == true
                     )
                 }
                 commentDao.deleteCommentsByPostId(postId)
@@ -188,6 +165,7 @@ class PostRepository(
         authorName: String,
         parentId: String? = null,
     ) = withContext(Dispatchers.IO) {
+        userPreferences?.growthTracker?.recordStrongReaderAction()
         val clientMutationId = UUID.randomUUID().toString()
         val tempId = "temp_$clientMutationId"
         val request = AddCommentRequestDto(
@@ -225,6 +203,35 @@ class PostRepository(
         }
     }
 
+    suspend fun updateComment(commentId: String, content: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.updateComment(commentId, UpdateCommentRequestDto(content.trim()))
+            if (response.isSuccessful) {
+                refreshComments(postId = commentDao.getCommentById(commentId)?.postId
+                    ?: return@withContext Result.failure(IllegalStateException("Comment is no longer available.")))
+                Result.success(Unit)
+            } else {
+                Result.failure(IllegalStateException("Comment update failed with HTTP ${response.code()}"))
+            }
+        } catch (error: Exception) {
+            Result.failure(error)
+        }
+    }
+
+    suspend fun deleteComment(commentId: String, postId: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.deleteComment(commentId)
+            if (response.isSuccessful) {
+                refreshComments(postId)
+                Result.success(Unit)
+            } else {
+                Result.failure(IllegalStateException("Comment deletion failed with HTTP ${response.code()}"))
+            }
+        } catch (error: Exception) {
+            Result.failure(error)
+        }
+    }
+
     /**
      * Replaces the cached first page for the active feed. Later pages must be loaded with
      * [loadPostsPage] so a refresh never discards already paged-in stories by accident.
@@ -235,13 +242,179 @@ class PostRepository(
         query: String? = null,
         limit: Int = 20
     ): PostPageResult {
-        val firstAttempt = loadPostsPage(category, tab, query, page = 1, limit = limit, replaceCachedPage = true)
-        if (firstAttempt.wasFetched) return firstAttempt
-
-        // A free Render service can take time to wake after idling. Retry once while
-        // cached Room stories remain visible instead of making the user refresh again.
-        delay(2_000)
         return loadPostsPage(category, tab, query, page = 1, limit = limit, replaceCachedPage = true)
+    }
+
+    suspend fun loadPersonalizedFeed(cursor: String? = null, limit: Int = 20): PersonalizedFeedPageResult =
+        withContext(Dispatchers.IO) {
+            try {
+                val signedIn = FirebaseAuth.getInstance().currentUser != null
+                val vectors = if (signedIn) null else userPreferences?.let {
+                    it.guestFeedLearning.vectors(it.interestChoices(null))
+                }
+                val response = apiService.getPersonalizedFeed(
+                    cursor = cursor,
+                    limit = limit,
+                    language = currentContentLanguage(),
+                    guestTopics = vectors?.topics,
+                    guestAuthors = vectors?.authors,
+                    guestLanguages = vectors?.languages
+                )
+                val payload = response.body()
+                if (response.isSuccessful && payload != null) {
+                    val items = payload.items.map { it.toEntity() }
+                    if (isUsablePersonalizedPage(cursor, items.size, limit)) {
+                        if (cursor == null) postDao.replaceAllPosts(items) else postDao.mergeFeedPosts(items)
+                        activeFeedSessionId = payload.feedSessionId
+                        activeRankingVersion = payload.rankingVersion
+                        return@withContext PersonalizedFeedPageResult(
+                            items = items,
+                            nextCursor = payload.nextCursor,
+                            feedSessionId = payload.feedSessionId,
+                            rankingVersion = payload.rankingVersion,
+                            isPersonalized = true,
+                            wasFetched = true
+                        )
+                    }
+                }
+            } catch (error: Exception) {
+                error.printStackTrace()
+            }
+
+            // Only the first page may switch safely to the standard feed. A later cursor belongs
+            // to the personalized session and must never be interpreted as a standard page number.
+            if (cursor == null) try {
+                val fallbackPage = 1
+                val postsResponse = apiService.getPosts(
+                    category = null,
+                    tab = "latest",
+                    page = fallbackPage,
+                    limit = limit
+                )
+                if (postsResponse.isSuccessful && postsResponse.body() != null) {
+                    val payload = postsResponse.body()!!
+                    val items = payload.posts.map { it.toEntity() }
+                    postDao.replaceAllPosts(items)
+                    activeFeedSessionId = null
+                    activeRankingVersion = null
+                    val nextCursor = if (payload.pagination.hasMore) (fallbackPage + 1).toString() else null
+                    return@withContext PersonalizedFeedPageResult(
+                        items = items,
+                        nextCursor = nextCursor,
+                        feedSessionId = null,
+                        rankingVersion = "standard_fallback",
+                        isPersonalized = false,
+                        wasFetched = true
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            PersonalizedFeedPageResult(emptyList(), null, null, null, isPersonalized = false, wasFetched = false)
+        }
+
+    suspend fun recordFeedImpression(postId: String) {
+        recordFeedEvent(postId, "impression", visibleFraction = 1f, visibleMillis = 1_000)
+    }
+
+    suspend fun recordFeedOpen(postId: String) {
+        recordFeedEvent(postId, "open")
+    }
+
+    suspend fun recordFeedQuickExit(postId: String, engagedSeconds: Float) {
+        if (engagedSeconds < 5f) recordFeedEvent(postId, "quick_exit", engagedSeconds = engagedSeconds)
+    }
+
+    suspend fun recordFeedShare(postId: String) {
+        recordFeedEvent(postId, "share")
+    }
+
+    suspend fun recordReadingProgress(
+        postId: String,
+        progress: Float,
+        readSeconds: Int,
+        totalEngagedSeconds: Int
+    ) = withContext(Dispatchers.IO) {
+        val post = postDao.getPostSnapshot(postId) ?: return@withContext
+        userPreferences?.growthTracker?.recordReaderProgress(post.id, progress, readSeconds)
+        val accountId = FirebaseAuth.getInstance().currentUser?.uid
+        if (accountId == null) {
+            userPreferences?.guestFeedLearning?.recordReading(
+                storyId = post.id,
+                topicId = post.category,
+                authorId = post.authorId,
+                languageCode = post.languageCode,
+                progress = progress,
+                totalEngagedSeconds = totalEngagedSeconds
+            )
+            return@withContext
+        }
+        val request = ReadingProgressRequestDto(
+            progress = progress.coerceIn(0f, 1f),
+            readSeconds = readSeconds.coerceIn(0, 60),
+            clientMutationId = UUID.randomUUID().toString()
+        )
+        try {
+            if (!apiService.recordReadingProgress(postId, request).isSuccessful) {
+                queueReadingProgress(accountId, postId, request)
+            }
+        } catch (error: CancellationException) {
+            throw error
+        } catch (_: Exception) {
+            queueReadingProgress(accountId, postId, request)
+        }
+    }
+
+    private suspend fun recordFeedEvent(
+        postId: String,
+        eventType: String,
+        visibleFraction: Float? = null,
+        visibleMillis: Int? = null,
+        engagedSeconds: Float? = null
+    ) = withContext(Dispatchers.IO) {
+        val post = postDao.getPostSnapshot(postId) ?: return@withContext
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            when (eventType) {
+                "open" -> userPreferences?.guestFeedLearning?.recordOpen(
+                    post.id, post.category, post.authorId, post.languageCode
+                )
+                "quick_exit" -> userPreferences?.guestFeedLearning?.recordAction(
+                    post.id, post.category, post.authorId, post.languageCode, "quick_exit", -2f
+                )
+                "share" -> userPreferences?.guestFeedLearning?.recordAction(
+                    post.id, post.category, post.authorId, post.languageCode, "share", 3f
+                )
+            }
+            return@withContext
+        }
+        val sessionId = activeFeedSessionId ?: return@withContext
+        val eventId = UUID.randomUUID().toString()
+        runCatching {
+            apiService.recordFeedEvents(
+                FeedBehaviorBatchDto(
+                    listOf(
+                        FeedBehaviorEventDto(
+                            eventId = eventId,
+                            idempotencyKey = eventId,
+                            storyId = post.id,
+                            feedSessionId = sessionId,
+                            eventType = eventType,
+                            clientEventTime = utcNowIso(),
+                            visibleFraction = visibleFraction,
+                            visibleMillis = visibleMillis,
+                            engagedSeconds = engagedSeconds
+                        )
+                    )
+                )
+            )
+        }
+    }
+
+    private fun currentContentLanguage(): String {
+        val saved = userPreferences?.appLanguage.orEmpty().lowercase(Locale.US)
+        val resolved = if (saved == "system" || saved.isBlank()) Locale.getDefault().language else saved
+        return resolved.takeIf { it in setOf("en", "hi", "bn", "mr", "es", "fr", "ur") } ?: "en"
     }
 
     suspend fun getCategories(): List<String> = withContext(Dispatchers.IO) {
@@ -267,6 +440,10 @@ class PostRepository(
     ): PostPageResult {
         return withContext(Dispatchers.IO) {
             try {
+                if (replaceCachedPage) {
+                    activeFeedSessionId = null
+                    activeRankingVersion = null
+                }
                 val categoryQuery = if (category == "All") null else category
                 val response = apiService.getPosts(
                     category = categoryQuery,
@@ -277,33 +454,20 @@ class PostRepository(
                 )
                 if (response.isSuccessful && response.body() != null) {
                     val payload = response.body()!!
-                    val postEntities = payload.posts.map { dto ->
-                        PostEntity(
-                            id = dto.id,
-                            authorId = dto.author.id,
-                            authorName = dto.author.fullName,
-                            authorPenName = dto.author.penName,
-                            authorAvatarUrl = dto.author.avatarUrl,
-                            title = dto.title,
-                            slug = dto.slug,
-                            summary = dto.summary,
-                            content = dto.content,
-                            category = dto.category,
-                            coverImage = dto.coverImage,
-                            readingTimeMin = dto.readingTimeMin,
-                            likesCnt = dto.likesCnt,
-                            commentsCnt = dto.commentsCnt,
-                            bookmarksCnt = dto.bookmarksCnt,
-                            isLiked = dto.isLiked,
-                            isBookmarked = dto.isBookmarked,
-                            createdAt = dto.createdAt
-                        )
-                    }
+                    val postEntities = payload.posts.map { it.toEntity() }
 
                     // Feed rows deliberately omit full story content. Merge card fields into
                     // Room so the current deck stays visible and a previously downloaded reader
                     // body is never erased by a background refresh.
-                    postDao.mergeFeedPosts(postEntities)
+                    if (replaceCachedPage) {
+                        postDao.replaceMatchingPosts(
+                            category = categoryQuery,
+                            query = query.orEmpty(),
+                            posts = postEntities
+                        )
+                    } else {
+                        postDao.mergeFeedPosts(postEntities)
+                    }
                     return@withContext PostPageResult(
                         hasMore = payload.pagination.hasMore,
                         loadedCount = postEntities.size,
@@ -321,6 +485,7 @@ class PostRepository(
     suspend fun toggleLike(postId: String, currentLiked: Boolean, currentCount: Int) = withContext(Dispatchers.IO) {
         val newLiked = !currentLiked
         val newCount = if (newLiked) currentCount + 1 else maxOf(0, currentCount - 1)
+        if (newLiked) userPreferences?.growthTracker?.recordStrongReaderAction()
 
         // Optimistic UI update in local Room DB
         postDao.updateLikeStatus(postId, newLiked, newCount)
@@ -335,9 +500,10 @@ class PostRepository(
         }
     }
 
-    suspend fun toggleBookmark(postId: String, currentBookmarked: Boolean, currentCount: Int) = withContext(Dispatchers.IO) {
+    suspend fun toggleBookmark(postId: String, currentBookmarked: Boolean, currentCount: Int): Result<Boolean> = withContext(Dispatchers.IO) {
         val newBookmarked = !currentBookmarked
         val newCount = if (newBookmarked) currentCount + 1 else maxOf(0, currentCount - 1)
+        if (newBookmarked) userPreferences?.growthTracker?.recordStrongReaderAction()
 
         // Optimistic UI update in Room DB
         postDao.updateBookmarkStatus(postId, newBookmarked, newCount)
@@ -346,9 +512,32 @@ class PostRepository(
             val response = apiService.setBookmark(postId, RelationStateRequestDto(enabled = newBookmarked))
             if (!response.isSuccessful) {
                 queueRelationMutation("BOOKMARK", postId, newBookmarked)
+                Result.failure(IllegalStateException("Bookmark update queued (${response.code()})"))
+            } else {
+                Result.success(newBookmarked)
             }
         } catch (e: Exception) {
             queueRelationMutation("BOOKMARK", postId, newBookmarked)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deletePublishedStory(postId: String): Result<Unit> = withContext(Dispatchers.IO) {
+        try {
+            val response = apiService.deletePost(postId)
+            if (response.isSuccessful || response.code() == 404 || response.code() == 410) {
+                // A missing story already satisfies the requested final state. Always
+                // evict its local body and comments after the server confirms absence.
+                postDao.deletePostById(postId)
+                commentDao.deleteCommentsByPostId(postId)
+                Result.success(Unit)
+            } else {
+                Result.failure(IllegalStateException("Story deletion failed with HTTP ${response.code()}"))
+            }
+        } catch (error: Exception) {
+            // Destructive mutations are never queued: the user must receive a clear
+            // failure and explicitly retry when connectivity has recovered.
+            Result.failure(error)
         }
     }
 
@@ -362,11 +551,13 @@ class PostRepository(
                 coverImage = null,
                 isPublished = true,
                 clientDraftId = UUID.randomUUID().toString(),
+                languageCode = currentContentLanguage(),
             )
 
             try {
                 val response = apiService.createPost(request)
                 if (response.isSuccessful) {
+                    userPreferences?.growthTracker?.recordPublishedStory()
                     refreshPosts()
                 } else {
                     queuePost(request)
@@ -399,6 +590,16 @@ class PostRepository(
         )
     }
 
+    private suspend fun queueReadingProgress(accountId: String, postId: String, request: ReadingProgressRequestDto) {
+        outboxDao.enqueueMutation(
+            OutboxMutationEntity(
+                mutationType = "READING_PROGRESS",
+                targetId = readingProgressOutboxTarget(accountId, postId),
+                payloadJson = gson.toJson(request),
+            )
+        )
+    }
+
     private suspend fun queueRelationMutation(type: String, postId: String, enabled: Boolean) {
         outboxDao.enqueueLatestMutation(
             OutboxMutationEntity(
@@ -416,6 +617,33 @@ class PostRepository(
                 targetId = "local_${System.currentTimeMillis()}",
                 payloadJson = gson.toJson(request)
             )
+        )
+    }
+
+    private fun PostDto.toEntity(): PostEntity {
+        val authorDto = this.author
+        val safeId = this.id.orEmpty()
+        return PostEntity(
+            id = safeId,
+            authorId = authorDto?.id ?: "unknown",
+            authorName = authorDto?.fullName ?: authorDto?.penName ?: "WritOn Author",
+            authorPenName = authorDto?.penName ?: "writon",
+            authorAvatarUrl = authorDto?.avatarUrl,
+            title = this.title.orEmpty(),
+            slug = this.slug ?: safeId,
+            summary = this.summary,
+            content = this.content.orEmpty(),
+            category = this.category ?: "Essays",
+            coverImage = this.coverImage,
+            readingTimeMin = this.readingTimeMin ?: 1,
+            likesCnt = this.likesCnt ?: 0,
+            commentsCnt = this.commentsCnt ?: 0,
+            bookmarksCnt = this.bookmarksCnt ?: 0,
+            isLiked = this.isLiked,
+            isBookmarked = this.isBookmarked,
+            createdAt = this.createdAt.orEmpty(),
+            languageCode = this.languageCode ?: "und",
+            contentUpdatedAt = this.contentUpdatedAt
         )
     }
 }

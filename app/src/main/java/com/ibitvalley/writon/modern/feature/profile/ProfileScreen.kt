@@ -26,6 +26,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -46,6 +47,7 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 import com.ibitvalley.writon.modern.core.designsystem.components.UserAvatar
+import kotlinx.coroutines.launch
 
 private val ProfileEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, weight = FontWeight.Normal),
@@ -59,6 +61,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel,
     onBackClick: () -> Unit,
     onStoryClick: (String) -> Unit,
+    onEditStory: (PostDto) -> Unit,
     onWriteClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onStoriesClick: () -> Unit,
@@ -71,12 +74,23 @@ fun ProfileScreen(
     val highlights by viewModel.highlights.collectAsState()
     val milestoneJourney by viewModel.milestoneJourney.collectAsState()
     val isUpdating by viewModel.isLoading.collectAsState()
+    val loadFailed by viewModel.loadFailed.collectAsState()
+    val deletingStoryId by viewModel.deletingStoryId.collectAsState()
 
     var selectedTab by remember { mutableIntStateOf(0) }
     var overflowExpanded by remember { mutableStateOf(false) }
     var showEditDialog by remember { mutableStateOf(false) }
     var profileSaveError by remember { mutableStateOf<String?>(null) }
     var unlockedMilestone by remember { mutableStateOf<MilestoneDto?>(null) }
+    var storyPendingDeletion by remember { mutableStateOf<PostDto?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    val deleteSuccessMessage = stringResource(R.string.profile_story_delete_success)
+    val deleteFailureMessage = stringResource(R.string.profile_story_delete_error)
+    val penNameTakenMessage = stringResource(R.string.profile_error_pen_name_taken)
+    val penNameFormatMessage = stringResource(R.string.profile_error_pen_name_format)
+    val invalidProfileMessage = stringResource(R.string.profile_error_invalid)
+    val profileSaveFailureMessage = stringResource(R.string.profile_error_save)
 
     LaunchedEffect(milestoneJourney?.newlyEarned) {
         unlockedMilestone = milestoneJourney?.newlyEarned?.firstOrNull()
@@ -89,6 +103,7 @@ fun ProfileScreen(
     val bio = user?.bio?.trim()?.takeIf { it.isNotBlank() }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.profile_writer_title), style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily)) },
@@ -96,7 +111,7 @@ fun ProfileScreen(
                     IconButton(onClick = onBackClick) {
                         Image(
                             painterResource(R.drawable.ic_back),
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.common_back),
                             modifier = Modifier.size(24.dp),
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                         )
@@ -115,18 +130,18 @@ fun ProfileScreen(
                         IconButton(onClick = { overflowExpanded = true }) {
                             Image(
                                 painterResource(R.drawable.ic_more_vertical),
-                                contentDescription = "Profile options",
+                                contentDescription = stringResource(R.string.profile_options),
                                 modifier = Modifier.size(24.dp),
                                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                             )
                         }
                         DropdownMenu(expanded = overflowExpanded, onDismissRequest = { overflowExpanded = false }) {
                             DropdownMenuItem(text = { Text(stringResource(R.string.profile_edit_button)) }, onClick = { overflowExpanded = false; showEditDialog = true })
-                            DropdownMenuItem(text = { Text("Settings") }, onClick = { overflowExpanded = false; onSettingsClick() })
+                            DropdownMenuItem(text = { Text(stringResource(R.string.settings_title)) }, onClick = { overflowExpanded = false; onSettingsClick() })
                         }
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
             )
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -136,55 +151,122 @@ fun ProfileScreen(
             contentPadding = PaddingValues(horizontal = WritOnSpacing.lg, vertical = WritOnSpacing.md),
             verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
         ) {
-            item {
-                ProfileIdentity(name, penName, bio, user?.avatarUrl, user?.location, user?.joinedAt, onEditClick = {
-                    profileSaveError = null
-                    showEditDialog = true
-                })
-            }
-            item {
-                ProfileStats(
-                    stories = user?.storiesCount ?: stories.size,
-                    applauds = user?.applaudsReceived ?: 0,
-                    followers = user?.followersCount ?: 0,
-                    following = user?.followingCount ?: 0,
-                    onStoriesClick = onStoriesClick,
-                    onApplaudsClick = onApplaudsClick,
-                    onFollowersClick = onFollowersClick,
-                    onFollowingClick = onFollowingClick,
-                )
-            }
-            milestoneJourney?.let { journey ->
-                item { MilestoneJourneyCard(journey) }
-            }
-            item { ProfileTabs(selectedTab) { selectedTab = it } }
+            when {
+                user == null && isUpdating -> item { ProfileLoading() }
+                user == null && loadFailed -> item { ProfileLoadFailure(viewModel::loadUserProfile) }
+                else -> {
+                    item {
+                        ProfileIdentity(name, penName, bio, user?.avatarUrl, user?.location, user?.joinedAt,
+                            foundingWriterNumber = user?.foundingWriterNumber,
+                            emailVerified = user?.emailVerified == true,
+                            onEditClick = {
+                            profileSaveError = null
+                            showEditDialog = true
+                        })
+                    }
+                    item {
+                        ProfileStats(
+                            stories = user?.storiesCount ?: stories.size,
+                            applauds = user?.applaudsReceived ?: 0,
+                            followers = user?.followersCount ?: 0,
+                            following = user?.followingCount ?: 0,
+                            onStoriesClick = onStoriesClick,
+                            onApplaudsClick = onApplaudsClick,
+                            onFollowersClick = onFollowersClick,
+                            onFollowingClick = onFollowingClick,
+                        )
+                    }
+                    milestoneJourney?.let { journey ->
+                        item { MilestoneJourneyCard(journey) }
+                    }
+                    item { ProfileTabs(selectedTab) { selectedTab = it } }
 
-            when (selectedTab) {
-                0 -> item {
-                    ProfileAboutTab(name, bio, user?.location, user?.joinedAt, user?.quoteOfDay, onEditClick = {
-                        profileSaveError = null
-                        showEditDialog = true
-                    })
-                }
-                1 -> {
-                    if (stories.isEmpty()) {
-                        item { ProfileEmptyTab("stories", onWriteClick) }
-                    } else {
-                        items(stories.size) { index ->
-                            ProfileStoryCard(story = stories[index], onClick = { onStoryClick(stories[index].id) })
+                    when (selectedTab) {
+                        0 -> item {
+                            ProfileAboutTab(name, bio, user?.location, user?.joinedAt, user?.quoteOfDay, onEditClick = {
+                                profileSaveError = null
+                                showEditDialog = true
+                            })
+                        }
+                        1 -> {
+                            if (stories.isEmpty()) {
+                                item { ProfileEmptyTab(onWriteClick) }
+                            } else {
+                                items(stories.size) { index ->
+                                    val story = stories[index]
+                                    ProfileStoryCard(
+                                        story = story,
+                                        onClick = { onStoryClick(story.id) },
+                                        onEditClick = { onEditStory(story) },
+                                        onDeleteClick = { storyPendingDeletion = story },
+                                        isDeleting = deletingStoryId == story.id
+                                    )
+                                }
+                            }
+                        }
+                        2 -> item { ProfileSeriesTab(stories = stories, onStoryClick = onStoryClick, onWriteClick = onWriteClick) }
+                        3 -> item {
+                            ProfileHighlightsTab(
+                                highlights = highlights,
+                                onStoryClick = onStoryClick,
+                                onSeeAllClick = { selectedTab = 1 }
+                            )
                         }
                     }
                 }
-                2 -> item { ProfileSeriesTab(stories = stories, onStoryClick = onStoryClick, onWriteClick = onWriteClick) }
-                3 -> item {
-                    ProfileHighlightsTab(
-                        highlights = highlights,
-                        onStoryClick = onStoryClick,
-                        onSeeAllClick = { selectedTab = 1 }
-                    )
-                }
             }
         }
+    }
+
+    storyPendingDeletion?.let { story ->
+        val isDeletingStory = deletingStoryId == story.id
+        AlertDialog(
+            onDismissRequest = { if (!isDeletingStory) storyPendingDeletion = null },
+            title = {
+                Text(
+                    stringResource(R.string.profile_story_delete_title, story.title),
+                    fontFamily = ProfileEditorialFamily
+                )
+            },
+            text = { Text(stringResource(R.string.profile_story_delete_message)) },
+            confirmButton = {
+                Button(
+                    enabled = !isDeletingStory,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                    onClick = {
+                        viewModel.deleteStory(
+                            storyId = story.id,
+                            onSuccess = {
+                                storyPendingDeletion = null
+                                coroutineScope.launch { snackbarHostState.showSnackbar(deleteSuccessMessage) }
+                            },
+                            onError = {
+                                storyPendingDeletion = null
+                                coroutineScope.launch { snackbarHostState.showSnackbar(deleteFailureMessage) }
+                            }
+                        )
+                    }
+                ) {
+                    if (isDeletingStory) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onError
+                        )
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    Text(stringResource(if (isDeletingStory) R.string.profile_story_deleting else R.string.profile_story_delete_confirm))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    enabled = !isDeletingStory,
+                    onClick = { storyPendingDeletion = null }
+                ) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            }
+        )
     }
 
     if (showEditDialog) {
@@ -213,7 +295,12 @@ fun ProfileScreen(
                         showEditDialog = false
                     },
                     onError = { error ->
-                        profileSaveError = error.toUserFacingProfileError()
+                        profileSaveError = error.toUserFacingProfileError(
+                            penNameTakenMessage,
+                            penNameFormatMessage,
+                            invalidProfileMessage,
+                            profileSaveFailureMessage
+                        )
                     }
                 )
             }
@@ -239,6 +326,34 @@ fun ProfileScreen(
 }
 
 @Composable
+private fun ProfileLoading() {
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 72.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = BrandRed)
+    }
+}
+
+@Composable
+private fun ProfileLoadFailure(onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 56.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)
+    ) {
+        Text(
+            stringResource(R.string.profile_load_error),
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
+        Button(onClick = onRetry, colors = ButtonDefaults.buttonColors(containerColor = BrandRed)) {
+            Text(stringResource(R.string.common_retry), color = Color.White)
+        }
+    }
+}
+
+@Composable
 private fun ProfileIdentity(
     name: String,
     penName: String,
@@ -246,31 +361,36 @@ private fun ProfileIdentity(
     avatarUrl: String?,
     location: String?,
     joinedAt: String?,
+    foundingWriterNumber: Int?,
+    emailVerified: Boolean,
     onEditClick: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.Top) {
-            Box {
-                UserAvatar(url = avatarUrl, name = name, size = 88.dp)
-                Surface(
-                    color = BrandRed,
-                    shape = CircleShape,
-                    modifier = Modifier.align(Alignment.BottomEnd).size(32.dp),
-                    border = BorderStroke(2.dp, MaterialTheme.colorScheme.background)
-                ) {
-                    Box(contentAlignment = Alignment.Center) { Text("★", color = Color(0xFFFFFDF9), fontSize = 15.sp) }
-                }
-            }
+            UserAvatar(
+                url = avatarUrl,
+                name = name,
+                size = 88.dp,
+                foundingWriterNumber = foundingWriterNumber,
+                emailVerified = emailVerified
+            )
             Spacer(Modifier.width(WritOnSpacing.md))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(name, style = MaterialTheme.typography.headlineLarge.copy(fontFamily = ProfileEditorialFamily, fontSize = 25.sp, lineHeight = 30.sp), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Spacer(Modifier.width(WritOnSpacing.xxs))
-                    Surface(color = BrandRed, shape = CircleShape, modifier = Modifier.size(20.dp)) {
-                        Box(contentAlignment = Alignment.Center) { Text("✓", color = Color(0xFFFFFDF9), style = MaterialTheme.typography.labelMedium) }
+                    if (emailVerified) {
+                        Spacer(Modifier.width(WritOnSpacing.xxs))
+                        Text("✓", color = BrandRed, style = MaterialTheme.typography.titleMedium)
                     }
                 }
                 if (penName.isNotBlank()) Text("@$penName", style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                foundingWriterNumber?.let { number ->
+                    Text(
+                        stringResource(R.string.profile_founding_writer_badge, number),
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = BrandRed
+                    )
+                }
                 bio?.let {
                     Spacer(Modifier.height(WritOnSpacing.xxs))
                     Text(it, style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp, lineHeight = 19.sp), maxLines = 3, overflow = TextOverflow.Ellipsis)
@@ -298,7 +418,7 @@ private fun ProfileIdentity(
                                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
                             )
                             Spacer(Modifier.width(WritOnSpacing.xxs))
-                            Text("Joined ${joinedAt.take(10)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(stringResource(R.string.profile_joined, joinedAt.take(10)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 }
@@ -319,7 +439,7 @@ private fun ProfileIdentity(
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
             )
             Spacer(Modifier.width(8.dp))
-            Text("Edit Profile & Bio", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
+            Text(stringResource(R.string.profile_edit_profile_bio), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }
@@ -344,13 +464,13 @@ private fun ProfileStats(
         modifier = Modifier.fillMaxWidth()
     ) {
         Row(modifier = Modifier.fillMaxWidth().padding(vertical = WritOnSpacing.lg), horizontalArrangement = Arrangement.SpaceEvenly) {
-            ProfileStat(stories.toString(), "Stories\npublished", onClick = onStoriesClick)
+            ProfileStat(stories.toString(), stringResource(R.string.profile_stat_stories), onClick = onStoriesClick)
             VerticalDivider(Modifier.height(54.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            ProfileStat(formatProfileCount(applauds), "Applauds\nreceived", onClick = onApplaudsClick)
+            ProfileStat(formatProfileCount(applauds), stringResource(R.string.profile_stat_applauds), onClick = onApplaudsClick)
             VerticalDivider(Modifier.height(54.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            ProfileStat(followers.toString(), "Followers", onClick = onFollowersClick)
+            ProfileStat(followers.toString(), stringResource(R.string.profile_stat_followers), onClick = onFollowersClick)
             VerticalDivider(Modifier.height(54.dp), color = MaterialTheme.colorScheme.outlineVariant)
-            ProfileStat(following.toString(), "Following", onClick = onFollowingClick)
+            ProfileStat(following.toString(), stringResource(R.string.profile_stat_following), onClick = onFollowingClick)
         }
     }
 }
@@ -375,7 +495,12 @@ private fun ProfileStat(value: String, label: String, onClick: () -> Unit) {
 
 @Composable
 private fun ProfileTabs(selectedTab: Int, onSelected: (Int) -> Unit) {
-    val tabs = listOf(stringResource(R.string.profile_tab_about), "Stories", "Series", stringResource(R.string.profile_tab_highlights))
+    val tabs = listOf(
+        stringResource(R.string.profile_tab_about),
+        stringResource(R.string.profile_tab_stories),
+        stringResource(R.string.profile_tab_series),
+        stringResource(R.string.profile_tab_highlights)
+    )
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         tabs.forEachIndexed { index, title ->
             Column(
@@ -383,6 +508,7 @@ private fun ProfileTabs(selectedTab: Int, onSelected: (Int) -> Unit) {
                 modifier = Modifier
                     .clip(RoundedCornerShape(WritOnRadius.field))
                     .clickable { onSelected(index) }
+                    .semantics { selected = index == selectedTab }
                     .padding(vertical = WritOnSpacing.xs)
             ) {
                 Text(
@@ -415,7 +541,7 @@ private fun ProfileAboutTab(name: String, bio: String?, location: String?, joine
         ) {
             Column(Modifier.padding(WritOnSpacing.md)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("About $firstName", style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
+                    Text(stringResource(R.string.profile_about_writer, firstName), style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily))
                     Spacer(Modifier.weight(1f))
                     TextButton(onClick = onEditClick, contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp)) {
                         Image(painterResource(R.drawable.ic_edit_pencil), contentDescription = null, modifier = Modifier.size(14.dp))
@@ -425,7 +551,7 @@ private fun ProfileAboutTab(name: String, bio: String?, location: String?, joine
                 }
                 Spacer(Modifier.height(WritOnSpacing.sm))
                 Text(
-                    bio ?: "No bio has been added yet.",
+                    bio ?: stringResource(R.string.profile_no_bio),
                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp, lineHeight = 22.sp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -451,7 +577,8 @@ private fun ProfileAboutTab(name: String, bio: String?, location: String?, joine
                     Image(painterResource(R.drawable.ic_bookmark_orange), contentDescription = null, modifier = Modifier.size(22.dp))
                     Spacer(Modifier.width(WritOnSpacing.sm))
                     Text(
-                        joinedAt?.take(4)?.let { "Writer on WritOn since $it" } ?: "Writer on WritOn",
+                        joinedAt?.take(4)?.let { stringResource(R.string.profile_writer_since, it) }
+                            ?: stringResource(R.string.profile_writer_on_writon),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -462,7 +589,14 @@ private fun ProfileAboutTab(name: String, bio: String?, location: String?, joine
 }
 
 @Composable
-private fun ProfileStoryCard(story: PostDto, onClick: () -> Unit) {
+private fun ProfileStoryCard(
+    story: PostDto,
+    onClick: () -> Unit,
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    isDeleting: Boolean
+) {
+    var optionsExpanded by remember(story.id) { mutableStateOf(false) }
     Surface(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(WritOnRadius.card),
@@ -483,9 +617,54 @@ private fun ProfileStoryCard(story: PostDto, onClick: () -> Unit) {
                     )
                 }
                 Spacer(Modifier.weight(1f))
-                Text("${story.readingTimeMin} min read", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(stringResource(R.string.profile_reading_time, story.readingTimeMin), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Box {
+                    IconButton(
+                        enabled = !isDeleting,
+                        onClick = { optionsExpanded = true }
+                    ) {
+                        Image(
+                            painterResource(R.drawable.ic_more_vertical),
+                            contentDescription = stringResource(R.string.profile_story_options),
+                            modifier = Modifier.size(20.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = optionsExpanded,
+                        onDismissRequest = { optionsExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.profile_story_edit_action)) },
+                            onClick = {
+                                optionsExpanded = false
+                                onEditClick()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    stringResource(R.string.profile_story_delete_action),
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            onClick = {
+                                optionsExpanded = false
+                                onDeleteClick()
+                            }
+                        )
+                    }
+                }
             }
             Spacer(Modifier.height(WritOnSpacing.sm))
+            if (story.contentUpdatedAt != null) {
+                Text(
+                    stringResource(R.string.story_updated_label),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = BrandRed
+                )
+                Spacer(Modifier.height(WritOnSpacing.xs))
+            }
             Text(
                 story.title,
                 style = MaterialTheme.typography.titleLarge.copy(fontFamily = ProfileEditorialFamily, fontWeight = FontWeight.SemiBold, fontSize = 21.sp),
@@ -499,9 +678,9 @@ private fun ProfileStoryCard(story: PostDto, onClick: () -> Unit) {
             }
             Spacer(Modifier.height(WritOnSpacing.md))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = "Applauds", modifier = Modifier.size(18.dp))
+                Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = stringResource(R.string.common_applauds), modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("${story.likesCnt} applauds", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.profile_applause_count, story.likesCnt), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Medium)
             }
         }
     }
@@ -511,7 +690,7 @@ private fun ProfileStoryCard(story: PostDto, onClick: () -> Unit) {
 private fun ProfileSeriesTab(stories: List<PostDto>, onStoryClick: (String) -> Unit, onWriteClick: () -> Unit) {
     val categories = stories.map { it.category }.distinct()
     if (categories.isEmpty()) {
-        ProfileEmptyTab("series", onWriteClick)
+        ProfileEmptyTab(onWriteClick)
     } else {
         Column(verticalArrangement = Arrangement.spacedBy(WritOnSpacing.md)) {
             categories.forEach { category ->
@@ -527,11 +706,11 @@ private fun ProfileSeriesTab(stories: List<PostDto>, onStoryClick: (String) -> U
                     Column(Modifier.padding(WritOnSpacing.md)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                "$category Collection",
+                                stringResource(R.string.profile_collection_title, category),
                                 style = MaterialTheme.typography.titleLarge.copy(fontFamily = ProfileEditorialFamily, fontWeight = FontWeight.SemiBold)
                             )
                             Spacer(Modifier.weight(1f))
-                            Text("${categoryStories.size} parts", style = MaterialTheme.typography.labelMedium, color = BrandRed)
+                            Text(stringResource(R.string.profile_parts_count, categoryStories.size), style = MaterialTheme.typography.labelMedium, color = BrandRed)
                         }
                         Spacer(Modifier.height(WritOnSpacing.sm))
                         categoryStories.take(3).forEach { story ->
@@ -589,7 +768,7 @@ private fun ProfileHighlightsTab(
                         Spacer(Modifier.width(4.dp))
                         Image(
                             painterResource(R.drawable.ic_forward_muted),
-                            contentDescription = "See all stories",
+                            contentDescription = stringResource(R.string.profile_see_all_stories),
                             modifier = Modifier.size(18.dp),
                             colorFilter = ColorFilter.tint(BrandRed)
                         )
@@ -609,11 +788,11 @@ private fun ProfileHighlightsTab(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(story.title, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold), color = MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                Text("${story.category} • ${story.readingTimeMin} min read • ${story.likesCnt} applauds", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(R.string.profile_story_summary, story.category, story.readingTimeMin, story.likesCnt), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Image(
                                 painterResource(R.drawable.ic_forward_muted),
-                                contentDescription = "Read story",
+                                contentDescription = stringResource(R.string.notification_action_read_story),
                                 modifier = Modifier.size(18.dp),
                                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
                             )
@@ -627,7 +806,7 @@ private fun ProfileHighlightsTab(
 }
 
 @Composable
-private fun ProfileEmptyTab(type: String, onAction: () -> Unit) {
+private fun ProfileEmptyTab(onAction: () -> Unit) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(WritOnRadius.card),
@@ -702,7 +881,7 @@ private fun EditProfileDialog(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "Edit Writer Profile",
+                        stringResource(R.string.profile_edit_writer_title),
                         style = MaterialTheme.typography.headlineSmall.copy(fontFamily = ProfileEditorialFamily, fontSize = 22.sp),
                         color = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.weight(1f)
@@ -710,7 +889,7 @@ private fun EditProfileDialog(
                     IconButton(onClick = onDismiss) {
                         Image(
                             painterResource(R.drawable.ic_close),
-                            contentDescription = "Close",
+                            contentDescription = stringResource(R.string.common_close),
                             modifier = Modifier.size(20.dp),
                             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                         )
@@ -829,17 +1008,21 @@ private fun initialsOf(name: String): String = name.split(" ").mapNotNull { it.f
 private fun formatProfileCount(value: Int): String =
     if (value >= 1_000) String.format(java.util.Locale.getDefault(), "%.1fK", value / 1_000.0) else value.toString()
 
-private fun String.toUserFacingProfileError(): String {
+private fun String.toUserFacingProfileError(
+    penNameTakenMessage: String,
+    penNameFormatMessage: String,
+    invalidProfileMessage: String,
+    fallbackMessage: String
+): String {
     val normalized = trim()
     return when {
         normalized.contains("username is already taken", ignoreCase = true) ->
-            "That pen name is already taken. Please choose another one."
+            penNameTakenMessage
         normalized.contains("Username may contain only", ignoreCase = true) ->
-            "Use 3–32 lowercase letters, numbers, or underscores only."
+            penNameFormatMessage
         normalized.contains("Invalid profile data", ignoreCase = true) ->
-            "Please check your name and pen name, then try again."
-        normalized.isBlank() -> "We couldn't save your profile. Please try again."
-        else -> normalized.removePrefix("{\"error\":\"").substringBefore("\"}")
+            invalidProfileMessage
+        else -> normalized.ifBlank { fallbackMessage }
     }
 }
 

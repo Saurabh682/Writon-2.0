@@ -1,0 +1,11 @@
+[
+  {
+    "start": 0.0,
+    "end": 2.5,
+    "purpose": "broken_draft",
+    "text": "Broken sentence here",
+    "visual_state": "frame_zero_visible",
+    "motion": "none",
+    "voice": "Diagnosis line"
+  }
+]

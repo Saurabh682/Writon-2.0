@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>WritOn — Stop Using Adverbs in Dialogue Tags</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background-color: #3b2014;
+        font-family: 'Playfair Display', Georgia, serif;
+        color: #0E0C0A;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+      }
+
+      /* 1. Background Desk */
+      .desk-photo {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+        background-image: url('assets/desk_coffee_card_nobox_4k.jpg');
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+      }
+
+      .warm-ambient {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, rgba(255, 230, 190, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* Left Margin Red Rule */
+      .card-left-rule {
+        position: absolute;
+        left: 122px;
+        top: 172px;
+        height: 1488px;
+        width: 3px;
+        background-color: #821D1A;
+        z-index: 5;
+        border-radius: 2px;
+      }
+
+      /* Header Row */
+      .card-header {
+        position: absolute;
+        top: 172px;
+        left: 155px;
+        width: 770px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 5;
+      }
+
+      .inversion-pill {
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        padding: 7px 18px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .brand-mark {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 46px;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -0.5px;
+      }
+      .brand-mark em {
+        font-style: italic;
+        font-weight: 700;
+      }
+      .brand-mark span {
+        color: #821D1A;
+      }
+
+      /* =========================================
+         STAGE 1: HIGH-INTERRUPTION RETENTION HOOK
+         ========================================= */
+      .challenge-hook-layer {
+        position: absolute;
+        top: 380px;
+        left: 155px;
+        width: 770px;
+        z-index: 12;
+      }
+
+      .challenge-hook-headline {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 58px;
+        line-height: 1.15;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -1.5px;
+        text-transform: uppercase;
+        margin-bottom: 18px;
+      }
+
+      .challenge-hook-sub {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 38px;
+        font-style: italic;
+        color: #821D1A;
+        font-weight: 700;
+      }
+
+      /* =========================================
+         STAGE 2: FLAWED SENTENCE REVEAL
+         ========================================= */
+      .broken-sentence-layer {
+        position: absolute;
+        top: 650px;
+        left: 155px;
+        width: 770px;
+        z-index: 11;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      .broken-line-1 {
+        display: block;
+        font-size: 52px;
+        font-weight: 700;
+        color: #1A140E;
+        line-height: 1.25;
+        margin-bottom: 8px;
+      }
+
+      .broken-line-2 {
+        display: block;
+        font-size: 52px;
+        font-weight: 700;
+        color: #1A140E;
+        line-height: 1.25;
+      }
+
+      /* Yellow Marker Highlight on "menacingly." */
+      .highlight-word {
+        position: relative;
+        display: inline-block;
+        font-style: italic;
+        font-weight: 800;
+        color: #1A140E;
+        transition: color 0.3s ease;
+      }
+      .highlight-bg {
+        position: absolute;
+        left: -4px;
+        right: -4px;
+        bottom: 4px;
+        top: 12px;
+        background-color: #F8E285;
+        z-index: -1;
+        border-radius: 4px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      /* Stage 2b: "Delete one word." directive badge */
+      .delete-directive {
+        margin-top: 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background-color: #F8EBEA;
+        border: 2px solid #D66D67;
+        color: #821D1A;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 26px;
+        font-weight: 900;
+        padding: 10px 24px;
+        border-radius: 8px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      /* =========================================
+         STAGE 3: HEALED REWRITE & PAYOFF
+         ========================================= */
+      .card-content {
+        position: absolute;
+        top: 400px;
+        left: 155px;
+        width: 770px;
+        z-index: 6;
+        opacity: 0;
+      }
+
+      .rewrite-label-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      .keep-pill {
+        background-color: #E8F4EC;
+        border: 1.5px solid #48A168;
+        color: #1A6934;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        padding: 5px 18px;
+        border-radius: 6px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+
+      /* Main Rewrite Title (Animated Line by Line) */
+      .main-title {
+        font-size: 58px;
+        line-height: 1.22;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 45px;
+      }
+      .title-row {
+        display: block;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      .main-title .italic-crimson {
+        font-style: italic;
+        font-weight: 800;
+        color: #821D1A;
+      }
+
+      /* Horizontal Rule */
+      .red-divider {
+        width: 90px;
+        height: 4px;
+        background-color: #821D1A;
+        border-radius: 2px;
+        margin-bottom: 40px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      /* Payoff Flow */
+      .payoff-flow {
+        width: 770px;
+      }
+
+      .payoff-sub {
+        font-size: 32px;
+        font-style: italic;
+        line-height: 1.25;
+        color: #4A3B32;
+        margin-bottom: 26px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      .payoff-lead {
+        font-size: 48px;
+        font-weight: 900;
+        line-height: 1.15;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      .payoff-punch {
+        font-size: 48px;
+        font-weight: 900;
+        line-height: 1.15;
+        color: #821D1A;
+        font-style: italic;
+        letter-spacing: -1px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      /* Footer Row */
+      .card-footer {
+        position: absolute;
+        bottom: 180px;
+        left: 155px;
+        width: 770px;
+        z-index: 5;
+      }
+
+      .footer-line {
+        width: 100%;
+        height: 1px;
+        background-color: rgba(14, 12, 10, 0.12);
+        margin-bottom: 25px;
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .footer-handle {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #8A766A;
+        letter-spacing: 1px;
+      }
+
+      .footer-dots {
+        display: flex;
+        gap: 8px;
+      }
+      .footer-dot-sand {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #D66D67;
+      }
+      .footer-dot-crimson {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #821D1A;
+      }
+
+      .footer-url {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        color: #821D1A;
+        letter-spacing: 1.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="18.0"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Background Photo -->
+      <div class="desk-photo"></div>
+      <div class="warm-ambient"></div>
+
+      <!-- Audio Track: Dual Deadbolt Clicks + Nicole @ 1.25x + Ambient Piano -->
+      <audio id="voiceTrack" src="assets/voiceover_compressed_mixed.mp3" data-start="0" data-duration="18.0"></audio>
+
+      <!-- Left Red Margin -->
+      <div class="card-left-rule"></div>
+
+      <!-- Header Row (Tiny Stamp in the Corner) -->
+      <div class="card-header">
+        <div class="inversion-pill">WRITING HACK #11</div>
+        <div class="brand-mark">Writ<em>On</em><span>.</span></div>
+      </div>
+
+      <!-- =========================================
+           STAGE 1: 0.0s - 0.7s HIGH-INTERRUPTION CHALLENGE
+           ========================================= -->
+      <div class="challenge-hook-layer" id="hookLayer">
+        <div class="challenge-hook-headline" id="hookHeadline">
+          Make this line feel dangerous.
+        </div>
+        <div class="challenge-hook-sub" id="hookSub">
+          without changing the dialogue
+        </div>
+      </div>
+
+      <!-- =========================================
+           STAGE 2: 0.7s - 3.8s FLAWED SENTENCE REVEAL
+           ========================================= -->
+      <div class="broken-sentence-layer" id="brokenLayer">
+        <span class="broken-line-1">“Don’t touch that,”</span>
+        <span class="broken-line-2">
+          he whispered
+          <span class="highlight-word" id="wordMenacingly">
+            menacingly.
+            <span class="highlight-bg" id="hlBg"></span>
+          </span>
+        </span>
+        <div class="delete-directive" id="deleteDirective">
+          <span>Delete one word.</span>
+        </div>
+      </div>
+
+      <!-- =========================================
+           STAGE 3: 4.2s - 18.0s REPAIRED PROSE & PAYOFF
+           ========================================= -->
+      <div class="card-content" id="cardContent">
+        <div class="rewrite-label-row" id="rwLabel">
+          <span class="keep-pill">Physical Threat</span>
+        </div>
+
+        <div class="main-title" id="mainTitle">
+          <div class="title-row" id="tl1">“Don’t touch that.”</div>
+          <div class="title-row" id="tl2">His thumb clicked</div>
+          <div class="title-row" id="tl3">the deadbolt</div>
+          <div class="title-row" id="tl4"><span class="italic-crimson">into place.</span></div>
+        </div>
+
+        <div class="red-divider" id="redDivider"></div>
+
+        <div class="payoff-flow" id="payoffFlow">
+          <div class="payoff-sub" id="ps1">Now the threat is in the room, not in the modifier.</div>
+          <div class="payoff-lead" id="pl1">Dialogue carries the words.</div>
+          <div class="payoff-punch" id="pl2">Action carries the threat.</div>
+        </div>
+      </div>
+
+      <!-- Footer Row -->
+      <div class="card-footer">
+        <div class="footer-line"></div>
+        <div class="footer-content">
+          <div class="footer-handle">@writon_app</div>
+          <div class="footer-dots">
+            <div class="footer-dot-sand"></div>
+            <div class="footer-dot-crimson"></div>
+          </div>
+          <div class="footer-url">writon.cc ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial state
+      gsap.set("#cardContent", { opacity: 0 });
+
+      // 0.0s: Metallic deadbolt click hits instantly at 0.01s!
+      // 0.0s - 2.0s: Nicole: "Can you make this line feel dangerous?"
+      // 0.6s: Flawed sentence slides in immediately (no dead air!)
+      tl.to("#brokenLayer", { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 0.6);
+
+      // 1.8s: Yellow highlighter snaps across "menacingly."
+      tl.to("#hlBg", { scaleX: 1, duration: 0.35, ease: "power2.out" }, 1.8);
+
+      // 2.5s: Nicole: "Delete one word." -> Badge pops in
+      tl.to("#deleteDirective", { opacity: 1, y: 0, duration: 0.30, ease: "back.out(1.4)" }, 2.5);
+
+      // 3.2s: Strip "menacingly." out (dissolve / collapse)
+      tl.to("#wordMenacingly", { opacity: 0, scale: 0.8, duration: 0.25, ease: "power2.in" }, 3.2);
+
+      // 3.8s: Hook & Flawed layer exit smoothly into warm parchment
+      tl.to("#hookLayer", { opacity: 0, y: -15, duration: 0.40, ease: "power2.inOut" }, 3.8)
+        .to("#brokenLayer", { opacity: 0, y: -15, duration: 0.40, ease: "power2.inOut" }, 3.8);
+
+      // 4.2s: Repaired sentence appears with Physical Threat chip (no "HEALED SENTENCE" clutter)
+      // 4.4s - 5.2s: Nicole: "“Don't touch that.”"
+      tl.to("#cardContent", { opacity: 1, duration: 0.05 }, 4.1)
+        .to("#rwLabel", { opacity: 1, y: 0, duration: 0.30, ease: "power2.out" }, 4.2)
+        .to("#tl1", { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 4.3);
+
+      // 6.2s - 8.5s: Nicole: "His thumb clicked the deadbolt into place."
+      // 7.8s: Second metallic deadbolt click fires!
+      tl.to("#tl2", { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 5.8)
+        .to("#tl3", { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 6.7)
+        .to("#tl4", { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.3)" }, 7.6);
+
+      // 8.5s: Red divider rule scales across
+      tl.to("#redDivider", { scaleX: 1, duration: 0.35, ease: "power2.out" }, 8.5);
+
+      // 8.8s - 11.2s: Nicole: "Now the threat is in the room, not in the modifier."
+      tl.to("#ps1", { opacity: 1, y: 0, duration: 0.40, ease: "power2.out" }, 8.8);
+
+      // 11.5s - 12.5s: Nicole: "Dialogue carries the words."
+      tl.to("#pl1", { opacity: 1, y: 0, duration: 0.40, ease: "power3.out" }, 11.5);
+
+      // 13.5s - 15.2s: Nicole: "Action carries the threat."
+      tl.to("#pl2", { opacity: 1, y: 0, duration: 0.50, ease: "back.out(1.2)" }, 13.5);
+
+      // 15.5s - 18.0s: Clean hold breathing room before seamless loop back to 0.0s deadbolt click!
+      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.015, duration: 18.0, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

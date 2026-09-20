@@ -58,10 +58,16 @@ async function parseRedditFeed() {
     const guidMatch = /<guid[^>]*>([\s\S]*?)<\/guid>/.exec(itemBlock);
     const descMatch = /<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/.exec(itemBlock);
     const categoryMatch = /<category>([\s\S]*?)<\/category>/.exec(itemBlock);
+    const unescapeXml = (str) => String(str || '')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>');
 
     if (titleMatch && (linkMatch || guidMatch)) {
       items.push({
-        title: titleMatch[1].trim(),
+        title: unescapeXml(titleMatch[1]).trim(),
         link: (linkMatch ? linkMatch[1] : guidMatch[1]).trim(),
         guid: guidMatch ? guidMatch[1].trim() : (linkMatch ? linkMatch[1].trim() : ''),
         body: descMatch ? descMatch[1].trim() : '',
@@ -125,6 +131,7 @@ async function saveSessionCookie(rawCookie) {
     if (match) cookieVal = match[1];
   }
   await fs.mkdir(path.dirname(AUTH_STATE_FILE), { recursive: true });
+  const expires = Math.floor(Date.now() / 1000) + (180 * 24 * 3600);
   const storageState = {
     cookies: [
       {
@@ -132,7 +139,27 @@ async function saveSessionCookie(rawCookie) {
         value: cookieVal,
         domain: '.reddit.com',
         path: '/',
-        expires: Math.floor(Date.now() / 1000) + (180 * 24 * 3600),
+        expires,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+      },
+      {
+        name: 'token',
+        value: cookieVal,
+        domain: '.reddit.com',
+        path: '/',
+        expires,
+        httpOnly: true,
+        secure: true,
+        sameSite: 'None',
+      },
+      {
+        name: 'token_v2',
+        value: cookieVal,
+        domain: '.reddit.com',
+        path: '/',
+        expires,
         httpOnly: true,
         secure: true,
         sameSite: 'None',
@@ -262,6 +289,13 @@ async function publishPost({ title, body, subreddit = 'writon', headless = true,
   }
 
   if (!existsSync(AUTH_STATE_FILE)) {
+    const envCookie = process.env.REDDIT_SESSION_COOKIE;
+    if (envCookie) {
+      await saveSessionCookie(envCookie);
+    }
+  }
+
+  if (!existsSync(AUTH_STATE_FILE)) {
     console.error(`❌ Session state not found at ${AUTH_STATE_FILE}`);
     console.error('👉 Run "npm run post:reddit:login" once to create your session.');
     process.exit(1);
@@ -275,7 +309,8 @@ async function publishPost({ title, body, subreddit = 'writon', headless = true,
 
   const context = await browser.newContext({
     storageState: AUTH_STATE_FILE,
-    viewport: { width: 1280, height: 900 },
+    viewport: { width: 1920, height: 1080 },
+    deviceScaleFactor: 2, // 2x Retina rendering for crystal clear high-res screenshots
     userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
   });
 
@@ -344,11 +379,20 @@ async function publishPost({ title, body, subreddit = 'writon', headless = true,
   console.log(`\n🎉 Post published successfully!`);
   console.log(`🔗 URL: ${finalUrl}\n`);
 
-  // 6. Capture screenshot verification
+  // 5. Dismiss any popups like "Get your post the attention it deserves / Repost"
+  try {
+    const closePopupBtn = page.locator('button[aria-label="Close"], button:has-text("Close"), [aria-label*="close"]').first();
+    if (await closePopupBtn.isVisible({ timeout: 3000 })) {
+      await closePopupBtn.click();
+      await page.waitForTimeout(1000);
+    }
+  } catch {}
+
+  // 6. Capture high-resolution screenshot verification (2x Retina)
   await fs.mkdir(ARTIFACTS_DIR, { recursive: true });
   const screenshotPath = path.join(ARTIFACTS_DIR, `reddit_publish_${Date.now()}.png`);
   await page.screenshot({ path: screenshotPath, fullPage: false }).catch(() => {});
-  console.log(`📸 Screenshot saved: ${screenshotPath}`);
+  console.log(`📸 High-resolution screenshot saved: ${screenshotPath}`);
 
   // 7. Save to published history
   await recordPublishedPost({
@@ -377,6 +421,15 @@ async function main() {
     return;
   }
 
+  // Circuit Breaker: All Reddit posting operations paused by operator directive
+  const force = Boolean(options.force || options['override-pause']);
+  if (process.env.REDDIT_PAUSED !== 'false' && !force) {
+    console.log('⏸️  [PAUSED] Reddit publishing and automation operations are currently PAUSED by operator directive.');
+    console.log('    All automatic dispatches, feed publishing, and bot posts are suspended.');
+    console.log('    To override in emergency, supply --override-pause or --force.');
+    return;
+  }
+
   const dryRun = Boolean(options['dry-run'] || options.dryRun);
   const headed = Boolean(options.headed);
   const headless = options.headless !== undefined ? Boolean(options.headless) : !headed;
@@ -400,8 +453,19 @@ async function main() {
       (history.redditPosts || []).map(p => p.link || p.title)
     );
 
-    // Find the latest unposted story
-    const candidate = feedItems.find(item => !publishedGuids.has(item.link) && !publishedGuids.has(item.title)) || feedItems[0];
+    // Find the latest unposted story (optionally filtered by keyword/match query)
+    const matchQuery = options.match || options.filter || options.slug;
+    let pool = feedItems;
+    if (matchQuery) {
+      const q = String(matchQuery).toLowerCase();
+      pool = feedItems.filter(item => item.title.toLowerCase().includes(q) || item.link.toLowerCase().includes(q));
+      if (!pool.length) {
+        console.warn(`⚠️ No feed items matched query "${matchQuery}". Falling back to entire feed.`);
+        pool = feedItems;
+      }
+    }
+
+    const candidate = pool.find(item => !publishedGuids.has(item.link) && !publishedGuids.has(item.title)) || pool[0] || feedItems[0];
 
     title = candidate.title;
     body = candidate.body;

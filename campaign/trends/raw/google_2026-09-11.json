@@ -1,0 +1,509 @@
+[
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-11T05:30:11.412Z",
+    "date": "2026-09-11",
+    "indiaTrends": [
+      {
+        "topic": "लद्दाख",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "चीन के राष्ट्रपति के आने के बीच लद्दाख को पहली बार मिला बड़ा ऑफर, अनुच्छेद 370 हटाने के बाद केंद्र उठाने जा रहा बड़ा कदम, पाकिस्तान की बढ़ेगी टेंशन",
+        "snippet": null,
+        "source": "Navbharat Times"
+      },
+      {
+        "topic": "rentomojo ipo gmp today",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "India’s IPO fundraising poised to breach Rs 1 lakh crore in 2026",
+        "snippet": null,
+        "source": "The Economic Times"
+      },
+      {
+        "topic": "மின் தடை",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "சென்னை தவிர்த்து மற்ற மாவட்டங்களில் சுழற்சி முறையில் ஒரு மணி நேரம் மின் தடை",
+        "snippet": null,
+        "source": "Dinamalar"
+      },
+      {
+        "topic": "ola electric share price",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Ola Electric shares surge 7%. What’s triggering the sharp uptick in EV major?",
+        "snippet": null,
+        "source": "The Economic Times"
+      },
+      {
+        "topic": "पंजाब प्रदेश कांग्रेस समिति",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": null,
+        "snippet": null,
+        "source": null
+      },
+      {
+        "topic": "infosys share price",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "IT stocks crash as Coforge, Infy, Tech Mahindra, HCL, TCS slide on H1-B visa fee hike",
+        "snippet": null,
+        "source": "BusinessLine"
+      },
+      {
+        "topic": "cochin shipyard share",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Cochin Shipyard Order Book Stands At ₹219 Billion Compared To ₹211 Billion",
+        "snippet": null,
+        "source": "Sahi"
+      },
+      {
+        "topic": "hindustan copper share price",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "White House copper tariff plan stalls amid affordability concerns, sources say",
+        "snippet": null,
+        "source": "Reuters"
+      },
+      {
+        "topic": "icici bank share price",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "Stocks to Watch Today: IRB Infrastructure, Shakti Pumps, Dilip Buildcon, Indian Bank, Khadim India, ICICI...",
+        "snippet": null,
+        "source": "Moneycontrol.com"
+      },
+      {
+        "topic": "ather energy share price",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "Ather Konarc vs Simple Wave vs Ola S1 Z vs TVS iQube vs Bajaj Chetak vs VIDA VX2: Which Electric Scooter Is Best?",
+        "snippet": null,
+        "source": "Autopunditz"
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "josh hartnett",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "&apos;Below&apos;: Josh Harnett Vs Sea Creature In Trailer For Netflix Series",
+        "snippet": null,
+        "source": "Deadline"
+      },
+      {
+        "topic": "ted cruz",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Shouts of ‘he should be shot’ heard during GOP midterm convention speech criticizing Democratic candidates",
+        "snippet": null,
+        "source": "CNN"
+      },
+      {
+        "topic": "downdetector",
+        "geo": "US",
+        "approxTraffic": "5000+",
+        "headline": "Fidium Fiber internet outages affecting Maine, other New England states",
+        "snippet": null,
+        "source": "Centralmaine.com"
+      },
+      {
+        "topic": "vaccines",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Maryland health officials issue new vaccine guidance",
+        "snippet": null,
+        "source": "WBAL-TV"
+      },
+      {
+        "topic": "vaccinations",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Suspected measles cases kill nearly 1,000 as Bangladesh struggles to contain outbreak",
+        "snippet": null,
+        "source": "NBC News"
+      },
+      {
+        "topic": "flu shots",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Medical Groups Issue Guidance on Covid, Flu and R.S.V. Shots",
+        "snippet": null,
+        "source": "The New York Times"
+      },
+      {
+        "topic": "cable tv",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Nielsen: Streaming Took Record 49% of July Household TV Market Share, Driven by World Cup, &apos;Love Island,&apos; YouTube",
+        "snippet": null,
+        "source": "Media Play News"
+      },
+      {
+        "topic": "내일 날씨",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "[포토타임] 아침 기온 10도까지 뚝…큰 일교차 주의",
+        "snippet": null,
+        "source": "미주중앙일보"
+      },
+      {
+        "topic": "aster",
+        "geo": "US",
+        "approxTraffic": "5000+",
+        "headline": "What To Do With Chrysanthemums in September for a Fabulous Fall Display",
+        "snippet": null,
+        "source": "Homes and Gardens"
+      },
+      {
+        "topic": "gal gadot",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "Gal Gadot&apos;s New Non-Stop Prime Video Action Thriller Debuts Jaw-Dropping Rotten Tomatoes Score",
+        "snippet": null,
+        "source": "IMDb"
+      }
+    ]
+  },
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-11T12:30:06.964Z",
+    "date": "2026-09-11",
+    "indiaTrends": [
+      {
+        "topic": "babar azam",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "Rizwan and Imam quizzed by Pakistan&apos;s cybercrimes investigators",
+        "snippet": null,
+        "source": "Cricinfo"
+      },
+      {
+        "topic": "മഴ",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "സംസ്ഥാനത്ത് താപനില മുന്നറിയിപ്പ് തുടരുന്നു, പാലക്കാടും കോട്ടയത്തും രേഖപ്പെടുത്തിയത് ഉയർന്ന താപനില",
+        "snippet": null,
+        "source": "Asianet News Malayalam"
+      },
+      {
+        "topic": "शुक्र",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "57 दिन तक शुक्र गोचर तुला राशि में, इन 7 राशियों के लिए लगेगी खुशियों की झड़ी",
+        "snippet": null,
+        "source": "Hindustan"
+      },
+      {
+        "topic": "టీవీ9 - తెలుగు",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "Ganesh Chaturthi: వినాయక చవితి వేళ ఈ 5 రాశులపై గణపయ్య కటాక్షం.. డబ్బు, ఉద్యోగంలో ఊహించని మార్పులు..!",
+        "snippet": null,
+        "source": "News18 Telugu"
+      },
+      {
+        "topic": "अजित पवार",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "बीजेपी का साथ छोड़ो तभी होगा NCP का विलय, महाराष्ट्र में सरकार के सामने &apos;राहुल गांधी&apos; बने रोहित पवार की दो टूक",
+        "snippet": null,
+        "source": "Navbharat Times"
+      },
+      {
+        "topic": "शेयर प्राइस",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "2 हफ्ते में 57% की उछाल, आज 20% चढ़ा दाम, शेयरों में लगा अपर सर्किट",
+        "snippet": null,
+        "source": "Hindustan"
+      },
+      {
+        "topic": "தொல். திருமாவளவன்",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "Special Report | CM விஜய் Vs MK ஸ்டாலின்.. தேசிய அரசியலையே சுழன்றடிக்கும் மிசா புயல்",
+        "snippet": null,
+        "source": "Thanthi TV"
+      },
+      {
+        "topic": "अनिल अग्रवाल",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "अनिल अग्रवाल की कंपनी में लगा अपर सर्किट, रॉकेट की तरह भागे शेयर; 1 साल में एक लाख को बना दिए 6.4 लाख रुपये",
+        "snippet": null,
+        "source": "Jagran"
+      },
+      {
+        "topic": "முதலீடு",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "லண்டன் சென்றடைந்தார் முதல்வர் விஜய்! தமிழர்கள் உற்சாக வரவேற்பு!",
+        "snippet": null,
+        "source": "Dinamani"
+      },
+      {
+        "topic": "ഭര്ത്താവ്",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "&apos;അവനോട് വിശ്വസ്തത പുലർത്തണം&apos;; ഭാര്യയെ കാമുകനൊപ്പം പോകാൻ അനുവദിച്ച് ഭർത്താവ്, വിവാഹം നടത്താനും സഹായിച്ചു",
+        "snippet": null,
+        "source": "Asianet News Malayalam"
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "derek jeter",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "MLB great Roger Clemens recalls George W Bush&apos;s iconic 9/11 World Series first pitch: &apos;A perfect strike&apos;",
+        "snippet": null,
+        "source": "Fox News"
+      },
+      {
+        "topic": "al qaeda",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "The ‘Forever War’ in Afghanistan: 25 Years in Pictures",
+        "snippet": null,
+        "source": "The New York Times"
+      },
+      {
+        "topic": "betty ong",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "How Final Calls From 9/11 Became a Record of the Tragedy",
+        "snippet": null,
+        "source": "History.com"
+      },
+      {
+        "topic": "one world trade center",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "He evacuated the World Trade Center minutes before it was struck. Now he works there again.",
+        "snippet": null,
+        "source": "The Business Journals"
+      },
+      {
+        "topic": "freedom tower",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "One World Trade Center is flourishing after more than 11 years",
+        "snippet": null,
+        "source": "Crain&apos;s New York"
+      },
+      {
+        "topic": "twin towers collapse",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "25 years ago, two strangers met in the twin towers and escaped on 9/11. What happened next?",
+        "snippet": null,
+        "source": "The Guardian"
+      },
+      {
+        "topic": "george bush",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "George W. Bush says Americans \"don&apos;t pay attention to the lesson of 9/11\"",
+        "snippet": null,
+        "source": "CBS News"
+      },
+      {
+        "topic": "how many firefighters died in 9/11",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "I Lost My Dad on 9/11. He Loved His Office With a View.",
+        "snippet": null,
+        "source": "The New York Times"
+      },
+      {
+        "topic": "ted lasso - season 4",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "‘Ted Lasso’ Season 4, Episode 6 Recap: Boat Party",
+        "snippet": null,
+        "source": "The New York Times"
+      },
+      {
+        "topic": "arnold schwarzenegger maria shriver family photo",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Arnold Schwarzenegger and Maria Shriver Smile Together in New Photo Shared by Daughter Katherine",
+        "snippet": null,
+        "source": "Yahoo"
+      }
+    ]
+  },
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-11T15:00:39.072Z",
+    "date": "2026-09-11",
+    "indiaTrends": [
+      {
+        "topic": "chumbak netflix",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Chumbak Review: Old Style Sitcom",
+        "snippet": null,
+        "source": "Rediff"
+      },
+      {
+        "topic": "ಭಾರತೀಯ ರಿಸರ್ವ್ ಬ್ಯಾಂಕ್",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "RBIನಿಂದ ಸಾವರಿನ್ ಗೋಲ್ಡ್ ಬಾಂಡ್ ಮರುಪಾವತಿ ಬೆಲೆ ಘೋಷಣೆ: 8 ವರ್ಷಗಳಲ್ಲಿ ಹೂಡಿಕೆದಾರರ ಹಣ 3 ಪಟ್ಟು ಏರಿಕೆ!",
+        "snippet": null,
+        "source": "The Economic Times Kannada"
+      },
+      {
+        "topic": "ರಾಶಿ",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "ಒಂದೇ ದಿನದಲ್ಲಿ 2 ಪ್ರಬಲ ಯೋಗ 2026: ಕೆಲವೇ ದಿನದಲ್ಲಿ ಮೀನ ಸೇರಿ ಈ 5 ರಾಶಿಯವರಿಗೆ ಒಲಿಯುವುದು ಹಣ ಅದೃಷ್ಟ...!",
+        "snippet": null,
+        "source": "Vijay Karnataka"
+      },
+      {
+        "topic": "വിവാഹം",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "വീടുവിട്ടു പോയ ഭാര്യ തിരിച്ചുവരില്ല; കാമുകന് വിവാഹം ചെയ്തുനൽകി ഭർത്താവ്",
+        "snippet": null,
+        "source": "News18 Malayalam"
+      },
+      {
+        "topic": "cbse 2027 date sheet class 10",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "CBSE Date Sheet 2027 Soon @cbse.gov.in Live Updates; Steps to Download Class 10, 12 CBSE Schedule PDF",
+        "snippet": null,
+        "source": "Shiksha.com"
+      },
+      {
+        "topic": "android",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "Apple unveils iPhone Duo",
+        "snippet": null,
+        "source": "Apple"
+      },
+      {
+        "topic": "filmy film",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "Ten duński film Netflixa spodoba się fanom uczuciowych historii o miłości, braku wiary w siebie i walce o lepsze życie. Podczas seansu uronisz niejedną łzę",
+        "snippet": null,
+        "source": "Zwierciadło"
+      },
+      {
+        "topic": "skoda slavia price hike",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Skoda Slavia Prices Revised by up to Rs. 19,000",
+        "snippet": null,
+        "source": "CarWale"
+      },
+      {
+        "topic": "pakistan vs sri lanka",
+        "geo": "IN",
+        "approxTraffic": "20000+",
+        "headline": "SLW vs PAKW, Semi Final 2 (B1 v A2), Women&apos;s Asia Cup 2026 - Commentary",
+        "snippet": null,
+        "source": "Cricbuzz"
+      },
+      {
+        "topic": "শুক্র",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Shukra Gochar 2026 : শুক্রের খেলা শুরু, বিপদ বাড়ল ৩ রাশির, অর্থকষ্ট থেকে স্বাস্থ্যহানি, কী",
+        "snippet": null,
+        "source": "ABP Ananda"
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "dylan larkin",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Red Wings’ Dylan Larkin will report to camp but will no longer be team captain",
+        "snippet": null,
+        "source": "The New York Times"
+      },
+      {
+        "topic": "ohio state vs texas",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Ohio State-Texas marks latest battle between Heisman hopefuls",
+        "snippet": null,
+        "source": "ESPN"
+      },
+      {
+        "topic": "summer pardi",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Country music star dedicates love song to estranged wife and fans want them to reunite",
+        "snippet": null,
+        "source": "PennLive.com"
+      },
+      {
+        "topic": "ethereum price",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Current price of Ethereum for Sept. 11, 2026",
+        "snippet": null,
+        "source": "Fortune"
+      },
+      {
+        "topic": "joseph pfeifer",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "For 25 years, my dad kept his 9/11 story private. Then I asked him to talk about it",
+        "snippet": null,
+        "source": "NPR"
+      },
+      {
+        "topic": "oil price today",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Oil prices fall sharply after double-digit weekly gains above $100",
+        "snippet": null,
+        "source": "CNBC"
+      },
+      {
+        "topic": "naruto",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "‘Naruto’ Sets New York Comic Con Panel With Japanese Voice Cast, Studio Pierrot Producer (EXCLUSIVE)",
+        "snippet": null,
+        "source": "Variety"
+      },
+      {
+        "topic": "paige bueckers",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "FIBA Women&apos;s Basketball World Cup 2026: Team USA&apos;s Paige Bueckers on surmounting historic Italian challenge: “We find ways to win”",
+        "snippet": null,
+        "source": "Olympics"
+      },
+      {
+        "topic": "sl-w vs pakw",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": null,
+        "snippet": null,
+        "source": null
+      },
+      {
+        "topic": "condoleezza rice",
+        "geo": "US",
+        "approxTraffic": "10000+",
+        "headline": "George W. Bush says Americans \"don&apos;t pay attention to the lesson of 9/11\"",
+        "snippet": null,
+        "source": "CBS News"
+      }
+    ]
+  }
+]

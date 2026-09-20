@@ -6,7 +6,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.SupportSQLiteOpenHelper
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import androidx.test.platform.app.InstrumentationRegistry
+import com.ibitvalley.writon.modern.core.database.model.DraftEntity
 import com.ibitvalley.writon.modern.core.database.model.OutboxMutationEntity
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -46,7 +48,13 @@ class WritOnDatabaseMigrationTest {
         }
 
         val migrated = Room.databaseBuilder(context, WritOnDatabase::class.java, databaseName)
-            .addMigrations(WritOnDatabase.MIGRATION_1_2)
+            .addMigrations(
+                WritOnDatabase.MIGRATION_1_2,
+                WritOnDatabase.MIGRATION_2_3,
+                WritOnDatabase.MIGRATION_3_4,
+                WritOnDatabase.MIGRATION_4_5,
+                WritOnDatabase.MIGRATION_5_6,
+            )
             .allowMainThreadQueries()
             .build()
         try {
@@ -65,10 +73,25 @@ class WritOnDatabaseMigrationTest {
                         setOf(
                             "localId", "remotePostId", "title", "content", "summary", "category",
                             "tagsJson", "coverImage", "visibility", "createdAt", "updatedAt",
-                            "syncState", "lastError"
+                            "syncState", "lastError", "ownerKey"
                         ),
                         columns
                     )
+                }
+                migrated.openHelper.writableDatabase.query("PRAGMA table_info(posts)").use { cursor ->
+                    val columns = buildSet {
+                        while (cursor.moveToNext()) add(cursor.getString(cursor.getColumnIndexOrThrow("name")))
+                    }
+                    assertTrue("contentUpdatedAt" in columns)
+                }
+                migrated.openHelper.writableDatabase.query("PRAGMA table_info(comments)").use { cursor ->
+                    val columns = buildSet {
+                        while (cursor.moveToNext()) add(cursor.getString(cursor.getColumnIndexOrThrow("name")))
+                    }
+                    assertTrue("updatedAt" in columns)
+                    assertTrue("isMine" in columns)
+                    assertTrue("authorFoundingWriterNumber" in columns)
+                    assertTrue("authorEmailVerified" in columns)
                 }
         } finally {
             migrated.close()
@@ -94,6 +117,24 @@ class WritOnDatabaseMigrationTest {
                 val pending = database.outboxDao().getPendingMutations()
                 assertEquals(1, pending.size)
                 assertEquals(latest.payloadJson, pending.single().payloadJson)
+        } finally {
+            database.close()
+        }
+    }
+
+    @Test
+    fun latestDraftIgnoresBlankPlaceholder() = runBlocking {
+        val database = Room.inMemoryDatabaseBuilder(context, WritOnDatabase::class.java)
+            .allowMainThreadQueries()
+            .build()
+        try {
+            val owner = "account:test"
+            database.draftDao().upsert(DraftEntity(localId = "meaningful", ownerKey = owner, title = "Kept draft"))
+            database.draftDao().upsert(
+                DraftEntity(localId = "blank", ownerKey = owner, title = "  ", content = "\n", updatedAt = Long.MAX_VALUE)
+            )
+
+            assertEquals("meaningful", database.draftDao().observeLatest(owner).first()?.localId)
         } finally {
             database.close()
         }

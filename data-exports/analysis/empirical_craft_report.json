@@ -1,0 +1,814 @@
+{
+  "timestamp": "2026-09-12T13:40:30.424Z",
+  "methodologyNotes": {
+    "lexicalDiversity": "Moving-Average Type-Token Ratio (MATTR) with window size of 50 words. Immune to text length variability.",
+    "cadenceMetrics": "Descriptive sentence length distributions (mean, median, stdDev, IQR). No artificial variance cutoffs.",
+    "commentAnalysis": "Studied as distinct communicative acts paired with parent stories."
+  },
+  "genreMetrics": {
+    "Essays": {
+      "postsCount": 85,
+      "isProvisional": false,
+      "totalWords": 12623,
+      "avgWordsPerPost": 149,
+      "sentenceLengthStats": {
+        "count": 824,
+        "mean": 14.73,
+        "median": 11,
+        "stdDev": 15.38,
+        "iqr": 12,
+        "min": 1,
+        "max": 272
+      },
+      "paragraphCadenceStats": {
+        "count": 154,
+        "mean": 5.45,
+        "median": 2,
+        "stdDev": 9.37,
+        "iqr": 4,
+        "min": 1,
+        "max": 74
+      },
+      "lexicalDiversityMATTR": {
+        "count": 85,
+        "mean": 0.81,
+        "median": 0.81,
+        "stdDev": 0.13,
+        "iqr": 0.1,
+        "min": 0.2,
+        "max": 1
+      },
+      "punctuationPerThousandWords": {
+        "emDash": 0.16,
+        "semicolon": 0.32,
+        "parentheses": 0.95,
+        "questionMark": 9.27,
+        "ellipsis": 10.06
+      },
+      "stockPhraseFrequencyPerThousandWords": {
+        "delve": 0,
+        "tapestry": 0,
+        "crucial": 0,
+        "realm": 0,
+        "beacon": 0,
+        "testament": 0,
+        "bustling": 0,
+        "landscape": 0
+      }
+    },
+    "Tech": {
+      "postsCount": 6,
+      "isProvisional": true,
+      "totalWords": 202,
+      "avgWordsPerPost": 34,
+      "sentenceLengthStats": {
+        "count": 9,
+        "mean": 14.89,
+        "median": 6,
+        "stdDev": 14.2,
+        "iqr": 13,
+        "min": 6,
+        "max": 49
+      },
+      "paragraphCadenceStats": {
+        "count": 9,
+        "mean": 1.11,
+        "median": 1,
+        "stdDev": 0.33,
+        "iqr": 0,
+        "min": 1,
+        "max": 2
+      },
+      "lexicalDiversityMATTR": {
+        "count": 6,
+        "mean": 0.98,
+        "median": 1,
+        "stdDev": 0.04,
+        "iqr": 0,
+        "min": 0.9040740740740758,
+        "max": 1
+      },
+      "punctuationPerThousandWords": {
+        "emDash": 4.95,
+        "semicolon": 14.85,
+        "parentheses": 14.85,
+        "questionMark": 0,
+        "ellipsis": 0
+      },
+      "stockPhraseFrequencyPerThousandWords": {
+        "delve": 0,
+        "tapestry": 0,
+        "crucial": 0,
+        "realm": 0,
+        "beacon": 0,
+        "testament": 0,
+        "bustling": 0,
+        "landscape": 0
+      }
+    },
+    "Poetry": {
+      "postsCount": 166,
+      "isProvisional": false,
+      "totalWords": 15061,
+      "avgWordsPerPost": 91,
+      "sentenceLengthStats": {
+        "count": 1041,
+        "mean": 14.45,
+        "median": 10,
+        "stdDev": 21.01,
+        "iqr": 9,
+        "min": 1,
+        "max": 415
+      },
+      "paragraphCadenceStats": {
+        "count": 564,
+        "mean": 2.15,
+        "median": 1,
+        "stdDev": 2.49,
+        "iqr": 1,
+        "min": 1,
+        "max": 26
+      },
+      "lexicalDiversityMATTR": {
+        "count": 166,
+        "mean": 0.76,
+        "median": 0.79,
+        "stdDev": 0.16,
+        "iqr": 0.12,
+        "min": 0,
+        "max": 1
+      },
+      "punctuationPerThousandWords": {
+        "emDash": 75.89,
+        "semicolon": 1,
+        "parentheses": 0.27,
+        "questionMark": 4.85,
+        "ellipsis": 14.14
+      },
+      "stockPhraseFrequencyPerThousandWords": {
+        "delve": 0,
+        "tapestry": 0,
+        "crucial": 0,
+        "realm": 0,
+        "beacon": 0,
+        "testament": 0,
+        "bustling": 0,
+        "landscape": 0
+      }
+    },
+    "Philosophy": {
+      "postsCount": 1,
+      "isProvisional": true,
+      "totalWords": 130,
+      "avgWordsPerPost": 130,
+      "sentenceLengthStats": {
+        "count": 4,
+        "mean": 18.75,
+        "median": 16.5,
+        "stdDev": 13.3,
+        "iqr": 25,
+        "min": 6,
+        "max": 36
+      },
+      "paragraphCadenceStats": {
+        "count": 3,
+        "mean": 1.33,
+        "median": 1,
+        "stdDev": 0.58,
+        "iqr": 1,
+        "min": 1,
+        "max": 2
+      },
+      "lexicalDiversityMATTR": {
+        "count": 1,
+        "mean": 0.9,
+        "median": 0.9,
+        "stdDev": 0,
+        "iqr": 0,
+        "min": 0.898765432098765,
+        "max": 0.898765432098765
+      },
+      "punctuationPerThousandWords": {
+        "emDash": 0,
+        "semicolon": 0,
+        "parentheses": 7.69,
+        "questionMark": 0,
+        "ellipsis": 0
+      },
+      "stockPhraseFrequencyPerThousandWords": {
+        "delve": 0,
+        "tapestry": 0,
+        "crucial": 0,
+        "realm": 0,
+        "beacon": 0,
+        "testament": 0,
+        "bustling": 0,
+        "landscape": 0
+      }
+    },
+    "Humour": {
+      "postsCount": 49,
+      "isProvisional": false,
+      "totalWords": 3562,
+      "avgWordsPerPost": 73,
+      "sentenceLengthStats": {
+        "count": 322,
+        "mean": 11.06,
+        "median": 8,
+        "stdDev": 12.84,
+        "iqr": 8,
+        "min": 1,
+        "max": 158
+      },
+      "paragraphCadenceStats": {
+        "count": 213,
+        "mean": 1.71,
+        "median": 1,
+        "stdDev": 1.98,
+        "iqr": 1,
+        "min": 1,
+        "max": 19
+      },
+      "lexicalDiversityMATTR": {
+        "count": 49,
+        "mean": 0.81,
+        "median": 0.81,
+        "stdDev": 0.12,
+        "iqr": 0.15,
+        "min": 0.4450000000000002,
+        "max": 1
+      },
+      "punctuationPerThousandWords": {
+        "emDash": 1.12,
+        "semicolon": 0.56,
+        "parentheses": 2.25,
+        "questionMark": 23.58,
+        "ellipsis": 32.85
+      },
+      "stockPhraseFrequencyPerThousandWords": {
+        "delve": 0,
+        "tapestry": 0,
+        "crucial": 0,
+        "realm": 0,
+        "beacon": 0,
+        "testament": 0,
+        "bustling": 0,
+        "landscape": 0
+      }
+    },
+    "Short Stories": {
+      "postsCount": 163,
+      "isProvisional": false,
+      "totalWords": 92118,
+      "avgWordsPerPost": 565,
+      "sentenceLengthStats": {
+        "count": 5664,
+        "mean": 16.23,
+        "median": 11,
+        "stdDev": 29.05,
+        "iqr": 12,
+        "min": 1,
+        "max": 898
+      },
+      "paragraphCadenceStats": {
+        "count": 1146,
+        "mean": 5.08,
+        "median": 2,
+        "stdDev": 20.69,
+        "iqr": 3,
+        "min": 1,
+        "max": 518
+      },
+      "lexicalDiversityMATTR": {
+        "count": 163,
+        "mean": 0.74,
+        "median": 0.79,
+        "stdDev": 0.2,
+        "iqr": 0.07,
+        "min": 0,
+        "max": 1
+      },
+      "punctuationPerThousandWords": {
+        "emDash": 0.43,
+        "semicolon": 0.5,
+        "parentheses": 0.48,
+        "questionMark": 6.08,
+        "ellipsis": 6.14
+      },
+      "stockPhraseFrequencyPerThousandWords": {
+        "delve": 0,
+        "tapestry": 0,
+        "crucial": 0.022,
+        "realm": 0.022,
+        "beacon": 0,
+        "testament": 0,
+        "bustling": 0,
+        "landscape": 0.011
+      }
+    },
+    "Shayari": {
+      "postsCount": 126,
+      "isProvisional": false,
+      "totalWords": 4012,
+      "avgWordsPerPost": 32,
+      "sentenceLengthStats": {
+        "count": 390,
+        "mean": 10.27,
+        "median": 8,
+        "stdDev": 10.96,
+        "iqr": 5,
+        "min": 1,
+        "max": 145
+      },
+      "paragraphCadenceStats": {
+        "count": 167,
+        "mean": 2.41,
+        "median": 1,
+        "stdDev": 3.07,
+        "iqr": 1,
+        "min": 1,
+        "max": 25
+      },
+      "lexicalDiversityMATTR": {
+        "count": 126,
+        "mean": 0.79,
+        "median": 0.82,
+        "stdDev": 0.19,
+        "iqr": 0.22,
+        "min": 0,
+        "max": 1
+      },
+      "punctuationPerThousandWords": {
+        "emDash": 0,
+        "semicolon": 0.25,
+        "parentheses": 0.25,
+        "questionMark": 8.47,
+        "ellipsis": 47.61
+      },
+      "stockPhraseFrequencyPerThousandWords": {
+        "delve": 0,
+        "tapestry": 0,
+        "crucial": 0,
+        "realm": 0,
+        "beacon": 0,
+        "testament": 0,
+        "bustling": 0,
+        "landscape": 0
+      }
+    },
+    "Reviews": {
+      "postsCount": 20,
+      "isProvisional": false,
+      "totalWords": 1063,
+      "avgWordsPerPost": 53,
+      "sentenceLengthStats": {
+        "count": 69,
+        "mean": 15.41,
+        "median": 11,
+        "stdDev": 15.59,
+        "iqr": 13,
+        "min": 2,
+        "max": 90
+      },
+      "paragraphCadenceStats": {
+        "count": 33,
+        "mean": 2.18,
+        "median": 2,
+        "stdDev": 1.83,
+        "iqr": 1,
+        "min": 1,
+        "max": 8
+      },
+      "lexicalDiversityMATTR": {
+        "count": 20,
+        "mean": 0.87,
+        "median": 0.85,
+        "stdDev": 0.11,
+        "iqr": 0.19,
+        "min": 0.6683720930232556,
+        "max": 1
+      },
+      "punctuationPerThousandWords": {
+        "emDash": 1.88,
+        "semicolon": 0.94,
+        "parentheses": 0,
+        "questionMark": 4.7,
+        "ellipsis": 12.23
+      },
+      "stockPhraseFrequencyPerThousandWords": {
+        "delve": 0,
+        "tapestry": 0,
+        "crucial": 0,
+        "realm": 0,
+        "beacon": 0,
+        "testament": 0,
+        "bustling": 0,
+        "landscape": 0
+      }
+    },
+    "Journalism": {
+      "postsCount": 14,
+      "isProvisional": false,
+      "totalWords": 626,
+      "avgWordsPerPost": 45,
+      "sentenceLengthStats": {
+        "count": 29,
+        "mean": 21.59,
+        "median": 15,
+        "stdDev": 17.06,
+        "iqr": 23,
+        "min": 2,
+        "max": 68
+      },
+      "paragraphCadenceStats": {
+        "count": 21,
+        "mean": 1.48,
+        "median": 1,
+        "stdDev": 1.12,
+        "iqr": 1,
+        "min": 1,
+        "max": 6
+      },
+      "lexicalDiversityMATTR": {
+        "count": 14,
+        "mean": 0.77,
+        "median": 0.88,
+        "stdDev": 0.25,
+        "iqr": 0.19,
+        "min": 0,
+        "max": 1
+      },
+      "punctuationPerThousandWords": {
+        "emDash": 0,
+        "semicolon": 1.6,
+        "parentheses": 0,
+        "questionMark": 3.19,
+        "ellipsis": 28.75
+      },
+      "stockPhraseFrequencyPerThousandWords": {
+        "delve": 0,
+        "tapestry": 0,
+        "crucial": 0,
+        "realm": 0,
+        "beacon": 0,
+        "testament": 0,
+        "bustling": 0,
+        "landscape": 0
+      }
+    }
+  },
+  "commentMetrics": {
+    "totalCommentsAnalyzed": 804,
+    "lengthStats": {
+      "count": 804,
+      "mean": 4.79,
+      "median": 2,
+      "stdDev": 9.06,
+      "iqr": 4,
+      "min": 0,
+      "max": 108
+    },
+    "actualDistribution": {
+      "shortReactions": {
+        "count": 721,
+        "share": "89.7%",
+        "description": "≤ 10 words: immediate reactions, compliments, appreciations"
+      },
+      "mediumObservations": {
+        "count": 76,
+        "share": "9.5%",
+        "description": "11-40 words: specific reflections on a detail or theme"
+      },
+      "extendedReflections": {
+        "count": 7,
+        "share": "0.9%",
+        "description": "> 40 words: conversational engagement, personal anecdotes"
+      }
+    },
+    "parentSpecificity": {
+      "parentQuotingOrReferencingShare": "1.7%",
+      "pureGratitudeShare": "11.6%"
+    }
+  },
+  "sampledExemplars": {
+    "highEngagementSamples": [
+      {
+        "id": "post_leg_628",
+        "title": "Interest of International Investors to Invest in Pakistan n",
+        "authorId": "usr_leg_1322",
+        "category": "Reviews",
+        "language": "English",
+        "wordCount": 266,
+        "engagementScore": 49,
+        "likes": 0,
+        "comments": 15,
+        "bookmarks": 2,
+        "contentSnippet": "Interest of international investors in Pakistan e-commerce is making the right way instead of tremendous and hypocritical views of Pakistan e-commerce based relation with foreign countries.Chairman Alibaba group Jack ma shows his interest in investing in Pakistan e commerce sector.Paypal and Alibaba"
+      },
+      {
+        "id": "post_leg_196",
+        "title": "stotry",
+        "authorId": "usr_leg_92",
+        "category": "Short Stories",
+        "language": "Hindi (Devanagari)",
+        "wordCount": 462,
+        "engagementScore": 43,
+        "likes": 0,
+        "comments": 9,
+        "bookmarks": 8,
+        "contentSnippet": "चश्मा साफ़ करते हुए उस बुज़ुर्ग ने \nअपनी पत्नी से कहा : हमारे ज़माने में\nमोबाइल नहीं थे..\n\n*पत्नी* : पर ठीक पाँच बजकर पचपन\nमिनट पर मैं पानी का ग्लास लेकर\nदरवाज़े पे आती और आप आ पहुँचते..\n\n*पति* : हाँ मैंने तीस साल नौकरी की\nपर आज तक मैं ये नहीं समझ\nपाया कि मैं आता इसलिए तुम\nपानी लाती थी या तुम पानी ल"
+      },
+      {
+        "id": "post_leg_190",
+        "title": "i'll be waiting for you",
+        "authorId": "usr_leg_84",
+        "category": "Poetry",
+        "language": "English",
+        "wordCount": 1028,
+        "engagementScore": 42,
+        "likes": 0,
+        "comments": 10,
+        "bookmarks": 6,
+        "contentSnippet": "From the first time we met, I knew we would be friendsYou had a different air than others that I knewI am also alone in this world I’ve come to knowFinally, I’ve met someone like youI know that I might’ve been a bit cold at timesBut that was just the way I dealt with all my fearsYou took the first s"
+      },
+      {
+        "id": "post_leg_175",
+        "title": "Railway ki Suvidha",
+        "authorId": "usr_leg_68",
+        "category": "Humour",
+        "language": "Hindi (Devanagari)",
+        "wordCount": 53,
+        "engagementScore": 39,
+        "likes": 0,
+        "comments": 9,
+        "bookmarks": 6,
+        "contentSnippet": "ट्रेन से एक यात्री नें ट्वीट करके \nशिकायत भेजी :\n   ''बाकी सुविधायें भले ही न बढ़ायें\n      पर लैट्रिन में मग्गे की चैन की\n     लंबाई इतनी तो बढ़ा दें कि जहाँ\n    इस्तेमाल करना है वहाँ तक \n     पहुंच सके |\" \n\nरेल्वे की तरफ से रिप्लाई आया :\n    \"मग्गा चैन से बंधा है, आप नहीं \""
+      },
+      {
+        "id": "post_leg_272",
+        "title": "माँ",
+        "authorId": "usr_leg_225",
+        "category": "Poetry",
+        "language": "Hindi (Devanagari)",
+        "wordCount": 105,
+        "engagementScore": 33,
+        "likes": 0,
+        "comments": 9,
+        "bookmarks": 3,
+        "contentSnippet": "क्षण भर भी देर हो जाती तो किवाड़ पे टकटकी लगाये रहती, हमारी माँ,\nप्रशंसा करते न थकती..आगे बढ़ने को प्रोत्साहित करती..ऐसी थी हमारी माँ।\n\nइन आँखों की उदासी पल भर में भाँप लेती,\nनए नए नामों से हमें बुलाती..\nहमेशा हँसती-मुस्कुराती रहती- ऐसी थी हमारी माँ।\n\nपिछले कुछ सालों में, गिरते-संभालते आगे बढ़ते, रिश्त"
+      },
+      {
+        "id": "post_leg_379",
+        "title": "Mann ki awaaz",
+        "authorId": "usr_leg_458",
+        "category": "Essays",
+        "language": "Romanized Hindi/Urdu (Shayari/Poetry)",
+        "wordCount": 227,
+        "engagementScore": 33,
+        "likes": 0,
+        "comments": 9,
+        "bookmarks": 3,
+        "contentSnippet": "From past few days I am going thru some hard things. I am trying to come out from all this. So, yesterday I got \"Mann ki awaaz\" saying to me Anki come on it's been high time you are avoiding yourself n giving more importance to others who don't even care for you. Come on, buck up! Start thinking bou"
+      },
+      {
+        "id": "post_leg_506",
+        "title": "Help - Easily Used hardly Understood...",
+        "authorId": "usr_leg_794",
+        "category": "Journalism",
+        "language": "English",
+        "wordCount": 210,
+        "engagementScore": 32,
+        "likes": 0,
+        "comments": 8,
+        "bookmarks": 4,
+        "contentSnippet": "Hi,Guys am Teenager who is very shy guy who doesn't even know how to handle a social situation and I behave so  girlish.I have face body shaming issues in my school from my so called 'FRIENDS'. Today I heard a news that a senior of my school committed a suicide. I don't know the reason but am sure o"
+      },
+      {
+        "id": "post_leg_923",
+        "title": "Love or lust",
+        "authorId": "usr_leg_2559",
+        "category": "Journalism",
+        "language": "Romanized Hindi/Urdu (Shayari/Poetry)",
+        "wordCount": 56,
+        "engagementScore": 30,
+        "likes": 0,
+        "comments": 10,
+        "bookmarks": 0,
+        "contentSnippet": "Kya aise insan k saath puri zindagi rishta nibhaya ja sakta hai jisey aapke mann ke dukh ya taqlif se ki aap kya chahte ho usse koi mtlb nahi hota bas wo aapki body pe apna haq jatana chahta ho kya wo puri life aapka saath nibha payega.\nIs this right or wrong plz tell me"
+      }
+    ],
+    "midEngagementSamples": [
+      {
+        "id": "post_leg_721",
+        "title": "[Not available here]",
+        "authorId": "usr_leg_2381",
+        "category": "Short Stories",
+        "language": "English",
+        "wordCount": 212,
+        "engagementScore": 9,
+        "likes": 0,
+        "comments": 3,
+        "bookmarks": 0,
+        "contentSnippet": "Do you know him?\n\nOr, you don't?\n\nBut, everyone knows him.\n\nThough he made a very big mistake that He can't forget about it.\n\nHow about giving a hint?\n\nWill you.. remember him?\n\nHmmm..\n\nHe's an *angel* before.\n\nNow, he's a *demon*.\n\nLU..\n\nHmm..\n\n*LUCIFER*.\n\nHow about.. him?\n\nI know that you don't kn"
+      },
+      {
+        "id": "post_leg_727",
+        "title": "SENT OFF",
+        "authorId": "usr_leg_2450",
+        "category": "Poetry",
+        "language": "English",
+        "wordCount": 47,
+        "engagementScore": 9,
+        "likes": 0,
+        "comments": 3,
+        "bookmarks": 0,
+        "contentSnippet": "I felt going back\n\nWhen I stepped first.\n\nNow I am really going back\n\nand,\n\nI don't feel like going back.\n\nThat's the power of friendship\n\nbuilt in two years\n\nand never really breaks\n\nI thank everyone\n\nWho made my higher secondary life\n\nunforgettable."
+      },
+      {
+        "id": "post_leg_731",
+        "title": "NOTES FROM A SPIDER",
+        "authorId": "usr_leg_1485",
+        "category": "Short Stories",
+        "language": "English",
+        "wordCount": 4216,
+        "engagementScore": 9,
+        "likes": 0,
+        "comments": 3,
+        "bookmarks": 0,
+        "contentSnippet": "I couldn’t have been born in any city but this one, a great European capital filled with beautiful, highly detailed architecture, a castle overlooking the river, the city a spread of gilded and copper garlic-like domes, gargoyles, steeples, trains, lampposts resembling moons entrapped by black vines"
+      },
+      {
+        "id": "post_leg_733",
+        "title": "Panama case",
+        "authorId": "usr_leg_2311",
+        "category": "Essays",
+        "language": "English",
+        "wordCount": 33,
+        "engagementScore": 9,
+        "likes": 0,
+        "comments": 3,
+        "bookmarks": 0,
+        "contentSnippet": "Assalam o alikum friends:\nTomorrow is big decision day.....\nAp Kia expect kr raha ha k Kon jeeta ga.... Imran Khan or Sharif brothers.....\nComment ma apna apna point of view zaroo laka.."
+      },
+      {
+        "id": "post_leg_740",
+        "title": "Panama",
+        "authorId": "usr_leg_2311",
+        "category": "Essays",
+        "language": "English",
+        "wordCount": 7,
+        "engagementScore": 9,
+        "likes": 0,
+        "comments": 3,
+        "bookmarks": 0,
+        "contentSnippet": "\"Behind every great fortune,there is a crime\""
+      },
+      {
+        "id": "post_leg_763",
+        "title": "#aj ka gyaan",
+        "authorId": "usr_leg_444",
+        "category": "Essays",
+        "language": "Romanized Hindi/Urdu (Shayari/Poetry)",
+        "wordCount": 19,
+        "engagementScore": 9,
+        "likes": 0,
+        "comments": 3,
+        "bookmarks": 0,
+        "contentSnippet": "Make sure to find time for the things n people that make you feel happy to be alive :)"
+      },
+      {
+        "id": "post_leg_790",
+        "title": "Unsent Letters From Treasure Box .",
+        "authorId": "usr_leg_3166",
+        "category": "Poetry",
+        "language": "English",
+        "wordCount": 34,
+        "engagementScore": 9,
+        "likes": 0,
+        "comments": 3,
+        "bookmarks": 0,
+        "contentSnippet": "My existence is not less than a secret piece of writing  about experiences . Stored in corner row . Forgotten as if no longer alive . Replaced with fresh scripts and time.\n\n                                Maheen Aroze"
+      },
+      {
+        "id": "post_leg_811",
+        "title": "LoNeLy LiFe",
+        "authorId": "usr_leg_2492",
+        "category": "Essays",
+        "language": "English",
+        "wordCount": 62,
+        "engagementScore": 9,
+        "likes": 0,
+        "comments": 3,
+        "bookmarks": 0,
+        "contentSnippet": "There is this **US, family, friends and relations **around us. Where did they all come from, no one neither asked for them nor prepared for them to reach for us.\nHow about a lonely life? No mother, no father, get my life directly from the architect or whatever a stone would do, and then lead a life "
+      }
+    ],
+    "lowEngagementSamples": [
+      {
+        "id": "post_leg_426",
+        "title": "\"AANSU\"..CHAPTER 8",
+        "authorId": "usr_leg_172",
+        "category": "Short Stories",
+        "language": "Romanized Hindi/Urdu (Shayari/Poetry)",
+        "wordCount": 564,
+        "engagementScore": 0,
+        "likes": 0,
+        "comments": 0,
+        "bookmarks": 0,
+        "contentSnippet": "Raat ko sarmad or lara apny kmre me mojod thy\nLara: apko bachy psnd hen\nSarmad: q poch rahi ho\nLara:wese hi\nSarmad: han q bachy bhi kisi ko bure lgty hen kia\nLara:or apny bachy psnd hen?\nSarmad ny lara ki tarf dekha or khamosh raha\nLara:bolye na mjhy to boht psnd hen mjhy aulad chahye\nSarmad ykdm gu"
+      },
+      {
+        "id": "post_leg_428",
+        "title": "\"AANSU\" CHAPTER 9",
+        "authorId": "usr_leg_172",
+        "category": "Short Stories",
+        "language": "Romanized Hindi/Urdu (Shayari/Poetry)",
+        "wordCount": 699,
+        "engagementScore": 0,
+        "likes": 0,
+        "comments": 0,
+        "bookmarks": 0,
+        "contentSnippet": "Sarmad ko log hospital ly gaye wo boht zkhmi halat me tha doctors ny dekha k sarmad ki pocket me mobile tha doctors ny usi mobile me lara ka number dekha jsky sath wife likha tha call ki lara ny phone uthaya\nDoctor: asalam o alaikom\nLara: walaikom asalam kon\nDoctor: g me city hospital se doctor nade"
+      },
+      {
+        "id": "post_leg_430",
+        "title": "No title",
+        "authorId": "usr_leg_444",
+        "category": "Shayari",
+        "language": "Romanized Hindi/Urdu (Shayari/Poetry)",
+        "wordCount": 17,
+        "engagementScore": 0,
+        "likes": 0,
+        "comments": 0,
+        "bookmarks": 0,
+        "contentSnippet": "Nidamat ke charaaghon se badal jati hain taqdeeren.. \nAndheri raat ke aansu, khuda se baat krte hain.."
+      },
+      {
+        "id": "post_leg_436",
+        "title": "from hell to heaven",
+        "authorId": "usr_leg_557",
+        "category": "Short Stories",
+        "language": "English",
+        "wordCount": 3,
+        "engagementScore": 0,
+        "likes": 0,
+        "comments": 0,
+        "bookmarks": 0,
+        "contentSnippet": ""
+      },
+      {
+        "id": "post_leg_437",
+        "title": "Untitled Legacy Story #437",
+        "authorId": "usr_leg_557",
+        "category": "Short Stories",
+        "language": "English",
+        "wordCount": 26,
+        "engagementScore": 0,
+        "likes": 0,
+        "comments": 0,
+        "bookmarks": 0,
+        "contentSnippet": "This story is about a girl named kathnic sky she use to have best friend called lark Cullen kathnic and lark were best friends"
+      },
+      {
+        "id": "post_leg_456",
+        "title": "love",
+        "authorId": "usr_leg_606",
+        "category": "Shayari",
+        "language": "English",
+        "wordCount": 14,
+        "engagementScore": 0,
+        "likes": 0,
+        "comments": 0,
+        "bookmarks": 0,
+        "contentSnippet": "She wanted to be the reason of his SMILE but he LAUGHED"
+      },
+      {
+        "id": "post_leg_461",
+        "title": "FRE FRE FREE fRee joiN!ng nSPEND ONLY 2HRS IN A DAY AND ERAN 20000,TO 50000 UPTO",
+        "authorId": "usr_leg_620",
+        "category": "Short Stories",
+        "language": "English",
+        "wordCount": 329,
+        "engagementScore": 0,
+        "likes": 0,
+        "comments": 0,
+        "bookmarks": 0,
+        "contentSnippet": "EARN MONEY FROM ANDROID MOBILE WITH OUT INVESTMENT 100% FREE APPLICATION KNOW AS CHAMPCASH.\n\n1.OPEN PLAYSTORE ON YOUR ANDROID MOBILE TYPE CHAMPCASH INSTALL IT.\n2.PUT REFF ID ......................\n3.INSTALL ALL APPLICATIONS 1 BY 1 AS GIVEN THERE ACCORDINGLY. \n4.YOU WILL GET A LIST OF MAXIMUM  10  AP"
+      },
+      {
+        "id": "post_leg_463",
+        "title": "Valentine's day",
+        "authorId": "usr_leg_98",
+        "category": "Essays",
+        "language": "Romanized Hindi/Urdu (Shayari/Poetry)",
+        "wordCount": 25,
+        "engagementScore": 0,
+        "likes": 0,
+        "comments": 0,
+        "bookmarks": 0,
+        "contentSnippet": "Kal Valentine's day kuch log apne pyar k sath manayenge..\n\nOr kuch toote dil wale (jaise ki main) apne toote huye dil k naghme sunayenge"
+      }
+    ],
+    "samplingNotice": "Exemplars sampled across three engagement tiers with an author cap of 2 to preserve diverse voices and avoid high-output bias. Engagement is exposure-unadjusted."
+  }
+}

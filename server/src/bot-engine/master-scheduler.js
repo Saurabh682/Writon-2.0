@@ -131,7 +131,7 @@ export const SCHEDULE_SLOTS = [
   { id: 'housekeeping', hour: 2, minute: 0, type: 'maintenance', name: 'Nightly Housekeeping' }
 ];
 
-function getIstTime(now = new Date()) {
+export function getIstTime(now = new Date()) {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Kolkata',
     year: 'numeric',
@@ -158,9 +158,15 @@ function scheduledInstant(dateStr, slot) {
 export function getDueScheduleSlots(now = new Date()) {
   const { dateStr, hours, minutes } = getIstTime(now);
   const currentMinute = hours * 60 + minutes;
+  const maxLateness = process.env.SCHEDULER_MAX_LATENESS_MINUTES ? parseInt(process.env.SCHEDULER_MAX_LATENESS_MINUTES, 10) : null;
 
   return SCHEDULE_SLOTS
-    .filter(slot => (slot.hour * 60 + slot.minute) <= currentMinute)
+    .filter(slot => {
+      const slotMinute = slot.hour * 60 + slot.minute;
+      if (slotMinute > currentMinute) return false;
+      if (maxLateness != null && currentMinute - slotMinute > maxLateness) return false;
+      return true;
+    })
     .sort((left, right) => (left.hour * 60 + left.minute) - (right.hour * 60 + right.minute))
     .map(slot => ({
       ...slot,
@@ -326,10 +332,10 @@ export async function executeScheduledSlot(pool, slot, {
                 hashtagIntelligence: claimedBrief.hashtag_intelligence
               },
               automaticPublication: claimedBrief.approval_mode === 'automatic_low_risk',
-              forcePublication: true
+              forcePublication: true,
+              researchBriefId: claimedBrief.id
             });
             if (!result?.error && result?.postId) {
-              await markBriefPublished(pool, { id: claimedBrief.id, postId: result.postId });
               return { ...result, researchBriefId: claimedBrief.id };
             }
             if (result?.action === 'pulse_skipped' || result?.skipped) {
@@ -403,10 +409,10 @@ export async function executeScheduledSlot(pool, slot, {
                 hashtagIntelligence: claimedBrief.hashtag_intelligence
               },
               automaticPublication: true,
-              forcePublication: true
+              forcePublication: true,
+              researchBriefId: claimedBrief.id
             });
             if (!result?.error && result?.postId) {
-              await markBriefPublished(pool, { id: claimedBrief.id, postId: result.postId });
               return { ...result, researchBriefId: claimedBrief.id };
             }
           } else {
@@ -482,11 +488,11 @@ export async function executeScheduledSlot(pool, slot, {
           content: reviewData.content,
           category: 'Reviews',
           coverImage: selectProductCover(reviewer.domain, claimedReview.topic),
-          publishedAt: new Date().toISOString()
+          publishedAt: new Date().toISOString(),
+          researchBriefId: claimedReview.id
         }] });
         const postId = outcome.stories?.[0]?.id;
         if (!postId) throw new Error('Review publishing engine did not return a post id');
-        await markBriefPublished(pool, { id: claimedReview.id, postId });
         return { action: 'published_review', researchBriefId: claimedReview.id, postId, reviewer: reviewer.penName };
       } catch (error) {
         await releaseBriefClaim(pool, claimedReview.id, `Scheduled review publication failed: ${error.message}`);
@@ -567,11 +573,11 @@ export async function executeScheduledSlot(pool, slot, {
         authorPenName: reviewer.penName, title: reviewData.title,
         summary: reviewData.summary, content: reviewData.content, category: 'Reviews',
         coverImage: selectProductCover(reviewer.domain, sampleTopic),
-        publishedAt: new Date().toISOString()
+        publishedAt: new Date().toISOString(),
+        researchBriefId: queuedReview.id
       }] });
       const postId = outcome.stories?.[0]?.id;
       if (!postId) throw new Error('Review publishing engine did not return a post id');
-      await markBriefPublished(pool, { id: queuedReview.id, postId });
       return { action: 'published_review', researchBriefId: queuedReview.id, postId, reviewer: reviewer.penName };
     } catch (error) {
       await releaseBriefClaim(pool, queuedReview.id, `Scheduled review publication failed: ${error.message}`);

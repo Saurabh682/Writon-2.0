@@ -355,13 +355,13 @@ export const StoryReader: React.FC<StoryReaderProps> = ({
             </span>
           </div>
 
-          <h1 className="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-gray-900 dark:text-gray-50 leading-[1.15]">
+          <h1 className="font-serif text-[38px] sm:text-5xl font-semibold tracking-tight text-gray-900 dark:text-gray-50 leading-[46px] sm:leading-[1.15]">
             {story.title}
           </h1>
 
           {story.summary && (
-            <p className="font-serif text-xl sm:text-2xl text-gray-600 dark:text-gray-300 italic leading-relaxed pt-2">
-              "{story.summary}"
+            <p className="font-serif text-lg text-gray-600 dark:text-gray-300 font-semibold leading-7 pt-2">
+              {story.summary}
             </p>
           )}
         </div>
@@ -428,54 +428,175 @@ export const StoryReader: React.FC<StoryReaderProps> = ({
         {/* Story Prose Body */}
         <div
           className={`prose-editorial ${
-            fontSize === 'base' ? 'text-base' : fontSize === 'xl' ? 'text-2xl leading-[2]' : 'text-lg leading-[1.85]'
+            fontSize === 'base' ? 'reader-size-compact' : fontSize === 'xl' ? 'reader-size-large' : 'reader-size-standard'
           }`}
           dangerouslySetInnerHTML={{
             __html: (() => {
-              const codeBlocks: { lang: string; code: string }[] = [];
               const raw = (story.content || '')
+                .replace(/\\r\\n/g, '\n')
+                .replace(/\\n/g, '\n')
+                .replace(/\r\n/g, '\n')
+                .replace(/\r/g, '\n')
                 .replace(/<!--\s*#writon\s*watermark\s*-->/gi, '')
-                .replace(/<span\b[^>]*class=["']writon-watermark["'][^>]*>[\s\S]*?<\/span>/gi, '');
+                .replace(/<span\b[^>]*class=["']writon-watermark["'][^>]*>[\s\S]*?<\/span>/gi, '')
+                .trim();
 
-              const withPlaceholders = raw.replace(/(?:^|\n)(?:```|~~~)([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)\r?\n(?:```|~~~)/g, (_match, lang, code) => {
+              const codeBlocks: { lang: string; code: string }[] = [];
+              let text = raw.replace(/(?:^|\n)(?:```|~~~)([a-zA-Z0-9_-]*)\r?\n([\s\S]*?)\r?\n(?:```|~~~)/g, (_match, lang, code) => {
                 const token = `\n\nWRITONCODEBLOCK${codeBlocks.length}TOKEN\n\n`;
                 codeBlocks.push({ lang: (lang || '').trim(), code });
                 return token;
               });
 
-              return withPlaceholders
-                .replace(/^#### (.*$)/gim, '<h4>$1</h4>')
-                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                .replace(/^\> (.*$)/gim, '<blockquote>$1</blockquote>')
-                .replace(/\*\*\*(.*?)\*\*\*/gim, '<strong><em>$1</em></strong>')
-                .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/gim, '<em>$1</em>')
-                .replace(/`([^`]+)`/gim, '<code>$1</code>')
-                .split(/\n\n+/)
-                .map(chunk => {
-                  const trimmed = chunk.trim();
-                  if (!trimmed) return '';
-                  const codeMatch = trimmed.match(/^WRITONCODEBLOCK(\d+)TOKEN$/);
-                  if (codeMatch) {
-                    const block = codeBlocks[parseInt(codeMatch[1], 10)];
-                    if (block) {
-                      const escaped = block.code
-                        .replace(/&/g, '&amp;')
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;');
-                      const langClass = block.lang ? ` class="language-${block.lang}"` : '';
-                      return `<pre${langClass}><code>${escaped}</code></pre>`;
-                    }
+              function escapeHtml(str: string) {
+                return str
+                  .replace(/&/g, '&amp;')
+                  .replace(/</g, '&lt;')
+                  .replace(/>/g, '&gt;')
+                  .replace(/"/g, '&quot;')
+                  .replace(/'/g, '&#39;');
+              }
+
+              function formatInline(str: string) {
+                return str
+                  .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                  .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                  .replace(/_(.*?)_/g, '<em>$1</em>')
+                  .replace(/`([^`]+)`/g, '<code>$1</code>')
+                  .replace(/\[(.*?)\]\((https?:\/\/[^\s\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+              }
+
+              // Extract and render markdown tables
+              text = text.replace(/(?:^|\n)(\|[^\n]+\|\r?\n\|[-:\s|]+\|\r?\n(?:\|[^\n]+\|\r?\n?)+)/g, (_match, tableBlock) => {
+                const rows = tableBlock.trim().split(/\r?\n/).map((r: string) => r.trim());
+                if (rows.length < 2) return tableBlock;
+
+                const parseCells = (row: string) => row.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
+                const headerCells = parseCells(rows[0]);
+                const alignCells = parseCells(rows[1]).map(a => {
+                  const left = a.startsWith(':');
+                  const right = a.endsWith(':');
+                  if (left && right) return 'center';
+                  if (right) return 'right';
+                  return 'left';
+                });
+
+                let tableHtml = '<div class="overflow-x-auto my-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm"><table class="min-w-full divide-y divide-gray-200 dark:divide-gray-800 text-sm"><thead><tr class="bg-gray-50 dark:bg-white/5">';
+                headerCells.forEach((c, idx) => {
+                  const align = alignCells[idx] ? ` style="text-align:${alignCells[idx]}"` : '';
+                  tableHtml += `<th class="px-4 py-3 font-semibold text-gray-900 dark:text-gray-100"${align}>${formatInline(escapeHtml(c))}</th>`;
+                });
+                tableHtml += '</tr></thead><tbody class="divide-y divide-gray-200 dark:divide-gray-800">';
+
+                for (let i = 2; i < rows.length; i++) {
+                  const cells = parseCells(rows[i]);
+                  tableHtml += '<tr class="hover:bg-gray-50/50 dark:hover:bg-white/[0.02]">';
+                  cells.forEach((c, idx) => {
+                    const align = alignCells[idx] ? ` style="text-align:${alignCells[idx]}"` : '';
+                    tableHtml += `<td class="px-4 py-3 text-gray-700 dark:text-gray-300"${align}>${formatInline(escapeHtml(c))}</td>`;
+                  });
+                  tableHtml += '</tr>';
+                }
+                tableHtml += '</tbody></table></div>';
+                return `\n\n${tableHtml}\n\n`;
+              });
+
+              const rawChunks = text.split(/\n\n+/).filter(Boolean);
+              const outputBlocks: string[] = [];
+
+              for (const chunk of rawChunks) {
+                const trimmed = chunk.trim();
+                if (!trimmed) continue;
+
+                if (trimmed.startsWith('<div class="overflow-x-auto')) {
+                  outputBlocks.push(trimmed);
+                  continue;
+                }
+
+                const codeMatch = trimmed.match(/^WRITONCODEBLOCK(\d+)TOKEN$/);
+                if (codeMatch) {
+                  const block = codeBlocks[parseInt(codeMatch[1], 10)];
+                  if (block) {
+                    const escaped = escapeHtml(block.code);
+                    const langClass = block.lang ? ` class="language-${block.lang}"` : '';
+                    outputBlocks.push(`<pre${langClass}><code>${escaped}</code></pre>`);
                   }
-                  if (trimmed.startsWith('<h') || trimmed.startsWith('<blockquote') || trimmed.startsWith('<hr')) {
-                    return trimmed;
+                  continue;
+                }
+
+                if (/^(?:---|___|\*\*\*)$/.test(trimmed)) {
+                  outputBlocks.push('<hr class="my-8 border-t border-gray-200 dark:border-gray-800" />');
+                  continue;
+                }
+
+                const lines = trimmed.split(/\r?\n/);
+                let currentListType: 'ul' | 'ol' | null = null;
+                let currentListItems: string[] = [];
+
+                const flushList = () => {
+                  if (currentListType && currentListItems.length > 0) {
+                    const tag = currentListType;
+                    const listClass = tag === 'ul' ? 'list-disc pl-6 my-4 space-y-2' : 'list-decimal pl-6 my-4 space-y-2';
+                    outputBlocks.push(`<${tag} class="${listClass}">${currentListItems.map(li => `<li>${formatInline(li)}</li>`).join('')}</${tag}>`);
+                    currentListType = null;
+                    currentListItems = [];
                   }
-                  return `<p>${trimmed.replace(/\n/g, '<br />')}</p>`;
-                })
-                .filter(Boolean)
-                .join('\n');
+                };
+
+                for (let i = 0; i < lines.length; i++) {
+                  const line = lines[i];
+                  const trimmedLine = line.trim();
+                  if (!trimmedLine) continue;
+
+                  const headingMatch = trimmedLine.match(/^(#{1,6})\s+(.+)$/);
+                  if (headingMatch) {
+                    flushList();
+                    const level = headingMatch[1].length;
+                    const hText = formatInline(escapeHtml(headingMatch[2]));
+                    const hClasses: Record<number, string> = {
+                      1: 'font-serif text-3xl sm:text-4xl font-bold mt-8 mb-4 text-gray-900 dark:text-gray-50',
+                      2: 'font-serif text-2xl sm:text-3xl font-bold mt-7 mb-3 text-gray-900 dark:text-gray-50',
+                      3: 'font-serif text-xl sm:text-2xl font-semibold mt-6 mb-3 text-gray-900 dark:text-gray-100',
+                      4: 'font-sans text-lg font-semibold mt-5 mb-2 text-gray-900 dark:text-gray-100',
+                      5: 'font-sans text-base font-bold mt-4 mb-2 text-gray-900 dark:text-gray-100',
+                      6: 'font-sans text-sm font-bold uppercase tracking-wider mt-4 mb-2 text-gray-500'
+                    };
+                    outputBlocks.push(`<h${level} class="${hClasses[level] || ''}">${hText}</h${level}>`);
+                    continue;
+                  }
+
+                  if (/^(?:&gt;|>)/.test(trimmedLine)) {
+                    flushList();
+                    const quoteText = formatInline(escapeHtml(trimmedLine.replace(/^(?:&gt;|>)\s*/, '')));
+                    outputBlocks.push(`<blockquote class="border-l-4 border-editorial-accent pl-4 my-4 italic text-gray-700 dark:text-gray-300"><p>${quoteText}</p></blockquote>`);
+                    continue;
+                  }
+
+                  const ulMatch = trimmedLine.match(/^(?:[-*+•]|&bull;)\s+(.+)$/);
+                  if (ulMatch) {
+                    if (currentListType && currentListType !== 'ul') flushList();
+                    currentListType = 'ul';
+                    currentListItems.push(escapeHtml(ulMatch[1]));
+                    continue;
+                  }
+
+                  const olMatch = trimmedLine.match(/^\d+\.\s+(.+)$/);
+                  if (olMatch) {
+                    if (currentListType && currentListType !== 'ol') flushList();
+                    currentListType = 'ol';
+                    currentListItems.push(escapeHtml(olMatch[1]));
+                    continue;
+                  }
+
+                  flushList();
+                  outputBlocks.push(`<p>${formatInline(escapeHtml(trimmedLine))}</p>`);
+                }
+
+                flushList();
+              }
+
+              return outputBlocks.join('\n');
             })()
           }}
         />

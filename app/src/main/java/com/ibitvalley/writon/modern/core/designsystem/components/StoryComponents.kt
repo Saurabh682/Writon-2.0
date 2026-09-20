@@ -6,6 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,11 +35,12 @@ fun PostCoverImage(
     modifier: Modifier = Modifier,
     categoryFontSize: androidx.compose.ui.unit.TextUnit = 26.sp,
 ) {
+    var remoteImageFailed by remember(imageUrl) { mutableStateOf(false) }
     Box(
         modifier = modifier.clip(RoundedCornerShape(WritOnRadius.field)),
         contentAlignment = Alignment.Center
     ) {
-        if (imageUrl.isNullOrBlank()) {
+        if (shouldUseCategoryCover(imageUrl, remoteImageFailed)) {
             Image(
                 painter = painterResource(R.drawable.default_story_cover_wall),
                 contentDescription = contentDescription,
@@ -67,11 +72,15 @@ fun PostCoverImage(
                 model = imageUrl,
                 contentDescription = contentDescription,
                 modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
+                contentScale = ContentScale.Crop,
+                onError = { remoteImageFailed = true }
             )
         }
     }
 }
+
+internal fun shouldUseCategoryCover(imageUrl: String?, remoteImageFailed: Boolean): Boolean =
+    imageUrl.isNullOrBlank() || remoteImageFailed
 
 @Composable
 fun StoryCard(

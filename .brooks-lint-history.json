@@ -1,0 +1,46 @@
+[
+  {
+    "date": "2026-08-29T01:12:31+05:30",
+    "mode": "health",
+    "score": 83,
+    "findings": {
+      "critical": 2,
+      "warning": 8,
+      "suggestion": 0
+    },
+    "scope": "Android app, user-facing Fastify API, and web client; bot behavior excluded"
+  },
+  {
+    "date": "2026-08-29T01:30:44+05:30",
+    "mode": "test",
+    "score": 50,
+    "findings": {
+      "critical": 3,
+      "warning": 1,
+      "suggestion": 0
+    },
+    "scope": "Android app, user-facing Fastify API, Supabase persistence, and web client; bot routes and behavior excluded"
+  },
+  {
+    "date": "2026-08-29T01:42:27+05:30",
+    "mode": "architecture",
+    "score": 35,
+    "findings": {
+      "critical": 3,
+      "warning": 4,
+      "suggestion": 0
+    },
+    "scope": "Bot admin API, public Spark API, MCP transports and tools, scheduler, runner, provider integration, and bot persistence; read-only audit"
+  },
+  {
+    "date": "2026-09-03T16:13:13+05:30",
+    "mode": "architecture",
+    "score": 29,
+    "findings": {
+      "critical": 3,
+      "warning": 5,
+      "suggestion": 1
+    },
+    "scope": "Bot scheduling, trend discovery and research, editorial backlog, automated publishing, public/admin bot APIs, control-center UI, persistence, and focused bot tests; read-only audit"
+  }
+]

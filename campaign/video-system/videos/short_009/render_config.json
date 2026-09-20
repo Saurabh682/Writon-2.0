@@ -1,0 +1,16 @@
+{
+  "slug": "short09_nervous",
+  "resolution": {
+    "width": 1080,
+    "height": 1920
+  },
+  "fps": 30,
+  "duration": 24.0,
+  "audio": {
+    "voice": "Nicole (af_nicole @ 1.18x)",
+    "music": "official_writon_piano.mp3",
+    "ducking": "voice 1.4x, piano 0.038x"
+  },
+  "output_file": "campaign/shorts-rendered/short09_nervous/short09_nervous.mp4",
+  "delivery": "1080p high-bitrate YouTube Shorts"
+}

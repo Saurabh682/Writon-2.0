@@ -8,6 +8,7 @@ class EditorValidationTest {
     @Test fun `publish requires title and content`() {
         assertEquals("Add a title and story before publishing.", validateStoryForPublish(" ", ""))
         assertEquals("Add a title before publishing.", validateStoryForPublish("", "Story"))
+        assertEquals("Use at least 3 characters for the title.", validateStoryForPublish("Hi", "Story"))
         assertEquals("Add your story before publishing.", validateStoryForPublish("Title", ""))
     }
 

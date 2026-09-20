@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "WritOn Editorial Critic & Browser Bridge",
+  "version": "1.6.0",
+  "description": "Autonomous local bridge allowing WritOn to evaluate drafts directly through your active ChatGPT and browser tabs hands-free.",
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://*.chatgpt.com/*",
+    "http://localhost:3001/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "WritOn Browser Bridge"
+  }
+}

@@ -29,6 +29,16 @@ function parseArgs() {
 
 async function main() {
   const options = parseArgs();
+
+  // Circuit Breaker: All Reddit posting operations paused by operator directive
+  const force = Boolean(options.force || options['override-pause']);
+  if (process.env.REDDIT_PAUSED !== 'false' && !force) {
+    console.log('⏸️  [PAUSED] Reddit publishing and automation operations are currently PAUSED by operator directive.');
+    console.log('    All automatic dispatches, feed publishing, and bot posts are suspended.');
+    console.log('    To override in emergency, supply --override-pause or --force.');
+    return;
+  }
+
   const dryRun = Boolean(options['dry-run'] || options.dryRun);
   const client = new RedditClient({ log: console });
 

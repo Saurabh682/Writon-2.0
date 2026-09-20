@@ -1,6 +1,7 @@
 package com.ibitvalley.writon.modern.core.database.model
 
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "posts")
@@ -22,7 +23,9 @@ data class PostEntity(
     val bookmarksCnt: Int,
     val isLiked: Boolean = false,
     val isBookmarked: Boolean = false,
-    val createdAt: String
+    val createdAt: String,
+    val languageCode: String = "und",
+    val contentUpdatedAt: String? = null
 )
 
 @Entity(tableName = "users")
@@ -49,9 +52,15 @@ data class OutboxMutationEntity(
 )
 
 /** Local-first editor state. A draft is kept independently of the feed cache. */
-@Entity(tableName = "drafts")
+const val GUEST_DRAFT_OWNER = "guest"
+const val LEGACY_DRAFT_OWNER = "legacy_unclaimed"
+
+fun draftOwnerKey(accountId: String?): String = accountId?.takeIf { it.isNotBlank() } ?: GUEST_DRAFT_OWNER
+
+@Entity(tableName = "drafts", indices = [Index("ownerKey")])
 data class DraftEntity(
     @PrimaryKey val localId: String,
+    val ownerKey: String,
     val remotePostId: String? = null,
     val title: String = "",
     val content: String = "",
@@ -75,7 +84,11 @@ data class CommentEntity(
     val authorAvatarUrl: String?,
     val content: String,
     val createdAt: String,
-    val parentId: String? = null
+    val parentId: String? = null,
+    val updatedAt: String? = null,
+    val isMine: Boolean = false,
+    val authorFoundingWriterNumber: Int? = null,
+    val authorEmailVerified: Boolean = false
 )
 
 data class PostAuthorTuple(

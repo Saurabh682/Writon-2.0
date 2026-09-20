@@ -68,6 +68,6 @@ alter table public.posts validate constraint posts_category_fkey;
 
 alter table public.story_categories enable row level security;
 revoke all privileges on public.story_categories from anon, authenticated;
+grant select on public.story_categories to service_role;
 
 commit;
-

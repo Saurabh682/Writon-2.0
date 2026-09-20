@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -33,16 +34,22 @@ import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
-
 
 import com.ibitvalley.writon.BuildConfig
 import com.ibitvalley.writon.R
+import com.ibitvalley.writon.modern.canonicalStoryShareUrl
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
+import com.ibitvalley.writon.modern.core.notification.qualifiesForReadingNotificationPrompt
+import com.ibitvalley.writon.modern.core.preferences.continuationScrollOffset
+import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
 import com.ibitvalley.writon.modern.feature.launch.startActivitySafely
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
@@ -51,6 +58,8 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 import com.ibitvalley.writon.modern.core.designsystem.theme.getThemeColorScheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 private val ReaderEditorialFamily = FontFamily(
@@ -64,16 +73,118 @@ private val ReaderEditorialFamily = FontFamily(
 fun ReaderScreen(
     viewModel: ReaderViewModel,
     userPreferences: com.ibitvalley.writon.modern.core.preferences.UserPreferences? = null,
+    continuationAccountId: String? = null,
     onBackClick: () -> Unit,
     onAuthorClick: (String) -> Unit = {},
+    onDiscoverMore: () -> Unit = {},
+    onNextStoryClick: (String) -> Unit = {},
     onCommentsClick: () -> Unit = {},
-    onLoginRequired: () -> Unit = {}
+    onLoginRequired: () -> Unit = {},
+    onReadingValueMoment: () -> Unit = {},
+    onBookmarkValueMoment: () -> Unit = {}
 ) {
     val post by viewModel.post.collectAsState()
+    val nextStory by viewModel.nextStory.collectAsState()
     val comments by viewModel.comments.collectAsState()
     val scrollState = rememberScrollState()
     val context = LocalContext.current
     var showAppearanceSheet by remember { mutableStateOf(false) }
+
+    var openedLogged by remember(post?.id) { mutableStateOf(false) }
+    var completedLogged by remember(post?.id) { mutableStateOf(false) }
+    var maxProgress by remember(post?.id) { mutableFloatStateOf(0f) }
+    var activeSeconds by remember(post?.id) { mutableIntStateOf(0) }
+    var hasRestoredPosition by remember(post?.id) { mutableStateOf(false) }
+
+    // Telemetry: Log Story Opened once per story instance
+    LaunchedEffect(post?.id) {
+        val story = post ?: return@LaunchedEffect
+        if (!openedLogged) {
+            WritOnTelemetry.storyOpened(
+                context = context,
+                storyId = story.id,
+                title = story.title,
+                authorId = story.authorId,
+                readingTimeMin = story.readingTimeMin
+            )
+            openedLogged = true
+        }
+    }
+
+    // Reading Continuation: Restore last known scroll position
+    LaunchedEffect(post?.id, scrollState.maxValue) {
+        val story = post ?: return@LaunchedEffect
+        if (scrollState.maxValue > 0 && !hasRestoredPosition) {
+            val continuation = userPreferences?.readingContinuation(continuationAccountId)
+            if (continuation != null && continuation.storyId == story.id) {
+                val offset = continuationScrollOffset(continuation.progress, scrollState.maxValue)
+                if (offset > 0) {
+                    scrollState.scrollTo(offset)
+                }
+            }
+            hasRestoredPosition = true
+        }
+    }
+
+    // Active Engagement & Completion Loop
+    LaunchedEffect(post?.id) {
+        val story = post ?: return@LaunchedEffect
+        while (isActive) {
+            delay(1000L)
+            activeSeconds += 1
+            if (scrollState.maxValue > 0) {
+                val curProgress = (scrollState.value.toFloat() / scrollState.maxValue).coerceIn(0f, 1f)
+                if (curProgress > maxProgress) {
+                    maxProgress = curProgress
+                }
+            }
+            // Periodically flush engagement and persist reading continuation
+            if (activeSeconds > 0 && activeSeconds % 10 == 0) {
+                viewModel.recordEngagement(maxProgress, 10)
+                userPreferences?.saveReadingContinuation(continuationAccountId, story.id, maxProgress)
+            }
+            // Story Completion Threshold (Scorecard Funnel: >= 75% scroll depth & >= 15s dwell)
+            if (!completedLogged && maxProgress >= 0.75f && activeSeconds >= 15) {
+                completedLogged = true
+                WritOnTelemetry.storyCompleted(
+                    context = context,
+                    storyId = story.id,
+                    authorId = story.authorId,
+                    readingTimeMin = story.readingTimeMin,
+                    readSeconds = activeSeconds
+                )
+            }
+            if (qualifiesForReadingNotificationPrompt(maxProgress, activeSeconds)) {
+                onReadingValueMoment()
+            }
+        }
+    }
+
+    // Lifecycle Observer: Flush uncommitted reading time and continuation on pause/exit
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, post?.id) {
+        val storyId = post?.id
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE || event == Lifecycle.Event.ON_STOP) {
+                val remainingSeconds = activeSeconds % 10
+                if (remainingSeconds > 0) {
+                    viewModel.recordEngagement(maxProgress, remainingSeconds)
+                }
+                if (storyId != null) {
+                    userPreferences?.saveReadingContinuation(continuationAccountId, storyId, maxProgress)
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            val remainingSeconds = activeSeconds % 10
+            if (storyId != null) {
+                viewModel.onReaderClosed(maxProgress, remainingSeconds)
+                userPreferences?.saveReadingContinuation(continuationAccountId, storyId, maxProgress)
+            }
+        }
+    }
 
     val savedReaderPreferences = remember(userPreferences) { userPreferences?.readerPreferences }
     var readerFontSizeSp by remember(savedReaderPreferences) { mutableFloatStateOf(savedReaderPreferences?.fontSizeSp ?: 20f) }
@@ -119,8 +230,11 @@ fun ReaderScreen(
                         )
                     }
                     IconButton(onClick = {
-                        if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
-                        else viewModel.toggleBookmark()
+                        val isGuest = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null
+                        viewModel.toggleBookmark {
+                            onBookmarkValueMoment()
+                        }
+                        post?.let { WritOnTelemetry.storyBookmarked(context, it.id, isGuest) }
                     }) {
                         Image(
                             painterResource(if (post?.isBookmarked == true) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark),
@@ -152,8 +266,11 @@ fun ReaderScreen(
                     },
                     onComment = onCommentsClick,
                     onSave = {
-                        if (com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null) onLoginRequired()
-                        else viewModel.toggleBookmark()
+                        val isGuest = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser == null
+                        viewModel.toggleBookmark {
+                            onBookmarkValueMoment()
+                        }
+                        story.let { WritOnTelemetry.storyBookmarked(context, it.id, isGuest) }
                     },
                     onShare = { shareStory(context, story) }
                 )
@@ -204,6 +321,15 @@ fun ReaderScreen(
                         fontFamilyChoice = readerFontFamilyChoice
                     )
                 }
+                Spacer(Modifier.height(WritOnSpacing.xxl))
+
+                ReaderContinuationCard(
+                    currentStory = story,
+                    nextStory = nextStory,
+                    onAuthorClick = { onAuthorClick(story.authorId) },
+                    onNextStoryClick = onNextStoryClick,
+                    onDiscoverMore = onDiscoverMore
+                )
                 Spacer(Modifier.height(WritOnSpacing.xxl))
 
                 Row(
@@ -450,10 +576,37 @@ private fun ReaderBody(
 
     var hasRenderedText = false
     blocks.forEachIndexed { index, block ->
-        if (index > 0) Spacer(Modifier.height(WritOnSpacing.lg))
+        if (index > 0) {
+            val continuesList = block is ReaderContentBlock.ListItem && blocks[index - 1] is ReaderContentBlock.ListItem
+            Spacer(Modifier.height(if (continuesList) WritOnSpacing.xs else WritOnSpacing.lg))
+        }
         when (block) {
             ReaderContentBlock.Divider -> HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
             is ReaderContentBlock.Quote -> ReaderQuoteBlock(block.text, bodyTextStyle, fontSizeSp, lineMultiplier)
+            is ReaderContentBlock.Heading -> Text(
+                text = editorMarkupText(block.text),
+                style = bodyTextStyle.copy(
+                    fontSize = (fontSizeSp * when (block.level) {
+                        1 -> 1.8f
+                        2 -> 1.4f
+                        else -> 1.1f
+                    }).sp,
+                    lineHeight = (fontSizeSp * when (block.level) {
+                        1 -> 2.25f
+                        2 -> 1.9f
+                        else -> 1.6f
+                    }).sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            )
+            is ReaderContentBlock.ListItem -> Row(verticalAlignment = Alignment.Top) {
+                Text(
+                    text = if (block.number == null) "•" else "${block.number}.",
+                    style = bodyTextStyle.copy(fontWeight = FontWeight.SemiBold),
+                    modifier = Modifier.width(28.dp)
+                )
+                Text(editorMarkupText(block.text), style = bodyTextStyle, modifier = Modifier.weight(1f))
+            }
             is ReaderContentBlock.Paragraph -> {
                 val startsWithInlineMarkup = block.text.trimStart().startsWithAny("**", "__", "*", "_")
                 if (!hasRenderedText && !startsWithInlineMarkup) {
@@ -519,6 +672,8 @@ private fun ReaderQuoteBlock(
 private sealed interface ReaderContentBlock {
     data class Paragraph(val text: String) : ReaderContentBlock
     data class Quote(val text: String) : ReaderContentBlock
+    data class Heading(val level: Int, val text: String) : ReaderContentBlock
+    data class ListItem(val text: String, val number: Int? = null) : ReaderContentBlock
     data object Divider : ReaderContentBlock
 }
 
@@ -543,7 +698,20 @@ private fun parseReaderContent(content: String): List<ReaderContentBlock> {
         val trimmed = rawLine.trim()
         when {
             trimmed.isBlank() -> flushTextBlock()
-            trimmed.startsWith("#") -> flushTextBlock()
+            Regex("^#{1,6}\\s+.+$").matches(trimmed) -> {
+                flushTextBlock()
+                val marker = trimmed.takeWhile { it == '#' }
+                blocks += ReaderContentBlock.Heading(marker.length.coerceAtMost(3), trimmed.drop(marker.length).trimStart())
+            }
+            Regex("^[-*+•]\\s+.+$").matches(trimmed) -> {
+                flushTextBlock()
+                blocks += ReaderContentBlock.ListItem(trimmed.replaceFirst(Regex("^[-*+•]\\s+"), ""))
+            }
+            Regex("^\\d+\\.\\s+.+$").matches(trimmed) -> {
+                flushTextBlock()
+                val match = Regex("^(\\d+)\\.\\s+(.+)$").matchEntire(trimmed)!!
+                blocks += ReaderContentBlock.ListItem(match.groupValues[2], match.groupValues[1].toIntOrNull())
+            }
             trimmed in setOf("---", "***", "___") -> {
                 flushTextBlock()
                 blocks += ReaderContentBlock.Divider
@@ -675,7 +843,7 @@ private fun ReaderComment(name: String, avatarUrl: String?, content: String, tim
 }
 
 private fun shareStory(context: Context, post: PostEntity) {
-    val shareUrl = "${BuildConfig.API_BASE_URL.trimEnd('/')}/stories/${Uri.encode(post.slug)}"
+    val shareUrl = canonicalStoryShareUrl(post.slug)
     val intent = Intent(Intent.ACTION_SEND).apply {
         putExtra(Intent.EXTRA_SUBJECT, context.getString(R.string.reader_share_subject, post.title))
         putExtra(
@@ -684,7 +852,163 @@ private fun shareStory(context: Context, post: PostEntity) {
         )
         type = "text/plain"
     }
+    WritOnTelemetry.logShare("story", post.id, context)
     context.startActivitySafely(Intent.createChooser(intent, null))
+}
+
+@Composable
+private fun ReaderContinuationCard(
+    currentStory: PostEntity,
+    nextStory: PostEntity?,
+    onAuthorClick: () -> Unit,
+    onNextStoryClick: (String) -> Unit,
+    onDiscoverMore: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(WritOnRadius.card),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(WritOnSpacing.lg)
+        ) {
+            if (nextStory != null) {
+                val reason = when (nextStoryReason(currentStory, nextStory)) {
+                    NextStoryReason.SAME_WRITER -> stringResource(R.string.reader_more_from_writer, nextStory.authorName)
+                    NextStoryReason.SAME_CATEGORY -> stringResource(R.string.reader_next_same_category, nextStory.category)
+                    NextStoryReason.SAME_LANGUAGE -> stringResource(R.string.reader_next_same_language)
+                    NextStoryReason.DIFFERENT_WRITER -> stringResource(R.string.reader_next_different_writer)
+                    NextStoryReason.RECOMMENDED -> stringResource(R.string.reader_next_recommended)
+                }
+                Text(
+                    text = reason.uppercase(),
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.2.sp
+                    ),
+                    color = BrandRed
+                )
+                Spacer(Modifier.height(WritOnSpacing.sm))
+                Text(
+                    text = nextStory.title,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontFamily = ReaderEditorialFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp,
+                        lineHeight = 28.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                nextStory.summary?.takeIf { it.isNotBlank() }?.let { summary ->
+                    Spacer(Modifier.height(WritOnSpacing.xs))
+                    Text(
+                        text = summary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Spacer(Modifier.height(WritOnSpacing.md))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.reader_next_story_meta,
+                            nextStory.authorName,
+                            nextStory.readingTimeMin,
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.weight(1f))
+                    Button(
+                        onClick = { onNextStoryClick(nextStory.id) },
+                        colors = ButtonDefaults.buttonColors(containerColor = BrandRed),
+                        shape = RoundedCornerShape(WritOnRadius.pill),
+                        contentPadding = PaddingValues(horizontal = 18.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.reader_read_next),
+                            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = Color.White
+                        )
+                    }
+                }
+            } else {
+                Text(
+                    text = "MORE TO EXPLORE",
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.2.sp
+                    ),
+                    color = BrandRed
+                )
+                Spacer(Modifier.height(WritOnSpacing.xs))
+                Text(
+                    text = "Find your next five-minute read",
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontFamily = ReaderEditorialFamily,
+                        fontWeight = FontWeight.Bold
+                    ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(Modifier.height(WritOnSpacing.xs))
+                Text(
+                    text = "Browse curated stories across poetry, fiction, essays, and craft notes.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.height(WritOnSpacing.md))
+                OutlinedButton(
+                    onClick = onDiscoverMore,
+                    shape = RoundedCornerShape(WritOnRadius.pill),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = BrandRed),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, BrandRed)
+                ) {
+                    Text(
+                        text = "Discover More Stories",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold)
+                    )
+                }
+            }
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = WritOnSpacing.md),
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onAuthorClick),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Written by ${currentStory.authorName}",
+                    style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(Modifier.weight(1f))
+                Text(
+                    text = "View profile →",
+                    style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = BrandRed
+                )
+            }
+        }
+    }
 }
 
 @Composable

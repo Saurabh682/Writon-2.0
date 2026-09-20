@@ -3,16 +3,20 @@ package com.ibitvalley.writon.modern.feature.onboarding
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ibitvalley.writon.modern.core.network.WritOnApiService
-import com.ibitvalley.writon.modern.core.network.model.UpdateInterestsRequestDto
 import com.ibitvalley.writon.modern.core.preferences.UserPreferences
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.cancel
 
 data class InterestsUiState(
     val selectedTopicIds: Set<String> = emptySet(),
+    val availableTopics: List<InterestTopicOption> = InterestTopicCatalog.fallbackTopics,
+    val isLoadingTopics: Boolean = false,
     val isSaving: Boolean = false,
-    val errorMessage: String? = null,
+    val hasSyncError: Boolean = false,
+    val exceedsSyncLimit: Boolean = false,
 )
 
 /**
@@ -22,34 +26,61 @@ data class InterestsUiState(
 class InterestsViewModel(
     private val apiService: WritOnApiService,
     private val userPreferences: UserPreferences,
-    private val isSignedIn: Boolean,
+    private val accountId: String?,
+    private val isCurrentAccount: () -> Boolean = { true },
 ) : ViewModel() {
-    private val localTopicIds = normalizeTopicIds(userPreferences.favouriteCategories)
+    private var edited = false
+    private var localTopicIds = InterestTopicCatalog.preserveSavedIds(userPreferences.interestChoices(accountId))
     private val _uiState = MutableStateFlow(
-        InterestsUiState(selectedTopicIds = localTopicIds),
+        InterestsUiState(
+            selectedTopicIds = localTopicIds,
+            availableTopics = userPreferences.cachedInterestCatalog
+                ?.let(InterestTopicCatalog::fromServerNames) ?: InterestTopicCatalog.fallbackTopics,
+        ),
     )
     val uiState: StateFlow<InterestsUiState> = _uiState
 
     init {
-        if (localTopicIds != userPreferences.favouriteCategories) {
-            userPreferences.saveFavouriteCategories(localTopicIds)
+        refreshAvailableTopics()
+        if (accountId != null) refreshFromAccount()
+    }
+
+    fun markEdited() { edited = true }
+
+    /** Navigation owns this manually constructed ViewModel. */
+    fun close() { viewModelScope.cancel() }
+
+    private fun refreshAvailableTopics() {
+        _uiState.value = _uiState.value.copy(isLoadingTopics = true)
+        viewModelScope.launch {
+            val serverNames = cancellableResult { apiService.getTags() }
+                .getOrNull()
+                ?.takeIf { it.isSuccessful }
+                ?.body()
+                ?.tags
+                ?.map { it.name }
+            if (serverNames != null) userPreferences.cachedInterestCatalog = serverNames
+            _uiState.value = _uiState.value.copy(
+                availableTopics = serverNames?.let(InterestTopicCatalog::fromServerNames)
+                    ?: _uiState.value.availableTopics,
+                isLoadingTopics = false,
+            )
         }
-        if (isSignedIn) refreshFromAccount()
     }
 
     private fun refreshFromAccount() {
         viewModelScope.launch {
-            runCatching { apiService.getMyInterests() }
+            if (!isCurrentAccount()) return@launch
+            cancellableResult { apiService.getMyInterests() }
                 .getOrNull()
                 ?.takeIf { it.isSuccessful }
                 ?.body()
                 ?.topicIds
-                ?.toSet()
+                ?.let(InterestTopicCatalog::preserveSavedIds)
                 ?.let { remoteIds ->
-                    // Do not erase a choice made offline just because a new account
-                    // has no server-side choices yet.
-                    if (remoteIds.isNotEmpty() || _uiState.value.selectedTopicIds.isEmpty()) {
-                        userPreferences.saveFavouriteCategories(remoteIds)
+                    if (!edited && isCurrentAccount() && !userPreferences.hasPendingInterestSync(accountId)) {
+                        localTopicIds = remoteIds
+                        userPreferences.saveInterestChoices(accountId, remoteIds, pendingSync = false)
                         _uiState.value = _uiState.value.copy(selectedTopicIds = remoteIds)
                     }
                 }
@@ -57,63 +88,54 @@ class InterestsViewModel(
     }
 
     fun continueWithSavedChoices(onSaved: () -> Unit) {
-        _uiState.value = _uiState.value.copy(errorMessage = null)
+        if (!isCurrentAccount()) return
+        if (!recordOnboardingCompletion()) return
+        userPreferences.isOnboardingComplete = true
+        _uiState.value = _uiState.value.copy(hasSyncError = false)
         onSaved()
     }
 
     fun save(topicIds: Set<String>, onSaved: () -> Unit) {
-        val normalized = topicIds.toSortedSet()
-        userPreferences.saveFavouriteCategories(normalized)
-        userPreferences.isOnboardingComplete = true
-        _uiState.value = InterestsUiState(selectedTopicIds = normalized, isSaving = true)
-
-        if (!isSignedIn) {
-            _uiState.value = _uiState.value.copy(isSaving = false)
-            onSaved()
+        if (_uiState.value.isSaving || !isCurrentAccount()) return
+        edited = true
+        val normalized = InterestTopicCatalog.mergeSelection(
+            localTopicIds, topicIds, _uiState.value.availableTopics.map { it.id }.toSet(),
+        ).toSortedSet()
+        localTopicIds = normalized
+        userPreferences.saveInterestChoices(accountId, normalized, pendingSync = accountId != null)
+        if (!recordOnboardingCompletion()) {
+            _uiState.value = _uiState.value.copy(hasSyncError = true)
             return
         }
-
-        viewModelScope.launch {
-            try {
-                val response = apiService.updateMyInterests(UpdateInterestsRequestDto(normalized.toList()))
-                if (response.isSuccessful && response.body() != null) {
-                    val savedIds = response.body()!!.topicIds.toSet()
-                    userPreferences.saveFavouriteCategories(savedIds)
-                    _uiState.value = InterestsUiState(selectedTopicIds = savedIds)
-                    onSaved()
-                } else {
-                    _uiState.value = InterestsUiState(
-                        selectedTopicIds = normalized,
-                        errorMessage = "Your choices are saved on this device. We could not update your account yet.",
-                    )
-                }
-            } catch (_: Exception) {
-                _uiState.value = InterestsUiState(
-                    selectedTopicIds = normalized,
-                    errorMessage = "Your choices are saved on this device. Check your connection and try again.",
-                )
-            }
-        }
+        userPreferences.isOnboardingComplete = true
+        _uiState.value = _uiState.value.copy(
+            selectedTopicIds = normalized,
+            isSaving = false,
+            hasSyncError = false,
+            exceedsSyncLimit = false,
+        )
+        onSaved()
     }
-}
 
-private fun normalizeTopicIds(values: Set<String>): Set<String> {
-    val legacyNames = mapOf(
-        "poetry" to "poetry",
-        "essays" to "essays",
-        "philosophy" to "philosophy",
-        "short stories" to "short_stories",
-        "shayari" to "shayari",
-        "journalism" to "journalism",
-        "humour" to "humour",
-        "life & wellness" to "life_wellness",
-        "sci-fi & fantasy" to "sci_fi_fantasy",
-        "travel" to "travel",
-        "career & growth" to "career_growth",
-        "more topics" to "more_topics",
-    )
-    return values.mapNotNull { value ->
-        val normalized = value.trim().lowercase()
-        legacyNames[normalized] ?: normalized.takeIf { it in legacyNames.values }
-    }.toSet()
+    private fun recordOnboardingCompletion(): Boolean {
+        val current = userPreferences.engagementPreferences(accountId)
+        val saved = userPreferences.saveEngagementPreferences(
+            accountId,
+            current.copy(
+                onboardingVersion = maxOf(current.onboardingVersion, 2),
+                onboardingCompletedAtMillis = current.onboardingCompletedAtMillis ?: System.currentTimeMillis(),
+                preferenceCardState = "completed",
+            ),
+            pendingSync = accountId != null,
+        )
+        return saved
+    }
+
+    private suspend fun <T> cancellableResult(block: suspend () -> T): Result<T> = try {
+        Result.success(block())
+    } catch (cancelled: CancellationException) {
+        throw cancelled
+    } catch (failure: Exception) {
+        Result.failure(failure)
+    }
 }

@@ -196,7 +196,8 @@ export function validateZeroAISlopEngineBlockers({
     const priyankaMarkers = [
       'varanasi', 'banaras', 'kashi', 'ganga', 'ghat', 'assi', 'kedar', 'dashashwamedh',
       'godowlia', 'thali', 'phulka', 'roti', 'dal', 'brass', 'steel', 'water tumbler',
-      'courtyard', 'almirah', 'verandah', 'boat', 'aarti', 'father', 'mother'
+      'courtyard', 'almirah', 'verandah', 'boat', 'aarti', 'father', 'mother',
+      'household', 'family members', 'domestic', 'kitchen', 'dining table'
     ];
     const hitCount = priyankaMarkers.filter(m => fullText.toLowerCase().includes(m)).length;
     if (hitCount < 2) {
@@ -1152,6 +1153,820 @@ export function validateZeroAISlopEngineBlockers({
       rule: 'METADATA_HASHTAG_FRAGMENTATION_FAIL',
       description: 'Metadata hashtag fragmentation detected: Hashtag phrases were broken or duplicated (e.g. #brahmaputrashort #stories). Keep tags clean, atomic, and canonical.'
     });
+  }
+
+  // 75. REAL_EVENT_POETRY_BOUNDARY
+  // When poetry anchors to an active, real-world disaster or news event:
+  // - Verified facts may include: place, warning, official action, documented flow/evacuation outcome.
+  // - The poem may imaginatively transform: narrator's own response, metaphor, distant comparison, rhythm.
+  // - The poem may NOT invent: victims' thoughts, victims' dialogue, exact physical actions, crowd behavior,
+  //   or sensory details at the disaster site (e.g. "I see the villagers looking up at the slopes", "walk the ridge with lanterns held low",
+  //   "watching the water rise against the dam of pride", "no bird sings above the silence of the silt").
+  if (category === 'Poetry' && /\b(?:chaulani|darchula|bhattar|api\s+himal|landslide|disaster)\b/i.test(cleanContent)) {
+    const inventedWitnessPatterns = [
+      /\bi\s+see\s+the\s+villagers\s+looking\s+up\b/i,
+      /\bwalk\s+the\s+ridge\s+with\s+lanterns\b/i,
+      /\bno\s+bird\s+sings\s+above\b/i,
+      /\bdam\s+of\s+pride\b/i,
+      /\bholding\s+its\s+breath\s+behind\s+a\s+wall\b/i
+    ];
+    if (inventedWitnessPatterns.some(p => p.test(cleanContent))) {
+      violations.push({
+        rule: 'REAL_EVENT_POETRY_BOUNDARY',
+        description: 'Real-event poetry boundary violation: When anchoring poetry to a real, ongoing news disaster, you cannot invent eyewitness behavior, fictional lanterns, victims\' internal states, or false emotional claims at the disaster site. Ground in reported physical processes and official hydrology.'
+      });
+    }
+  }
+
+  // 76. POETRY_ABSTRACTION_DENSITY_FAIL
+  // Flags when a short poem repeatedly uses high-altitude philosophical abstractions
+  // (memory, ghosts, heart, names, silence, ache, weight, transit, temporary agreement)
+  // without concrete material action or domain-specific physical processes carrying the claim.
+  if (category === 'Poetry') {
+    const abstractionPatterns = [
+      /\bmemory\b/gi,
+      /\bghosts?\b/gi,
+      /\bthe\s+heart\s+of\s+the\s+village\b/gi,
+      /\bour\s+names\b/gi,
+      /\ban\s+ache\b/gi,
+      /\btemporary\s+agreement\b/gi,
+      /\bin\s+a\s+state\s+of\s+transit\b/gi,
+      /\bmemory\s+moving\s+toward\s+the\s+pen\b/gi,
+      /\biron\s+grip\b/gi
+    ];
+    let abstractionHits = 0;
+    for (const pat of abstractionPatterns) {
+      const matches = cleanContent.match(pat);
+      if (matches) abstractionHits += matches.length;
+    }
+    if (abstractionHits >= 4) {
+      violations.push({
+        rule: 'POETRY_ABSTRACTION_DENSITY_FAIL',
+        description: `Poetry abstraction density failure: Draft contains ${abstractionHits} ungrounded high-altitude abstractions (ghosts, memory moving toward pen, temporary agreement, iron grip, state of transit). Replace pre-digested thematic statements with concrete physical mechanisms and observable contrasts.`
+      });
+    }
+  }
+
+  // 77. SETTING_NECESSITY_CHECK
+  // For every named narrator setting, the place must be causally or perceptually necessary to the piece.
+  // If Fort Kochi is used purely as picturesque background (fishing nets, salt air props) without contrasting
+  // coastal tidal predictability against mountain flash-blockage hydrology, flag as decorative setting.
+  if (/\b(?:fort\s+kochi|kochi)\b/i.test(cleanContent) && /\b(?:darchula|chaulani|mountain|himal)\b/i.test(cleanContent)) {
+    const hasHydrologicalContrast = /\b(?:tide|tidal|estuary|low\s+tide|high\s+tide|inlet|vembanad|seawall|pilings)\b/i.test(cleanContent);
+    if (!hasHydrologicalContrast) {
+      violations.push({
+        rule: 'SETTING_NECESSITY_CHECK',
+        description: 'Setting necessity check failure: Fort Kochi setting operates as decorative tourist atmosphere rather than an essential perceptual lens. Contrast coastal tidal predictability against mountain flash stoppage to earn the geographical anchor.'
+      });
+    }
+  }
+
+  // 78. GLOBAL_POETRY_MOTIF_COOLDOWN
+  // High-frequency repetitive poetic motifs placed on strict cooldown:
+  // - cold cup of tea at elbow
+  // - brass lamps flickering
+  // - memory moving toward the pen
+  // - solitary palm frond drifting toward mud
+  // - dark water as final generic closure
+  const bannedPoetryMotifs = [
+    /\b(?:cold\s+cup\s+of\s+tea\s+at\s+my\s+elbow|cup\s+of\s+tea\s+at\s+my\s+elbow)\b/i.test(cleanContent),
+    /\b(?:brass\s+lamps\s+flicker)\b/i.test(cleanContent),
+    /\b(?:memory\s+moving\s+toward\s+the\s+pen)\b/i.test(cleanContent),
+    /\b(?:single\s+palm\s+frond\s+drift|palm\s+frond\s+drift.*?spinning\s+slowly\s+toward\s+the\s+mud)\b/i.test(cleanContent)
+  ];
+  const activeMotifCount = bannedPoetryMotifs.filter(Boolean).length;
+  if (activeMotifCount >= 2) {
+    violations.push({
+      rule: 'GLOBAL_POETRY_MOTIF_COOLDOWN',
+      description: `Global poetry motif cooldown triggered: Draft combines ${activeMotifCount} over-indexed platform tropes (cold tea at elbow, brass lamps, memory toward pen, palm frond drifting into mud). Break these habitual closures with precise physical realities.`
+    });
+  }
+
+  // 79. HUMOUR_MECHANISM_REQUIRED
+  // A Humour category piece must possess a functional comic engine:
+  // - Comic Premise: Inherent contradiction (e.g. residents debating reality TV while their own WhatsApp group behaves identically).
+  // - Escalation: Progression of actions (rumor -> argument -> poll -> admin intervention -> dramatic exit).
+  // - Repetition / Pattern: Recurring behavior with variation (e.g. exit/re-add, escalating caps-lock circulars).
+  // - Turn: Exposure or reversal (Gopal realizing the society group is already the show).
+  // - Button: Punchy comic closure.
+  // Rejects pieces that merely sprinkle humorous observations into an essayistic or contemplative reflection.
+  if (category === 'Humour') {
+    const hasComicMechanism = /\b(?:poll|leaving\s+this\s+group|added\s+her\s+back|who\s+switched\s+it\s+on|only\s+admins\s+can\s+send\s+messages|forty-seven\s+people\s+are\s+typing)\b/i.test(cleanContent);
+    const hasContemplativeAtmosphere = /\b(?:i\s+envy\s+her\s+silence|addicted\s+to\s+the\s+friction|looking\s+tired|irony\s+was\s+heavy|slow,?\s+rhythmic\s+sound|indifferent\s+to\s+the\s+chaos|reflection\s+in\s+the\s+hallway\s+mirror)\b/i.test(cleanContent);
+    if (hasContemplativeAtmosphere && !hasComicMechanism) {
+      violations.push({
+        rule: 'HUMOUR_MECHANISM_REQUIRED',
+        description: 'Humour mechanism failure: Draft substitutes contemplative essay reflection ("I envy her silence", "irony was heavy", "rain indifferent to chaos") for a functional comic engine (premise, escalation, repetition, turn, and button).'
+      });
+    }
+  }
+
+  // 80. HUMOUR_LITERARY_ATMOSPHERE_FAIL
+  // In Humour, flag excessive use of poetic weather, reflective silence, symbolic household objects,
+  // melancholy sensory endings, and philosophical self-analysis unless they directly support a joke.
+  if (category === 'Humour') {
+    const atmosphereClichés = [
+      /\b(?:cold\s+brass\s+handle)\b/i.test(cleanContent),
+      /\b(?:dust\s+motes\s+dancing)\b/i.test(cleanContent),
+      /\b(?:fried\s+fish\s+and\s+wet\s+concrete|scent\s+of\s+wet\s+concrete)\b/i.test(cleanContent),
+      /\b(?:steaming\s+cup\s+of\s+ginger\s+tea.*?cut\s+through|tea\s+momentarily\s+cut\s+through)\b/i.test(cleanContent),
+      /\b(?:rain\s+began\s+to\s+tap\s+against\s+the\s+windowpane|rain.*?indifferent\s+to\s+the\s+chaos)\b/i.test(cleanContent),
+      /\b(?:irony\s+was\s+heavy,?\s+like\s+a\s+wet\s+wool\s+blanket)\b/i.test(cleanContent),
+      /\b(?:i\s+envy\s+her\s+silence|addicted\s+to\s+the\s+friction\s+of\s+these\s+threads)\b/i.test(cleanContent),
+      /\b(?:set\s+the\s+phone\s+face\s+down|left\s+the\s+phone\s+face\s+down)\b/i.test(cleanContent),
+      /\b(?:deep,?\s+shuddering\s+groan\s+that\s+vibrated)\b/i.test(cleanContent)
+    ];
+    const atmosphereHits = atmosphereClichés.filter(Boolean).length;
+    if (atmosphereHits >= 2) {
+      violations.push({
+        rule: 'HUMOUR_LITERARY_ATMOSPHERE_FAIL',
+        description: `Humour literary atmosphere failure: Draft contains ${atmosphereHits} contemplative literary tropes (cold brass handle, dust motes, wet concrete, ginger tea cut-through, rain indifferent to chaos, wet wool blanket irony, phone-face-down ending). Humour requires comic timing and escalation, not literary melancholy.`
+      });
+    }
+  }
+
+  // 81. ENTERTAINMENT_STATUS_LOCK
+  // When a story references an active entertainment competition or reality show (e.g. Bigg Boss):
+  // Differentiates historical source being intentionally dramatized vs stale prediction treated as current.
+  // Prohibits using "probable contestants" or speculative pre-launch lists after the show has already launched and contestants/captains are confirmed.
+  if (/\b(?:bigg\s+boss|reality\s+show)\b/i.test(cleanContent)) {
+    const usesStaleProbableContestants = /\b(?:list\s+of\s+probable\s+contestants|probable\s+contestants?|speculative\s+contestant\s+list)\b/i.test(cleanContent);
+    const isExplicitlyHistorical = /\b(?:back\s+in\s+august|before\s+the\s+premiere|prior\s+to\s+the\s+launch|weeks\s+before\s+season\s+\d+\s+began)\b/i.test(cleanContent);
+    if (usesStaleProbableContestants && !isExplicitlyHistorical) {
+      violations.push({
+        rule: 'ENTERTAINMENT_STATUS_LOCK',
+        description: 'Entertainment status lock violation: Using stale pre-launch prediction phrasing ("list of probable contestants") for an active show that has already premiered. Update to reflect active house status or explicitly frame as historical.'
+      });
+    }
+  }
+
+  // 82. TITLE_OBJECT_CONTRACT_FAIL
+  // The title must connect directly to the central object, premise, or mechanism of the story.
+  // If the title references a specific object or unit ("The Glass Wall of Flat 402") that never appears in the text
+  // or has zero material/comedic consequence, flag TITLE_OBJECT_CONTRACT_FAIL.
+  if (cleanTitle) {
+    const glassWallMatch = /\bglass\s+wall\b/i.test(cleanTitle) && !/\bglass\s+wall\b/i.test(cleanContent);
+    const flat402Irrelevant = /\bflat\s+402\b/i.test(cleanTitle) && !/\bflat\s+402\b/i.test(cleanContent);
+    if (glassWallMatch || flat402Irrelevant) {
+      violations.push({
+        rule: 'TITLE_OBJECT_CONTRACT_FAIL',
+        description: `Title object contract failure: Title "${cleanTitle}" promises a specific object or setting ("glass wall" / "Flat 402") that has zero presence or structural consequence in the text. Title must align with the comic mechanism (e.g. "Mrs Menon Has Left the Group").`
+      });
+    }
+  }
+
+  // 83. HUMOUR_BUTTON_FAIL
+  // A Humour piece must end on a comic button: reversal, callback, escalation, contradiction, or deadpan consequence.
+  // Rejects endings that collapse into generic WritOn reflective fade-outs:
+  // - phone placed face down
+  // - staring out at rain
+  // - listening to pump groaning or ambient machinery
+  // - solitary walking away into kitchen
+  if (category === 'Humour') {
+    const trailingSnippet = cleanContent.slice(-600);
+    const hasReflectiveFadeOut = /\b(?:(?:set|left|placed)\s+the\s+phone\s+face\s+down|leaving\s+the\s+phone\s+face\s+down|walked\s+to\s+the\s+kitchen|rain\s+began\s+to\s+tap|pump.*?groan|shuddering\s+groan)\b/i.test(trailingSnippet);
+    const hasComicButton = /\b(?:typing|who\s+switched\s+it\s+on|motor\s+off|forty-seven\s+people|bye-laws?|admin-only)\b/i.test(trailingSnippet);
+    if (hasReflectiveFadeOut && !hasComicButton) {
+      violations.push({
+        rule: 'HUMOUR_BUTTON_FAIL',
+        description: 'Humour button failure: The piece ends on a contemplative fade-out (phone face down, rain tapping, groaning pump, walking away) instead of a comic button (reversal, callback, escalation, contradiction, or deadpan consequence).'
+      });
+    }
+  }
+
+  // 84. JOKE_EXPLANATION_OVERFLOW
+  // After a successful punchline or dialogue observation stating the comic thesis,
+  // do not immediately stack 3+ rhetorical examples explaining why it is funny.
+  // Allow at most 1-2 reinforcing beats before moving to the next action or button.
+  if (category === 'Humour') {
+    const hasDialogueThesis = /\b(?:while\s+running\s+the\s+exact\s+same\s+reality\s+show|same\s+reality\s+show\s+for\s+\d+\s+years)\b/i.test(cleanContent);
+    if (hasDialogueThesis) {
+      const explanationParallels = [
+        /\b(?:every\s+three-wheel\s+auto|parking\s+bay\s+b-14\s+is\s+a\s+captaincy\s+challenge)\b/i.test(cleanContent),
+        /\b(?:every\s+circular\s+pasted\s+with\s+brown\s+cello-tape|lift\s+no\.?\s*2\s+is\s+an\s+eviction\s+notice)\b/i.test(cleanContent),
+        /\b(?:the\s+lift\s+lobby\s+is\s+the\s+confession\s+room|lift\s+lobby\s+is\s+our\s+confession\s+room)\b/i.test(cleanContent),
+        /\b(?:courier\s+package\s+ban.*?is\s+the\s+luxury\s+budget\s+task)\b/i.test(cleanContent)
+      ];
+      const parallelHits = explanationParallels.filter(Boolean).length;
+      if (parallelHits >= 3) {
+        violations.push({
+          rule: 'JOKE_EXPLANATION_OVERFLOW',
+          description: `Joke explanation overflow: Story stacks ${parallelHits} post-thesis parallel explanations explaining the joke. When dialogue or an observation establishes the comic premise, allow at most 1-2 reinforcing beats before moving to the button.`
+        });
+      }
+    }
+  }
+
+  // 85. COMIC_INSTITUTIONAL_PLAUSIBILITY
+  // For fictional apartment society by-laws, notices, and rules:
+  // Prefer plausible, real-world bureaucratic language misapplied absurdly (e.g. "Use of Common Areas for Activities Other Than Residential Purpose")
+  // over hyper-tailored modern regulations that exist solely to describe WhatsApp in a 2018 document.
+  if (category === 'Humour' && /\b(?:201[0-9]\s+bye-laws?|bye-laws?\s+of\s+201[0-9])\b/i.test(cleanContent)) {
+    if (/\b(?:digital\s+misuse\s+of\s+association\s+channels|unregulated\s+canvassing\s+and\s+digital\s+misuse)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'COMIC_INSTITUTIONAL_PLAUSIBILITY',
+        description: 'Comic institutional plausibility failure: Using overly tailored, anachronistic WhatsApp-specific language in older bye-laws. Prefer authentic real-world society clauses absurdly stretched by administrators.'
+      });
+    }
+  }
+
+  // 86. LIVE_SHOW_STATE_LOCK
+  // When referencing an active broadcast/reality show (e.g. Bigg Boss Malayalam Season 8):
+  // Ensure the week, captaincy, and contest state match documented broadcast reality.
+  // Season 8: Week 1 captain was Jaseela Parveen; Rahul Easwar became captain in the second week.
+  if (/\b(?:bigg\s+boss\s+malayalam\s+(?:season\s+)?8)\b/i.test(cleanContent)) {
+    if (/\b(?:premiere\s+week\s+of\s+bigg\s+boss|first\s+week\s+of\s+bigg\s+boss)\b/i.test(cleanContent) && /\brahul\s+easwar\s+had\s+(?:just\s+been\s+appointed|become)\s+house\s+captain\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'LIVE_SHOW_STATE_LOCK',
+        description: 'Live show state lock violation: Rahul Easwar was appointed house captain in the second week of Bigg Boss Malayalam Season 8, not during premiere/first week (first captain was Jaseela Parveen).'
+      });
+    }
+  }
+
+  // 87. HUMOUR_PROPAGATION_RULE
+  // In Humour pieces, after the comic premise is initiated, every subsequent beat must either:
+  // 1. Escalate it
+  // 2. Complicate it
+  // 3. Reverse it
+  // 4. Call back to it, or
+  // 5. Reveal character through it.
+  // Flags decorative atmosphere-only paragraphs inserted into comedy drafts.
+  if (category === 'Humour') {
+    const hasAtmosphereOnlyStall = /\b(?:the\s+wood\s+is\s+scarred\s+where\s+i\s+accidentally|upholstery\s+feeling\s+coarse\s+against\s+my\s+skin|slow,?\s+rhythmic\s+sound,?\s+indifferent)\b/i.test(cleanContent);
+    if (hasAtmosphereOnlyStall) {
+      violations.push({
+        rule: 'HUMOUR_PROPAGATION_RULE',
+        description: 'Humour propagation failure: Inserted inert, atmosphere-only paragraph (e.g. furniture descriptions, coarse upholstery, rhythmic rain) that stalls comic momentum rather than escalating, complicating, reversing, or revealing character.'
+      });
+    }
+  }
+
+  // 88. DOMESTIC_VS_WORKPLACE_HASHTAG_FAIL
+  // Ensures hashtags match the actual institutional domain.
+  // If story is situated entirely in residential/apartment society micro-bureaucracy,
+  // do not tag with workplace comedy tags (#workplacechronicles, #officelife).
+  // Use #apartmentlife, #residentassociation, #housingbureaucracy instead.
+  if (category === 'Humour' && /\b(?:palm\s+meadows|housing\s+society|resident\s+association|flat\s+\d+|apartment\s+complex|residents\s+group)\b/i.test(cleanContent)) {
+    if (/#(?:workplacechronicles|officelife|corporatehumour|cubiclelife)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'DOMESTIC_VS_WORKPLACE_HASHTAG_FAIL',
+        description: 'Domestic vs workplace hashtag mismatch: Residential apartment society satire tagged with workplace hashtag (#workplacechronicles). Use #apartmentlife or #residentassociation instead.'
+      });
+    }
+  }
+
+  // 89. PERSONA_BIOGRAPHY_INVENTION_FAIL
+  // The generator may not invent that a persona has professional training, degrees,
+  // childhood experiences, illnesses/injuries, artistic practice, stage experience,
+  // or physical craft credentials (e.g. calloused toes, rehearsal hours, stage friends)
+  // unless established in persona memory. Metaphorical usefulness is NOT permission to invent biography.
+  const hasInventedPractitionerBiography = /\b(?:(?:my\s+toes\s+are\s+calloused|skin\s+toughened\s+from\s+years\s+of\s+friction|as\s+we\s+feel\s+the\s+weight\s+of\s+a\s+held\s+pose|when\s+we\s+are\s+mid-rehearsal|i\s+have\s+watched\s+friends\s+leave\s+the\s+stage|bells\s+around\s+our\s+ankles))\b/i.test(cleanContent);
+  const isEstablishedPractitioner = persona && (persona.isPractitioner === true || /\b(?:professional\s+dancer|performing\s+artist)\b/i.test(persona.personaPrompt || ''));
+  if (hasInventedPractitionerBiography && !isEstablishedPractitioner) {
+    violations.push({
+      rule: 'PERSONA_BIOGRAPHY_INVENTION_FAIL',
+      description: 'Persona biography invention failure: Draft claims bodily practitioner authority and physical rehearsal biography ("my toes are calloused", "as we feel the weight of a held pose in Varnam", "when we are mid-rehearsal") not established in persona memory. An informed observer or cultural critic must not invent personal stage credentials.'
+    });
+  }
+
+  // 90. NUMBER_MEANING_DRIFT_FAIL
+  // Sourced numbers must retain what they actually measure.
+  // 7 minutes = duration of post-screening standing ovation at Venice;
+  // MUST NOT drift into "holding an audience for seven minutes in a state of suspended animation" during the performance.
+  if (/\b(?:seven-minute\s+ovation|seven\s+minutes)\b/i.test(cleanContent) && /\b(?:hold\s+an\s+audience\s+for\s+seven\s+minutes\s+in\s+a\s+state\s+of\s+suspended\s+animation|seven\s+minutes\s+of\s+suspended\s+animation)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'NUMBER_MEANING_DRIFT_FAIL',
+      description: 'Number meaning drift failure: Transformed post-screening standing ovation duration (seven minutes of applause) into duration of artistic suspension during the performance ("hold an audience for seven minutes in a state of suspended animation"). Metrics must preserve what they genuinely measure.'
+    });
+  }
+
+  // 91. CULTURAL_TECHNIQUE_INVENTION_FAIL
+  // When explaining how an artistic tradition works, verify physical and technical claims.
+  // In Bharatanatyam, ankle bells (salangai/ghungroo) articulate rhythmic placement; a missed beat sounds like rhythmic misalignment,
+  // not a "dull, metallic thud instead of a sharp resonant ring".
+  if (/\b(?:ghungroo|salangai|ankle\s+bells)\b/i.test(cleanContent)) {
+    if (/\b(?:dull,?\s+metallic\s+thud\s+instead\s+of\s+a\s+sharp,?\s+resonant\s+ring|miss\s+a\s+beat.*?(?:dull|metallic)\s+thud)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'CULTURAL_TECHNIQUE_INVENTION_FAIL',
+        description: 'Cultural technique invention failure: Invented fictitious physical mechanics for ghungroo/salangai ("dull metallic thud instead of resonant ring"). Ankle bells amplify rhythm and timing errors sound like metric displacement, not muffled timbre.'
+      });
+    }
+  }
+
+  // 92. UNSOURCED_CRITICAL_CONSENSUS_FAIL
+  // Fabricating sweeping critical quotes or synthetic attribution (e.g. claiming The Hindu and The Statesman described it as a "singular, crushing intensity").
+  if (/\b(?:singular,?\s+crushing\s+intensity)\b/i.test(cleanContent) && /\b(?:the\s+hindu|the\s+statesman)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'UNSOURCED_CRITICAL_CONSENSUS_FAIL',
+      description: 'Unsourced critical consensus failure: Attributed hyperbolic invented consensus phrase ("singular, crushing intensity") to specific news outlets (*The Hindu*, *The Statesman*) that did not use it.'
+    });
+  }
+
+  // 93. CROSS_TRADITION_DECORATIVE_GATE
+  // Cultural comparisons must share an exact formal property and illuminate both works,
+  // rather than serving as decorative prestige scaffolding or bodily projection.
+  if (/\b(?:pattinson|primetime)\b/i.test(cleanContent) && /\b(?:bharatanatyam|varnam)\b/i.test(cleanContent)) {
+    if (/\b(?:feels\s+the\s+same\s+ache\s+in\s+his\s+joints|ache\s+in\s+his\s+joints|same\s+craft\s+as\s+the\s+dancer\s+who\s+holds\s+a\s+single,?\s+agonizing\s+balance)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'CROSS_TRADITION_DECORATIVE_GATE',
+        description: 'Cross-tradition comparison gate failure: Projects ungrounded bodily sensations ("ache in his joints") onto contemporary actors to bridge an unearned comparison between Hollywood screen acting and classical dance postures.'
+      });
+    }
+  }
+
+  // 94. GLOBAL_CULTURE_PROP_COOLDOWN
+  // Catches over-indexed culture furniture: wilted jasmine, cold tea, midnight studio, moth circling lamp, amber streetlights, rain on tin roof.
+  const culturePropClichés = [
+    /\b(?:jasmine\s+is\s+wilting|smell\s+of\s+damp\s+jasmine)\b/i.test(cleanContent),
+    /\b(?:moth\s+circle\s+the\s+lamp|wings\s+beating\s+a\s+soft,?\s+erratic\s+tempo)\b/i.test(cleanContent),
+    /\b(?:streetlights\s+casting\s+long,?\s+amber\s+shadows)\b/i.test(cleanContent),
+    /\b(?:rain\s+sounds\s+against\s+the\s+corrugated\s+tin\s+roof)\b/i.test(cleanContent),
+    /\b(?:ink\s+has\s+dried|ink\s+pooling\s+in\s+the\s+grain)\b/i.test(cleanContent)
+  ];
+  const culturePropHits = culturePropClichés.filter(Boolean).length;
+  if (culturePropHits >= 3) {
+    violations.push({
+      rule: 'GLOBAL_CULTURE_PROP_COOLDOWN',
+      description: `Global culture prop cooldown triggered: Draft combines ${culturePropHits} over-indexed cultural tropes (damp jasmine, moth circling lamp, amber streetlights, rain on tin roof, dried ink). Strip the lyrical starter kit and focus on the structural inquiry.`
+    });
+  }
+
+  // 95. CULTURAL_TECHNICAL_DETAIL_GATE
+  // In cultural criticism, avoid gratuitous, over-specialized musicological/dance ornament
+  // when simpler descriptive phrasing preserves the analytical argument.
+  // Flags "fraction of a matra" or pedantic samam micromeasurement claims.
+  if (/\b(?:fraction\s+of\s+a\s+matra|anticipates\s+it\s+by\s+a\s+fraction)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'CULTURAL_TECHNICAL_DETAIL_GATE',
+      description: 'Cultural technical detail gate failure: Uses ornamental micro-technical jargon ("fraction of a matra") that distracts from the cultural critique. Simplify to rhythmic precision, phrasing, and resolution within the cycle.'
+    });
+  }
+
+  // 96. BIOGRAPHICAL_PORTRAYAL_ACCURACY_FAIL
+  // Ensures accurate framing of real-person portrayals.
+  // In Primetime at Venice, Pattinson portrays real-life television host Chris Hansen directly (in a dramatized film),
+  // not a fictionalized character merely "modeled on" Chris Hansen under a different name.
+  if (/\b(?:primetime|pattinson)\b/i.test(cleanContent)) {
+    if (/\b(?:fictionalized\s+investigative\s+journalist\s+modeled\s+on\s+chris\s+hansen|character\s+modeled\s+on\s+chris\s+hansen)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'BIOGRAPHICAL_PORTRAYAL_ACCURACY_FAIL',
+        description: 'Biographical portrayal accuracy failure: Described Pattinson as playing a fictionalized character modeled on Chris Hansen. Official Venice documentation records Pattinson playing Chris Hansen directly in a dramatized portrayal.'
+      });
+    }
+  }
+
+  // 97. CRITICAL_INTERIORITY_PROJECTION_FAIL
+  // In cultural criticism, an essayist must not claim to know the internal bodily state or private experience of living artists.
+  // Differentiates between what the work or metric reveals vs epistemic restraint ("we cannot know what remains in an actor", "what the work cost the performer").
+  if (/\b(?:pattinson|real-life\s+actor)\b/i.test(cleanContent)) {
+    if (/\b(?:what\s+remains\s+in\s+an\s+actor\s+once\s+the\s+character\s+is\s+surrendered|feels\s+the\s+same\s+ache|loss\s+of\s+that\s+fragile,?\s+shared\s+silence)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'CRITICAL_INTERIORITY_PROJECTION_FAIL',
+        description: 'Critical interiority projection failure: Projects unprovable emotional or somatic states onto a living actor. Maintain epistemic restraint: state clearly that external metrics cannot recover what the work cost the performer.'
+      });
+    }
+  }
+
+  // 98. MARKET_EVENT_STATUS_LOCK
+  // In market and financial writing, timestamps are part of the fact.
+  // Prohibits treating historical market events as "just opened" or "looming" in present tense when dates have lapsed.
+  // Pranav Constructions opened on Sep 7 and listed on NSE around Sep 12; NSE IPO opened on Sep 17.
+  if (/\b(?:pranav\s+constructions|nse\s+ipo)\b/i.test(cleanContent)) {
+    const isExplicitlyDated = /\b(?:september\s+7,?\s+2026|sep(?:tember)?\s+2026\s+archive|as\s+of\s+september\s+7)\b/i.test(cleanContent);
+    const usesStalePresentTense = /\b(?:has\s+just\s+opened\s+for\s+subscription|looming\s+on\s+the\s+horizon|awaiting\s+the\s+allocation)\b/i.test(cleanContent);
+    if (usesStalePresentTense && !isExplicitlyDated) {
+      violations.push({
+        rule: 'MARKET_EVENT_STATUS_LOCK',
+        description: 'Market event status lock violation: Market events that have already listed or opened (Pranav Constructions listed Sep 12, NSE IPO opened Sep 17) described in present tense ("has just opened", "looming on the horizon") without explicit dating ("Varanasi, September 7, 2026"). In financial writing, timestamps are part of the fact.'
+      });
+    }
+  }
+
+  // 99. REPORTED_ESSAY_FICTION_HYBRID_FAIL
+  // In category 'Essays', the text must not fabricate named eyewitness characters, dialogue,
+  // or physical gestures ("Subodh's thumb smears grease across his phone screen", "Subodh mutters") to dramatize public data.
+  // Either submit as 'Short Stories' with clearly framed fiction, or write an analytical essay built on sourced data.
+  if (category === 'Essays') {
+    const hasInventedEyewitnessPersona = /\b(?:subodh’s\s+thumb|subodh's\s+thumb|subodh\s+says|subodh\s+mutters|subodh\s+remembers|talks\s+to\s+his\s+tea\s+glass)\b/i.test(cleanContent);
+    if (hasInventedEyewitnessPersona) {
+      violations.push({
+        rule: 'REPORTED_ESSAY_FICTION_HYBRID_FAIL',
+        description: 'Reported essay fiction hybrid failure: Sourced essay invents fictional eyewitness character ("Subodh") with fabricated quotes and physical gestures to dramatize public market data. Either classify as Short Stories or frame as an analytical essay.'
+      });
+    }
+  }
+
+  // 100. FINANCIAL_MECHANISM_BINDING & FINANCIAL_TERM_BOUNDARY (Rule 100 & Rule 103)
+  // Enforces structural precision in financial mechanisms:
+  // - GMP is an unofficial, informal price discovery signal/premium attached to anticipated share value in the grey market, not an exchange price or guaranteed listing gain.
+  // - Grey market deals in applications (kostak: payment regardless of allotment; subject-to-sauda: payment conditional on allotment) must not be collapsed together with GMP.
+  // - In retail demat bidding, distinct family members apply through their own individual demat/PAN and bank accounts; one person cannot be described as owning multiple accounts for allotment gaming.
+  if (/\b(?:grey\s+market|gmp)\b/i.test(cleanContent)) {
+    if (/\b(?:he\s+has\s+three\s+different\s+demat\s+accounts\s+open.*?each\s+registered\s+to\s+a\s+different\s+family\s+member)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'FINANCIAL_MECHANISM_BINDING',
+        description: 'Financial mechanism binding error: Conflates legitimate family applications with a single individual owning multiple demat identities. Frame accurately: family members apply from their own respective PAN-linked accounts.'
+      });
+    }
+    // Conflating GMP with unallotted application rights without separation
+    if (/\b(?:informal\s+price\s+difference\s+at\s+which\s+traders.*?deal\s+in\s+unallotted\s+application\s+rights\s+or\s+pre-listing\s+shares)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'FINANCIAL_TERM_BOUNDARY',
+        description: 'Financial term boundary error: Collapses GMP with application trading. GMP is specifically the unofficial premium over the issue price attached to anticipated shares; kostak and subject-to-sauda are separate application-based arrangements.'
+      });
+    }
+    // ASBA bank freezes vs ASBA fund blocks
+    if (/\basba\s+bank\s+freezes\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'FINANCIAL_MECHANISM_BINDING',
+        description: 'Financial mechanism error: ASBA does not freeze the bank account. Funds are blocked in the account until allotment. Use "funds blocked through ASBA" or "ASBA fund blocks".'
+      });
+    }
+  }
+
+  // 101. HISTORICAL_PARALLEL_FAIL
+  // Flags ungrounded heritage wallpaper invoked to make modern financial behavior feel ancient
+  // ("For generations, merchants here have wagered on the arrival of cotton boats...", "brass-turners of Peetal Nagri").
+  if (/\b(?:for\s+generations,?\s+merchants\s+here\s+have\s+wagered\s+on\s+the\s+arrival\s+of\s+cotton\s+boats|brass-turners\s+of\s+peetal\s+nagri)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'HISTORICAL_PARALLEL_FAIL',
+      description: 'Historical parallel failure: Injected decorative historical wallpaper ("wagered on cotton boats", "brass-turners of Peetal Nagri") with zero evidentiary connection to modern IPO grey-market trading.'
+    });
+  }
+
+  // 102. SYMBOLIC_CONTRAST_STAGING_FAIL
+  // Prohibits manufactured old-vs-new contrasts staged solely to oppose a digital action
+  // (e.g. inserting an old man in a handloom dhoti counting brass coins for a clay cup of water beside a smartphone trading app).
+  if (/\b(?:old\s+man\s+in\s+a\s+handloom\s+dhoti\s+is\s+counting\s+brass\s+coins|clay\s+cup\s+of\s+water)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'SYMBOLIC_CONTRAST_STAGING_FAIL',
+      description: 'Symbolic contrast staging failure: Staged theatrical old-vs-new contrast (old man in dhoti counting brass coins for clay cup of water vs smartphone demat trading). If the contrast has no causal role, remove it.'
+    });
+  }
+
+  // 104. REGULATORY_TIMELINE_LOCK
+  // Prohibits turning a specific calendar interval into a generalized market rule.
+  // India's public-issue timeline is T+3 working days from issue closure, not an arbitrary "five-day lag".
+  if (/\b(?:the\s+five-day\s+lag\s+between\s+subscription\s+close\s+and\s+exchange\s+listing)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'REGULATORY_TIMELINE_LOCK',
+      description: 'Regulatory timeline lock error: Stated "the five-day lag between subscription close and exchange listing" as a generalized rule. Under SEBI guidelines, public issues follow a T+3 working-day framework. Frame accurately as the few working days between subscription close, allotment, and exchange listing.'
+    });
+  }
+
+  // 105. DECORATIVE_PERSONA_GEOGRAPHY_FAIL
+  // Do not automatically begin every persona article with their city, tea stall, river, balcony, street or neighborhood.
+  // Named geography must affect the argument, provide verified firsthand context, or materially shape the persona's interpretation.
+  // Prohibits synthetic opening geography like "Along the stone steps above Kedar Ghat, the conversation between the morning tea stalls is rarely about philosophy..."
+  if (/\b(?:along\s+the\s+stone\s+steps\s+above\s+kedar\s+ghat.*?conversation\s+between\s+the\s+morning\s+tea\s+stalls)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'DECORATIVE_PERSONA_GEOGRAPHY_FAIL',
+      description: 'Decorative persona geography failure: Staged pseudo-reportage opening stapling persona geography (Kedar Ghat tea stalls) onto an analytical essay without verified observation or thematic relevance.'
+    });
+  }
+
+  // 106. FINANCIAL_RISK_WORDING
+  // Prefer precise institutional absence ("outside exchange settlement/investor-protection mechanisms")
+  // over broad dramatic claims ("entirely unprotected", "no rules", "anything can happen").
+  if (/\b(?:that\s+price\s+discovery\s+is\s+entirely\s+unprotected)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'FINANCIAL_RISK_WORDING',
+      description: 'Financial risk wording error: Used sweeping, hyperbolic phrase "entirely unprotected". Frame with institutional precision: "those transactions sit outside the settlement, grievance-redressal and investor-protection mechanisms available on recognized exchanges".'
+    });
+  }
+
+  // 107. AUDIENCE_CIRCULATION_CLAIM_FAIL
+  // Claims such as "went viral", "traveled across retail messaging groups", "everyone was discussing",
+  // "retail investors flooded forums" require specific evidence. Media reporting != proof of private group circulation.
+  if (/\b(?:traveled\s+across\s+retail\s+messaging\s+groups|spread\s+through\s+whatsapp\s+groups|went\s+viral\s+in\s+investor\s+forums)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'AUDIENCE_CIRCULATION_CLAIM_FAIL',
+      description: 'Audience circulation claim failure: Asserts unverified private messaging-group or forum circulation ("traveled across retail messaging groups"). Frame strictly based on verified evidence: "The number drawing attention across financial portals was not simply...".'
+    });
+  }
+
+  // 108. FINANCIAL_INSTITUTIONAL_WORDING_FAIL
+  // Prefer actual process terms: basis of allotment, RHP/offer documents, ASBA blocked amounts, demat accounts, exchange settlement.
+  // Avoid tech-perfumed or inaccurate substitutes: "computerized allotment algorithms", "statutory balance sheet" (in place of prospectus/offer documents).
+  if (/\b(?:computerized\s+allotment\s+algorithms|statutory\s+balance\s+sheet)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'FINANCIAL_INSTITUTIONAL_WORDING_FAIL',
+      description: 'Financial institutional wording error: Uses tech-perfumed or inaccurate substitute ("computerized allotment algorithms" or "statutory balance sheet"). Use exact institutional terms: "SEBI-mandated disclosures", "published financial statements / offer documents", "regulated basis of allotment".'
+    });
+  }
+
+  // 109. MARKET_ESSAY_BOUNDARY_FAIL
+  // Market essays must explain mechanisms, incentives, psychology, and facts without converting into
+  // personalized financial direction or tips ("buy this IPO", "guaranteed listing gains").
+  if (/\b(?:you\s+should\s+apply\s+for\s+this\s+ipo|guaranteed\s+listing\s+gain|buy\s+these\s+shares\s+now)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'MARKET_ESSAY_BOUNDARY_FAIL',
+      description: 'Market essay boundary failure: Sourced essay gives direct investment advice or promises listing gains instead of explaining mechanisms, incentives, and psychology.'
+    });
+  }
+
+  // 110. PERSONA_LOCATION_LOCK
+  // Each persona has an established home base. Do not infer or change location based on surname, language,
+  // ethnicity, or aesthetic associations. Dr. Sunita Banerjee lives in Mayur Vihar, Delhi / Shantiniketan.
+  // She cannot casually wake up in Kolkata simply because of Bengali surname associations.
+  if (penName.includes('sunita') || penName.includes('banerjee')) {
+    if (/\b(?:clouds\s+linger\s+low\s+over\s+kolkata|outside,?\s+(?:grey\s+clouds\s+linger\s+low\s+over\s+)?kolkata|my\s+apartment\s+in\s+kolkata)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'PERSONA_LOCATION_LOCK',
+        description: 'Persona location lock error: Dr. Sunita Banerjee has an established home base in Mayur Vihar, Delhi. Setting the piece in Kolkata without an explicit travel pretext violates persona continuity based on surname matching.'
+      });
+    }
+  }
+
+  // 111. MARKET_CLOSURE_SCOPE_FAIL
+  // When reporting a market holiday (such as Labor Day on NYSE/Nasdaq), bind exactly what stopped:
+  // regular U.S. equity trading on NYSE and Nasdaq.
+  // Do NOT generalize to "financial system went dark", "trading floors silenced for twenty-four hours",
+  // "absence of price discovery", or "markets stopped" when futures, overseas bourses, FX, and commodities continue trading.
+  if (/\b(?:labor\s+day|market\s+closed)\b/i.test(cleanContent)) {
+    if (/\b(?:silenced\s+their\s+trading\s+floors\s+for\s+twenty-four\s+hours|institutional\s+trading\s+desks\s+sit\s+dark|absence\s+of\s+price\s+discovery\s+for\s+a\s+single\s+day|wires\s+carry\s+only\s+quiet)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'MARKET_CLOSURE_SCOPE_FAIL',
+        description: 'Market closure scope error: Generalizes regular NYSE/Nasdaq equity trading session closure into total global financial shutdown ("silenced for twenty-four hours", "absence of price discovery", "wires carry only quiet"). Futures, foreign exchanges, FX, and consumer businesses remain active.'
+      });
+    }
+    // Search trend overstatement
+    if (/\btops\s+search\s+trends\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'AUDIENCE_CIRCULATION_CLAIM_FAIL',
+        description: 'Audience circulation claim failure: Asserts "tops search trends" without empirical Google Trends telemetry.'
+      });
+    }
+  }
+
+  // 112. HISTORICAL_CAUSAL_COMPRESSION_FAIL
+  // Do not collapse distinct historical labor struggles into a single neat causal origin story.
+  // Labor Day emerged from organized labor recognition/parades, while the eight-hour campaign was an overlapping but distinct movement.
+  // Disallows: "Consider what Labor Day once demanded. ... Eight hours for work..." without distinguishing the movements.
+  if (/\b(?:consider\s+what\s+labor\s+day\s+once\s+demanded.*?eight\s+hours\s+for\s+work)\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'HISTORICAL_CAUSAL_COMPRESSION_FAIL',
+      description: 'Historical causal compression failure: Collapses the origin of the Labor Day holiday with the separate eight-hour day campaign. Frame accurately: "The labor movement that produced the holiday also fought over control of time".'
+    });
+  }
+
+  // 113. THEMATIC_COUNTEREVIDENCE_GATE
+  // An essay thesis cannot omit the primary real-world fact that contradicts it.
+  // In an essay about Labor Day pausing markets in honor of labor, the counterevidence—that millions of service, retail, logistics, and emergency workers still work on Labor Day—must be directly confronted.
+  if (/\blabor\s+day\b/i.test(cleanContent) && /\b(?:pause|quiet|stillness|slow)\b/i.test(cleanContent) && category === 'Essays') {
+    const addressesWorkingLabor = /\b(?:supermarket\s+cashier|airport\s+ground\s+crew|restaurant\s+dishwasher|still\s+working|service\s+workers|shifts\b|logistics|convenience\s+stores|hospitals?)\b/i.test(cleanContent);
+    if (!addressesWorkingLabor) {
+      violations.push({
+        rule: 'THEMATIC_COUNTEREVIDENCE_GATE',
+        description: 'Thematic counterevidence gate failure: Romanticizes Labor Day market closure as a collective social pause while ignoring the primary complicating reality that service, logistics, and retail workers remain on shift.'
+      });
+    }
+  }
+
+  // 114. PERSONA_PROP_SATURATION
+  // Tracks and restricts repetitive aesthetic costume clusters per persona.
+  // For Dr. Sunita Banerjee, flags drafts deploying 3+ recurring desk props (fountain pen, brass clock/paperweight, tea in porcelain cup, teak desk, clothbound book, indigo ink) when they serve merely as aesthetic wallpaper.
+  if (penName.includes('sunita') || penName.includes('banerjee')) {
+    const sunitaProps = [
+      /\b(?:brass\s+fountain\s+pen|fountain\s+pen)\b/i.test(cleanContent),
+      /\b(?:brass\s+clock|brass\s+paperweight)\b/i.test(cleanContent),
+      /\b(?:black\s+tea\s+steaming\s+in\s+a\s+porcelain\s+cup|porcelain\s+cup)\b/i.test(cleanContent),
+      /\b(?:cool\s+grain\s+of\s+teak|teak\s+desk)\b/i.test(cleanContent),
+      /\b(?:clothbound\s+volume|clothbound\s+book)\b/i.test(cleanContent),
+      /\b(?:indigo\s+ink|cream\s+paper)\b/i.test(cleanContent)
+    ];
+    const hitProps = sunitaProps.filter(Boolean).length;
+    if (hitProps >= 3) {
+      violations.push({
+        rule: 'PERSONA_PROP_SATURATION',
+        description: `Persona prop saturation failure: Sunita Banerjee draft deploys ${hitProps}/6 signature aesthetic desk props (fountain pen, brass clock, porcelain cup, teak desk, clothbound book, indigo ink) as decorative costume. Strip the still-life staging and ground the argument in behavioral and structural analysis.`
+      });
+    }
+  }
+
+  // 115. CURRENT_EVENT_SCENE_CHECK
+  // In reported or current-event essays, do not invent plausible cinematic scenes merely because they are statistically plausible
+  // (e.g. "commuter trains running beneath the streets are already full", "cashiers wiping counters").
+  // Either support with verified reporting, state generically, or omit.
+  if (category === 'Essays') {
+    if (/\b(?:commuter\s+trains\s+running\s+beneath\s+the\s+streets\s+are\s+already\s+full|trains\s+beneath\s+the\s+streets\s+are\s+already\s+full)\b/i.test(cleanContent)) {
+      violations.push({
+        rule: 'CURRENT_EVENT_SCENE_CHECK',
+        description: 'Current event scene check failure: Injects an unverified cinematic assertion ("commuter trains running beneath the streets are already full") without reporting support. Frame with factual restraint: "Across the country, grocery stores and retailers are already doing business."'
+      });
+    }
+  }
+
+  // 116. POPULATION_QUANTIFIER_CHECK
+  // Unverified hyperbolic population quantifiers ("millions of workers", "countless employees", "nearly everyone")
+  // require specific census/labor statistical citation. Use precise, supportable categories ("many workers", "retail employees", "grocery workers").
+  if (category === 'Essays' && /\bmillions\s+of\s+workers\s+still\s+report\s+for\s+their\s+shifts\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'POPULATION_QUANTIFIER_CHECK',
+      description: 'Population quantifier failure: Asserts "millions of workers still report for their shifts" without labor telemetry citation. Use supportable qualitative framing: "many workers still report for shifts".'
+    });
+  }
+
+  // 117. RELATED_HISTORY_NOT_IDENTICAL_HISTORY
+  // For historical context, distinguish between the direct statutory origin of an institution and a broader related movement of the era.
+  // E.g. The labor movement helped turn Labor Day itself into law, rather than generically creating "public holidays".
+  if (/\bhelped\s+enshrine\s+public\s+holidays\s+into\s+law\b/i.test(cleanContent)) {
+    violations.push({
+      rule: 'RELATED_HISTORY_NOT_IDENTICAL_HISTORY',
+      description: 'Related history causal error: Over-generalizes the labor movement\'s outcome to "enshrine public holidays into law". State specifically: "succeeded in turning Labor Day itself into law".'
+    });
+  }
+
+  // 118. SPORTS_VIEWING_TIME_BINDING
+  // If a fiction or essay references watching a real sporting event at a specific local time, that scene time must either
+  // overlap the real event's broadcast window or explicitly establish it is a replay/delayed viewing.
+  // US Open Day 7 (Sept 7, 2026): Andreeva vs Potapova started ~11:00 AM EDT = ~8:30 PM IST.
+  // A Kolkata scene at "4:00 AM" watching live score updates is temporally impossible without explicit replay framing.
+  if (category === 'Short Stories') {
+    const hasLiveScoreUpdates = /\bscore\s+updates?\b|\bserve\s+by\s+serve\b|\blive\s+score\b/i.test(cleanContent);
+    const has4amKolkata = /\b4[:\s]*00\s*a\.?m\.?\b.*kolkata|\bkolkata.*\b4[:\s]*00\s*a\.?m\.?\b/i.test(cleanContent);
+    const hasReplayTag = /\breplay\b|\bdelayed\s+broadcast\b|\brecorded\s+coverage\b/i.test(cleanContent);
+    if (hasLiveScoreUpdates && has4amKolkata && !hasReplayTag) {
+      violations.push({
+        rule: 'SPORTS_VIEWING_TIME_BINDING',
+        description: 'Broadcast time binding failure: A 4:00 AM Kolkata scene cannot watch Andreeva vs Potapova (Louis Armstrong Stadium, 11:00 AM EDT / 8:30 PM IST) as a live match with real-time score updates. Either shift the scene time, reference a replay explicitly, or restructure around delayed/recorded viewing.'
+      });
+    }
+  }
+
+  // 119. SPORT_SURFACE_REALISM
+  // Sport details must be bound to the actual court/pitch surface, not imported from a different sport's surface.
+  // US Open hard court (acrylic DecoTurf): painted lines, no clay dust, no chalk puffs, ball skids and kicks off baseline.
+  // Clay: red clay dust on Hawkeye lines. Grass: divots, skid and stay. Never cross-contaminate.
+  const hasClaySurfaceOnHardCourt = /\bdust\s+kicks?\s+up\b|\bline\s+dust\b|\bclay\s+dust\b|\bchalk\s+(?:dust|cloud|puff)\b/i.test(cleanContent);
+  const hasUSOpenReference = /\bus\s+open\b|\bflushing\s+meadows\b|\blouis\s+armstrong\b|\barena\b.*\btennis\b/i.test(cleanContent);
+  if (hasClaySurfaceOnHardCourt && hasUSOpenReference) {
+    violations.push({
+      rule: 'SPORT_SURFACE_REALISM',
+      description: 'Surface realism error: US Open is played on acrylic hard court (DecoTurf). Lines are painted; no clay-style dust clouds or chalk puffs occur on ball-line contact. Do not import clay-court sensory details into a hard-court scene.'
+    });
+  }
+
+  // 120. TITLE_EVENT_CONTRACT
+  // If the title explicitly names a game phase ("Second Set", "Final Over", "Third Quarter", "Last Lap"),
+  // that phase must materially change the conflict, decision, relationship, or outcome in the narrative.
+  // A phase-named title where the named phase only supplies ambient atmosphere fails this contract.
+  if (category === 'Short Stories') {
+    const titlePhasePattern = /\b(second\s+set|final\s+over|third\s+quarter|last\s+lap|final\s+set|first\s+half|second\s+half)\b/i;
+    if (titlePhasePattern.test(title)) {
+      const phaseWord = (title.match(titlePhasePattern) || [])[0] || '';
+      const phaseInContent = new RegExp(`\\b${phaseWord.replace(/\s+/g, '\\s+')}\\b`, 'i').test(cleanContent);
+      if (!phaseInContent) {
+        violations.push({
+          rule: 'TITLE_EVENT_CONTRACT',
+          description: `Title phase contract failure: Title names "${phaseWord}" but that phase either does not appear or does no narrative work in the story body. Either the named phase must materially alter conflict/decision/outcome, or the title must be renamed.`
+        });
+      }
+    }
+  }
+
+  // 121. DEVANSH_PROP_COOLDOWN
+  // Devansh Roy's Kolkata corner-shop stage set is on permanent cooldown as a repeated aesthetic costume.
+  // Recurring character (Bimal) is allowed; recurring identical stage set is not.
+  // Stage set props: Bimal alone + tram tracks + monsoon static + clay cups + wobbling fan + cold tea + chipped rim + lone yellow bulb.
+  if (penName.includes('devansh') || penName.includes('devansh_roy')) {
+    const devanshCooldownProps = [
+      /\btram\s+tracks?\b/i.test(cleanContent),
+      /\bwobbling\s+fan\b|\bceiling\s+fan\s+wobbl/i.test(cleanContent),
+      /\bclay\s+cup\b|\bmitti\s+ka\s+kullad\b/i.test(cleanContent),
+      /\bcold\s+tea\b/i.test(cleanContent),
+      /\bchipped\s+(?:rim|glass|cup)\b/i.test(cleanContent),
+      /\blone\s+(?:yellow\s+)?bulb\b|\bsingle\s+(?:yellow\s+)?bulb\b/i.test(cleanContent),
+      /\bwet\s+jute\b/i.test(cleanContent),
+    ];
+    const cooldownHits = devanshCooldownProps.filter(Boolean).length;
+    if (cooldownHits >= 3) {
+      violations.push({
+        rule: 'DEVANSH_PROP_COOLDOWN',
+        description: `Devansh stage-set prop saturation: ${cooldownHits}/7 recurring Kolkata corner-shop props deployed (tram tracks, wobbling fan, clay cups, cold tea, chipped rim, lone bulb, wet jute). The recurring character (Bimal) is allowed; the identical atmospheric stage set is not. Build a new spatial context or strip the prop cluster.`
+      });
+    }
+  }
+
+  // 122. DEVANSH_LENS_ENFORCEMENT
+  // Devansh Roy's core cognitive lens is: information transforms when mediated, delayed, replayed, or transmitted.
+  // Strong story engines: spoiler vs. delayed broadcast, archived record vs. breaking report, score notification arriving before experience.
+  // FAIL: "media distance" expressed only through atmosphere (glowing TV in background) with no transmission conflict.
+  // A story that only has a character watching a broadcast with no information-mediation conflict fails this lens.
+  if (penName.includes('devansh') || penName.includes('devansh_roy')) {
+    if (category === 'Short Stories') {
+      const hasTransmissionConflict =
+        /\bspoil\b|\bspoiler\b|\balready\s+know\b|\bdon.t\s+tell\b|\bnotification\b|\bresult\s+(?:already|first)\b|\bknows?\s+the\s+(?:score|result|outcome)\b|\bdelayed\s+(?:replay|broadcast|feed)\b|\breplay\s+uncertainty\b/i.test(cleanContent);
+      const hasOnlyAtmosphere =
+        /\bglowing\b.*\btelevi[sz]ion\b|\btelevi[sz]ion.*\bglowing\b|\bsilent\b.*\bscreen\b|\bscreen.*\bsilent\b/i.test(cleanContent);
+      if (!hasTransmissionConflict && category === 'Short Stories') {
+        violations.push({
+          rule: 'DEVANSH_LENS_ENFORCEMENT',
+          description: 'Devansh Roy core lens failure: Story contains no information-mediation conflict (spoiler vs delayed broadcast, notification arriving before experience, replay uncertainty, score known before the set concludes). A TV glowing in the background is atmosphere, not a Devansh lens. Rebuild around: what happens when information arrives faster than experience?'
+        });
+      }
+    }
+  }
+
+  // 123. SHORT_STORY_VIGNETTE_FAIL
+  // A Short Story requires desire + resistance + decision + change.
+  // A draft that only has atmosphere + observation + symbolic ending but no want/conflict/decision/changed situation
+  // must be reclassified as a vignette or rebuilt with story structure.
+  if (category === 'Short Stories') {
+    const hasWant = /\bwant(?:s|ed)?\b|\bwish(?:es|ed)?\b|\bhope(?:s|d)?\b|\bneed(?:s|ed)?\b|\btrying\s+to\b|\basks?\b|\bdemands?\b|\bdecid(?:es|ed)?\b|\bforbids?\b|\borders?\b/i.test(cleanContent);
+    const hasConflict = /\brefuse[sd]?\b|\bwon.t\b|\bforbid\b|\bstop\b|\bblock\b|\bspoil\b|\bargue[sd]?\b|\bshout\b|\bprotest\b|\bnot\s+supposed\b|\bno\s+one\s+is\s+allowed\b|\bprohibit\b/i.test(cleanContent);
+    // Only flag very short stories (under 400 words) with neither want nor conflict — avoids false positives on longer prose
+    const wordCount = cleanContent.split(/\s+/).filter(Boolean).length;
+    if (wordCount < 450 && !hasWant && !hasConflict) {
+      violations.push({
+        rule: 'SHORT_STORY_VIGNETTE_FAIL',
+        description: 'Vignette detection: Short story under 450 words contains no detectable desire, conflict, decision, or changed situation. Atmosphere + observation + symbolic ending is a vignette, not a Short Story. Introduce: a character want, an obstacle, a decision, and a changed state by the end.'
+      });
+    }
+  }
+
+  // 124. SPORTS_REPLAY_CHRONOLOGY
+  // A replay of a completed match is only possible after the match has ended.
+  // VIEWING_DATETIME < MATCH_END_DATETIME means no completed-match replay is possible.
+  // The 86/100 failure: "Sunday evening" replay of a Monday match — the match had not yet happened.
+  // Binds: MATCH_DATE × VIEWER_TIMEZONE × MODE (LIVE / RECORDED / REPLAY / HIGHLIGHTS).
+  if (category === 'Short Stories') {
+    // Pattern: "replay" + a day/time earlier than or incompatible with the match date
+    const hasSundayReplay = /\b(sunday\s+(?:evening|afternoon|night|morning)|sunday\b(?!\s+open))/i.test(cleanContent);
+    const hasMondayEvent = /\bmonday\b/i.test(cleanContent);
+    const hasReplay = /\breplay\b|\bdelayed\s+broadcast\b/i.test(cleanContent);
+    const hasMondayUSOpenContext = /\b(us\s+open|louis\s+armstrong|flushing\s+meadows)\b/i.test(cleanContent);
+    // Flag: Sunday replay of a Monday US Open match (Labor Day round)
+    if (hasSundayReplay && hasReplay && hasMondayUSOpenContext && !hasMondayEvent) {
+      violations.push({
+        rule: 'SPORTS_REPLAY_CHRONOLOGY',
+        description: 'Replay chronology failure: Story places a replay of a US Open Labor Day match (Monday) on "Sunday evening" — before the match took place. A completed-match replay requires VIEWING_DATETIME > MATCH_END_DATETIME. Move viewing to late Monday night or Tuesday to satisfy the temporal constraint.'
+      });
+    }
+  }
+
+  // 125. SPORTS_POINT_DETAIL_GATE
+  // Exact intra-match claims (broke in fourth game, saved set point at 4-5, hit winner on match point,
+  // served at N mph) require point-level evidence from a match report or official score.
+  // If only set-level or final-score reporting is available: stay at set-level description.
+  // The 86/100 failure: "Potapova was going to break serve in the fourth game" — unsupported by any source.
+  if (category === 'Short Stories') {
+    const pointLevelClaim = /\b(?:break?\s+serve\s+in\s+the\s+(?:first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+game|saved?\s+(?:set|match|break)\s+point\s+at\s+\d[-–]\d|served?\s+at\s+\d{2,3}\s+mph|hit\s+(?:a\s+)?(?:forehand|backhand)\s+winner\s+on\s+match\s+point)\b/i.test(cleanContent);
+    if (pointLevelClaim) {
+      violations.push({
+        rule: 'SPORTS_POINT_DETAIL_GATE',
+        description: 'Point-level sports detail gate: Story asserts exact intra-game detail (break in specific game, saved point at specific score, mph) without point-level sourcing. If only set/final-score reporting is available, describe the set outcome instead: "Bimal now knew that Andreeva would eventually take it 6–4. He watched the first rally anyway."'
+      });
+    }
+  }
+
+  // 126. REAL_BRAND_UI_INVENTION
+  // When using a real broadcaster (ESPN, Hotstar, BBC Sport, Sky Sports) or app (SwissInfo, WTA, ATP):
+  // do not invent exact ticker format, notification wording, graphic layout, or screen text
+  // unless that exact format is sourced or documented.
+  // Fiction may invent a generic interface: "a results crawl appeared along the bottom of the sports channel."
+  // The 86/100 failure: "the crawl that ESPN runs continuously" + exact "(QF)" format string.
+  const brandedTickerPattern = /(?:espn|hotstar|star\s+sports|bbc\s+sport|sky\s+sports|sony\s+liv)\s+(?:runs?\s+continuously|ticker|crawl|broadcast|live\s+score)/i.test(cleanContent);
+  if (brandedTickerPattern) {
+    violations.push({
+      rule: 'REAL_BRAND_UI_INVENTION',
+      description: 'Real broadcaster UI invention: Story attributes a specific ticker format or continuous crawl behaviour to a named broadcaster (ESPN, Hotstar, etc.) without a documented source. Use a generic fictional interface instead: "A results crawl appeared along the bottom of the sports channel."'
+    });
+  }
+
+  // 127. THEME_ALREADY_DRAMATIZED_FAIL
+  // After the central action has physically demonstrated the theme, paragraphs that re-explain
+  // its philosophical meaning are redundant and weaken the ending.
+  // Pattern: story already showed event → response → consequence; then adds narrator gloss.
+  // The 86/100 failure: "He was not sure what that meant about replays. Or about results. Or about
+  // the distance between a fact arriving and a fact being experienced."
+  if (category === 'Short Stories') {
+    const postClimaxGloss = /\bhe\s+was\s+not\s+sure\s+what\s+that\s+meant\s+about\b|\bshe\s+was\s+not\s+sure\s+what\s+that\s+meant\s+about\b|\bwhat\s+it\s+meant\s+about\s+(?:replays|memory|time|waiting|distance|information|silence)\b/i.test(cleanContent);
+    if (postClimaxGloss) {
+      violations.push({
+        rule: 'THEME_ALREADY_DRAMATIZED_FAIL',
+        description: 'Post-climax theme restatement: Story has already shown the theme through action (spoiler arrives → watching changes → character stops) but then adds a narrator gloss explaining the philosophical meaning. Trust the scene. Cut from the gloss onward; end on the last behavioral consequence.'
+      });
+    }
+  }
+
+  // 128. DEVANSH_SUCCESS_PATTERN (informational — flags absence of the pattern, not presence)
+  // The proven Devansh engine: information exists → character deliberately lacks it →
+  // transmission channel breaches that ignorance → experience changes though external event does not →
+  // consequence is behavioral, not philosophical narration.
+  // This rule enforces that consequence must be behavioral (switching off, leaving, deciding)
+  // rather than a philosophical interior monologue about the meaning of information.
+  if ((penName.includes('devansh') || penName.includes('devansh_roy')) && category === 'Short Stories') {
+    const hasBehavioralConsequence =
+      /\bswitch(?:es|ed)?\s+(?:off|it)\b|\bturned?\s+(?:off|it)\b|\bleft?\s+(?:without|quietly)\b|\bdecid(?:es|ed)?\b|\bput(?:s|ting)?\s+(?:down|away)\b|\bclosed?\s+(?:the|it)\b|\bwalk(?:s|ed)?\s+out\b/i.test(cleanContent);
+    const hasPhilosophicalMonologue =
+      /\bhe\s+was\s+not\s+sure\s+what\s+that\s+meant\b|\bshe\s+was\s+not\s+sure\s+what\s+that\s+meant\b|\bwhat\s+(?:it|this)\s+(?:all\s+)?meant\s+(?:about|for)\b|\bthe\s+(?:question|meaning)\s+of\s+(?:information|replays|distance|waiting)\b/i.test(cleanContent);
+    if (hasBehavioralConsequence && hasPhilosophicalMonologue) {
+      violations.push({
+        rule: 'DEVANSH_SUCCESS_PATTERN',
+        description: 'Devansh success pattern violation: Story has a behavioral consequence (switching off, walking out) but then adds a philosophical interior monologue about the meaning of that action. The behavioral consequence IS the meaning. Delete the monologue; end on the behavior.'
+      });
+    }
   }
 
   return {

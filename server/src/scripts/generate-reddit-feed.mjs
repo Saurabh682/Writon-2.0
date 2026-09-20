@@ -50,29 +50,31 @@ function cleanMarkdown(raw) {
     .trim();
 }
 
-async function fetchPosts(limit = 25) {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/v1/posts?page=1&limit=${limit}`, { signal: AbortSignal.timeout(5000) });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.posts && data.posts.length > 0) {
-        console.log(`Fetched ${data.posts.length} posts from live API.`);
-        return data.posts.map(p => ({
-          id: p.id,
-          title: p.title,
-          slug: p.slug,
-          summary: p.summary,
-          content: p.content,
-          category: p.category,
-          authorName: p.author?.fullName || p.author?.penName || 'WritOn Author',
-          authorPenName: p.author?.penName || 'author',
-          readingTime: p.readingTimeMin || 3,
-          createdAt: p.createdAt
-        }));
+export async function fetchPosts(limit = 25, { forceHttp = false } = {}) {
+  if (process.env.NODE_ENV !== 'test' || forceHttp) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/posts?page=1&limit=${limit}`, { signal: AbortSignal.timeout(5000) });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.posts && data.posts.length > 0) {
+          console.log(`Fetched ${data.posts.length} posts from live API.`);
+          return data.posts.map(p => ({
+            id: p.id,
+            title: p.title,
+            slug: p.slug,
+            summary: p.summary,
+            content: p.content,
+            category: p.category,
+            authorName: p.author?.fullName || p.author?.penName || 'WritOn Author',
+            authorPenName: p.author?.penName || 'author',
+            readingTime: p.readingTimeMin || 3,
+            createdAt: p.createdAt
+          }));
+        }
       }
+    } catch (err) {
+      console.warn(`Could not reach live API (${err.message}), falling back to local database exports...`);
     }
-  } catch (err) {
-    console.warn(`Could not reach live API (${err.message}), falling back to local database exports...`);
   }
 
   // Fallback to local posts.json
@@ -142,8 +144,8 @@ function buildRedditBody(post) {
 ${prompt}`.trim();
 }
 
-export async function generateRedditFeed() {
-  const posts = await fetchPosts(25);
+export async function generateRedditFeed({ forceHttp = false } = {}) {
+  const posts = await fetchPosts(25, { forceHttp });
   const nowUtc = new Date().toUTCString();
 
   console.log(`Generating Reddit-specific RSS feed for ${posts.length} stories...`);

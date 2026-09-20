@@ -33,53 +33,49 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="writon.cc"
-                    android:pathPrefix="/stories/" />
-                <data
-                    android:scheme="https"
-                    android:host="writon.cc"
-                    android:pathPrefix="/posts/" />
-                <data
-                    android:scheme="https"
-                    android:host="www.writon.cc"
-                    android:pathPrefix="/stories/" />
-                <data
-                    android:scheme="https"
-                    android:host="www.writon.cc"
-                    android:pathPrefix="/posts/" />
-                <data
-                    android:scheme="https"
-                    android:host="writon-app-2020.web.app"
-                    android:pathPrefix="/stories/" />
-                <data
-                    android:scheme="https"
-                    android:host="writon-app-2020.web.app"
-                    android:pathPrefix="/posts/" />
-                <data
-                    android:scheme="https"
-                    android:host="writon-powerup.onrender.com"
-                    android:pathPrefix="/stories/" />
-                <data
-                    android:scheme="https"
-                    android:host="writon-powerup.onrender.com"
-                    android:pathPrefix="/posts/" />
+                <data android:scheme="https" android:host="writon.cc" android:pathPrefix="/stories/" />
             </intent-filter>
-
-            <!-- Fallback Deep Linking for Legacy URLs (Without autoVerify to prevent Play Console verification errors) -->
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="writon.co"
-                    android:pathPrefix="/posts/" />
-                <data
-                    android:scheme="https"
-                    android:host="www.writon.co"
-                    android:pathPrefix="/posts/" />
+                <data android:scheme="https" android:host="writon.cc" android:pathPrefix="/posts/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="www.writon.cc" android:pathPrefix="/stories/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="www.writon.cc" android:pathPrefix="/posts/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="writon-app-2020.web.app" android:pathPrefix="/stories/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="writon-app-2020.web.app" android:pathPrefix="/posts/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="writon-powerup.onrender.com" android:pathPrefix="/stories/" />
+            </intent-filter>
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="writon-powerup.onrender.com" android:pathPrefix="/posts/" />
             </intent-filter>
         </activity>
 
@@ -94,6 +90,15 @@
         <meta-data
             android:name="firebase_messaging_auto_init_enabled"
             android:value="true" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_stat_writon" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/newRedColor" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="writon_editorial_channel" />
         <meta-data
             android:name="firebase_analytics_collection_enabled"
             android:value="true" />

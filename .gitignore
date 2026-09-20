@@ -75,3 +75,9 @@ server/uploads/
 # Browser Automation Sessions & Playwright States
 .auth/
 *.storage_state.json
+
+# Local Machine Learning & Tools Checkpoints
+tools/
+models/
+ckpts/
+

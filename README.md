@@ -126,6 +126,7 @@ Add broader authenticated Fastify integration coverage before a public release.
 - **Modern Jetpack Compose UI**: Dynamic `MaterialTheme` color palette across Paper, Sepia, Dark Obsidian, and System themes.
 - **Offline-First Reading & Writing**: Room database caching with WorkManager outbox background sync.
 - **Illustrated Editorial Covers**: Automatic rendering of vintage illustrated book covers for stories.
+- **Google Search & SEO Architecture**: Dual sitemap & real-time RSS 2.0 ingestion, Google Search favicon compliance, and Schema.org rich snippets ([`docs/GOOGLE_SEARCH_AND_SEO_PLAYBOOK.md`](docs/GOOGLE_SEARCH_AND_SEO_PLAYBOOK.md)).
 - **Google Play Compliance**: Full compliance with Child Safety Standards ([`CHILD_SAFETY_STANDARDS.md`](CHILD_SAFETY_STANDARDS.md)) and Data Safety Account Deletion policies ([`ACCOUNT_DELETION.md`](ACCOUNT_DELETION.md)).
 
 For a detailed history of all changes, see [`CHANGELOG.md`](CHANGELOG.md).

@@ -1,0 +1,64 @@
+[
+  {
+    "time_start": 0.0,
+    "time_end": 2.0,
+    "beat": "frame_zero_problem",
+    "on_screen_text": "She was extremely nervous about the interview.",
+    "pills": [
+      "WRITING HACK #09",
+      "Too Abstract"
+    ],
+    "voice": "This sentence says nervous. It doesn't make us feel it.",
+    "visual_state": "broken_draft_visible",
+    "camera": "scale 1.0"
+  },
+  {
+    "time_start": 2.0,
+    "time_end": 5.5,
+    "beat": "diagnosis",
+    "on_screen_text": "She was extremely nervous about the interview.",
+    "voice": "Don't name the anxiety. Make her body confess instead.",
+    "visual_state": "diagnosis_active",
+    "camera": "scale 1.003"
+  },
+  {
+    "time_start": 5.5,
+    "time_end": 8.0,
+    "beat": "dissolve",
+    "on_screen_text": "",
+    "voice": "",
+    "visual_state": "draft_fading_out",
+    "camera": "scale 1.006"
+  },
+  {
+    "time_start": 8.0,
+    "time_end": 16.5,
+    "beat": "healed_rewrite",
+    "on_screen_text": "She peeled the cardboard sleeve off her paper coffee cup, then began tearing it into clean, narrow strips.",
+    "pills": [
+      "Healed Sentence",
+      "Physical Tell"
+    ],
+    "voice": "Watch the rewrite: She peeled the cardboard sleeve off her paper coffee cup, then began tearing it into clean, narrow strips.",
+    "visual_state": "line_by_line_reveal",
+    "camera": "scale 1.010"
+  },
+  {
+    "time_start": 16.5,
+    "time_end": 20.5,
+    "beat": "consequence",
+    "on_screen_text": "Now the reader is in the waiting room with her.",
+    "voice": "Now the reader is in the waiting room with her.",
+    "visual_state": "italic_consequence_appear",
+    "camera": "scale 1.012"
+  },
+  {
+    "time_start": 20.5,
+    "time_end": 24.0,
+    "beat": "craft_rule_loop",
+    "on_screen_text": "Give the body a physical task. The emotion takes care of itself.",
+    "voice": "Give the body a physical task. The emotion takes care of itself.",
+    "visual_state": "punchline_active",
+    "camera": "scale 1.015"
+  }
+]

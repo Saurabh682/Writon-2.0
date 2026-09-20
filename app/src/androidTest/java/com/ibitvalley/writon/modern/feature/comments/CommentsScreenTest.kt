@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
@@ -32,6 +33,8 @@ class CommentsScreenTest {
                     totalCount = 2,
                     onBackClick = {},
                     onSubmitComment = { content, parentId -> submitted = content to parentId },
+                    onEditComment = { _, _ -> },
+                    onDeleteComment = {},
                 )
             }
         }
@@ -39,7 +42,7 @@ class CommentsScreenTest {
         composeRule.onNodeWithText("View 1 reply").performClick()
         composeRule.onNodeWithText("Nested response").assertIsDisplayed()
         composeRule.onNodeWithText("Reply to @Root Author").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Reply to Reply Author").performClick()
+        composeRule.onNodeWithContentDescription("Reply to @Reply Author").performClick()
         composeRule.onNodeWithText("Replying to @Reply Author").assertIsDisplayed()
         composeRule.onNodeWithText("Write your reply…").performTextInput("Thanks")
         composeRule.onNodeWithContentDescription("Submit reply").performClick()
@@ -49,11 +52,40 @@ class CommentsScreenTest {
         }
     }
 
+    @Test
+    fun ownerCanEditAndConfirmDeletingTheirComment() {
+        var edited: Pair<String, String>? = null
+        var deleted: String? = null
+        composeRule.setContent {
+            WritOnTheme {
+                CommentsScreen(
+                    comments = listOf(comment("mine", "Me", "Original", isMine = true)),
+                    onBackClick = {},
+                    onSubmitComment = { _, _ -> },
+                    onEditComment = { id, content -> edited = id to content },
+                    onDeleteComment = { deleted = it },
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Edit").performClick()
+        composeRule.onNodeWithText("Editing comment").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Editing comment").performTextInput(" updated")
+        composeRule.onNodeWithContentDescription("Submit comment").performClick()
+        composeRule.runOnIdle { assertEquals("mine" to "Original updated", edited) }
+
+        composeRule.onNodeWithText("Delete").performClick()
+        composeRule.onNodeWithText("Delete comment?").assertIsDisplayed()
+        composeRule.onAllNodesWithText("Delete")[1].performClick()
+        composeRule.runOnIdle { assertEquals("mine", deleted) }
+    }
+
     private fun comment(
         id: String,
         author: String,
         content: String,
         parentId: String? = null,
+        isMine: Boolean = false,
     ) = CommentEntity(
         id = id,
         postId = "post-1",
@@ -63,5 +95,6 @@ class CommentsScreenTest {
         content = content,
         createdAt = "2026-08-29T10:00:00Z",
         parentId = parentId,
+        isMine = isMine,
     )
 }

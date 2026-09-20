@@ -1,17 +1,19 @@
 package com.ibitvalley.writon.modern
 
 import java.net.URI
+import java.net.URLEncoder
 
 private val supportedStoryHosts = setOf(
     "writon.cc",
     "www.writon.cc",
     "writon-app-2020.web.app",
-    "writon-powerup.onrender.com",
-    "writon.co",
-    "www.writon.co"
+    "writon-powerup.onrender.com"
 )
 
 private val safeStorySlug = Regex("^[A-Za-z0-9_-]+$")
+
+internal fun canonicalStoryShareUrl(slug: String): String =
+    "https://writon.cc/stories/${URLEncoder.encode(slug, Charsets.UTF_8.name()).replace("+", "%20")}"
 
 internal fun resolveStoryDeepLink(url: String?): String? {
     if (url.isNullOrBlank()) return null

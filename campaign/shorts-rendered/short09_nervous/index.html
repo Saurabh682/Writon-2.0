@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>WritOn — How to Write Nervousness Without Saying "Nervous"</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background-color: #3b2014;
+        font-family: 'Playfair Display', Georgia, serif;
+        color: #0E0C0A;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+      }
+
+      /* 1. Master Desk Photographic Background (1080x1920 scaled) */
+      .desk-photo {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+        background-image: url('assets/desk_coffee_card_nobox_4k.jpg');
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+      }
+
+      /* Warm ambient ray */
+      .warm-ambient {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, rgba(255, 230, 190, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* Left Margin Red Rule */
+      .card-left-rule {
+        position: absolute;
+        left: 122px;
+        top: 172px;
+        height: 1488px;
+        width: 3px;
+        background-color: #821D1A;
+        z-index: 5;
+        border-radius: 2px;
+      }
+
+      /* Header Row */
+      .card-header {
+        position: absolute;
+        top: 172px;
+        left: 155px;
+        width: 770px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 5;
+      }
+
+      /* The Official Franchise Stamp: WRITING HACK #09 */
+      .inversion-pill {
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        padding: 7px 18px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .brand-mark {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 46px;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -0.5px;
+      }
+      .brand-mark em {
+        font-style: italic;
+        font-weight: 700;
+      }
+      .brand-mark span {
+        color: #821D1A;
+      }
+
+      /* 2. Beat 1: Frame Zero Cold Open on the Broken Sentence */
+      .draft-hero-layer {
+        position: absolute;
+        top: 500px;
+        left: 155px;
+        width: 770px;
+        z-index: 10;
+      }
+
+      .draft-hero-label-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+      }
+      .draft-hero-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #8A766A;
+      }
+      .diagnostic-pill {
+        background-color: #F8EBEA;
+        border: 1.5px solid #D66D67;
+        color: #821D1A;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        padding: 4px 14px;
+        border-radius: 6px;
+        letter-spacing: 1px;
+      }
+
+      .draft-hero-quote {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 48px;
+        line-height: 1.28;
+        font-weight: 700;
+        color: #1A140E;
+        max-width: 770px;
+      }
+
+      .draft-line-1, .draft-line-2 {
+        display: block;
+      }
+
+      /* 3. Section C: Live Rewrite & Payoff */
+      .card-content {
+        position: absolute;
+        top: 400px;
+        left: 155px;
+        width: 770px;
+        z-index: 6;
+      }
+
+      .rewrite-label-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      .rewrite-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #7D1B17;
+      }
+      .keep-pill {
+        background-color: #E8F4EC;
+        border: 1.5px solid #48A168;
+        color: #1A6934;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        padding: 4px 14px;
+        border-radius: 6px;
+        letter-spacing: 1px;
+      }
+
+      /* Main Rewrite Title (Animated Line by Line) */
+      .main-title {
+        font-size: 58px;
+        line-height: 1.22;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 45px;
+      }
+      .title-row {
+        display: block;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      .main-title .italic-crimson {
+        font-style: italic;
+        font-weight: 800;
+        color: #821D1A;
+      }
+
+      /* Horizontal Rule */
+      .red-divider {
+        width: 90px;
+        height: 4px;
+        background-color: #821D1A;
+        border-radius: 2px;
+        margin-bottom: 45px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      /* Payoff Flow */
+      .payoff-flow {
+        width: 770px;
+      }
+
+      .payoff-sub {
+        font-size: 32px;
+        font-style: italic;
+        line-height: 1.25;
+        color: #4A3B32;
+        margin-bottom: 30px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      .payoff-lead {
+        font-size: 48px;
+        font-weight: 900;
+        line-height: 1.15;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      .payoff-punch {
+        font-size: 56px;
+        font-weight: 900;
+        font-style: italic;
+        line-height: 1.15;
+        color: #821D1A;
+        letter-spacing: -1px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      /* Footer Row */
+      .card-footer {
+        position: absolute;
+        top: 1660px;
+        left: 122px;
+        width: 835px;
+        z-index: 5;
+      }
+      .footer-line {
+        width: 100%;
+        height: 2px;
+        background-color: rgba(130, 29, 26, 0.35);
+        margin-bottom: 20px;
+      }
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 35px 0 85px;
+      }
+      .footer-handle {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: #2D231E;
+        letter-spacing: 0.5px;
+      }
+      .footer-dots {
+        display: flex;
+        gap: 10px;
+      }
+      .footer-dot-sand {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background-color: #D9C8B8;
+      }
+      .footer-dot-crimson {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background-color: #821D1A;
+      }
+      .footer-url {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 23px;
+        font-weight: 800;
+        color: #821D1A;
+        letter-spacing: 0.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="29.0"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Background Photo -->
+      <div class="desk-photo"></div>
+      <div class="warm-ambient"></div>
+
+      <!-- Audio Track -->
+      <audio id="voiceTrack" src="assets/voiceover_mixed.mp3" data-start="0" data-duration="29.0"></audio>
+
+      <!-- Left Accent Rule -->
+      <div class="card-left-rule" id="leftRule"></div>
+
+      <!-- Header Row (Top Tiny Stamp: WRITING HACK #09) -->
+      <div class="card-header" id="headerRow">
+        <div class="inversion-pill">WRITING HACK #09</div>
+        <div class="brand-mark"><em>Writ</em>On<span>.</span></div>
+      </div>
+
+      <!-- 1. Beat 1: Frame Zero Cold Open on the Broken Sentence (Visible Immediately, NO Strikethrough, Smooth Fade Out) -->
+      <div class="draft-hero-layer" id="draftLayer">
+        <div class="draft-hero-label-row">
+          <span class="draft-hero-label">Broken Draft</span>
+          <span class="diagnostic-pill">Too Abstract</span>
+        </div>
+        <div class="draft-hero-quote" id="draftQuote">
+          <span class="draft-line-1" id="draftL1">“She was extremely nervous</span>
+          <span class="draft-line-2" id="draftL2">about the interview.”</span>
+        </div>
+      </div>
+
+      <!-- 2. Section C: Live Sentence Surgery & Healed Prose -->
+      <div class="card-content" id="cardContent">
+        <div class="rewrite-label-row" id="rwLabel">
+          <span class="rewrite-label">Healed Sentence</span>
+          <span class="keep-pill">Physical Tell</span>
+        </div>
+
+        <!-- Main Rewrite Title (Animated Line by Line) -->
+        <div class="main-title" id="mainTitle">
+          <div class="title-row" id="tl1">She peeled the cardboard sleeve</div>
+          <div class="title-row" id="tl2">off her paper coffee cup,</div>
+          <div class="title-row" id="tl3">then began tearing it into</div>
+          <div class="title-row" id="tl4"><span class="italic-crimson">clean, narrow strips.</span></div>
+        </div>
+
+        <!-- Divider Line -->
+        <div class="red-divider" id="redDivider"></div>
+
+        <!-- Payoff Flow -->
+        <div class="payoff-flow" id="payoffFlow">
+          <div class="payoff-sub" id="ps1">Now the reader is in the waiting room with her.</div>
+          <div class="payoff-lead" id="pl1">Give the body a physical task.</div>
+          <div class="payoff-punch" id="pl2">The emotion takes care of itself.</div>
+        </div>
+      </div>
+
+      <!-- Footer Row -->
+      <div class="card-footer" id="cardFooter">
+        <div class="footer-line"></div>
+        <div class="footer-content">
+          <div class="footer-handle">@writon_app</div>
+          <div class="footer-dots">
+            <div class="footer-dot-sand"></div>
+            <div class="footer-dot-crimson"></div>
+          </div>
+          <div class="footer-url">writon.cc ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial state setup
+      gsap.set("#cardContent", { opacity: 0 });
+
+      // 0:00 - 1.54s: Nicole: "This sentence says nervous."
+      // 2.46s - 3.61s: Nicole: "It doesn't make us feel it."
+      // 4.50s - 5.77s: Nicole: "Don't name the anxiety."
+      // 6.79s - 8.55s: Nicole: "Make her body confess instead."
+      // AT 8.0s - 9.8s: Broken Draft dissolves gently into the warm parchment:
+      tl.to("#draftLayer", { opacity: 0, y: -25, duration: 1.2, ease: "power2.inOut" }, 8.0)
+        .to("#cardContent", { opacity: 1, duration: 0.1 }, 10.2)
+        .to("#rwLabel", { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, 10.5);
+
+      // 9.89s - 11.21s: Nicole: "Now watch the rewrite:"
+      // 12.14s - 15.18s: Nicole: "She peeled the cardboard sleeve off her paper coffee cup,"
+      tl.to("#tl1", { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 11.8)
+        .to("#tl2", { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 13.2);
+
+      // 15.97s - 19.00s: Nicole: "then began tearing it into clean, narrow strips."
+      tl.to("#tl3", { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 15.6)
+        .to("#tl4", { opacity: 1, y: 0, duration: 0.60, ease: "back.out(1.2)" }, 16.8);
+
+      // 20.0s: Crimson divider line draws across:
+      tl.to("#redDivider", { scaleX: 1, duration: 0.45, ease: "power2.out" }, 20.0);
+
+      // 20.80s - 22.58s: Nicole: "Now the reader is in the waiting room with her."
+      tl.to("#ps1", { opacity: 1, y: 0, duration: 0.50, ease: "power2.out" }, 20.6);
+
+      // 23.70s - 25.40s: Nicole: "Give the body a physical task."
+      tl.to("#pl1", { opacity: 1, y: 0, duration: 0.50, ease: "power3.out" }, 23.4);
+
+      // 26.28s - 28.25s: Nicole: "The emotion takes care of itself."
+      tl.to("#pl2", { opacity: 1, y: 0, duration: 0.65, ease: "back.out(1.2)" }, 26.0);
+
+      // Seamless semantic loop back to 0.0s ("She was extremely nervous about the interview.")
+      // Subtle ambient camera drift
+      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.015, duration: 29.0, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,111 @@
+{
+  "version": "1.0.0",
+  "videos": [
+    {
+      "id": "short_005",
+      "title": "Maybe Closure is Memory Running Out of Questions #shorts",
+      "url": "https://youtube.com/shorts/1WpPVVtmRNk",
+      "format": "quote_acoustic",
+      "notes": "Current benchmark. Validated tactile desk, warm lighting, and acoustic piano."
+    },
+    {
+      "id": "short_006",
+      "title": "Writing Hack: Don't Start With Weather #shorts",
+      "format": "craft_teardown",
+      "notes": "First before/after transition."
+    },
+    {
+      "id": "short_007",
+      "title": "Writing Hack: Delete Your Favourite Adjective #shorts",
+      "format": "craft_teardown_strikethrough",
+      "notes": "Strikethrough felt too aggressive/gimmicky; user requested gentle fade-out."
+    },
+    {
+      "id": "short_008",
+      "title": "Never Write About Grief in the Abstract",
+      "url": "https://www.youtube.com/shorts/1CFKBf4_OfY",
+      "videoId": "1CFKBf4_OfY",
+      "format": "craft_teardown_fadeout",
+      "notes": "Smooth fadeout validated. Chekhov object rule. Uploaded and public.",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "updatedAt": "2026-09-17T06:30:14.704Z"
+      }
+    },
+    {
+      "id": "short_009",
+      "videoId": "eO72NYPnvU8",
+      "title": "How to Write Nervousness Without Saying \"Nervous\"",
+      "url": "https://www.youtube.com/shorts/eO72NYPnvU8",
+      "watchUrl": "https://www.youtube.com/watch?v=eO72NYPnvU8",
+      "series": "WRITING HACK #09",
+      "format": "1080x1920_sentence_surgery",
+      "duration": 29,
+      "privacyStatus": "unlisted",
+      "uploadedAt": "2026-09-17T04:24:47Z",
+      "metrics": {
+        "views": 0,
+        "likes": 0,
+        "comments": 0,
+        "updatedAt": "2026-09-17T06:30:14.705Z"
+      }
+    },
+    {
+      "id": "short_010",
+      "videoId": "t_wqs-mXo78",
+      "title": "Stop Writing \u201cHe Heard\u201d and \u201cShe Noticed\u201d",
+      "url": "https://www.youtube.com/shorts/t_wqs-mXo78",
+      "watchUrl": "https://www.youtube.com/watch?v=t_wqs-mXo78",
+      "series": "WRITING HACK #10",
+      "format": "1080x1920_sentence_surgery",
+      "duration": 27.7,
+      "privacyStatus": "public",
+      "uploadedAt": "2026-09-17T09:21:01Z",
+      "metrics": {
+        "views": 0,
+        "averageViewPercentage": 0,
+        "likes": 0
+      }
+    },
+    {
+      "id": "short_011",
+      "videoId": "fpLRilhg5L4",
+      "title": "Stop Using Adverbs in Dialogue Tags",
+      "url": "https://www.youtube.com/shorts/fpLRilhg5L4",
+      "watchUrl": "https://www.youtube.com/watch?v=fpLRilhg5L4",
+      "series": "WRITING HACK #11",
+      "format": "1080x1920_sentence_surgery",
+      "duration": 26.5,
+      "privacyStatus": "public",
+      "uploadedAt": "2026-09-18T09:27:00Z",
+      "voice": "Nicole (af_nicole @ 1.18x) + ambient piano",
+      "audioVerified": true,
+      "metrics": {
+        "views": 0,
+        "averageViewPercentage": 0,
+        "likes": 0
+      }
+    },
+    {
+      "id": "short_012",
+      "videoId": "TYbPVp9k3Es",
+      "title": "How to Write Anger Without Screaming",
+      "url": "https://www.youtube.com/shorts/TYbPVp9k3Es",
+      "watchUrl": "https://www.youtube.com/watch?v=TYbPVp9k3Es",
+      "series": "WRITING HACK #12",
+      "format": "1080x1920_sentence_surgery",
+      "duration": 30.5,
+      "privacyStatus": "unlisted",
+      "uploadedAt": "2026-09-18T11:59:45Z",
+      "voice": "Nicole (af_nicole @ 1.22x) + ambient piano",
+      "audioVerified": true,
+      "metrics": {
+        "views": 0,
+        "averageViewPercentage": 0,
+        "likes": 0
+      }
+    }
+  ]
+}

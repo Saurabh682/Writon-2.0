@@ -1,0 +1,11 @@
+WritOn
+
+Welcome to WritOn
+
+Start with a story, or write your first line. There is no need to do both today.
+
+Open WritOn: https://example.com/preview-only
+
+Email preferences: https://example.com/preferences-preview
+Unsubscribe: https://example.com/unsubscribe-preview
+PREVIEW ONLY — replace with verified sender postal address

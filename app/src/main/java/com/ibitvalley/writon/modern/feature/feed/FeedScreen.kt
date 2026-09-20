@@ -31,6 +31,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -56,6 +58,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.SystemUpdateAlt
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
@@ -72,8 +77,8 @@ import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.designsystem.components.PostCoverImage
 import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
-import com.ibitvalley.writon.modern.core.designsystem.theme.BrandBeige
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
+import com.ibitvalley.writon.modern.core.update.InAppUpdateUiState
 
 val CATEGORIES = listOf(
     "All", "Essays", "Poetry", "Short Stories", "Shayari", "Humour", "Reviews",
@@ -93,23 +98,37 @@ fun FeedScreen(
     viewModel: FeedViewModel,
     onStoryClick: (String) -> Unit,
     onWriteClick: () -> Unit,
+    continuationTitle: String? = null,
+    onContinueReading: () -> Unit = {},
+    onDismissContinuation: () -> Unit = {},
+    draftTitle: String? = null,
+    onContinueWriting: () -> Unit = {},
+    followedWriterStoryTitle: String? = null,
+    followedWriterName: String? = null,
+    onFollowedWriterStoryClick: () -> Unit = {},
     onLibraryClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     onAuthorClick: (String) -> Unit = {},
     isAuthenticated: Boolean = true,
-    onLoginRequired: () -> Unit = {}
+    onLoginRequired: () -> Unit = {},
+    inAppUpdateUiState: InAppUpdateUiState = InAppUpdateUiState.Hidden,
+    onInAppUpdateClick: () -> Unit = {},
+    showExistingUserPreferencesCard: Boolean = false,
+    onChoosePreferences: () -> Unit = {},
+    onDismissPreferences: () -> Unit = {}
 ) {
     val posts by viewModel.posts.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
     val isLoadingMore by viewModel.isLoadingMore.collectAsState()
     val hasMore by viewModel.hasMore.collectAsState()
+    val refreshFailed by viewModel.refreshFailed.collectAsState()
+    val loadMoreFailed by viewModel.loadMoreFailed.collectAsState()
     var currentIndex by rememberSaveable { mutableIntStateOf(0) }
     var advanceWhenPageArrives by rememberSaveable { mutableStateOf(false) }
     var showReturnToTop by rememberSaveable { mutableStateOf(false) }
     val safeIndex = currentIndex.coerceIn(0, posts.lastIndex.coerceAtLeast(0))
-
     LaunchedEffect(posts.size, hasMore) {
         if (currentIndex > posts.lastIndex) currentIndex = 0
         if (advanceWhenPageArrives && currentIndex < posts.lastIndex) {
@@ -131,6 +150,12 @@ fun FeedScreen(
         if (safeIndex == 0) showReturnToTop = false
     }
 
+    LaunchedEffect(safeIndex, posts.getOrNull(safeIndex)?.id) {
+        val visiblePost = posts.getOrNull(safeIndex) ?: return@LaunchedEffect
+        kotlinx.coroutines.delay(1_000)
+        viewModel.recordImpression(visiblePost.id)
+    }
+
     Column(
         modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).padding(horizontal = 18.dp, vertical = 16.dp)
     ) {
@@ -140,9 +165,30 @@ fun FeedScreen(
             onNotificationsClick = onNotificationsClick,
             onProfileClick = onProfileClick
         )
-        Spacer(Modifier.height(14.dp))
+        HomeUpdateIndicator(
+            state = inAppUpdateUiState,
+            onClick = onInAppUpdateClick
+        )
+        if (showExistingUserPreferencesCard && posts.isNotEmpty() && !refreshFailed &&
+            inAppUpdateUiState == InAppUpdateUiState.Hidden) {
+            ExistingUserPreferencesCard(onChoosePreferences, onDismissPreferences)
+        }
+        draftTitle?.let { title ->
+            androidx.compose.material3.TextButton(onClick = onContinueWriting) {
+                Text(
+                    text = if (title.isBlank()) stringResource(R.string.continue_writing_untitled)
+                    else stringResource(R.string.continue_writing_draft, title),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+        followedWriterStoryTitle?.takeIf { it.isNotBlank() }?.let { title ->
+            FollowedWriterReturnCard(title, followedWriterName, onFollowedWriterStoryClick)
+        }
+        Spacer(Modifier.height(if (inAppUpdateUiState == InAppUpdateUiState.Hidden) 14.dp else 8.dp))
 
-        if (isRefreshing) {
+        if (isRefreshing && posts.isNotEmpty()) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp),
                 horizontalArrangement = Arrangement.Center,
@@ -155,7 +201,7 @@ fun FeedScreen(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Updating stories from server...",
+                    stringResource(R.string.feed_updating),
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -176,7 +222,7 @@ fun FeedScreen(
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Loading more stories…",
+                    stringResource(R.string.feed_loading_more),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -229,12 +275,88 @@ fun FeedScreen(
             }
         }
 
+        if (posts.isNotEmpty() && refreshFailed) {
+            FeedStatusBanner(
+                message = stringResource(R.string.feed_offline_cache),
+                action = stringResource(R.string.common_retry),
+                onAction = viewModel::refreshFeed
+            )
+        } else if (posts.isNotEmpty() && loadMoreFailed) {
+            FeedStatusBanner(
+                message = stringResource(R.string.feed_more_failed),
+                action = stringResource(R.string.common_retry),
+                onAction = viewModel::loadNextPage
+            )
+        }
+
         if (posts.isEmpty()) {
             EmptyDiscovery(
                 modifier = Modifier.weight(1f),
-                onRefresh = { viewModel.refreshFeed() }
+                state = feedEmptyState(isRefreshing, refreshFailed),
+                onRefresh = viewModel::refreshFeed
             )
         } else {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = stringResource(R.string.feed_story_position, safeIndex + 1, posts.size),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    if (safeIndex < posts.lastIndex || hasMore) {
+                        Text(
+                            text = stringResource(R.string.feed_swipe_for_next),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontSize = 11.sp
+                        )
+                    }
+                }
+                if (continuationTitle.isNullOrBlank()) {
+                    androidx.compose.material3.TextButton(
+                        onClick = {
+                            val post = posts[safeIndex]
+                            viewModel.recordOpen(post.id)
+                            onStoryClick(post.id)
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(R.string.notification_action_read_story),
+                            color = BrandRed,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                } else {
+                    val continuationDescription = stringResource(R.string.continue_reading_story, continuationTitle)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        androidx.compose.material3.TextButton(
+                            onClick = onContinueReading,
+                            modifier = Modifier.semantics { contentDescription = continuationDescription }
+                        ) {
+                            Text(
+                                text = stringResource(R.string.feed_resume_reading),
+                                color = BrandRed,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                        IconButton(
+                            onClick = onDismissContinuation,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.ic_close),
+                                contentDescription = stringResource(R.string.feed_dismiss_resume),
+                                modifier = Modifier.size(16.dp),
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
+                            )
+                        }
+                    }
+                }
+            }
             AnimatedContent(
                 targetState = safeIndex,
                 modifier = Modifier.weight(1f),
@@ -262,7 +384,10 @@ fun FeedScreen(
                     DiscoveryStoryCard(
                         post = post,
                         modifier = Modifier.fillMaxSize(),
-                        onRead = { onStoryClick(post.id) },
+                        onRead = {
+                            viewModel.recordOpen(post.id)
+                            onStoryClick(post.id)
+                        },
                         onPrevious = {
                             if (index > 0) {
                                 if (index >= ReturnToTopThreshold) showReturnToTop = true
@@ -284,6 +409,150 @@ fun FeedScreen(
                         onAuthorClick = { onAuthorClick(post.authorId) },
                         isFirstCard = (index == 0),
                         onRefresh = { viewModel.refreshFeed() }
+                    )
+                }
+            }
+            if (!hasMore && safeIndex == posts.lastIndex) {
+                Text(
+                    stringResource(R.string.feed_all_caught_up),
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun FollowedWriterReturnCard(
+    storyTitle: String,
+    writerName: String?,
+    onClick: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        onClick = onClick,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.feed_followed_writer_update),
+                    color = BrandRed,
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Text(
+                    text = if (writerName.isNullOrBlank()) {
+                        stringResource(R.string.feed_followed_writer_story_unknown, storyTitle)
+                    } else {
+                        stringResource(R.string.feed_followed_writer_story, writerName, storyTitle)
+                    },
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 13.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Text(
+                text = stringResource(R.string.notification_action_read_story),
+                modifier = Modifier.padding(start = 10.dp),
+                color = BrandRed,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+        }
+    }
+}
+
+@Composable
+internal fun ExistingUserPreferencesCard(onChoose: () -> Unit, onDismiss: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        shape = RoundedCornerShape(18.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.55f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(stringResource(R.string.preferences_card_title), fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(4.dp))
+            Text(stringResource(R.string.preferences_card_body), style = MaterialTheme.typography.bodySmall)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                androidx.compose.material3.TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.preferences_card_dismiss))
+                }
+                androidx.compose.material3.TextButton(onClick = onChoose) {
+                    Text(stringResource(R.string.preferences_card_action), color = BrandRed)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomeUpdateIndicator(
+    state: InAppUpdateUiState,
+    onClick: () -> Unit
+) {
+    AnimatedVisibility(
+        visible = state != InAppUpdateUiState.Hidden,
+        enter = fadeIn(animationSpec = tween(180)) + expandVertically(animationSpec = tween(180)),
+        exit = fadeOut(animationSpec = tween(140)) + shrinkVertically(animationSpec = tween(140))
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            val label = when (state) {
+                InAppUpdateUiState.Available -> stringResource(R.string.in_app_update_available)
+                InAppUpdateUiState.Downloading -> stringResource(R.string.in_app_update_downloading)
+                InAppUpdateUiState.ReadyToInstall -> stringResource(R.string.in_app_update_restart)
+                InAppUpdateUiState.Hidden -> ""
+            }
+            Surface(
+                modifier = Modifier
+                    .height(36.dp)
+                    .clickable(
+                        enabled = state != InAppUpdateUiState.Downloading,
+                        role = Role.Button,
+                        onClick = onClick
+                    )
+                    .semantics {
+                        contentDescription = label
+                    },
+                shape = RoundedCornerShape(18.dp),
+                color = BrandRed.copy(alpha = 0.12f)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (state == InAppUpdateUiState.Downloading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            color = BrandRed,
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Outlined.SystemUpdateAlt,
+                            contentDescription = null,
+                            modifier = Modifier.size(17.dp),
+                            tint = BrandRed
+                        )
+                    }
+                    Spacer(Modifier.width(7.dp))
+                    Text(
+                        text = label,
+                        color = BrandRed,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             }
@@ -416,17 +685,23 @@ private fun DiscoveryStoryCard(
                     ) { onRead() }
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+                    Surface(
+                        shape = RoundedCornerShape(16.dp),
+                        color = BrandRed.copy(alpha = 0.10f)
+                    ) {
                         Text(
                             post.category.uppercase(),
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = .7.sp,
-                            color = BrandRed
+                            color = BrandRed,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                     Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.width(12.dp))
                     Image(
                         painterResource(R.drawable.ic_clock_muted),
                         contentDescription = null,
@@ -434,26 +709,35 @@ private fun DiscoveryStoryCard(
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
                     )
                     Spacer(Modifier.width(7.dp))
-                    Text("${post.readingTimeMin} min read", fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(
+                        "${post.readingTimeMin} min read",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip
+                    )
                 }
                 Spacer(Modifier.height(24.dp))
                 Text(
                     post.title,
+                    modifier = Modifier.fillMaxWidth().height(108.dp),
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontFamily = HomeEditorialFamily,
                         fontWeight = FontWeight.Normal,
-                        fontSize = 44.sp,
-                        lineHeight = 48.sp
+                        fontSize = 27.sp,
+                        lineHeight = 33.sp
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
-                post.summary?.takeIf { it.isNotBlank() }?.let { summary ->
-                    Spacer(Modifier.height(18.dp))
-                    Text(summary, fontSize = 17.sp, lineHeight = 24.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                Spacer(Modifier.height(12.dp))
+                Box(modifier = Modifier.fillMaxWidth().height(76.dp)) {
+                    post.summary?.takeIf { it.isNotBlank() }?.let { summary ->
+                        Text(summary, fontSize = 16.sp, lineHeight = 23.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                    }
                 }
-                Spacer(Modifier.height(22.dp))
+                Spacer(Modifier.height(14.dp))
                 PostCoverImage(
                     imageUrl = post.coverImage,
                     category = post.category,
@@ -512,7 +796,22 @@ private fun AuthorAvatar(avatarUrl: String?, authorName: String, onClick: () -> 
 }
 
 @Composable
-private fun EmptyDiscovery(modifier: Modifier = Modifier, onRefresh: () -> Unit = {}) {
+private fun FeedStatusBanner(message: String, action: String, onAction: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(message, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+        androidx.compose.material3.TextButton(onClick = onAction) { Text(action) }
+    }
+}
+
+@Composable
+private fun EmptyDiscovery(
+    modifier: Modifier = Modifier,
+    state: FeedEmptyState,
+    onRefresh: () -> Unit = {}
+) {
     Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
@@ -520,16 +819,41 @@ private fun EmptyDiscovery(modifier: Modifier = Modifier, onRefresh: () -> Unit 
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     ) {
         Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-            Text("Discover Stories", style = MaterialTheme.typography.titleLarge.copy(fontFamily = HomeEditorialFamily), color = MaterialTheme.colorScheme.onSurface)
+            if (state == FeedEmptyState.LOADING) {
+                CircularProgressIndicator(color = BrandRed)
+                Spacer(Modifier.height(16.dp))
+            }
+            Text(
+                stringResource(
+                    when (state) {
+                        FeedEmptyState.LOADING -> R.string.feed_loading_title
+                        FeedEmptyState.FAILURE -> R.string.feed_error_title
+                        FeedEmptyState.EMPTY -> R.string.feed_discovery_empty_title
+                    }
+                ),
+                style = MaterialTheme.typography.titleLarge.copy(fontFamily = HomeEditorialFamily),
+                color = MaterialTheme.colorScheme.onSurface
+            )
             Spacer(Modifier.height(8.dp))
-            Text("Stories are loading from writers...", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Spacer(Modifier.height(16.dp))
-            androidx.compose.material3.Button(
-                onClick = onRefresh,
-                colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = BrandRed),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text("Refresh Feed", color = Color.White)
+            Text(
+                stringResource(
+                    when (state) {
+                        FeedEmptyState.LOADING -> R.string.feed_loading_message
+                        FeedEmptyState.FAILURE -> R.string.feed_error_message
+                        FeedEmptyState.EMPTY -> R.string.feed_discovery_empty_message
+                    }
+                ),
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (state != FeedEmptyState.LOADING) {
+                Spacer(Modifier.height(16.dp))
+                androidx.compose.material3.Button(
+                    onClick = onRefresh,
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = BrandRed),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(stringResource(R.string.common_retry), color = Color.White)
+                }
             }
         }
     }

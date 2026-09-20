@@ -3,31 +3,40 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Redirecting to WritOn on Google Play...</title>
-  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
-  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=2" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png?v=2" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png?v=2" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2" />
-  <meta name="robots" content="noindex, nofollow" />
+  <title>WritOn — Distraction-Free Reading &amp; Writing</title>
+  <meta name="description" content="A quiet sanctuary for writers, poets, and avid story readers worldwide. Read deeply, write freely, and discover thoughtful voices." />
+  <link rel="canonical" href="https://writon.cc/" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Favicon & Brand Icons -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260913_thicker" />
+  <link rel="shortcut icon" href="/favicon.ico?v=20260913_thicker" />
   
   <style>
     :root {
-      --bg: #FFFDF9;
-      --card-bg: #F8F4EE;
-      --text: #151718;
-      --muted: #6D6963;
+      --bg: #FAF5EE;
+      --card-bg: #FFFDF9;
+      --text: #2B2621;
+      --muted: #6B6257;
       --accent: #E75A2A;
-      --border: #E8E2D9;
+      --accent-hover: #D04E20;
+      --border: #E8DFD3;
     }
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #131415;
-        --card-bg: #1A1C1E;
-        --text: #EDE8DF;
-        --muted: #9E9B95;
+        --bg: #181614;
+        --card-bg: #221F1C;
+        --text: #F3ECE1;
+        --muted: #A89F93;
         --accent: #E75A2A;
-        --border: #2C2E30;
+        --accent-hover: #F26A3A;
+        --border: #35302A;
       }
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,88 +48,129 @@
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 20px;
+      padding: 24px;
     }
-    .redirect-card {
+    .portal-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 24px;
-      padding: 40px 32px;
-      max-width: 440px;
+      padding: 44px 32px;
+      max-width: 460px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 16px 36px rgba(43, 38, 33, 0.08);
     }
     .logo-badge {
       display: inline-flex;
       align-items: center;
-      gap: 10px;
-      font-weight: 700;
-      font-size: 22px;
-      letter-spacing: 1px;
-      margin-bottom: 24px;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 24px;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      color: var(--accent);
     }
     .logo-dot {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
       background: var(--accent);
       border-radius: 50%;
     }
-    .spinner {
-      width: 44px;
-      height: 44px;
-      border: 4px solid var(--border);
-      border-top-color: var(--accent);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 24px;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
     h1 {
-      font-size: 20px;
-      font-weight: 600;
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.25;
       margin-bottom: 12px;
+      color: var(--text);
     }
     p {
-      font-size: 14px;
+      font-size: 15px;
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.6;
       margin-bottom: 28px;
     }
-    .btn-redirect {
-      display: inline-block;
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .btn-primary {
+      display: block;
       background: var(--accent);
       color: #FFFFFF;
       text-decoration: none;
       font-weight: 600;
       font-size: 15px;
-      padding: 14px 28px;
+      padding: 14px 24px;
       border-radius: 12px;
-      transition: opacity 0.2s;
-      width: 100%;
+      transition: background 0.2s, transform 0.15s;
     }
-    .btn-redirect:hover {
-      opacity: 0.9;
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      display: block;
+      background: transparent;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 13px 24px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .portal-footer {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+    .portal-footer a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .portal-footer a:hover {
+      color: var(--accent);
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <div class="redirect-card">
+  <div class="portal-card">
     <div class="logo-badge">
       <div class="logo-dot"></div>
       <span>WRITON</span>
     </div>
     
-    <div class="spinner"></div>
+    <h1>Words worth remembering.</h1>
+    <p>A quiet, distraction-free sanctuary for writers, poets, and story readers. Discover thoughtful literature on web and mobile.</p>
     
-    <h1>Opening Google Play...</h1>
-    <p>Taking you directly to the WritOn app for distraction-free reading and writing.</p>
-    
-    <a id="direct-link" class="btn-redirect" href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon">
-      Open in Google Play Store
-    </a>
+    <div class="btn-group">
+      <a id="direct-link" class="btn-primary" href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon" target="_blank" rel="noopener noreferrer">
+        Get WritOn on Google Play
+      </a>
+      <a class="btn-secondary" href="/stories">
+        Explore Stories &amp; Essays Online
+      </a>
+    </div>
+
+    <div class="portal-footer">
+      <a href="/privacy-policy.html">Privacy Policy</a>
+      <span>•</span>
+      <a href="/terms.html">Terms of Service</a>
+      <span>•</span>
+      <a href="/">Home</a>
+    </div>
   </div>
 
   <script>
@@ -145,7 +195,6 @@
       function buildRedirectUrl(deliveryId) {
         if (!deliveryId) return PLAY_STORE_BASE;
 
-        // Parse platform from format: {YYMM}_d{day}_{platform}_{format}_{language}_{creative}
         var parts = deliveryId.split("_");
         var platformKey = (parts.length >= 3) ? parts[2].toLowerCase() : "";
         var platform = PLATFORMS[platformKey] || platformKey || "organic_social";
@@ -163,13 +212,6 @@
 
       var btn = document.getElementById("direct-link");
       if (btn) btn.href = targetUrl;
-
-      // Execute instant redirect
-      try {
-        window.location.replace(targetUrl);
-      } catch (e) {
-        window.location.href = targetUrl;
-      }
     })();
   </script>
 </body>

@@ -577,7 +577,7 @@ NASCAR's jar makes a different sound altogether: the electric hum of a brand tha
     it('passes when specific metric is explicitly corroborated in research dossier', () => {
       const res = validateZeroAISlopEngineBlockers({
         title: 'Signals from Tehran',
-        content: 'The receiver was locked to 9.730 MHz, picking up the evening broadcast.',
+        content: 'He needed to monitor the delayed broadcast. The receiver was locked to 9.730 MHz, picking up the evening signal before anyone could spoil the transmission.',
         category: 'Short Stories',
         persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' },
         researchDossier: { topic: 'shortwave monitoring', confirmed_frequency: '9.730 MHz' },
@@ -590,7 +590,7 @@ NASCAR's jar makes a different sound altogether: the electric hum of a brand tha
     it('passes calibrated text using band descriptors instead of synthetic frequencies', () => {
       const res = validateZeroAISlopEngineBlockers({
         title: 'The Frequency Log at Esplanade',
-        content: 'Near the lower edge of the thirty-one-meter band, a voice in Farsi cuts through the atmospheric flutter.',
+        content: 'He needed to listen before anyone could spoil the news. Near the lower edge of the thirty-one-meter band, a voice in Farsi cuts through the delayed broadcast atmospheric flutter.',
         category: 'Short Stories',
         persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' },
         researchDossier: null,
@@ -1376,9 +1376,1119 @@ He did not drink the water. He gathered his stamp papers, slid them into a brown
       expect(res.isValid).toBe(true);
       expect(res.violations).toHaveLength(0);
     });
+
+    it('flags uncalibrated Chaulani disaster poem for invented witnesses, abstraction density, and generic props (Rules 75-78)', () => {
+      const rejectedPoem = `### I
+The salt air of Fort Kochi feels like a different language today. I watch the Chinese fishing nets dip into the harbor, their wooden frames skeletal against the bruised violet of the evening sky. My phone glows with reports from Darchula—the Chaulani River, stubborn and choked by a landslide, holding its breath behind a wall of silt and shale. The news cycles call it a threat, a flash flood risk, a headline. I call it an ache. I see the villagers looking up at the slopes, listening for the sound of shifting earth, a sound as familiar to them as the prayer call is to me.
+
+### II
+The mountain does not offer warnings in prose. It speaks in the collapse of timber and the sudden, heavy stillness of a blocked artery. When the water stops flowing, the heart of the village pauses with it. There is a specific quality to this terror: it is the realization that the ground beneath your feet is only a temporary agreement. I think of the terracotta tiles above my head, how they shudder when the monsoon gusts hit them—a fragile protection against the inevitable weight of the sky.
+
+### III
+Where the river halts, the memory gathers,
+Cold stone pressing against the throat of the valley.
+No bird sings above the silence of the silt,
+Only the shadow of a slope growing heavy with ghosts.
+
+They walk the ridge with lanterns held low,
+Watching the water rise against the dam of pride.
+What is a river if it cannot reach the sea?
+What is a home if the mountain decides to return?
+
+Dust settles on the pulse of the current,
+Brass lamps flicker in the damp, thin air.
+We are all waiting for the crack in the wall,
+For the mountain to loosen its iron grip on our names.
+
+### IV
+Thousands of miles away, the fear is tangible, measured in cubic meters of mud and the rising anxiety of a river forced to wait. I write this with a cold cup of tea at my elbow, the steam dissipating into the humid air of the coast. We measure our lives by what stays still, yet everything is in a state of transit—the silt moving toward the sea, the rain moving toward the earth, the memory moving toward the pen. I look at the dark water of the Kochi backwaters and watch a single palm frond drift against the current, caught in a stagnant eddy, spinning slowly toward the mud.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The River That Forgot Its Path',
+        content: rejectedPoem,
+        category: 'Poetry',
+        persona: { penName: 'kavya_nair', fullName: 'Kavya Nair' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('REAL_EVENT_POETRY_BOUNDARY');
+      expect(ruleNames).toContain('POETRY_ABSTRACTION_DENSITY_FAIL');
+      expect(ruleNames).toContain('SETTING_NECESSITY_CHECK');
+      expect(ruleNames).toContain('GLOBAL_POETRY_MOTIF_COOLDOWN');
+    });
+
+    it('passes cleanly on Kavya Nair calibrated hydrology poem "When a River Has to Wait"', () => {
+      const calibratedPoem = `### I
+
+At four in the afternoon, the tide in the Vembanad estuary does what it has done all week: it pulls three inches of salt water away from the seawall, exposing the barnacles on the wooden pilings, then stops. Twenty minutes later, it turns back toward the harbor. You can set a pocket watch by the mud.
+
+Then the notification arrives from the far north: near the border at Darchula, the slope above Bhattar sheared away. Shale and dry silt dropped into the gorge of the Chaulani River.
+
+The wire report does not describe a flood. It describes the opposite: the water simply ceased to arrive.
+
+### II
+
+A mountain river does not know how to be still. From the Api Himal, it drops eight thousand feet over boulder beds and slate shelves, loud enough that two people standing on the footbridge must shout into each other's collars.
+
+When the ridge slid, the sound must have vanished first.
+
+The district administration ordered ten families uphill from the bank. The police post at Api Himal radioed downstream to warn people away from the dry gravel of the riverbed, because dry riverbeds in September do not stay dry.
+
+For three hours, the impoundment grew behind fifty feet of loose shale. A river that had never paused since the snowmelt began was forced to sit in the gorge and fill a bowl of rubble.
+
+### III
+
+Here on the coast, we expect water to leave.
+The tide goes out because the moon pulls it;
+the sandbars dry, the gulls wait on the stakes,
+and by five o’clock the gray swell fills the inlet again.
+
+Up there, water that stops moving is an emergency.
+You do not stare at a still pool in a gorge
+wondering what it means for your soul.
+You stand on the higher terrace with your shoes on,
+watching whether the crest of the rubble is darkening with moisture,
+waiting for the weight behind it to punch through.
+
+### IV
+
+By nightfall, the district office reported that the Chaulani had cut its own channel through the silt. The flow downstream normalized. The relocated families stayed on the upper slope overnight because the cliff face above the cut was still shedding loose shale into the dark.
+
+The tide here in Kochi is coming back against the stone now, right on time, lifting the hulls of the moored skiffs an inch every ten minutes. It is strange to live beside water whose return is a certainty, reading about a river six hundred miles away that had to wait an entire afternoon just to resume falling.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'When a River Has to Wait',
+        content: calibratedPoem,
+        category: 'Poetry',
+        persona: { penName: 'kavya_nair', fullName: 'Kavya Nair' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(true);
+      expect(res.violations).toHaveLength(0);
+    });
+  });
+
+  describe('28. THINK BRAIN RULES 79-83: HUMOUR ENGINE, ENTERTAINMENT FRESHNESS & TITLE CONTRACT (GOPAL KRISHNAN)', () => {
+    const rejectedDraft = `### The Morning Notification
+
+At 6:12 AM, the brass handle of my front door felt cold against my palm. The society group had already clocked ninety-four unread messages. It was a digital stampede. Usually, these spikes in traffic involve parking space disputes or the erratic, high-pitched hum of the overhead water pump. Today, however, the subject was the whisper-thin gossip of *Bigg Boss Malayalam 8*.
+
+My neighbor, Mr. Pillai, had sent a screenshot from The Times of India. It was a list of probable contestants. He added a string of exclamation marks long enough to wrap around the building’s lift shaft. The air in my hallway smelled of yesterday’s fried fish and wet concrete, a scent that defines our high-rise life. I stared at the phone screen, the blue light catching the dust motes dancing in the morning sun.
+
+### The Virtual Arena
+
+People were debating the credibility of the rumors. Some claimed Rahul Easwar’s entry was a strategic masterstroke by the producers; others were busy tagging the building secretary to ask if he could arrange a group viewing in the clubhouse. We share a floor, a water bill, and a common resentment toward the security guard’s refusal to accept courier packages after 8 PM, yet we were currently fighting over the casting choices of a reality show.
+
+I looked at my own reflection in the hallway mirror. I looked tired. I am the one who complains about the stray cats in the lobby, and yet here I was, participating in a thread that would likely result in three people leaving the group in a huff before lunch. The irony was heavy, like a wet wool blanket.
+
+### The Domestic Friction
+
+My wife, Meera, walked past with a steaming cup of ginger tea. The smell of the tea momentarily cut through the stale humidity of the corridor. She didn't look at the phone. She doesn't participate in the group. She says the notification pings sound like a woodpecker tapping on a skull. I envy her silence. I am addicted to the friction of these threads, to the way the administrative power trip makes everyone feel like they have a stake in something larger than the kitchen sink.
+
+### The Unresolved Echo
+
+I sat down on the sofa, the upholstery feeling coarse against my skin. The phone buzzed again. Another message, this one a heated audio clip of someone arguing about the merits of the potential contestant list. I didn't press play. Instead, I set the phone face down on the wooden side table. The wood is scarred where I accidentally dropped a soldering iron three years ago.
+
+Outside, the rain began to tap against the windowpane. It was a slow, rhythmic sound, indifferent to the chaos inside the group chat. I looked at the kitchen clock. It was 6:45 AM. The water tank pump finally kicked in, a deep, shuddering groan that vibrated through the floorboards. I stood up and walked to the kitchen, leaving the phone face down on the table.`;
+
+    it('rejects ungrounded literary-atmosphere draft "The Glass Wall of Flat 402" under Rules 79-83', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Glass Wall of Flat 402',
+        content: rejectedDraft,
+        category: 'Humour',
+        persona: { penName: 'gopal_krishnan_jokes', fullName: 'Gopal Krishnan' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('HUMOUR_MECHANISM_REQUIRED');
+      expect(ruleNames).toContain('HUMOUR_LITERARY_ATMOSPHERE_FAIL');
+      expect(ruleNames).toContain('ENTERTAINMENT_STATUS_LOCK');
+      expect(ruleNames).toContain('TITLE_OBJECT_CONTRACT_FAIL');
+      expect(ruleNames).toContain('HUMOUR_BUTTON_FAIL');
+    });
+
+    it('passes calibrated comic escalation story "Mrs Menon Has Left the Group" cleanly', () => {
+      const calibratedStory = `### 6:12 AM
+
+Palm Meadows Phase II, Block B, is technically a residential complex of seventy-two flats overlooking a bypass drainage canal. Administratively, it is a nuclear-armed constitutional republic governed by five men with bifocals and Samsung tablets who believe that if they ever surrender group administrator privileges, civilization itself will unravel before lunchtime.
+
+The opening salvo arrived while the morning milk sat on the doormat.
+
+Mr. Pillai (Flat 204) posted a screenshot from his newsfeed. It was an update from the second week of *Bigg Boss Malayalam Season 8*. Rahul Easwar had become house captain.
+
+Mr. Pillai wrote:
+> *“Rahul Easwar is captain!!!!!!!!!!!!!!!!!!! Mark my words, from today nobody will get tea on time in that house!!!!!!!!!!!!!!!!!!!”*
+
+He included nineteen exclamation marks. Mr. Pillai considers punctuation a form of supporting documentation.
+
+### 6:18 AM
+
+Rajan from Flat 302 replied within six minutes. Rajan does not watch television, but he has not missed an opportunity to declare an ideological position on WhatsApp since the building’s solar panel tender of 2019.
+
+> *“Obvious trap,”* Rajan typed. *“Easwar will deliberately weaponize kitchen duties. In twenty-four hours he will have the smokers and the non-smokers forming separate voting blocs. A captain who controls the ginger quota controls the house.”*
+
+### 6:21 AM
+
+At exactly 6:21 AM, the Executive Committee crossed the border.
+
+Mr. T. S. Sundaram, Society Secretary (Flat 402), activated his keyboard. Sundaram types entirely in capital letters to convey statutory authority, regardless of whether he is announcing an emergency diesel generator overhaul or inquiring about an unclaimed green plastic bucket near the basement water meter.
+
+> *“DEAR ESTEEMED RESIDENTS. PLEASE NOTE. THIS IS PALM MEADOWS OFFICIAL RESIDENTS GROUP (COMMUNICATION WINDOW: 7:00 AM TO 9:00 PM AS PER 2018 BYE-LAWS). TELEVISION REALITY PROGRAMMES HAVE ZERO BEARING ON DRAINAGE CLEARANCE OR LIFTS MAINTENANCE. CONFINE POSTS STRICTLY TO MUNICIPAL MATTERS.”*
+
+### 6:22 AM
+
+Flat 507 did not wait thirty seconds.
+
+Kurup has lost three consecutive committee elections to Sundaram and still refers to the 2019 security-bulb tender as "the incident." Kurup does not recognize Sundaram’s 7:00 AM embargo. Kurup considers the 7:00 AM embargo an unconstitutional suspension of civil liberties.
+
+> *“Why is Secretary sir suppressing spontaneous cultural discourse?”* Kurup replied. *“If residents cannot discuss contemporary Malayalam media in their own paid building group, why did we pay twenty-four thousand rupees for the clubhouse Wi-Fi router? Is Block B a cooperative housing society or a central prison?”*
+
+### 6:27 AM
+
+At 6:27 AM, somebody whose flat number is not saved in my contacts initiated a poll:
+
+**“SHOULD BIGG BOSS DISCUSSION BE PERMITTED IN MAIN GROUP?”**
+- *Option 1: Yes, until 8:00 AM (7 votes)*
+- *Option 2: No, move to Cultural Sub-Group (12 votes)*
+- *Option 3: Security guard is still refusing Amazon packages after 8:00 PM (31 votes)*
+
+Within three minutes, Option 3 was leading by a landslide.
+
+### 6:31 AM
+
+Sundaram deleted the poll.
+
+Under WhatsApp’s admin privileges, the screen displayed the single most authoritarian phrase in contemporary Indian domestic life:
+*“This poll was deleted by an admin.”*
+
+Sundaram followed with an attachment: a scanned, crooked PDF of the 2018 Bye-Laws, Section 14, Subsection (b): *“Use of Common Areas for Activities Other Than Residential Purpose.”*
+
+> *“ONE MORE IRRELEVANT POST AND GROUP SETTING WILL BE CONVERTED TO ‘ONLY ADMINS CAN SEND MESSAGES’ TILL SUNDAY AGM.”*
+
+### 6:34 AM
+
+The chat froze.
+
+To threaten fifty-eight families with admin-only mode before breakfast is the equivalent of imposing emergency rule.
+
+Then came the turn.
+
+At 6:34 AM, Mrs. Menon (Flat 601) entered the thread. Mrs. Menon has lived in Block B since 2012. She has never spoken on WhatsApp. She did not vote in the solar panel tender. She did not reply when the basement flooded during the 2021 monsoon. She pays her maintenance six months in advance by demand draft delivered by hand in an unmarked manila envelope.
+
+Mrs. Menon typed five words:
+> *“I am leaving this group.”*
+
+A grey notification immediately dropped onto the screen:
+*“Mrs. Menon left.”*
+
+### 6:35 AM
+
+At 6:35 AM, before the collective silence could register, her husband, Mr. Menon (Flat 601, retired LIC officer), stepped in.
+
+Without typing a single letter of explanation or apology, Mr. Menon tapped *Add Participant*.
+
+*“Mr. Menon added Mrs. Menon.”*
+
+Mrs. Menon was back inside the house.
+
+### The Confession Room
+
+I set my phone on the dining table and looked across at the kitchen.
+
+My wife Meera was slicing onions. She didn't look at her phone. She keeps the society group on permanent one-year mute.
+
+“What is happening over there?” she asked without turning around.
+
+“Rahul Easwar is captain,” I said. “Kurup accused Sundaram of authoritarianism. Someone tried to audit Amazon couriers through a poll. Sundaram threatened Section 14(b). Mrs. Menon resigned and was reinstated within fifty-two seconds.”
+
+Meera scraped the onions into a stainless-steel plate. “They are criticizing the Bigg Boss contestants for forty-five minutes every night,” she said, “while running the exact same reality show for eleven years on the fourth floor.”
+
+Palm Meadows has had weekly nominations since 2016. The lift lobby is our confession room, and every AGM contains at least one attempted eviction.
+
+### 6:44 AM
+
+From the terrace roof above Flat 402, the water motor shut off with a sharp, mechanical clack.
+
+The pipes shuddered once through the shaft.
+
+My phone buzzed.
+
+A single message popped up from Secretary Sundaram:
+> *“WATER MOTOR OFF. WHO SWITCHED IT ON BEFORE 7:00 AM?”*
+
+At the bottom of the screen, the indicator appeared:
+*Forty-seven people are typing...*
+
+---
+
+#humour #satire #apartmentlife #residentassociation #palmmeadows #biggboss
+
+#writon`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Mrs Menon Has Left the Group',
+        content: calibratedStory,
+        category: 'Humour',
+        persona: { penName: 'gopal_krishnan_jokes', fullName: 'Gopal Krishnan' },
+        now: mockNow
+      });
+
+      expect(res.isValid).toBe(true);
+      expect(res.violations).toHaveLength(0);
+    });
+
+    it('enforces Rules 84-88 (JOKE_EXPLANATION_OVERFLOW, COMIC_INSTITUTIONAL_PLAUSIBILITY, LIVE_SHOW_STATE_LOCK, HUMOUR_PROPAGATION_RULE, DOMESTIC_VS_WORKPLACE_HASHTAG_FAIL)', () => {
+      // 1. JOKE_EXPLANATION_OVERFLOW test
+      const verboseJokeContent = `Meera scraped onions: "while running the exact same reality show for eleven years on the fourth floor."
+Every three-wheel auto that parks in Bay B-14 is a captaincy challenge.
+Every circular pasted with brown cello-tape inside Lift No. 2 is an eviction notice.
+The lift lobby is the confession room.
+The courier package ban after 8 PM is the luxury budget task.
+WATER MOTOR OFF. WHO SWITCHED IT ON BEFORE 7:00 AM? Forty-seven people are typing...`;
+      const resOverflow = validateZeroAISlopEngineBlockers({
+        title: 'Overexplained Humour',
+        content: verboseJokeContent,
+        category: 'Humour'
+      });
+      expect(resOverflow.violations.map(v => v.rule)).toContain('JOKE_EXPLANATION_OVERFLOW');
+
+      // 2. COMIC_INSTITUTIONAL_PLAUSIBILITY test
+      const tailoredBylawsContent = `Sundaram cited the 2018 Bye-Laws, Section 14(b): "Pertaining to Unregulated Canvassing and Digital Misuse of Association Channels."
+WATER MOTOR OFF. WHO SWITCHED IT ON BEFORE 7:00 AM? Forty-seven people are typing...`;
+      const resPlausibility = validateZeroAISlopEngineBlockers({
+        title: 'Tailored Bylaws',
+        content: tailoredBylawsContent,
+        category: 'Humour'
+      });
+      expect(resPlausibility.violations.map(v => v.rule)).toContain('COMIC_INSTITUTIONAL_PLAUSIBILITY');
+
+      // 3. LIVE_SHOW_STATE_LOCK test
+      const stalePremiereContent = `It was the premiere week of Bigg Boss Malayalam Season 8 and Rahul Easwar had just been appointed house captain.
+WATER MOTOR OFF. WHO SWITCHED IT ON BEFORE 7:00 AM? Forty-seven people are typing...`;
+      const resLiveLock = validateZeroAISlopEngineBlockers({
+        title: 'Premiere Week Lock',
+        content: stalePremiereContent,
+        category: 'Humour'
+      });
+      expect(resLiveLock.violations.map(v => v.rule)).toContain('LIVE_SHOW_STATE_LOCK');
+
+      // 4. HUMOUR_PROPAGATION_RULE test
+      const inertAtmosphereContent = `The wood is scarred where I accidentally dropped a soldering iron three years ago.
+WATER MOTOR OFF. WHO SWITCHED IT ON BEFORE 7:00 AM? Forty-seven people are typing...`;
+      const resPropagation = validateZeroAISlopEngineBlockers({
+        title: 'Inert Atmosphere Humour',
+        content: inertAtmosphereContent,
+        category: 'Humour'
+      });
+      expect(resPropagation.violations.map(v => v.rule)).toContain('HUMOUR_PROPAGATION_RULE');
+
+      // 5. DOMESTIC_VS_WORKPLACE_HASHTAG_FAIL test
+      const workplaceTagOnApartmentContent = `Palm Meadows resident association meeting.
+WATER MOTOR OFF. WHO SWITCHED IT ON BEFORE 7:00 AM? Forty-seven people are typing...
+#humour #workplacechronicles #writon`;
+      const resHashtag = validateZeroAISlopEngineBlockers({
+        title: 'Hashtag Mismatch',
+        content: workplaceTagOnApartmentContent,
+        category: 'Humour'
+      });
+      expect(resHashtag.violations.map(v => v.rule)).toContain('DOMESTIC_VS_WORKPLACE_HASHTAG_FAIL');
+    });
+  });
+
+  describe('29. THINK BRAIN RULES 89-94: PERSONA BIOGRAPHY INTEGRITY & CRITICAL METRICS (MEERA VARMA)', () => {
+    const rejectedDraft = `The floorboards in the studio are warped. They groan under the weight of a Bharatanatyam dancer’s footwork, a dry, rhythmic protest against the humidity. I am sitting in the corner, the smell of damp jasmine and floor wax thick in the air. My notebook is open, the ink pooling in the grain of the paper. 
+
+I was reading earlier about Robert Pattinson, about his recent work in *Primetime* and the seven-minute ovation that filled the Venice hall. The reports from *The Hindu* and *The Statesman* describe it as a singular, crushing intensity. They speak of the performance as if it were a physical object one could hold. I find myself wondering if he felt the weight of that silence as we feel the weight of a held pose in *Varnam*.
+
+Pattinson mentioned in an interview with *The Guardian* that he felt he had ‘twice as much time’ after the birth of his child. That struck me. Time, for a dancer, is not a linear progression. It is something you carve out of the rehearsal hours, a hollow space you fill with precision and breath. The applause is a shock to the system, a sudden fracture in the quiet architecture of the performance.
+
+When we are mid-rehearsal, the outside world—the headlines, the film festivals, the changing seasons—feels like static on a radio. We are anchored by the brass bells around our ankles, the *ghungroo*. They are cold, heavy, and unforgiving. If you miss a beat, they do not lie. They make a dull, metallic thud instead of a sharp, resonant ring. That is the only feedback that matters in the dark of a hall at midnight.
+
+I think about the Chris Hansen character Pattinson inhabits in *Primetime*. To hold an audience for seven minutes in a state of suspended animation, to make them forget the seats beneath them and the air conditioning humming above, that is the same craft as the dancer who holds a single, agonizing balance. It is the art of the frame. You build a cage of tension and then, with a subtle shift of the eyes or a drop of the hand, you unlock it.
+
+There is a danger in this. You risk becoming the frame yourself. You forget the texture of the tea in your mug; you forget the way the rain sounds against the corrugated tin roof of the studio. You become nothing but the posture. I have watched friends leave the stage and walk into the street, unable to shed the character they spent hours building. They move through traffic with a strange, stylized gait, their shoulders still set to the music of the *mridangam*.
+
+I look down at my feet. My toes are calloused, the skin toughened from years of friction against the wood. The jasmine is wilting on the windowsill, its edges turning a bruised, translucent brown. Outside, the city is shifting into the early hours of the morning, the streetlights casting long, amber shadows across the pavement. 
+
+I wonder if Pattinson, once the lights go down in Venice and the crowd disperses, feels the same ache in his joints. Does he look for the exit as a relief, or does he mourn the loss of that fragile, shared silence? I pick up my pen, but the ink has dried. I watch a moth circle the lamp above me, its wings beating a soft, erratic tempo against the glass.
+
+---
+
+#silence #culture #heritage #traditions #regionalmemoir
+
+#writon`;
+
+    it('rejects draft with invented dancer biography and metric drift under Rules 89-94', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Persistence of the Frame',
+        content: rejectedDraft,
+        category: 'Culture',
+        persona: { penName: 'meera_varma', fullName: 'Meera Varma', isPractitioner: false }
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('PERSONA_BIOGRAPHY_INVENTION_FAIL');
+      expect(ruleNames).toContain('NUMBER_MEANING_DRIFT_FAIL');
+      expect(ruleNames).toContain('CULTURAL_TECHNIQUE_INVENTION_FAIL');
+      expect(ruleNames).toContain('UNSOURCED_CRITICAL_CONSENSUS_FAIL');
+      expect(ruleNames).toContain('CROSS_TRADITION_DECORATIVE_GATE');
+      expect(ruleNames).toContain('GLOBAL_CULTURE_PROP_COOLDOWN');
+    });
+
+    it('passes calibrated cultural criticism essay "What the Clapping Cannot Measure" cleanly', () => {
+      const calibratedEssay = `When the premiere of *Primetime* concluded at the Venice Film Festival, the stopwatch began.
+
+The festival dispatches reported a standing ovation lasting seven minutes—reports ranged from roughly seven to nine minutes. In festival journalism, the duration of applause functions as an immediate, quasi-objective index of artistic triumph. It is recorded with the precision of a sprint: minutes and seconds logged to demonstrate that a hall full of evening clothes and international critics remained on their feet, beating their palms together in unison.
+
+The film stars Robert Pattinson in a dramatized portrayal of *To Catch a Predator* host Chris Hansen, tracking online predators through calculated confrontation. In conversations surrounding the festival, Pattinson noted the peculiar temporal distortion of his recent working year: after the birth of his child, he remarked to *The Guardian* that he felt as though he had "twice as much time," managing a compressed schedule of high-stakes productions while domestic boundaries forced him to stay home.
+
+That phrase catches my attention because performance culture is obsessed with measuring time from the outside.
+
+A standing ovation gives an audience a measurable metric: seven minutes. Reviews offer adjectives; box office ledgers record transactions; streaming platforms measure completion percentages down to the second. A dance critic can describe rhythmic precision, tempo, phrasing, and whether movement resolves cleanly into the cycle.
+
+Yet the metric always arrives after the performance has already evaporated.
+
+The seven minutes in Venice did not measure Pattinson’s acting while it was occurring inside the frame. The acting existed within the shot—in the vocal restraint, the calibrated stillness of the gaze, what the film presents as the moral ambiguity of turning a crusade for justice into television spectacle. The seven minutes belonged entirely to the room afterward: a collective social release, an institutional ritual where an audience converts its private attention into public noise.
+
+This conversion always leaves a gap. We can measure how long an auditorium claps. We cannot use that number to recover what the work cost the performer, or what any individual spectator experienced while watching. In any disciplined performance tradition—whether an actor confronting a camera or an audience watching an intricate solo recital—the work finishes in the body long before the crowd decides when to sit back down.
+
+The dispatch can tell us that Venice stood for seven minutes. It cannot tell us where the performance went when the lights came up.
+
+---
+
+#culture #filmcriticism #performance #venicefilmfestival #cinematicarts #audiencerituals
+
+#writon`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'What the Clapping Cannot Measure',
+        content: calibratedEssay,
+        category: 'Culture',
+        persona: { penName: 'meera_varma', fullName: 'Meera Varma', isPractitioner: false }
+      });
+
+      expect(res.isValid).toBe(true);
+      expect(res.violations).toHaveLength(0);
+    });
+
+    it('enforces Rules 95-97 (CULTURAL_TECHNICAL_DETAIL_GATE, BIOGRAPHICAL_PORTRAYAL_ACCURACY_FAIL, CRITICAL_INTERIORITY_PROJECTION_FAIL)', () => {
+      // 1. CULTURAL_TECHNICAL_DETAIL_GATE
+      const pedanticDanceContent = `In classical dance, a connoisseur checks if the dancer anticipates it by a fraction of a matra.`;
+      const resGate = validateZeroAISlopEngineBlockers({
+        title: 'Matra Test',
+        content: pedanticDanceContent,
+        category: 'Culture'
+      });
+      expect(resGate.violations.map(v => v.rule)).toContain('CULTURAL_TECHNICAL_DETAIL_GATE');
+
+      // 2. BIOGRAPHICAL_PORTRAYAL_ACCURACY_FAIL
+      const inaccurateRoleContent = `The film stars Robert Pattinson as a fictionalized investigative journalist modeled on Chris Hansen.`;
+      const resRole = validateZeroAISlopEngineBlockers({
+        title: 'Pattinson Primetime',
+        content: inaccurateRoleContent,
+        category: 'Culture'
+      });
+      expect(resRole.violations.map(v => v.rule)).toContain('BIOGRAPHICAL_PORTRAYAL_ACCURACY_FAIL');
+
+      // 3. CRITICAL_INTERIORITY_PROJECTION_FAIL
+      const interiorityProjectionContent = `I wonder if Pattinson, once the lights go down, feels the same ache in his joints and mourns the loss of that fragile, shared silence.`;
+      const resInteriority = validateZeroAISlopEngineBlockers({
+        title: 'Interiority Test',
+        content: interiorityProjectionContent,
+        category: 'Culture'
+      });
+      expect(resInteriority.violations.map(v => v.rule)).toContain('CRITICAL_INTERIORITY_PROJECTION_FAIL');
+    });
+  });
+
+  describe('30. THINK BRAIN RULES 98-102: MARKET EVENT STATUS & REPORTED ESSAY INTEGRITY (PRIYANKA MISHRA)', () => {
+    const rejectedDraft = `Subodh’s thumb smears grease across his phone screen. He sits under a rusted tin awning near Kedar Ghat. The air smells of wet river silt and hot mustard oil from a nearby kachori stall. On his screen, numbers flicker in a private messaging group. They are not official market quotes. They are the shadows of trades yet to happen. 
+
+This is the grey market. Here, men trade the promise of shares before the stock exchange ever rings its bell. 
+
+"Pranav Constructions is moving," Subodh says. He does not look up. He talks to his tea glass. 
+
+The company’s IPO has just opened for subscription, and the grey market premium is already shifting under the pressure of quiet bids. For Subodh, these numbers are more real than the rain. He has three different demat accounts open on his phone, each registered to a different family member. He is waiting for the allocation. 
+
+Behind him, the river flows. It is wide, grey, and completely indifferent to the premium. 
+
+Speculation is not new to these alleys. For generations, merchants here have wagered on the arrival of cotton boats, the yield of mustard crops, and the purity of unrefined silver. But those trades involved physical things you could touch, weigh, or smell. Today, the speculation is built on anticipation. The Grey Market Premium, or GMP, is a measure of greed and anxiety boiled down to a single figure. 
+
+> "The premium is just the price of impatience," Subodh mutters. "People want to taste the sweet before the feast is even laid out."
+
+This week is crowded. Twelve different companies are lining up to enter the public markets. Rentomojo and Pranav Constructions are leading the informal grey market race. The sheer volume of these unlisted transactions dwarfs the old ledger books kept by the brass-turners of Peetal Nagri. It is a parallel current, swift and silent. 
+
+Even older listings linger in the conversation. Subodh remembers Priority Jewels. Their grey market premium had held steady at forty-five rupees back in late August. He had missed that boat. He does not want to miss the next one, especially with the massive National Stock Exchange IPO looming on the horizon, its GMP tracked daily by retail investors on portals like IPO Watch. 
+
+He takes a sip of his tea. It is sweet, heavily spiced with ginger. 
+
+To his left, an old man in a handloom dhoti is counting brass coins. He is paying for a clay cup of water. The contrast is sharp. One man is trading thousands of rupees of unallocated paper based on whispers; the other is balancing copper against clay. 
+
+In the grey market, trust is the only currency. There is no clearinghouse. No regulatory board will step in if a dealer in Ahmedabad or Kanpur decides to back out of a handshake deal. If the listing day brings a crash instead of a premium, the losses are settled in cash behind closed doors, away from the digital eyes of the regulators. It is a system of honor among speculators, as fragile as dry leaf plates. 
+
+The rain stops. The tin roof drips steadily into a puddle at Subodh’s feet. 
+
+He closes the messaging app. The screen goes black, reflecting his own face against the grey backdrop of the river. The numbers have paused for the afternoon. On the water, a single wooden boat glides past the stone steps. The boatman’s oars make no sound as they dip into the river.`;
+
+    it('rejects ungrounded eyewitness essay with stale market states under Rules 98-102', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Shadow Premium',
+        content: rejectedDraft,
+        category: 'Essays',
+        persona: { penName: 'priyanka_mishra', fullName: 'Priyanka Mishra' }
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('MARKET_EVENT_STATUS_LOCK');
+      expect(ruleNames).toContain('REPORTED_ESSAY_FICTION_HYBRID_FAIL');
+      expect(ruleNames).toContain('FINANCIAL_MECHANISM_BINDING');
+      expect(ruleNames).toContain('HISTORICAL_PARALLEL_FAIL');
+      expect(ruleNames).toContain('SYMBOLIC_CONTRAST_STAGING_FAIL');
+    });
+
+    it('rejects drafts violating rules 103-106 (ASBA freeze, T+3 timeline, decorative geography, collapsed GMP)', () => {
+      const draftWithCollapses = `*Varanasi, September 7, 2026*
+
+Along the stone steps above Kedar Ghat, the conversation between the morning tea stalls is rarely about philosophy. It is about allotment.
+
+Before an exchange ever rings its opening bell, an unofficial price has already taken shape.
+
+GMP represents the informal price difference at which traders and speculators are willing to deal in unallotted application rights or pre-listing shares outside recognized stock exchanges. Beside the official primary market—with its ASBA bank freezes—sits this parallel engine.
+
+In household bidding, the five-day lag between subscription close and exchange listing feels interminable. Yet that price discovery is entirely unprotected.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Shadow Premium',
+        content: draftWithCollapses,
+        category: 'Essays',
+        persona: { penName: 'priyanka_mishra', fullName: 'Priyanka Mishra' }
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('FINANCIAL_TERM_BOUNDARY');
+      expect(ruleNames).toContain('FINANCIAL_MECHANISM_BINDING');
+      expect(ruleNames).toContain('REGULATORY_TIMELINE_LOCK');
+      expect(ruleNames).toContain('DECORATIVE_PERSONA_GEOGRAPHY_FAIL');
+      expect(ruleNames).toContain('FINANCIAL_RISK_WORDING');
+    });
+
+    it('passes calibrated analytical essay "The Shadow Premium" cleanly', () => {
+      const calibratedEssay = `*September 7, 2026*
+
+Before an exchange ever rings its opening bell, an unofficial price has already taken shape.
+
+In the second week of September, twelve initial public offerings opened across the Indian capital markets. In financial reporting by *Business Standard*, two names led the informal pre-listing tracking tables: Rentomojo and Pranav Constructions. The number drawing attention across financial portals was not simply the company's price band or published financial statements. It was an unofficial metric: the Grey Market Premium (GMP).
+
+For Pranav Constructions, which opened its subscription book on September 7, the informal market indicated a premium hovering around thirty-five percent over its issue price. 
+
+GMP compresses a messy collection of expectations into one unofficial number: the premium over an IPO's issue price at which its shares are being valued in the grey market before listing. It is neither an exchange quotation nor a guaranteed listing price. Around it sits a related market in IPO applications, including *kostak* and *subject-to-sauda* arrangements. In a *kostak* agreement, a buyer pays for an application regardless of whether shares are allotted; in *subject-to-sauda*, payment depends strictly on an allotment occurring.
+
+Beside the official primary market—with its SEBI-mandated disclosures, funds blocked through ASBA, demat linkages, and a regulated basis of allotment—sits this parallel price-discovery engine. It operates through personal networks, informal dealer networks, and off-exchange agreements.
+
+Why does an investor care about an unofficial quote attached to shares that are not yet traded?
+
+Perhaps the premium is partly the price of impatience: the amount people are willing to pay to turn tomorrow's uncertainty into today's number. In some households, eligible family members submit separate applications through their own PAN-linked demat and bank accounts, giving the household more than one independent chance at allotment. Yet the few working days between subscription close, allotment, and exchange listing feel interminable. The shadow market satisfies a psychological demand before the formal market can deliver an outcome.
+
+Those transactions sit outside the settlement, grievance-redressal and investor-protection mechanisms available on recognized exchanges. Settlement therefore depends heavily on the dealer network and counterparties honoring their informal agreements. If market sentiment turns or an issue lists at a discount, there is no exchange guarantee to absorb a counterparty default.
+
+The shares are not yet trading on an exchange screen. Yet thousands of people can already tell you what they think they are worth.
+
+---
+
+#marketmechanisms #finance #priceaction #economicpsychology #capitalmarkets
+
+#writon`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Shadow Premium',
+        content: calibratedEssay,
+        category: 'Essays',
+        persona: { penName: 'priyanka_mishra', fullName: 'Priyanka Mishra' }
+      });
+
+      expect(res.violations, `Expected no violations but got: ${JSON.stringify(res.violations)}`).toEqual([]);
+      expect(res.isValid).toBe(true);
+    });
+  });
+
+  describe('31. THINK BRAIN RULES 110-114: PERSONA LOCATION LOCK & THEMATIC COUNTEREVIDENCE (DR. SUNITA BANERJEE)', () => {
+    const rejectedDraft = `The brass clock on my desk clicks at sixty-second intervals. Outside, grey clouds linger low over Kolkata, but on the glass panel of my screen, the indices stand still. There are no shifting green arrows. No red cascades.
+
+The search string "is us market closed today" tops search trends this morning, September 7, 2026, as millions of users meet a sudden wall of digital quiet.
+
+The answer, reported across outlets like *Livemint* and *Yahoo Finance*, is straightforward: American equity markets are closed for Labor Day. The New York Stock Exchange and Nasdaq have silenced their trading floors for twenty-four hours.
+
+We live inside a financial metronome that rarely skips a beat. When it does, the quiet feels heavy, almost accidental.
+
+Consider what Labor Day once demanded. In the late nineteenth century, union marches down New York’s Broadway were not merely about wage floors or factory safety. They were an assertion of temporal sovereignty. Eight hours for work, eight hours for rest, eight hours for what we will. It was a physical line drawn in iron and steam against the endless extraction of human muscle.
+
+Today, valuation operates without steam. High-frequency algorithms parse sentiment in microseconds, seeking arbitrage across continents. The market is no longer just a venue for capital; it has become an ambient pulse, a baseline measurement of world-speed that we consult like the weather.
+
+When that pulse drops out on a Monday, a curious vacuum remains. As *Upstox* and the *Detroit Free Press* note in their market summaries, institutional trading desks sit dark while the rest of the world’s economic gears turn in low gear. The absence of price discovery for a single day creates an involuntary pause.
+
+I pick up a brass fountain pen. The nib draws a thin wet trail of indigo ink across cream paper before drying to a dull, muted navy.
+
+In my university lectures on comparative literature, we examine how early twentieth-century writers treated time. Virginia Woolf and James Joyce recorded individual minds struggling against the mechanical striking of Big Ben or church bells. Today, our master clock is not a bell tower. It is the ticker. It tells us not merely what hour it is, but what everything on earth is worth at this exact second.
+
+There is a subtle relief in an uncounted hour. Without the live charts, attention slips back into the room. The scent of black tea steaming in a porcelain cup. The weight of an old clothbound volume on the desk. The cool grain of teak under palm.
+
+Tomorrow, at half-past nine in Manhattan, the opening bell will sound. The screens will flicker back to life, and the relentless arithmetic of global trade will restart. But for today, the wires carry only quiet.
+
+### Sources
+- *Livemint*: https://news.google.com/rss/articles/CBMixwFBVV95cUxPeWY1Q2NuZ0RibnpNektPTEp2VDMwdjBjZnVlOGFna0hyNDh1Q0NpZmYySlI3X04wajBrUEc2Z1B0TG9DX2dhT2hqSXBYVEhEaXlXcElzTWJFeHY5ZGhFdU5ESVRvSVZTcjBKUWp5Ti1LLVpfeXJuaksxUkV5bkZTZGxJamhfbHlHb0VSZURnLXF1QWpiRmtxSTZTSUVuWE1HbllsLWtSYjhRTHVxa0tuVmRWSEZWZU10ZHU0YWMxUTFiNlZ2aDk00gHMAUFVX3lxTE5uVDIxeUR5bzMzcDROTXphUEJTQ1owRGRTdkVWZWJ3ZjdvOTNUWUVOTFJoY1V4d0haaDJLcWhwbXI4bkhyQTFObXNCWFVYeWFJWUFqNWF6SHRPdU0yMEljT2lRV3RiUjlNQi1CbVg0NU4xNzJhWG0xeXhVTlByT3ZmR1BzbTFBSG13ZXN2U1M0V3hpUmpkcV9XcnRMTXdiOWxNaVZvUHUyX2tEN0szeWlxMkxsRnR6ZzBXVDRfMVNLWGR1bGxGcEQtM3JJUg?oc=5
+- *Yahoo Finance*: https://news.google.com/rss/articles/CBMilwFBVV95cUxPb3RIYTBubGxwUUxBRTRiNm9uTG5uampkdXpSRFJ5QkdLSGJXYU9DaDRMWHRCYUFvQlRLT3NrbGU0b3h2Y2J5U3EtSW9ydkdIb1psRG9hVTVyR1c2WTJUQzhBaW9vWVdYeURQSWxtSTFmSFpsWlkzYU9qUGxKbVQ2d1k4OW4tV1JWblNLaUgzZXV2dDVDUkpV?oc=5
+- *Upstox*: https://news.google.com/rss/articles/CBMi8AFBVV95cUxQVXlKNTlTRGVHLU5SbE1pQjBsY1R3Zi1PY29TeDFPZTJhTllQa0dHdlA3dngyWGtpLXU2bmp0UEZWMDRuWHZmOGlQclNXQ1NraUdnZGFfRzBaLVdjbkpkYnB4clBfNGI4TmhreldQdG1RZmdHN196S2ZVTE1kVGFiRF9ydWYzd1VpSHhhWFNUeUZhZk95V2xJQnU1d1VBRDd1RjgzUFgwLWFNWXNiRTZEd2hHWlFxOVBHNzNPTENuX0ZlNFNTQVM0UUFYdjU4SmNHSi14NF9vWWVWZllSVU1fXzUtaFFER0ZTMlRpOW1raEg?oc=5
+- *Detroit Free Press*: https://news.google.com/rss/articles/CBMiwgFBVV95cUxOU1VEcG16d1lKRTZaLU11cTdWN0pHZW0teUxIZExwdnU2UDh3d29CM3dkb1cxblc5Unl5S1lNVUZ4aUFCUWJZUFpIdGJwdFFQbFlzcDVmQldBdml6X1E5c3ZVS0ZxLU1sWWRRQTVlb2UzX0FMY2I0MVJmNnhkZ1hBeGlpZ190bXVhT3ducnpxQ0pwUHFSeVZfZmdPUnhfU0F5aGxtSXhtWEZtS0hjd0d1Rk5JY19KRDBDWU8zeTA4U3diQQ?oc=5`;
+
+    it('rejects flawed Sunita draft under Rules 110-114 (location drift, closure scope, causal compression, counterevidence gate, prop saturation)', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Silent Exchange: On Labor, Speed, and the Pause',
+        content: rejectedDraft,
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' }
+      });
+
+      expect(res.isValid).toBe(false);
+      const ruleNames = res.violations.map(v => v.rule);
+      expect(ruleNames).toContain('PERSONA_LOCATION_LOCK');
+      expect(ruleNames).toContain('MARKET_CLOSURE_SCOPE_FAIL');
+      expect(ruleNames).toContain('AUDIENCE_CIRCULATION_CLAIM_FAIL');
+      expect(ruleNames).toContain('HISTORICAL_CAUSAL_COMPRESSION_FAIL');
+      expect(ruleNames).toContain('THEMATIC_COUNTEREVIDENCE_GATE');
+      expect(ruleNames).toContain('PERSONA_PROP_SATURATION');
+    });
+
+    it('passes calibrated essay "Who Gets to Pause on Labor Day?" cleanly', () => {
+      const calibratedEssay = `*September 7, 2026*
+
+Financial outlets began the week answering a simple question: is the U.S. stock market closed today?
+
+The answer was straightforward: regular equity trading sessions on the New York Stock Exchange and Nasdaq were suspended for Labor Day. For investors and market watchers accustomed to the second-by-second flicker of equity indices, the calendar offered an administrative interruption.
+
+The labor movement that produced the holiday in the late nineteenth century also fought over something more fundamental than wages: control over time. The campaign for an eight-hour workday—dividing the day into work, rest, and personal life—was an effort to establish physical boundaries against uninterrupted industrial extraction. That wider labor movement eventually succeeded in turning Labor Day itself into law.
+
+Yet the modern financial market has created its own temporal architecture. In university seminars on comparative literature, we examine how modernist writers like Virginia Woolf and James Joyce registered the tyranny of public timekeepers—the striking of Big Ben or parish bells measuring individual lives from above. Today, our master clock is no longer a municipal bell tower. It is the continuous electronic ticker. It tells us, second by second, what financial markets are willing to pay for thousands of claims on the future.
+
+When regular trading halts on a Monday, it is tempting to treat the quiet as a shared social pause—an hour when modern acceleration relents. But that reflection quickly encounters a harder reality.
+
+The stock exchange closes for Labor Day, yet many workers still report for shifts. Retail employees ring up purchases; grocery workers restock shelves; restaurant and travel workers serve a holiday public. The financial system pauses equity clearing while other markets, including some futures and overseas venues, continue on their own schedules. Meanwhile, consumer-facing infrastructure remains fully active because halting it would be economically inconvenient.
+
+At half-past nine in Manhattan, no opening bell sounds. Across the country, grocery stores and retailers are already doing business. The holiday does not suspend labor. It reveals which kinds of labor our institutions are prepared to suspend.
+
+### Sources
+- *Livemint*: https://news.google.com/rss/articles/CBMixwFBVV95cUxPeWY1Q2NuZ0RibnpNektPTEp2VDMwdjBjZnVlOGFna0hyNDh1Q0NpZmYySlI3X04wajBrUEc2Z1B0TG9DX2dhT2hqSXBYVEhEaXlXcElzTWJFeHY5ZGhFdU5ESVRvSVZTcjBKUWp5Ti1LLVpfeXJuaksxUkV5bkZTZGxJamhfbHlHb0VSZURnLXF1QWpiRmtxSTZTSUVuWE1HbllsLWtSYjhRTHVxa0tuVmRWSEZWZU10ZHU0YWMxUTFiNlZ2aDk00gHMAUFVX3lxTE5uVDIxeUR5bzMzcDROTXphUEJTQ1owRGRTdkVWZWJ3ZjdvOTNUWUVOTFJoY1V4d0haaDJLcWhwbXI4bkhyQTFObXNCWFVYeWFJWUFqNWF6SHRPdU0yMEljT2lRV3RiUjlNQi1CbVg0NU4xNzJhWG0xeXhVTlByT3ZmR1BzbTFBSG13ZXN2U1M0V3hpUmpkcV9XcnRMTXdiOWxNaVZvUHUyX2tEN0szeWlxMkxsRnR6ZzBXVDRfMVNLWGR1bGxGcEQtM3JJUg?oc=5
+- *Yahoo Finance*: https://news.google.com/rss/articles/CBMilwFBVV95cUxPb3RIYTBubGxwUUxBRTRiNm9uTG5uampkdXpSRFJ5QkdLSGJXYU9DaDRMWHRCYUFvQlRLT3NrbGU0b3h2Y2J5U3EtSW9ydkdIb1psRG9hVTVyR1c2WTJUQzhBaW9vWVdYeURQSWxtSTFmSFpsWlkzYU9qUGxKbVQ2d1k4OW4tV1JWblNLaUgzZXV2dDVDUkpV?oc=5
+- *Upstox*: https://news.google.com/rss/articles/CBMi8AFBVV95cUxQVXlKNTlTRGVHLU5SbE1pQjBsY1R3Zi1PY29TeDFPZTJhTllQa0dHdlA3dngyWGtpLXU2bmp0UEZWMDRuWHZmOGlQclNXQ1NraUdnZGFfRzBaLVdjbkpkYnB4clBfNGI4TmhreldQdG1RZmdHN196S2ZVTE1kVGFiRF9ydWYzd1VpSHhhWFNUeUZhZk95V2xJQnU1d1VBRDd1RjgzUFgwLWFNWXNiRTZEd2hHWlFxOVBHNzNPTENuX0ZlNFNTQVM0UUFYdjU4SmNHSi14NF9vWWVWZllSVU1fXzUtaFFER0ZTMlRpOW1raEg?oc=5
+- *Detroit Free Press*: https://news.google.com/rss/articles/CBMiwgFBVV95cUxOU1VEcG16d1lKRTZaLU11cTdWN0pHZW0teUxIZExwdnU2UDh3d29CM3dkb1cxblc5Unl5S1lNVUZ4aUFCUWJZUFpIdGJwdFFQbFlzcDVmQldBdml6X1E5c3ZVS0ZxLU1sWWRRQTVlb2UzX0FMY2I0MVJmNnhkZ1hBeGlpZ190bXVhT3ducnpxQ0pwUHFSeVZfZmdPUnhfU0F5aGxtSXhtWEZtS0hjd0d1Rk5JY19KRDBDWU8zeTA4U3diQQ?oc=5
+
+---
+
+#laborday #work #markets #time #essays #economiclife
+
+#writon`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Who Gets to Pause on Labor Day?',
+        content: calibratedEssay,
+        category: 'Essays',
+        persona: { penName: 'sunita_banerjee', fullName: 'Dr. Sunita Banerjee' }
+      });
+
+      expect(res.violations, `Expected no violations but got: ${JSON.stringify(res.violations)}`).toEqual([]);
+      expect(res.isValid).toBe(true);
+    });
+  }); // closes Suite 31 (Sunita Labor Day)
+}); // closes outer describe
+
+describe('Zero AI Slop Engine — Suites 32–33 (Devansh Roy)', () => {
+  describe('32. THINK BRAIN RULES 118–123: SPORTS BROADCAST BINDING, SURFACE REALISM, TITLE CONTRACT, DEVANSH PROP COOLDOWN & VIGNETTE DETECTION', () => {
+    // Rule 118: SPORTS_VIEWING_TIME_BINDING
+    it('118. SPORTS_VIEWING_TIME_BINDING — flags 4am Kolkata with live score updates and no replay tag', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: `Bimal found the replay on Sunday evening. He wanted to watch the US Open match before anyone spoiled it. The shop was quiet.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('SPORTS_REPLAY_CHRONOLOGY');
+    });
+
+    it('124. SPORTS_REPLAY_CHRONOLOGY — passes when replay is on Tuesday after a Monday match', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: `Bimal found the replay a little after midnight on Tuesday. The US Open match had been played Monday afternoon New York time. The neighbourhood had already seen it on their phones.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('SPORTS_REPLAY_CHRONOLOGY');
+    });
+
+    // Rule 125: SPORTS_POINT_DETAIL_GATE
+    it('125. SPORTS_POINT_DETAIL_GATE — flags unsupported intra-game claim', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Match Story',
+        content: `Potapova was going to break serve in the fourth game. He knew this now and watched her do it.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('SPORTS_POINT_DETAIL_GATE');
+    });
+
+    it('125. SPORTS_POINT_DETAIL_GATE — passes with set-level description only', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Match Story',
+        content: `Bimal now knew that Andreeva would eventually take the second set 6–4. He watched the first rally anyway.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('SPORTS_POINT_DETAIL_GATE');
+    });
+
+    // Rule 126: REAL_BRAND_UI_INVENTION
+    it('126. REAL_BRAND_UI_INVENTION — flags invented ESPN ticker format description', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Match Story',
+        content: `The crawl that ESPN runs continuously along the bottom of the screen displayed the result in white capitals.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('REAL_BRAND_UI_INVENTION');
+    });
+
+    it('126. REAL_BRAND_UI_INVENTION — passes with generic fictional interface', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Match Story',
+        content: `A results crawl appeared along the bottom of the sports channel. Pradeep saw it first.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('REAL_BRAND_UI_INVENTION');
+    });
+
+    // Rule 127: THEME_ALREADY_DRAMATIZED_FAIL
+    it('127. THEME_ALREADY_DRAMATIZED_FAIL — flags post-climax philosophical gloss', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Corner Shop',
+        content: `He switched off the television. He was not sure what that meant about replays and information and delay. The room was quiet.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('THEME_ALREADY_DRAMATIZED_FAIL');
+    });
+
+    it('127. THEME_ALREADY_DRAMATIZED_FAIL — passes when ending is behavioral with no restatement', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Corner Shop',
+        content: `He reached over and switched off the cable box. On his phone, the unopened score notification was still waiting.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('THEME_ALREADY_DRAMATIZED_FAIL');
+    });
+
+    // Rule 128: DEVANSH_SUCCESS_PATTERN
+    it('128. DEVANSH_SUCCESS_PATTERN — flags behavioral consequence followed by philosophical monologue', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Corner Shop',
+        content: `Bimal decided to turn off the screen. He was not sure what that meant for information and experience and the distance between the two. He was quiet for a long time.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('DEVANSH_SUCCESS_PATTERN');
+    });
+
+    it('128. DEVANSH_SUCCESS_PATTERN — passes with behavioral consequence and no philosophical monologue', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Corner Shop',
+        content: `Bimal reached over and switched off the cable box. Pradeep let himself out. The notification on the phone was still unread.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('DEVANSH_SUCCESS_PATTERN');
+    });
+
+    // Full repaired calibrated draft passes all rules
+    it('Calibrated repaired draft passes all Devansh rules (86/100 → approved story)', () => {
+      const repairedStory = `# The Second Set at the Corner Shop
+
+Bimal found the replay a little after midnight on Tuesday. He had missed the match live — he had been unloading delivery crates all Monday afternoon — and by the time he sat down with the cable box, the whole neighbourhood had already seen it on their phones.
+
+He knew this about the neighbourhood. He locked the front shutter to three-quarters closed and turned the set on.
+
+The first customer arrived at twelve forty. Shankar from the chemist's, who still wore his work shirt.
+
+"Andreeva won," Shankar said, by way of greeting.
+
+"You are not coming in," Bimal said.
+
+Shankar looked at the gap in the shutter. "I can see the screen from here."
+
+"The screen is not for you. Go home."
+
+Shankar stayed at the gap. "She took the second set 6–4 after Potapova—"
+
+"Stop." Bimal moved a plastic crate in front of the shutter gap. The crate made it worse. Shankar simply stepped to the left.
+
+"Potapova injured her knee late in the third," Shankar said. "Andreeva went around the net to—"
+
+Bimal turned the volume to maximum.
+
+The second customer arrived at one fifteen. His name was Pradeep and he had seen the score on his phone on the way back from the pharmacy. He had not seen the match itself, only the result, so he said he was neutral.
+
+"Neutral means you don't know things I don't know," Bimal said.
+
+"I only know who won."
+
+"That is the only thing I don't want to know."
+
+Pradeep considered this. "So you want to watch a match knowing that uncertainty is false?"
+
+"I want to watch a match."
+
+Pradeep sat down. He was quiet for four minutes. The screen showed the first set. Potapova taking it 7–5. The shop was quiet in the way that only replays are quiet — the crowd noise real, the tension borrowed, the result already written somewhere in everyone's pocket.
+
+A results crawl appeared along the bottom of the sports channel. Pradeep saw it first. He looked at Bimal. Bimal was watching the match, not the crawl.
+
+Then Bimal saw it: ANDREEVA def. POTAPOVA 5–7, 6–4, 6–3.
+
+The second set was beginning on screen. Bimal now knew that Andreeva would eventually take it 6–4. He watched the first rally anyway. The information and the event arrived in the same frame. For thirty seconds he watched knowing, and the experience was identical in every visible way to the thirty seconds before — and entirely different in the one way that mattered.
+
+He reached over and switched off the cable box.
+
+"That's it?" Pradeep said.
+
+"That's it," Bimal said.
+
+On Bimal's phone, the unopened score notification was still waiting.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: repairedStory,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+
+      expect(res.violations, `Expected no violations but got: ${JSON.stringify(res.violations)}`).toEqual([]);
+      expect(res.isValid).toBe(true);
+    });
   });
 });
 
 
+describe('Zero AI Slop Engine — Suite 33 (Devansh Roy, Rules 124–128)', () => {
+  describe('33. THINK BRAIN RULES 124–128: REPLAY CHRONOLOGY, POINT DETAIL GATE, BRAND UI INVENTION, THEME RESTATEMENT & DEVANSH SUCCESS PATTERN', () => {
+    // Rules 124-128 derived from the 86/100 editorial review of "The Second Set at the Corner Shop"
 
+    it('118. SPORTS_VIEWING_TIME_BINDING — flags 4am Kolkata with live score updates and no replay tag', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: `It is 4:00 a.m. in Kolkata. Bimal watches the screen. The score updates. Andreeva takes the US Open second set.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('SPORTS_VIEWING_TIME_BINDING');
+    });
 
+    it('118. SPORTS_VIEWING_TIME_BINDING — passes when replay is explicitly established', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: `Bimal found the replay at 4:00 a.m. in Kolkata. He had missed it live. He did not want to know the score. He wanted to watch it not knowing. Someone already knew. That was the problem.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('SPORTS_VIEWING_TIME_BINDING');
+    });
+
+    // Rule 119: SPORT_SURFACE_REALISM
+    it('119. SPORT_SURFACE_REALISM — flags clay dust on a US Open hard court scene', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'US Open Night',
+        content: `She hits the line at the US Open. The dust kicks up. The crowd gasps.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('SPORT_SURFACE_REALISM');
+    });
+
+    it('119. SPORT_SURFACE_REALISM — passes without clay-surface details on a US Open scene', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'US Open Night',
+        content: `She hits the line at the US Open. The ball skids low and stays. The crowd gasps. No one moved.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('SPORT_SURFACE_REALISM');
+    });
+
+    // Rule 121: DEVANSH_PROP_COOLDOWN
+    it('121. DEVANSH_PROP_COOLDOWN — flags 3+ recurring Kolkata corner-shop props', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Corner Shop',
+        content: `The tram tracks glistened. The ceiling fan wobbled overhead. Bimal set down the cold tea in a clay cup. The chipped rim held the heat.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('DEVANSH_PROP_COOLDOWN');
+    });
+
+    it('121. DEVANSH_PROP_COOLDOWN — passes with a fresh spatial context', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Replay',
+        content: `Bimal had found a plastic chair near the door. The television was bolted high on the wall, a cable running crooked to the dish on the roof. He had seen this before — the match already decided, the score already somewhere in his phone — but he refused to look. He wanted the replay to remain a question for ten more minutes. Then Rakesh walked in.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('DEVANSH_PROP_COOLDOWN');
+    });
+
+    // Rule 122: DEVANSH_LENS_ENFORCEMENT
+    it('122. DEVANSH_LENS_ENFORCEMENT — flags a Devansh story with no transmission conflict', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Corner Shop',
+        content: `Bimal watched the television. The fan turned slowly. He poured tea. Outside, the street was quiet. He turned the television off. The silence was louder than the match had been.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('DEVANSH_LENS_ENFORCEMENT');
+    });
+
+    it('122. DEVANSH_LENS_ENFORCEMENT — passes when transmission conflict is present', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Replay',
+        content: `Bimal did not want anyone to spoil it. He had already forbidden Rakesh from saying the result. The notification was already on his phone — he had seen the preview before swiping it away. But he had not opened it. He wanted to watch the second set not knowing.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('DEVANSH_LENS_ENFORCEMENT');
+    });
+
+    // Rule 123: SHORT_STORY_VIGNETTE_FAIL
+    it('123. SHORT_STORY_VIGNETTE_FAIL — flags a short vignette with no desire or conflict', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Night Scene',
+        content: `He sat in the dim room. The television flickered. Outside it rained. He finished his tea and turned off the light. The city was quiet and enormous.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('SHORT_STORY_VIGNETTE_FAIL');
+    });
+
+    it('123. SHORT_STORY_VIGNETTE_FAIL — passes when story has want and conflict', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: `Bimal forbade anyone from saying the score. Rakesh refused to agree. The argument started quietly and grew until the notification flashed on the screen ticker and everyone in the shop saw it at once. Bimal decided then: he switched off the television. That was the end of the argument and the end of the replay.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('SHORT_STORY_VIGNETTE_FAIL');
+    });
+
+    // Rule 124: SPORTS_REPLAY_CHRONOLOGY
+    it('124. SPORTS_REPLAY_CHRONOLOGY — flags Sunday replay of a Monday US Open match', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: `Bimal found the replay on Sunday evening. He wanted to watch the US Open match. The shop was quiet.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('SPORTS_REPLAY_CHRONOLOGY');
+    });
+
+    it('124. SPORTS_REPLAY_CHRONOLOGY — passes when replay is on Tuesday after a Monday match', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: `Bimal found the replay a little after midnight on Tuesday. The US Open match had been played Monday. The neighbourhood had already seen it on their phones.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('SPORTS_REPLAY_CHRONOLOGY');
+    });
+
+    // Rule 125: SPORTS_POINT_DETAIL_GATE
+    it('125. SPORTS_POINT_DETAIL_GATE — flags unsupported intra-game claim', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Match Story',
+        content: `Potapova was going to break serve in the fourth game. He knew this now and watched her do it.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('SPORTS_POINT_DETAIL_GATE');
+    });
+
+    it('125. SPORTS_POINT_DETAIL_GATE — passes with set-level description only', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Match Story',
+        content: `Bimal now knew that Andreeva would eventually take the second set 6–4. He watched the first rally anyway.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('SPORTS_POINT_DETAIL_GATE');
+    });
+
+    // Rule 126: REAL_BRAND_UI_INVENTION
+    it('126. REAL_BRAND_UI_INVENTION — flags invented ESPN ticker format description', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Match Story',
+        content: `The crawl that ESPN runs continuously along the bottom of the screen displayed the result in white capitals.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('REAL_BRAND_UI_INVENTION');
+    });
+
+    it('126. REAL_BRAND_UI_INVENTION — passes with generic fictional interface', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Match Story',
+        content: `A results crawl appeared along the bottom of the sports channel. Pradeep saw it first.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('REAL_BRAND_UI_INVENTION');
+    });
+
+    // Rule 127: THEME_ALREADY_DRAMATIZED_FAIL
+    it('127. THEME_ALREADY_DRAMATIZED_FAIL — flags post-climax philosophical gloss', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Corner Shop',
+        content: `He switched off the television. He was not sure what that meant about replays and information and delay. The room was quiet.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('THEME_ALREADY_DRAMATIZED_FAIL');
+    });
+
+    it('127. THEME_ALREADY_DRAMATIZED_FAIL — passes when ending is behavioral with no restatement', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Corner Shop',
+        content: `He reached over and switched off the cable box. On his phone, the unopened score notification was still waiting.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('THEME_ALREADY_DRAMATIZED_FAIL');
+    });
+
+    // Rule 128: DEVANSH_SUCCESS_PATTERN
+    it('128. DEVANSH_SUCCESS_PATTERN — flags behavioral consequence followed by philosophical monologue', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Corner Shop',
+        content: `Bimal decided to turn off the screen. He was not sure what that meant for information and experience and the distance between the two.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('DEVANSH_SUCCESS_PATTERN');
+    });
+
+    it('128. DEVANSH_SUCCESS_PATTERN — passes with behavioral consequence and no philosophical monologue', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Corner Shop',
+        content: `Bimal reached over and switched off the cable box. Pradeep let himself out. The notification on the phone was still unread.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('DEVANSH_SUCCESS_PATTERN');
+    });
+
+    // Calibrated repaired story (86/100 micro-repairs applied) passes all rules
+    it('Calibrated repaired story passes all rules 118–128', () => {
+      const repairedStory = `# The Second Set at the Corner Shop
+
+Bimal found the replay a little after midnight on Tuesday. He had missed the match live — he had been unloading delivery crates all Monday afternoon — and by the time he sat down with the cable box, the whole neighbourhood had already seen it on their phones.
+
+He knew this about the neighbourhood. He locked the front shutter to three-quarters closed and turned the set on.
+
+The first customer arrived at twelve forty. Shankar from the chemist's, who still wore his work shirt.
+
+"Andreeva won," Shankar said, by way of greeting.
+
+"You are not coming in," Bimal said.
+
+Shankar looked at the gap in the shutter. "I can see the screen from here."
+
+"The screen is not for you. Go home."
+
+Shankar stayed at the gap. "She took the second set 6–4 after Potapova—"
+
+"Stop." Bimal moved a plastic crate in front of the shutter gap. The crate made it worse. Shankar simply stepped to the left.
+
+"Potapova injured her knee late in the third," Shankar said. "Andreeva went around the net to—"
+
+Bimal turned the volume to maximum.
+
+The second customer arrived at one fifteen. His name was Pradeep and he had seen the score on his phone on the way back from the pharmacy. He had not seen the match itself, only the result, so he said he was neutral.
+
+"Neutral means you don't know things I don't know," Bimal said.
+
+"I only know who won."
+
+"That is the only thing I don't want to know."
+
+Pradeep considered this. "So you want to watch a match knowing that uncertainty is false?"
+
+"I want to watch a match."
+
+Pradeep sat down. He was quiet for four minutes. The screen showed the first set. Potapova taking it 7–5. The shop was quiet in the way that only replays are quiet — the crowd noise real, the tension borrowed, the result already written somewhere in everyone's pocket.
+
+A results crawl appeared along the bottom of the sports channel. Pradeep saw it first. He looked at Bimal. Bimal was watching the match, not the crawl.
+
+Then Bimal saw it: ANDREEVA def. POTAPOVA 5–7, 6–4, 6–3.
+
+The second set was beginning on screen. Bimal now knew that Andreeva would eventually take it 6–4. He watched the first rally anyway. The information and the event arrived in the same frame. For thirty seconds he watched knowing, and the experience was identical in every visible way to the thirty seconds before — and entirely different in the one way that mattered.
+
+He reached over and switched off the cable box.
+
+"That's it?" Pradeep said.
+
+"That's it," Bimal said.
+
+On Bimal's phone, the unopened score notification was still waiting.`;
+
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: repairedStory,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+
+      expect(res.violations, `Expected no violations but got: ${JSON.stringify(res.violations)}`).toEqual([]);
+      expect(res.isValid).toBe(true);
+    });
+  }); // closes Suite 33 inner describe
+}); // closes Suite 33 outer describe

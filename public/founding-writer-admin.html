@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Founding Writer administration · WritOn</title>
+  <style>
+    :root{color-scheme:light;--paper:#faf5ee;--ink:#2d2722;--muted:#74685e;--brand:#e75a2a;--line:#dfd3c6}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 system-ui,sans-serif}main{width:min(960px,calc(100% - 32px));margin:40px auto}h1{font:600 38px Georgia,serif;margin-bottom:8px}.note{color:var(--muted);max-width:720px}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;margin:24px 0}label{display:block;font-weight:650;margin:12px 0 5px}input,textarea,button{font:inherit}input,textarea{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;background:#fff}button{margin-top:16px;padding:11px 18px;border:0;border-radius:999px;background:var(--brand);color:#fff;font-weight:750;cursor:pointer}button:disabled{opacity:.6}.status{min-height:24px;margin-top:12px;color:var(--muted)}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:top}th{font-size:13px;color:var(--muted)}code{font-size:13px}@media(max-width:650px){table{display:block;overflow:auto}}
+  </style>
+</head>
+<body><main>
+  <h1>Founding Writers</h1>
+  <p class="note">Manual assignment only. Numbers are permanent, cannot be recycled, and are never populated from the general eligibility list. The admin secret stays in this page's memory and is not saved.</p>
+  <section class="panel">
+    <label for="api">Google Cloud API base</label><input id="api" value="https://api.writon.cc">
+    <label for="key">Admin secret</label><input id="key" type="password" autocomplete="off">
+    <label for="actor">Operator label</label><input id="actor" autocomplete="off" placeholder="owner">
+    <button id="load">Load assignments</button><div id="loadStatus" class="status" role="status"></div>
+  </section>
+  <section class="panel">
+    <h2>Assign a permanent number</h2>
+    <form id="assign">
+      <label for="profile">Profile UUID</label><input id="profile" required>
+      <label for="number">Number (1–250)</label><input id="number" type="number" min="1" max="250" required>
+      <label for="reason">Reason</label><textarea id="reason" minlength="3" maxlength="500" required></textarea>
+      <button>Assign permanently</button><div id="assignStatus" class="status" role="status"></div>
+    </form>
+  </section>
+  <section class="panel"><h2>Assignment ledger</h2><table><thead><tr><th>#</th><th>Writer</th><th>Operator</th><th>Reason</th><th>Assigned</th></tr></thead><tbody id="rows"></tbody></table></section>
+</main><script>
+const $=id=>document.getElementById(id);const headers=()=>({'content-type':'application/json','x-admin-key':$('key').value,'x-admin-actor':$('actor').value});
+async function request(path,options={}){const response=await fetch($('api').value.replace(/\/$/,'')+path,{...options,headers:{...headers(),...(options.headers||{})}});const body=await response.json().catch(()=>({}));if(!response.ok)throw new Error(body.error||`Request failed (${response.status})`);return body}
+async function load(){const status=$('loadStatus');status.textContent='Loading…';try{const data=await request('/api/v1/admin/founding-writers');$('rows').replaceChildren(...data.founders.map(f=>{const row=document.createElement('tr');[String(f.foundingWriterNumber).padStart(3,'0'),`${f.displayName} (@${f.penName})`,f.assignedBy,f.assignmentReason,new Date(f.assignedAt).toLocaleString()].forEach(value=>{const cell=document.createElement('td');cell.textContent=value;row.append(cell)});return row}));status.textContent=`${data.total} of 250 assigned.`}catch(error){status.textContent=error.message}}
+$('load').addEventListener('click',load);$('assign').addEventListener('submit',async event=>{event.preventDefault();const status=$('assignStatus');if(!confirm('This number is permanent and cannot be recycled. Assign it now?'))return;status.textContent='Assigning…';try{await request('/api/v1/admin/founding-writers/assign',{method:'POST',body:JSON.stringify({profileId:$('profile').value.trim(),foundingWriterNumber:Number($('number').value),reason:$('reason').value.trim()})});status.textContent='Assigned and recorded in the immutable ledger.';await load()}catch(error){status.textContent=error.message}});
+</script></body></html>

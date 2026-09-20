@@ -19,7 +19,7 @@ import com.ibitvalley.writon.modern.core.database.model.UserEntity
 
 @Database(
     entities = [PostEntity::class, UserEntity::class, OutboxMutationEntity::class, CommentEntity::class, DraftEntity::class],
-    version = 2,
+    version = 6,
     exportSchema = true
 )
 abstract class WritOnDatabase : RoomDatabase() {
@@ -41,7 +41,7 @@ abstract class WritOnDatabase : RoomDatabase() {
                     WritOnDatabase::class.java,
                     "writon_modern.db"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                     .fallbackToDestructiveMigrationOnDowngrade()
                     .build()
                 INSTANCE = instance
@@ -68,6 +68,40 @@ abstract class WritOnDatabase : RoomDatabase() {
                         lastError TEXT
                     )""".trimIndent()
                 )
+            }
+        }
+
+        internal val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL(
+                    "ALTER TABLE posts ADD COLUMN languageCode TEXT NOT NULL DEFAULT 'und'"
+                )
+            }
+        }
+
+        internal val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Ownership of existing drafts cannot be proven. Retain them for a future
+                // explicit recovery flow, but never expose or upload them under an account.
+                database.execSQL(
+                    "ALTER TABLE drafts ADD COLUMN ownerKey TEXT NOT NULL DEFAULT 'legacy_unclaimed'"
+                )
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_drafts_ownerKey ON drafts(ownerKey)")
+            }
+        }
+
+        internal val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE posts ADD COLUMN contentUpdatedAt TEXT")
+                database.execSQL("ALTER TABLE comments ADD COLUMN updatedAt TEXT")
+                database.execSQL("ALTER TABLE comments ADD COLUMN isMine INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        internal val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE comments ADD COLUMN authorFoundingWriterNumber INTEGER")
+                database.execSQL("ALTER TABLE comments ADD COLUMN authorEmailVerified INTEGER NOT NULL DEFAULT 0")
             }
         }
     }

@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import {
   getBotsList,
@@ -49,6 +50,17 @@ import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from '../bot-eng
 import { getLiveDailyTrends, seedDailyTrendsToBacklog } from '../bot-engine/trend-scout-service.js';
 import { runMasterSchedulerTick } from '../bot-engine/master-scheduler.js';
 import { processOutboxEvents } from '../bot-engine/outbox-service.js';
+import { auditTextQuality } from '../services/human-voice-prompt.js';
+import {
+  computeBrainHash,
+  evaluateBlockers,
+  evaluateRepetition,
+  generateDraftsFromInsight,
+  dispatchCandidateVersion,
+  REPETITION_ENGINE_VERSION,
+  BLOCKER_ENGINE_VERSION
+} from '../services/x-bot-service.js';
+import { loadEditorialBrain } from '../services/editorial-brain.js';
 
 const botUpdateSchema = z.object({
   isActive: z.boolean().optional(),
@@ -723,6 +735,27 @@ export async function adminBotsRoutes(fastify, options) {
       instructions: 'Run this Python script inside Gemini Spark task automation or any recurring cron runner.'
     };
   });
+
+  // Human Voice Linter Endpoint — accessible globally for bots, scripts, webhooks, or cloud services
+  fastify.post('/api/v1/spark/lint-voice', async (request, reply) => {
+    const { text, content } = request.body || {};
+    const candidate = text || content;
+    if (!candidate || typeof candidate !== 'string') {
+      return reply.code(400).send({
+        error: 'Missing required field "text" or "content" in request body.'
+      });
+    }
+    const audit = auditTextQuality(candidate);
+    return reply.code(200).send({
+      success: true,
+      humanityScore: audit.score,
+      passed: audit.passed,
+      status: audit.passed ? 'PASS' : 'FLAGGED',
+      stats: audit.stats,
+      issues: audit.issues
+    });
+  });
+
   // Dedicated Single-Story Publishing Endpoint for ChatGPT Actions & Webhooks (100% Unauthenticated)
   fastify.post('/api/v1/spark/publish', async (request, reply) => {
     const raw = request.body || {};
@@ -1071,6 +1104,523 @@ export async function adminBotsRoutes(fastify, options) {
     }
   });
 
+  // =========================================================================
+  // X BOT DEDICATED BRAIN-GOVERNED ENDPOINTS
+  // =========================================================================
+
+  // 1. Brain Constitution & Bot Status
+  fastify.get('/api/v1/x-bot/brain-status', async (request, reply) => {
+    try {
+      const brain = loadEditorialBrain();
+      const brainHash = computeBrainHash();
+      return {
+        brain_version: brain.schema_version || '1.0.0',
+        brain_hash: brainHash,
+        last_updated: brain.last_updated,
+        insights_count: (brain.insights || []).length,
+        archetypes: Object.keys(brain.proposition_archetypes || {}),
+        blocker_engine_version: BLOCKER_ENGINE_VERSION,
+        repetition_engine_version: REPETITION_ENGINE_VERSION,
+      };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 2. High-Level X Bot Operational Overview
+  fastify.get('/api/v1/x-bot/overview', async (request, reply) => {
+    try {
+      const brain = loadEditorialBrain();
+      const brainHash = computeBrainHash();
+
+      let activeCandidates = 0;
+      let approvedCandidates = 0;
+      let reconciliationCount = 0;
+      let totalDispatches = 0;
+      let lastDispatch = null;
+      let recentDispatches = [];
+
+      try {
+        const countsRes = await pool.query(`
+          select
+            count(*) filter (where status in ('drafted', 'evaluating'))::int as "activeCount",
+            count(*) filter (where status = 'approved')::int as "approvedCount",
+            count(*) filter (where status = 'reconciliation_required')::int as "reconciliationCount"
+          from public.x_bot_candidate_versions
+        `);
+        if (countsRes.rowCount > 0) {
+          activeCandidates = countsRes.rows[0].activeCount || 0;
+          approvedCandidates = countsRes.rows[0].approvedCount || 0;
+          reconciliationCount = countsRes.rows[0].reconciliationCount || 0;
+        }
+
+        const dispRes = await pool.query(`
+          select id, candidate_id, candidate_version, published_root_text, published_reply_text,
+                 status, dispatched_at, error_message
+          from public.x_bot_dispatches
+          order by dispatched_at desc
+          limit 10
+        `);
+        recentDispatches = dispRes.rows;
+        totalDispatches = dispRes.rowCount;
+        lastDispatch = recentDispatches[0] || null;
+      } catch {
+        // Fallback gracefully if DB tables haven't been seeded yet
+      }
+
+      // Next eligible window check (minimum 2h channel cooldown)
+      let channelCooldownHours = 0;
+      let isChannelEligible = true;
+      if (lastDispatch && lastDispatch.status === 'succeeded') {
+        const hoursAgo = (Date.now() - new Date(lastDispatch.dispatched_at).getTime()) / (3600 * 1000);
+        if (hoursAgo < 2.0) {
+          channelCooldownHours = Number((2.0 - hoursAgo).toFixed(1));
+          isChannelEligible = false;
+        }
+      }
+
+      return {
+        brain_version: brain.schema_version || '1.0.0',
+        brain_hash: brainHash,
+        insights_count: (brain.insights || []).length,
+        channel_eligible: isChannelEligible,
+        cooldown_hours_remaining: channelCooldownHours,
+        stats: {
+          activeCandidates,
+          approvedCandidates,
+          reconciliationCount,
+          totalDispatches,
+          lastDispatchAt: lastDispatch?.dispatched_at || null,
+        },
+        recentDispatches,
+      };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 3. List Candidates with Immutable Versions
+  fastify.get('/api/v1/x-bot/candidates', async (request, reply) => {
+    try {
+      const statusFilter = request.query?.status || null;
+      let query = `
+        select c.id, c.insight_id, c.active_draft_version,
+               v.version, v.brain_version, v.brain_hash, v.proposition, v.hook_type,
+               v.text, v.reply_text, v.status, v.provenance, v.evidence_bundle,
+               v.created_at, v.approved_at, v.scheduled_for, v.autonomous_allowed
+        from public.x_bot_candidates c
+        inner join public.x_bot_candidate_versions v
+          on v.candidate_id = c.id and v.version = c.active_draft_version
+      `;
+      const params = [];
+      if (statusFilter && statusFilter !== 'all') {
+        query += ` where v.status = $1`;
+        params.push(statusFilter);
+      }
+      query += ` order by v.created_at desc limit 50`;
+
+      const result = await pool.query(query, params);
+      return { candidates: result.rows };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 4. Generate Fresh X-Native Candidates from Editorial Brain
+  fastify.post('/api/v1/x-bot/candidates/generate', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    try {
+      const brain = loadEditorialBrain();
+      const brainHash = computeBrainHash();
+      const generated = [];
+
+      // Query format matching x_root_tweet
+      const targetInsights = (brain.insights || []).filter(i =>
+        i.provenance?.cross_platform_formats?.includes('x_root_tweet')
+      );
+
+      for (const insight of targetInsights.slice(0, 5)) {
+        const drafts = generateDraftsFromInsight(insight, brainHash);
+        for (const draft of drafts) {
+          const candId = `xc_${insight.id.slice(0, 16)}_${draft.hook_type.slice(0, 4)}_${Date.now().toString(36).slice(-4)}`;
+
+          await pool.query(
+            `insert into public.x_bot_candidates (id, insight_id, active_draft_version)
+             values ($1, $2, 1)
+             on conflict (id) do nothing`,
+            [candId, insight.id]
+          );
+
+          await pool.query(
+            `insert into public.x_bot_candidate_versions
+               (candidate_id, version, brain_version, brain_hash, proposition, hook_type, text, reply_text, status, provenance, evidence_bundle, source_snapshot_hash)
+             values ($1, 1, $2, $3, $4, $5, $6, $7, 'drafted', $8, $9, $10)
+             on conflict do nothing`,
+            [
+              candId,
+              brain.schema_version || '1.0.0',
+              brainHash,
+              draft.proposition,
+              draft.hook_type,
+              draft.text,
+              draft.reply_text || null,
+              JSON.stringify({ type: 'editorial_brain', source_id: insight.id }),
+              JSON.stringify(draft.evidence_bundle),
+              draft.source_snapshot_hash
+            ]
+          );
+
+          generated.push({ id: candId, version: 1, proposition: draft.proposition, hook_type: draft.hook_type, text: draft.text });
+        }
+      }
+
+      return reply.code(201).send({ success: true, count: generated.length, generated });
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 5. Direct Operator Compose (Zero Immunity: passes exact 31 blockers)
+  fastify.post('/api/v1/x-bot/candidates/compose', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const { text, reply_text, proposition, hook_type, evidence_bundle } = request.body || {};
+    if (!text || typeof text !== 'string') {
+      return reply.code(400).send({ error: 'Field "text" is required' });
+    }
+
+    try {
+      const brain = loadEditorialBrain();
+      const brainHash = computeBrainHash();
+      const candId = `xc_op_${Date.now().toString(36)}_${randomUUID().slice(0, 4)}`;
+
+      const draft = {
+        text: text.trim(),
+        reply_text: (reply_text || '').trim(),
+        proposition: proposition || text.slice(0, 60),
+        hook_type: hook_type || 'craft_truth',
+        evidence_bundle: evidence_bundle || {
+          source_type: 'operator_workbench',
+          checked_at: new Date().toISOString(),
+          claims: [{ claim: text, verification: 'operator_craft_input' }]
+        },
+        brain_hash: brainHash
+      };
+
+      // Run 31 blockers
+      const validation = evaluateBlockers(draft, { currentBrainHash: brainHash });
+
+      await pool.query(
+        `insert into public.x_bot_candidates (id, insight_id, active_draft_version)
+         values ($1, null, 1)`,
+        [candId]
+      );
+
+      await pool.query(
+        `insert into public.x_bot_candidate_versions
+           (candidate_id, version, brain_version, brain_hash, proposition, hook_type, text, reply_text, status, provenance, evidence_bundle, source_snapshot_hash)
+         values ($1, 1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+        [
+          candId,
+          brain.schema_version || '1.0.0',
+          brainHash,
+          draft.proposition,
+          draft.hook_type,
+          draft.text,
+          draft.reply_text || null,
+          validation.passed ? 'drafted' : 'rejected',
+          JSON.stringify({ type: 'operator', created_by: request.user?.email || 'operator' }),
+          JSON.stringify(draft.evidence_bundle),
+          computeTextHash(draft.text)
+        ]
+      );
+
+      // Record validation run
+      await pool.query(
+        `insert into public.x_bot_validation_runs
+           (candidate_id, draft_version, trigger, brain_version, brain_hash, results, repetition_analysis, passed)
+         values ($1, 1, 'manual_validation', $2, $3, $4, $5, $6)`,
+        [
+          candId,
+          brain.schema_version || '1.0.0',
+          brainHash,
+          JSON.stringify(validation.results),
+          JSON.stringify(validation.repetition_analysis),
+          validation.passed
+        ]
+      );
+
+      return reply.code(201).send({
+        success: true,
+        candidateId: candId,
+        version: 1,
+        validation
+      });
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 6. Edit Candidate (Creates Immutable vN+1)
+  fastify.post('/api/v1/x-bot/candidates/:id/edit', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const { id } = request.params;
+    const { text, reply_text, proposition, hook_type, evidence_bundle } = request.body || {};
+
+    try {
+      const brain = loadEditorialBrain();
+      const brainHash = computeBrainHash();
+
+      const candRes = await pool.query(`select * from public.x_bot_candidates where id = $1`, [id]);
+      if (candRes.rowCount === 0) {
+        return reply.code(404).send({ error: 'Candidate not found' });
+      }
+
+      const nextVersion = candRes.rows[0].active_draft_version + 1;
+      const cleanText = text ? text.trim() : '';
+
+      const draft = {
+        text: cleanText,
+        reply_text: (reply_text || '').trim(),
+        proposition: proposition || cleanText.slice(0, 60),
+        hook_type: hook_type || 'craft_truth',
+        evidence_bundle: evidence_bundle || { source_type: 'operator_edit', checked_at: new Date().toISOString() },
+        brain_hash: brainHash
+      };
+
+      const validation = evaluateBlockers(draft, { currentBrainHash: brainHash });
+
+      await pool.query(
+        `insert into public.x_bot_candidate_versions
+           (candidate_id, version, brain_version, brain_hash, proposition, hook_type, text, reply_text, status, provenance, evidence_bundle, source_snapshot_hash)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, 'drafted', $9, $10, $11)`,
+        [
+          id,
+          nextVersion,
+          brain.schema_version || '1.0.0',
+          brainHash,
+          draft.proposition,
+          draft.hook_type,
+          draft.text,
+          draft.reply_text || null,
+          JSON.stringify({ type: 'operator', edited_by: request.user?.email || 'operator' }),
+          JSON.stringify(draft.evidence_bundle),
+          computeTextHash(draft.text)
+        ]
+      );
+
+      await pool.query(`update public.x_bot_candidates set active_draft_version = $2, updated_at = now() where id = $1`, [
+        id,
+        nextVersion
+      ]);
+
+      return reply.code(201).send({
+        success: true,
+        candidateId: id,
+        newVersion: nextVersion,
+        validation
+      });
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 7. Validate Candidate Version
+  fastify.post('/api/v1/x-bot/candidates/:id/validate', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const { id } = request.params;
+    const version = Number(request.body?.version || 1);
+
+    try {
+      const vRes = await pool.query(
+        `select * from public.x_bot_candidate_versions where candidate_id = $1 and version = $2`,
+        [id, version]
+      );
+      if (vRes.rowCount === 0) return reply.code(404).send({ error: 'Candidate version not found' });
+
+      const candidateRow = vRes.rows[0];
+      const currentBrainHash = computeBrainHash();
+      const recentDispatchesRes = await pool.query(
+        `select * from public.x_bot_dispatches where status = 'succeeded' order by dispatched_at desc limit 20`
+      );
+
+      const validation = evaluateBlockers(candidateRow, {
+        currentBrainHash,
+        recentDispatches: recentDispatchesRes.rows,
+      });
+
+      await pool.query(
+        `insert into public.x_bot_validation_runs
+           (candidate_id, draft_version, trigger, brain_version, brain_hash, results, repetition_analysis, passed)
+         values ($1, $2, 'manual_validation', $3, $4, $5, $6, $7)`,
+        [
+          id,
+          version,
+          validation.brain_version,
+          currentBrainHash,
+          JSON.stringify(validation.results),
+          JSON.stringify(validation.repetition_analysis),
+          validation.passed
+        ]
+      );
+
+      return { success: true, validation };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 8. Approve Candidate Version (Freezes immutable revision)
+  fastify.post('/api/v1/x-bot/candidates/:id/approve', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const { id } = request.params;
+    const version = Number(request.body?.version || 1);
+
+    try {
+      const vRes = await pool.query(
+        `select * from public.x_bot_candidate_versions where candidate_id = $1 and version = $2`,
+        [id, version]
+      );
+      if (vRes.rowCount === 0) return reply.code(404).send({ error: 'Candidate version not found' });
+
+      const candidateRow = vRes.rows[0];
+      const currentBrainHash = computeBrainHash();
+
+      // Ensure blockers pass before approving
+      const validation = evaluateBlockers(candidateRow, { currentBrainHash });
+      if (!validation.passed) {
+        return reply.code(400).send({ error: 'Cannot approve candidate: quality blockers failed', validation });
+      }
+
+      await pool.query(
+        `update public.x_bot_candidate_versions
+           set status = 'approved', approved_at = now(), approved_by = $3
+         where candidate_id = $1 and version = $2`,
+        [id, version, request.user?.email || 'operator']
+      );
+
+      await pool.query(
+        `insert into public.x_bot_activity_ledger (candidate_id, event_type, details)
+         values ($1, 'candidate_approved', $2)`,
+        [id, JSON.stringify({ version, approved_by: request.user?.email || 'operator' })]
+      );
+
+      return { success: true, candidateId: id, version, status: 'approved' };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 9. Dry Run Candidate Version
+  fastify.post('/api/v1/x-bot/candidates/:id/dry-run', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const { id } = request.params;
+    const version = Number(request.body?.version || 1);
+
+    try {
+      const outcome = await dispatchCandidateVersion(pool, id, version, { dryRun: true, log: fastify.log });
+      return reply.code(outcome.success ? 200 : 400).send(outcome);
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 10. Atomic Idempotent Live Dispatch
+  fastify.post('/api/v1/x-bot/candidates/:id/dispatch', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const { id } = request.params;
+    const version = Number(request.body?.version || 1);
+    const overrideChannelCooldown = Boolean(request.body?.overrideChannelCooldown);
+
+    try {
+      const outcome = await dispatchCandidateVersion(pool, id, version, {
+        dryRun: false,
+        overrideChannelCooldown,
+        log: fastify.log
+      });
+      return reply.code(outcome.success ? 200 : 400).send(outcome);
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 11. Reconcile Unknown Outcome Dispatch (Manual Sentinel Tool)
+  fastify.post('/api/v1/x-bot/dispatches/:id/reconcile', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
+    const { id } = request.params;
+    const { resolution, confirmedTweetId, notes } = request.body || {};
+
+    try {
+      const dispRes = await pool.query(`select * from public.x_bot_dispatches where id = $1`, [id]);
+      if (dispRes.rowCount === 0) return reply.code(404).send({ error: 'Dispatch not found' });
+
+      if (resolution === 'mark_succeeded') {
+        await pool.query(
+          `update public.x_bot_dispatches set status = 'succeeded', completed_at = now() where id = $1`,
+          [id]
+        );
+        await pool.query(
+          `update public.x_bot_candidate_versions set status = 'published'
+           where candidate_id = $1 and version = $2`,
+          [dispRes.rows[0].candidate_id, dispRes.rows[0].candidate_version]
+        );
+        if (confirmedTweetId) {
+          await pool.query(
+            `update public.x_bot_dispatch_items set status = 'published', tweet_id = $2 where dispatch_id = $1 and item_type = 'root'`,
+            [id, confirmedTweetId]
+          );
+        }
+      } else if (resolution === 'mark_failed_retryable') {
+        await pool.query(
+          `update public.x_bot_dispatches set status = 'failed', error_message = $2 where id = $1`,
+          [id, notes || 'Operator marked as failed']
+        );
+        await pool.query(
+          `update public.x_bot_candidate_versions set status = 'approved'
+           where candidate_id = $1 and version = $2`,
+          [dispRes.rows[0].candidate_id, dispRes.rows[0].candidate_version]
+        );
+      }
+
+      await pool.query(
+        `insert into public.x_bot_activity_ledger (candidate_id, event_type, details)
+         values ($1, 'reconciliation_resolved', $2)`,
+        [dispRes.rows[0].candidate_id, JSON.stringify({ dispatchId: id, resolution, confirmedTweetId, notes })]
+      );
+
+      return { success: true, dispatchId: id, resolution };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 12. Activity Ledger Query
+  fastify.get('/api/v1/x-bot/activity', async (request, reply) => {
+    try {
+      const limit = Math.min(100, Math.max(1, parseInt(request.query?.limit, 10) || 30));
+      const res = await pool.query(
+        `select * from public.x_bot_activity_ledger order by created_at desc limit $1`,
+        [limit]
+      );
+      return { count: res.rowCount, ledger: res.rows };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // 13. Published Posts with Items
+  fastify.get('/api/v1/x-bot/posts', async (request, reply) => {
+    try {
+      const res = await pool.query(`
+        select d.id, d.candidate_id, d.candidate_version, d.published_root_text,
+               d.published_reply_text, d.status, d.dispatched_at, d.completed_at,
+               json_agg(json_build_object('type', i.item_type, 'tweetId', i.tweet_id, 'status', i.status)) as items
+        from public.x_bot_dispatches d
+        left join public.x_bot_dispatch_items i on i.dispatch_id = d.id
+        where d.status in ('succeeded', 'outcome_unknown')
+        group by d.id
+        order by d.dispatched_at desc
+        limit 30
+      `);
+      return { posts: res.rows };
+    } catch (err) {
+      return reply.code(500).send({ error: err.message });
+    }
+  });
+
+  // --- EDITORIAL LEDGER & BRIEFING ENDPOINTS ---
+
   // 1. Editorial Briefing (Public GET)
   fastify.get('/api/v1/spark/ledger/briefing', async (request, reply) => {
     try {
@@ -1272,8 +1822,15 @@ export async function adminBotsRoutes(fastify, options) {
   fastify.post('/api/v1/spark/scheduler/tick', { preHandler: requireAdminOrBotSecret }, async (request, reply) => {
     try {
       const outcome = await runMasterSchedulerTick(pool);
-      const outbox = await processOutboxEvents(pool).catch(() => ({ processed: 0, succeeded: 0, failed: 0 }));
-      return reply.code(200).send({ success: true, outcome, outbox });
+      let outbox;
+      try {
+        outbox = await processOutboxEvents(pool);
+      } catch (error) {
+        fastify.log.error(error, 'Scheduler outbox processing failed');
+        outbox = { processed: null, succeeded: null, failed: null, error: 'Outbox processing failed' };
+      }
+      const success = outcome.failed.length === 0 && !outbox.error && outbox.failed === 0;
+      return reply.code(success ? 200 : 503).send({ success, outcome, outbox });
     } catch (error) {
       fastify.log.error(error);
       return reply.code(500).send({ error: 'Scheduler tick failed. Please check server logs.', message: error.message });

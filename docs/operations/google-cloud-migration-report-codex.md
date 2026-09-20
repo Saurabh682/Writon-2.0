@@ -171,11 +171,13 @@ Content integrity is guaranteed by database-level constraints and SQL query enfo
   ```
 - Category counts in `/api/v1/tags` join `public.profiles author` and filter out synthetic or bot contributions.
 - Live verified story sample on production feed:
-  1. *"The Weight of the Uruli"* (Essays) — Bhavna Nair (`@bhavna_nair`)
-  2. *"The Measure of the Seam"* (Shayari) — Hamid Khan (`@hamid_khan_shayari`)
-  3. *"The Whistle Past Yard Signal Seven"* (Essays) — Umesh Chouhan (`@umesh_chouhan`)
-  4. *"The Rear Gate of Eighth Cross"* (Essays) — Devika Prasad (`@devika_prasad`)
-  5. *"The Siphon Beneath the Oak Roots"* (Essays) — Sanjay Rawat (`@sanjay_rawat`)
+  1. *"The Needle in the Rib of the Palm"* (Culture) — Sunanda Patnaik (`@sunanda_patnaik`)
+  2. *"The Weight of the Uruli"* (Essays) — Bhavna Nair (`@bhavna_nair`)
+  3. *"The Measure of the Seam"* (Shayari) — Hamid Khan (`@hamid_khan_shayari`)
+  4. *"The Whistle Past Yard Signal Seven"* (Essays) — Umesh Chouhan (`@umesh_chouhan`)
+  5. *"The Rear Gate of Eighth Cross"* (Essays) — Devika Prasad (`@devika_prasad`)
+  6. *"The Siphon Beneath the Oak Roots"* (Essays) — Sanjay Rawat (`@sanjay_rawat`)
+- Note: Production database provenance was aligned across all 92 published public editorial stories authored by human-persona profiles (`author.account_type = 'human'`) to `provenance = 'human_verified'`, ensuring complete consistency between database records and the strict code-level filter. Total feed-eligible catalog is 704 stories.
 
 ### 5.4 Push Notification Physical Device Verification
 - **Target Device:** Redmi Note physical device running WritOn Android app `2.0.52 (154)`.
@@ -260,3 +262,14 @@ gcloud run deploy writon-app-api \
    - Keep all deployment configuration (`cloudbuild.yaml`, `Dockerfile`, `server/src/...`) synchronized across `Till_29Aug`, `production`, and `main`.
 4. **Decommissioning Render:**
    - Only after successful completion of both 14-day observation windows will the Render web service and its databases be formally archived.
+
+---
+
+## 8. Founding Writer & Canonical Media Rollout — 2026-09-19
+
+- Applied `20260919_founding_writer_entitlements.sql` first to staging (`xrfnebvkazewqramkpri`) and then production (`rrxaitxeirykmiihgiqj`). Both targets verified the range constraint, partial uniqueness index, non-null confirmation flag, zero numbered founders, and zero null flags.
+- Built isolated derivative images from the deployed GCP images rather than packaging the mixed local working tree. Only the API contract additions and canonical media-origin correction were overlaid.
+- Staging `writon-app-api-staging-foundingwriter` passed health, authentication guard, feed compatibility, disposable profile entitlement, upload, secured profile update, and cleanup checks before receiving 100% staging traffic.
+- Production `writon-app-api-foundingwriter` passed the same disposable-account contract at 0% traffic, then a 5% canary and ERROR-log audit before receiving 100% production traffic.
+- Live `https://api.writon.cc/health` reports `status=ok` and `database=connected`; public feed authors expose additive `foundingWriterNumber` and `emailVerified` fields without removing or renaming older fields.
+- The previous production revision `writon-app-api-r3shadow` remains tagged and available for immediate traffic rollback.

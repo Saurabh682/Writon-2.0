@@ -1,11 +1,13 @@
 name: Reddit Autonomous Feed Publisher
 
+# AUTOMATION PAUSED: Scheduled runs are disabled by operator directive.
+# To re-enable, un-comment the schedule trigger below.
 on:
-  schedule:
-    # 03:30 UTC = 09:00 AM IST (Morning Craft Story)
-    - cron: '30 3 * * *'
-    # 12:30 UTC = 06:00 PM IST (Evening Craft Story)
-    - cron: '30 12 * * *'
+  # schedule:
+  #   # 03:30 UTC = 09:00 AM IST (Morning Craft Story)
+  #   - cron: '30 3 * * *'
+  #   # 12:30 UTC = 06:00 PM IST (Evening Craft Story)
+  #   - cron: '30 12 * * *'
   workflow_dispatch:
     inputs:
       day:
@@ -14,6 +16,11 @@ on:
         type: string
       dry_run:
         description: 'Run dry run without publishing to Reddit'
+        required: false
+        default: true
+        type: boolean
+      override_pause:
+        description: 'Force execution even when paused (defaults to false)'
         required: false
         default: false
         type: boolean
@@ -25,6 +32,7 @@ jobs:
   publish-to-reddit:
     name: Publish Editorial Story to r/writon
     runs-on: ubuntu-latest
+    if: inputs.override_pause == true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4

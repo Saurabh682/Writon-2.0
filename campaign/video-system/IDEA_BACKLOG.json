@@ -1,0 +1,65 @@
+{
+  "version": "1.0.0",
+  "categories": {
+    "emotion": [
+      {
+        "id": "emo_anxiety_body",
+        "topic": "Anxiety & Nervousness",
+        "viewer_problem": "My nervous characters only chew their lip or sweat.",
+        "bad_sentence": "She was extremely nervous about the interview.",
+        "transformation": "Give the hands a specific, compulsive micro-task.",
+        "desired_learning": "Show anxiety through physical destruction or manipulation of small objects.",
+        "status": "in_production"
+      },
+      {
+        "id": "emo_jealousy_silence",
+        "topic": "Quiet Jealousy",
+        "viewer_problem": "Jealousy sounds childish or melodramatic.",
+        "bad_sentence": "He felt a sharp pang of jealousy when she laughed at David's joke.",
+        "transformation": "Focus on the physical withdrawal of attention.",
+        "desired_learning": "Jealousy in adults looks like calculated indifference, not a grimace.",
+        "status": "backlog"
+      },
+      {
+        "id": "emo_anger_politeness",
+        "topic": "Cold Anger",
+        "viewer_problem": "Angry characters always shout or slam doors.",
+        "bad_sentence": "She was furious at him for lying.",
+        "transformation": "Make the dialogue excessively polite and clinical.",
+        "desired_learning": "Lethal anger lowers its voice and organizes the cutlery.",
+        "status": "produced"
+      }
+    ],
+    "sentence_craft": [
+      {
+        "id": "craft_weak_verbs",
+        "topic": "Passive & Weak Verbs",
+        "viewer_problem": "Sentences feel soggy and low-energy.",
+        "bad_sentence": "There was a loud knocking sound coming from the wooden door.",
+        "transformation": "Eliminate 'there was' and let the subject strike the object directly.",
+        "desired_learning": "Cut the observer buffer; make the event collide with the page.",
+        "status": "backlog"
+      },
+      {
+        "id": "craft_dialogue_tags",
+        "topic": "Fancy Dialogue Tags",
+        "viewer_problem": "Writers use 'he sneered', 'she exclaimed', 'he hissed'.",
+        "bad_sentence": "'Don't touch that,' he whispered menacingly.",
+        "transformation": "Use 'said' or an action beat that reveals the threat physically.",
+        "desired_learning": "The dialogue must carry the threat; the tag cannot rescue it.",
+        "status": "produced"
+      }
+    ],
+    "scenes": [
+      {
+        "id": "scene_character_entrance",
+        "topic": "Character Introductions",
+        "viewer_problem": "Characters introduced through a mirror inventory.",
+        "bad_sentence": "Maya was tall with dark brown hair and tired green eyes.",
+        "transformation": "Introduce characters through friction with the environment.",
+        "desired_learning": "We know a character by how they treat an obstacle, not their eye color.",
+        "status": "backlog"
+      }
+    ]
+  }
+}

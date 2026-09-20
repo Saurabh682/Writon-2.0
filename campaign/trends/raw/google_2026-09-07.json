@@ -1,0 +1,509 @@
+[
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-07T04:41:10.712Z",
+    "date": "2026-09-07",
+    "indiaTrends": [
+      {
+        "topic": "शिक्षा मंत्री",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "राज्य के मंत्री सुदिव्य कुमार सोनू के आकस्मिक निधन पर कांग्रेस के सभी कार्यक्रम हुए स्थगित",
+        "snippet": null,
+        "source": "Dainik Bhaskar"
+      },
+      {
+        "topic": "icici bank share",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "ICICI Bank, SBI, HDFC Bank, DCB, SIB shares: Target prices as credit growth improves",
+        "snippet": null,
+        "source": "Business Today"
+      },
+      {
+        "topic": "coal india share",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "नवरत्न कंपनी को मिला 903 करोड़ रुपये का काम, सोमवार को फोकस में रहेगा शेयर",
+        "snippet": null,
+        "source": "Hindustan"
+      },
+      {
+        "topic": "jindal worldwide share price",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Jindal Worldwide Ltd leads gainers in &apos;B&apos; group",
+        "snippet": null,
+        "source": "Business Standard"
+      },
+      {
+        "topic": "சென்னை மெட்ரோ",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "நவம்பர் மாதம் முதல் கோயம்பேடு - நந்தம்பாக்கம் இடையே மெட்ரோ ரயில் சோதனை ஓட்டம்",
+        "snippet": null,
+        "source": "Hindu Tamil Thisai"
+      },
+      {
+        "topic": "iphone 17 pro",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "iPhone 17 Prices Slashed Further Days Before iPhone 18 Release",
+        "snippet": null,
+        "source": "Forbes"
+      },
+      {
+        "topic": "கூட்டுறவு வங்கி",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "பயிர்க்கடன் தள்ளுபடி செய்து 2 மாதமாகியும் நகைகள் திரும்ப தரப்படாததால் விவசாயிகள் கவலை",
+        "snippet": null,
+        "source": "Hindu Tamil Thisai"
+      },
+      {
+        "topic": "తెలంగాణ",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "TG Assembly: అందరి గురి 22ఏ పైనే",
+        "snippet": null,
+        "source": "Eenadu"
+      },
+      {
+        "topic": "jsw steel share price",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "JSW Steel’s August crude steel production rises 3% to 24.65 lakh tonnes",
+        "snippet": null,
+        "source": "ET Infra"
+      },
+      {
+        "topic": "pc jewellers share",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "PC Jeweller stock surges 11% to nine-month high; debt-free target this month fuels rally",
+        "snippet": null,
+        "source": "Moneycontrol.com"
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "administration",
+        "geo": "US",
+        "approxTraffic": "5000+",
+        "headline": "Trump administration makes another Supreme Court appeal on mail ballot fight",
+        "snippet": null,
+        "source": "CBS News"
+      },
+      {
+        "topic": "history of labor day",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Labor Day: Brought to You by the First Amendment",
+        "snippet": null,
+        "source": "Freedom Forum"
+      },
+      {
+        "topic": "tom cruise",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Rob Lowe Reveals &apos;Nemesis&apos; Brad Pitt Stole &apos;Jerry Macguire&apos; & &apos;Top Gun&apos; From Him",
+        "snippet": null,
+        "source": "TV Insider"
+      },
+      {
+        "topic": "nintendo direct",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "The Legend of Zelda 40th Anniversary Direct 9.8.2026 and Nintendo Direct 9.9.2026",
+        "snippet": null,
+        "source": "Nintendo"
+      },
+      {
+        "topic": "dodgers",
+        "geo": "US",
+        "approxTraffic": "10000+",
+        "headline": "Dodgers on Deck: Sunday, September 6 vs. Nationals",
+        "snippet": null,
+        "source": "True Blue LA"
+      },
+      {
+        "topic": "dodgers game today",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "Ohtani out of starting lineup for 4th straight game; Roberts &apos;hopeful&apos; for Monday return",
+        "snippet": null,
+        "source": "MLB.com"
+      },
+      {
+        "topic": "theo james",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "The Gentlemen Season 2 Ending Explained: Is Eddie’s Soul Damaged Beyond Repair?",
+        "snippet": null,
+        "source": "Netflix"
+      },
+      {
+        "topic": "bobby miller",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Dodgers Activate Bobby Miller From 60-Day IL, Designate Alek Thomas",
+        "snippet": null,
+        "source": "MLB Trade Rumors"
+      },
+      {
+        "topic": "smu vs florida state prediction",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Noles247 Staff Game Predictions: Florida State vs. No. 19 SMU",
+        "snippet": null,
+        "source": "247Sports"
+      },
+      {
+        "topic": "emmys 2026 date",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "2026 Daytime Emmys: Date, nominees, how to watch, Genie Francis tribute, and all the details",
+        "snippet": null,
+        "source": "Yahoo"
+      }
+    ]
+  },
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-07T04:47:36.234Z",
+    "date": "2026-09-07",
+    "indiaTrends": [
+      {
+        "topic": "मुद्रा",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "Foreign Currency Reserve of India: विदेशी मुद्रा भंडार फिर ऑल टाइम हाई पर, टूट गया पिछला रिकॉर्ड",
+        "snippet": null,
+        "source": "Navbharat Times"
+      },
+      {
+        "topic": "hcl tech share price",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "HCL Tech Share Price Live Updates: HCL Tech Stock Details",
+        "snippet": null,
+        "source": "The Economic Times"
+      },
+      {
+        "topic": "शिक्षा मंत्री",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "राज्य के मंत्री सुदिव्य कुमार सोनू के आकस्मिक निधन पर कांग्रेस के सभी कार्यक्रम हुए स्थगित",
+        "snippet": null,
+        "source": "Dainik Bhaskar"
+      },
+      {
+        "topic": "coal india share",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "नवरत्न कंपनी को मिला 903 करोड़ रुपये का काम, सोमवार को फोकस में रहेगा शेयर",
+        "snippet": null,
+        "source": "Hindustan"
+      },
+      {
+        "topic": "icici bank share",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "ICICI Bank, SBI, HDFC Bank, DCB, SIB shares: Target prices as credit growth improves",
+        "snippet": null,
+        "source": "Business Today"
+      },
+      {
+        "topic": "சென்னை மெட்ரோ",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "நவம்பர் மாதம் முதல் கோயம்பேடு - நந்தம்பாக்கம் இடையே மெட்ரோ ரயில் சோதனை ஓட்டம்",
+        "snippet": null,
+        "source": "Hindu Tamil Thisai"
+      },
+      {
+        "topic": "jindal worldwide share price",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Jindal Worldwide Ltd leads gainers in &apos;B&apos; group",
+        "snippet": null,
+        "source": "Business Standard"
+      },
+      {
+        "topic": "iphone 17 pro",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "iPhone 17 Prices Slashed Further Days Before iPhone 18 Release",
+        "snippet": null,
+        "source": "Forbes"
+      },
+      {
+        "topic": "తెలంగాణ",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "నల్ల టీషర్టులతో బీఆర్ఎస్‌ నాయకుల నిరసన |",
+        "snippet": null,
+        "source": "Eenadu"
+      },
+      {
+        "topic": "கூட்டுறவு வங்கி",
+        "geo": "IN",
+        "approxTraffic": "1000+",
+        "headline": "பயிர்க்கடன் தள்ளுபடி செய்து 2 மாதமாகியும் நகைகள் திரும்ப தரப்படாததால் விவசாயிகள் கவலை",
+        "snippet": null,
+        "source": "Hindu Tamil Thisai"
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "administration",
+        "geo": "US",
+        "approxTraffic": "5000+",
+        "headline": "Trump administration makes another Supreme Court appeal on mail ballot fight",
+        "snippet": null,
+        "source": "CBS News"
+      },
+      {
+        "topic": "history of labor day",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Labor Day: Brought to You by the First Amendment",
+        "snippet": null,
+        "source": "Freedom Forum"
+      },
+      {
+        "topic": "tom cruise",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Rob Lowe Reveals &apos;Nemesis&apos; Brad Pitt Stole &apos;Jerry Macguire&apos; & &apos;Top Gun&apos; From Him",
+        "snippet": null,
+        "source": "TV Insider"
+      },
+      {
+        "topic": "nintendo direct",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "The Legend of Zelda 40th Anniversary Direct 9.8.2026 and Nintendo Direct 9.9.2026",
+        "snippet": null,
+        "source": "Nintendo"
+      },
+      {
+        "topic": "dodgers",
+        "geo": "US",
+        "approxTraffic": "10000+",
+        "headline": "Dodgers on Deck: Sunday, September 6 vs. Nationals",
+        "snippet": null,
+        "source": "True Blue LA"
+      },
+      {
+        "topic": "dodgers game today",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "An animated look at CJ Abrams&apos; home run",
+        "snippet": null,
+        "source": "MLB.com"
+      },
+      {
+        "topic": "theo james",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "The Gentlemen Season 2 Ending Explained: Is Eddie’s Soul Damaged Beyond Repair?",
+        "snippet": null,
+        "source": "Netflix"
+      },
+      {
+        "topic": "bobby miller",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Dodgers Activate Bobby Miller From 60-Day IL, Designate Alek Thomas",
+        "snippet": null,
+        "source": "MLB Trade Rumors"
+      },
+      {
+        "topic": "la dodgers",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "Ohtani out of starting lineup for 4th straight game; Roberts &apos;hopeful&apos; for Monday return",
+        "snippet": null,
+        "source": "MLB.com"
+      },
+      {
+        "topic": "dodgers score",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "MLB Gameday: Nationals 5, Dodgers 6 Final Score (09/05/2026)",
+        "snippet": null,
+        "source": "MLB.com"
+      }
+    ]
+  },
+  {
+    "source": "google_trends",
+    "timestamp": "2026-09-07T15:32:05.547Z",
+    "date": "2026-09-07",
+    "indiaTrends": [
+      {
+        "topic": "anastasia potapova",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Potapova knocks out Anisimova; Zheng stages stunning comeback to beat Keys at US Open",
+        "snippet": null,
+        "source": "Sportstar"
+      },
+      {
+        "topic": "കേരള സര്ക്കാര്",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "തിയേറ്ററുകളിലെ വിലനിയന്ത്രണ പ്രഖ്യാപനം വെറും പിആർ തട്ടിപ്പ്; തിരുവനന്തപുരം മേയർക്കെതിരെ സന്ദീപ് വാര്യർ",
+        "snippet": null,
+        "source": "Asianet News Malayalam"
+      },
+      {
+        "topic": "mirra andreeva",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "US Open tennis 2026: Swiatek v Zheng, Osaka v Rybakina and more on day nine – live",
+        "snippet": null,
+        "source": "The Guardian"
+      },
+      {
+        "topic": "ವಾಹನ",
+        "geo": "IN",
+        "approxTraffic": "200+",
+        "headline": "Road Accident: ಎಕ್ಸ್‌ಪ್ರೆಸ್‌ವೇಯಲ್ಲಿ ಭೀಕರ ಅಪಘಾತ, ಬಸ್ ಡಿವೈಡರ್‌ಗೆ ಡಿಕ್ಕಿ ಹೊಡೆದು ನಾಲ್ವರು ಸಾವು",
+        "snippet": null,
+        "source": "News18 Kannada"
+      },
+      {
+        "topic": "election commission of india",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "Oct 6 bybolls for 5 Assembly seats in Tamil Nadu, Puducherry, Bengal & 1 Lok Sabha seat in Assam",
+        "snippet": null,
+        "source": "The Times of India"
+      },
+      {
+        "topic": "हुंडई क्रेटा",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "टेस्टिंग के दौरान दिखी नई Hyundai Creta, मिलेगा हाइब्रिड इंजन और 25 KM+ का माइलेज! कब होगी लॉन्च?",
+        "snippet": null,
+        "source": "Hindustan"
+      },
+      {
+        "topic": "వినాయక చవితి",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "వినాయక చవితిని చిన్న విగ్రహాలతో నిర్వహించుకోండి",
+        "snippet": null,
+        "source": "Eenadu"
+      },
+      {
+        "topic": "bigg boss timing",
+        "geo": "IN",
+        "approxTraffic": "10000+",
+        "headline": "Bigg Boss 20: Salman Khan&apos;s Biggest Shock Was...",
+        "snippet": null,
+        "source": "Rediff"
+      },
+      {
+        "topic": "ಶನಿ",
+        "geo": "IN",
+        "approxTraffic": "500+",
+        "headline": "ಸೆಪ್ಟೆಂಬರ್ ನಲ್ಲಿ ಶನಿಯಿಂದ ಮಿಥುನ ಸೇರಿ ಈ 3 ರಾಶಿಯವರಿಗೆ ಅಗ್ನಿ ಪರೀಕ್ಷೆ, ಸ್ವಲ್ಪ ಎಚ್ಚರ..!",
+        "snippet": null,
+        "source": "Vijay Karnataka"
+      },
+      {
+        "topic": "ईस्ट ज़ोन क्रिकेट टीम",
+        "geo": "IN",
+        "approxTraffic": "2000+",
+        "headline": "Duleep Trophy 2026: तिहरे शतक से चूके ईशान किशन, फिर भी टीम ने जड़ दिए 700 से अधिक रन, बना डाला ये धांसू रिकॉर्ड",
+        "snippet": null,
+        "source": "AajTak"
+      }
+    ],
+    "globalTrends": [
+      {
+        "topic": "anastasia potapova",
+        "geo": "US",
+        "approxTraffic": "2000+",
+        "headline": "Mirra Andreeva to meet Anastasia Potapova on Monday at the 2026 US Open",
+        "snippet": null,
+        "source": "US Open Tennis"
+      },
+      {
+        "topic": "potapova",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Potapova brings experience to US Open rematch with Andreeva",
+        "snippet": null,
+        "source": "US Open Tennis"
+      },
+      {
+        "topic": "cecilia zandalasini",
+        "geo": "US",
+        "approxTraffic": "50000+",
+        "headline": "Team USA escapes with win over Italy at women&apos;s FIBA World Cup",
+        "snippet": null,
+        "source": "ESPN"
+      },
+      {
+        "topic": "andreeva tennis",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Coco Gauff and Iva Jovic to meet in All-American showdown at 2026 US Open",
+        "snippet": null,
+        "source": "US Open Tennis"
+      },
+      {
+        "topic": "mirra andreeva",
+        "geo": "US",
+        "approxTraffic": "1000+",
+        "headline": "Coco Gauff and Iva Jovic to meet in All-American showdown at 2026 US Open",
+        "snippet": null,
+        "source": "US Open Tennis"
+      },
+      {
+        "topic": "pakistan vs hong kong",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Pakistan face NRR danger after India rout: What they need in last group match to reach Women&apos;s Asia Cup semi-finals | Cricket",
+        "snippet": null,
+        "source": "Hindustan Times"
+      },
+      {
+        "topic": "lando norris",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "Why McLaren let Norris and Piastri race at Monza",
+        "snippet": null,
+        "source": "Formula 1"
+      },
+      {
+        "topic": "eos",
+        "geo": "US",
+        "approxTraffic": "200+",
+        "headline": "India sends Earth-imaging satellite toward geosynchronous orbit in milestone launch (video)",
+        "snippet": null,
+        "source": "Space"
+      },
+      {
+        "topic": "mike vrabel",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "Rhamondre Stevenson Addresses Mike Vrabel as Patriots HC After Photos Leaked with Dianna Russini",
+        "snippet": null,
+        "source": "Bleacher Report"
+      },
+      {
+        "topic": "game of thrones",
+        "geo": "US",
+        "approxTraffic": "500+",
+        "headline": "George R. R. Martin Promises ‘Exhilarating Journey’ With New ‘Game of Thrones’ Move",
+        "snippet": null,
+        "source": "Yahoo"
+      }
+    ]
+  }
+]

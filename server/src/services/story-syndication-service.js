@@ -1,7 +1,7 @@
 import path from 'node:path';
 import os from 'node:os';
 import { renderStorySocialCard } from './social-card-generator.js';
-import { postToTelegram, dispatchToWebhook, postToX, postToThreads } from './social-poster.js';
+import { postToTelegram, dispatchToWebhook, postToX, postToThreads, postToPinterest } from './social-poster.js';
 
 // Mandatory base hashtags per AGENTS.md rule
 const MANDATORY_HASHTAGS = '#writon #writingcommunity #writersoftwitter #poetry #storytelling #books #creators #amwriting';
@@ -21,12 +21,24 @@ const CATEGORY_HASHTAGS = {
 
 /**
  * Builds formatted social copy with hook, link, and hashtags.
+ * Supports trending keywords and tags from Editorial Brain intelligence.
  */
-export function buildStorySocialCopy({ title, summary, slug, authorPenName, category, baseUrl = 'https://writon.cc' }) {
+export function buildStorySocialCopy({ title, summary, slug, authorPenName, category, keywords = [], baseUrl = 'https://writon.cc' }) {
   const cleanPenName = authorPenName.startsWith('@') ? authorPenName : `@${authorPenName}`;
   const storyUrl = `${baseUrl.replace(/\/$/, '')}/stories/${slug}`;
   const catTags = CATEGORY_HASHTAGS[category] || '#literature #writing';
-  const allHashtags = `${catTags} ${MANDATORY_HASHTAGS}`;
+
+  // Format incoming trending keywords into lowercase hashtags
+  const keywordTags = Array.isArray(keywords)
+    ? keywords
+        .map(k => String(k || '').trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
+        .filter(k => k.length >= 3)
+        .slice(0, 5)
+        .map(k => `#${k}`)
+        .join(' ')
+    : '';
+
+  const allHashtags = [keywordTags, catTags, MANDATORY_HASHTAGS].filter(Boolean).join(' ');
 
   const cleanSummary = (summary || '').trim();
   const hook = cleanSummary ? `"${cleanSummary}"` : `New piece published on WritOn.`;
@@ -114,28 +126,30 @@ export async function syndicatePublishedStory(pool, params, options = {}) {
 
   log.info?.(`📢 Starting social syndication for "${story.title}" (@${authorPenName})`);
 
-  // 2. Render visual cards (1080x1350 portrait & 1080x1080 square)
+  // 2. Render visual cards (1080x1350 portrait & 1080x1080 square) with Warm Parchment aesthetic
   const portraitCard = await renderStorySocialCard({
     story: { ...story, authorFullName, authorPenName },
     outputDir: tempDir,
     format: 'portrait',
-    theme: 'dark',
+    theme: 'light',
   });
 
   const squareCard = await renderStorySocialCard({
     story: { ...story, authorFullName, authorPenName },
     outputDir: tempDir,
     format: 'square',
-    theme: 'dark',
+    theme: 'light',
   });
 
-  // 3. Prepare copy & hashtags
+  // 3. Prepare copy & hashtags (including trending keywords)
+  const keywords = Array.isArray(story.keywords) ? story.keywords : [];
   const copy = buildStorySocialCopy({
     title: story.title,
     summary: story.summary,
     slug: story.slug,
     authorPenName,
     category,
+    keywords,
     baseUrl,
   });
 
@@ -231,6 +245,94 @@ export async function syndicatePublishedStory(pool, params, options = {}) {
     });
   } catch (thErr) {
     outcomes.threads = { success: false, status: 'failed', error: thErr.message };
+  }
+
+  // 8. Dispatch to Pinterest (Skipped by default for stories: Pinterest RSS feed handles stories automatically.
+  // Manual / forced pinning is preserved when options.forcePinterest is true)
+  try {
+    const pinToken = options.config?.PINTEREST_ACCESS_TOKEN || process.env.PINTEREST_ACCESS_TOKEN;
+    const boardId = options.config?.PINTEREST_DEFAULT_BOARD_ID || process.env.PINTEREST_DEFAULT_BOARD_ID;
+
+    if (!options.forcePinterest) {
+      outcomes.pinterest = {
+        success: false,
+        status: 'skipped',
+        reason: 'Automated Pin skipped: stories are synced to Pinterest via the public RSS feed (pinterest-feed.xml). Use forcePinterest for manual dispatch.',
+      };
+    } else if (!pinToken || !boardId) {
+      outcomes.pinterest = { success: false, status: 'skipped', reason: 'Missing Pinterest credentials or board ID' };
+    } else {
+      // Pacing Guard: Ensure minimum 15 minutes between automated pins to prevent velocity spam blocks
+      let isThrottled = false;
+      try {
+        if (pool && typeof pool.query === 'function') {
+          const lastPinRes = await pool.query(
+            `select updated_at from public.social_syndication_logs
+             where platform = 'pinterest' and status = 'published'
+             order by updated_at desc
+             limit 1`
+          );
+          if (lastPinRes.rowCount > 0 && lastPinRes.rows[0]?.updated_at) {
+            const diffMs = Date.now() - new Date(lastPinRes.rows[0].updated_at).getTime();
+            const MIN_PIN_INTERVAL_MS = 15 * 60 * 1000;
+            if (diffMs < MIN_PIN_INTERVAL_MS && !options.forcePinterest) {
+              isThrottled = true;
+            }
+          }
+        }
+      } catch (throttleErr) {
+        // Table or query check non-fatal
+      }
+
+      if (isThrottled) {
+        outcomes.pinterest = {
+          success: false,
+          status: 'throttled',
+          reason: 'Pacing guard: minimum 15 minutes between automated pins to protect account & domain trust',
+        };
+      } else {
+        let displaySummary = (story.summary || story.title || '').trim();
+        if (displaySummary.length > 195) {
+          displaySummary = displaySummary.slice(0, 192).trim() + '...';
+        }
+        const cleanCategoryTag = category.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const keywordHashtags = keywords
+          .map(k => String(k || '').trim().toLowerCase().replace(/[^a-z0-9]/g, ''))
+          .filter(k => k.length >= 3)
+          .slice(0, 3)
+          .map(k => `#${k}`)
+          .join(' ');
+        const pinTags = [keywordHashtags, `#writon #${cleanCategoryTag} #storytelling #reading #amwriting`].filter(Boolean).join(' ');
+        const pinDescription = `“${displaySummary}”\n\u200B\n✍️ By ${authorFullName} • ${category} (${story.readingTimeMin || 3} min read)\n\u200B\n📖 Read the full story on WritOn:\n👉 ${copy.storyUrl}\n\u200B\n──────────\n${pinTags}`;
+        const pinTitle = `${story.title} — ${authorFullName}`.slice(0, 100);
+
+        const pinRes = await postToPinterest({
+          boardId,
+          title: pinTitle,
+          description: pinDescription,
+          link: copy.storyUrl,
+          altText: `Story quote card for ${story.title} by ${authorFullName} on WritOn`,
+          imagePath: portraitCard.filePath,
+          config: options.config || {},
+          log,
+        });
+
+        outcomes.pinterest = pinRes;
+
+        await recordSyndicationLog(pool, {
+          postId,
+          platform: 'pinterest',
+          status: pinRes.status,
+          externalPostId: pinRes.postId,
+          cardPath: portraitCard.filePath,
+          payload: { title: pinTitle, boardId, link: copy.storyUrl },
+          response: pinRes.data || {},
+          error: pinRes.error || pinRes.reason,
+        });
+      }
+    }
+  } catch (pinErr) {
+    outcomes.pinterest = { success: false, status: 'failed', error: pinErr.message };
   }
 
   log.info?.(`✅ Social syndication finished for "${story.title}":`, Object.keys(outcomes).map(k => `${k}=${outcomes[k].status}`).join(', '));

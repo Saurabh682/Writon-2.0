@@ -4,6 +4,8 @@ import {
   decodeFeedCursor,
   determineFeedMode,
   encodeFeedCursor,
+  scoreCandidates,
+  stableBucket,
 } from '../src/services/feed-ranking.js';
 
 function candidate(index, overrides = {}) {
@@ -125,6 +127,98 @@ describe('reader feed ranking', () => {
     });
 
     expect(feed[0].id).toBe(deeplyRead.id);
+  });
+
+  it('keeps visible shadow ordering on v1 while allowing quality-normalized R3 comparison', () => {
+    const explicit = candidate(1, {
+      explicitInterest: 1,
+      topicAffinity: 0,
+      deepReadFit: 0,
+      authorAffinity: 0,
+      freshness: 0.5,
+      humanQuality: 1,
+      normalizedQuality: 0,
+    });
+    const behavioral = candidate(2, {
+      explicitInterest: 0,
+      topicAffinity: 1,
+      deepReadFit: 1,
+      authorAffinity: 1,
+      freshness: 0.5,
+      humanQuality: 0,
+      normalizedQuality: 1,
+    });
+    const visible = composeFeed({
+      candidates: [behavioral, explicit], preferredLanguage: 'en', mode: 'shadow', seed: 'r3', maximumItems: 2,
+    });
+    const shadow = composeFeed({
+      candidates: [behavioral, explicit], preferredLanguage: 'en', mode: 'r3_shadow', seed: 'r3', maximumItems: 2,
+    });
+    expect(visible[0].id).toBe(explicit.id);
+    expect(shadow[0].id).toBe(behavioral.id);
+  });
+
+  it('isolates human-only exposure penalties to R3 without changing visible v1 scoring', () => {
+    const candidateA = candidate(1, {
+      freshness: 0.5,
+      humanQuality: 0.5,
+      normalizedQuality: 0.5,
+      repetitionPenalty: 0,
+      r3RepetitionPenalty: 0.1,
+    });
+    const candidateB = candidate(2, {
+      freshness: 0.5,
+      humanQuality: 0.5,
+      normalizedQuality: 0.5,
+      repetitionPenalty: 0.1,
+      r3RepetitionPenalty: 0,
+    });
+    const visible = scoreCandidates([candidateA, candidateB], 'shadow', 'penalty-isolation');
+    const shadow = scoreCandidates([candidateA, candidateB], 'r3_shadow', 'penalty-isolation');
+    expect(visible.find((item) => item.id === candidateA.id).rankingScore)
+      .toBeGreaterThan(visible.find((item) => item.id === candidateB.id).rankingScore);
+    expect(shadow.find((item) => item.id === candidateB.id).rankingScore)
+      .toBeGreaterThan(shadow.find((item) => item.id === candidateA.id).rankingScore);
+  });
+
+  it('keeps R3 shadow pool fill, language coverage, diversity, and holdout safeguards intact', () => {
+    const candidates = Array.from({ length: 80 }, (_, index) => candidate(index, {
+      authorId: index < 20 ? 'prolific-author' : `author-${index}`,
+      category: index < 20 ? 'Essays' : `category-${index % 9}`,
+      languageCode: index % 5 === 0 ? 'hi' : (index % 7 === 0 ? 'bn' : 'en'),
+      languageAffinity: index % 5 === 0 ? 0.8 : 0,
+      normalizedQuality: index % 3 === 0 ? 0.8 : 0.3,
+    }));
+    const visible = composeFeed({
+      candidates, preferredLanguage: 'en', mode: 'shadow', seed: 'r3-gate', maximumItems: 20,
+    });
+    const shadow = composeFeed({
+      candidates, preferredLanguage: 'en', mode: 'r3_shadow', seed: 'r3-gate', maximumItems: 20,
+    });
+    expect(visible).toHaveLength(20);
+    expect(shadow).toHaveLength(20);
+    expect(new Set(shadow.map((item) => item.languageCode))).toEqual(new Set(visible.map((item) => item.languageCode)));
+    const authorCounts = shadow.reduce((counts, item) => {
+      counts.set(item.authorId, (counts.get(item.authorId) ?? 0) + 1);
+      return counts;
+    }, new Map());
+    expect(Math.max(...authorCounts.values())).toBeLessThanOrEqual(2);
+    for (let index = 0; index <= shadow.length - 10; index += 1) {
+      const categories = shadow.slice(index, index + 10).reduce((counts, item) => {
+        counts.set(item.category, (counts.get(item.category) ?? 0) + 1);
+        return counts;
+      }, new Map());
+      expect(Math.max(...categories.values())).toBeLessThanOrEqual(3);
+    }
+
+    const holdoutProfile = Array.from({ length: 500 }, (_, index) => `r3-holdout-${index}`)
+      .find((profileId) => stableBucket(profileId) < 10);
+    expect(determineFeedMode({
+      profileId: holdoutProfile,
+      evidenceCount: 5,
+      behaviorRolloutPercent: 90,
+      holdoutPercent: 10,
+    })).toBe('control');
   });
 
   it('round-trips opaque cursor state and rejects malformed cursors', () => {

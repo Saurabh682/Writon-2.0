@@ -9,7 +9,7 @@
     <link>https://writon.cc/stories</link>
     <description>Curated independent essays, craft reflections, poetry, and ideas on modern culture. Read 700+ literary stories on WritOn.</description>
     <language>en-us</language>
-    <lastBuildDate>Sat, 19 Sep 2026 11:37:40 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 20 Sep 2026 17:57:10 GMT</lastBuildDate>
     <atom:link href="https://writon.cc/feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>https://writon.cc/assets/writon_app_icon.png</url>
@@ -17,14 +17,80 @@
       <link>https://writon.cc/stories</link>
     </image>
     <item>
-      <title>The River That Forgot Its Path</title>
+      <title>The Geometry of the Crease</title>
+      <link>https://writon.cc/stories/the-geometry-of-the-crease-c915cb49-1b2</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-geometry-of-the-crease-c915cb49-1b2</guid>
+      <pubDate>Sun, 20 Sep 2026 17:30:43 GMT</pubDate>
+      <dc:creator>Dr. Sunita Banerjee</dc:creator>
+      <category>Essays</category>
+      <description>In the humid quiet of a Kolkata afternoon, an academic finds the true measure of cricket not in the digital data of a live feed, but in the physical tension of the game.</description>
+      <content:encoded><![CDATA[In the humid quiet of a Kolkata afternoon, an academic finds the true measure of cricket not in the digital data of a live feed, but in the physical tension of the game.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Second Set at the Corner Shop</title>
+      <link>https://writon.cc/stories/the-second-set-at-the-corner-shop-4796a3f3-69e</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-second-set-at-the-corner-shop-4796a3f3-69e</guid>
+      <pubDate>Sun, 20 Sep 2026 14:00:59 GMT</pubDate>
+      <dc:creator>Devansh Roy</dc:creator>
+      <category>Short Stories</category>
+      <description>Late Monday night in Kolkata, Bimal starts a delayed replay of Mirra Andreeva vs Anastasia Potapova from the 2026 US Open — and tries to forbid every customer from saying the result. A story about what happens when the score arrives before the second set does.</description>
+      <content:encoded><![CDATA[Late Monday night in Kolkata, Bimal starts a delayed replay of Mirra Andreeva vs Anastasia Potapova from the 2026 US Open — and tries to forbid every customer from saying the result. A story about what happens when the score arrives before the second set does.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>Who Gets to Pause on Labor Day?</title>
+      <link>https://writon.cc/stories/the-silent-exchange-on-labor-speed-and-the-pause-2320dfce-647</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-silent-exchange-on-labor-speed-and-the-pause-2320dfce-647</guid>
+      <pubDate>Sun, 20 Sep 2026 08:00:55 GMT</pubDate>
+      <dc:creator>Dr. Sunita Banerjee</dc:creator>
+      <category>Essays</category>
+      <description>On Labor Day 2026, as New York equity floors fall silent, Dr. Sunita Banerjee examines the gap between the labor commemorated by stopping a market and the labor that cannot afford to pause.</description>
+      <content:encoded><![CDATA[On Labor Day 2026, as New York equity floors fall silent, Dr. Sunita Banerjee examines the gap between the labor commemorated by stopping a market and the labor that cannot afford to pause.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Shadow Premium</title>
+      <link>https://writon.cc/stories/the-shadow-premium-0e779ec5-b68</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-shadow-premium-0e779ec5-b68</guid>
+      <pubDate>Sun, 20 Sep 2026 01:30:56 GMT</pubDate>
+      <dc:creator>Priyanka Mishra</dc:creator>
+      <category>Essays</category>
+      <description>In the shadow of primary capital markets, the informal Grey Market Premium compresses investor impatience into an unregulated price before trading officially begins.</description>
+      <content:encoded><![CDATA[In the shadow of primary capital markets, the informal Grey Market Premium compresses investor impatience into an unregulated price before trading officially begins.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>What the Clapping Cannot Measure</title>
+      <link>https://writon.cc/stories/the-persistence-of-the-frame-e6366080-6d8</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-persistence-of-the-frame-e6366080-6d8</guid>
+      <pubDate>Sat, 19 Sep 2026 17:31:08 GMT</pubDate>
+      <dc:creator>Meera Varma</dc:creator>
+      <category>Culture</category>
+      <description>On the Venice standing ovation for Robert Pattinson in Primetime, and the persistent gap between the duration of applause and the inner reality of performance.</description>
+      <content:encoded><![CDATA[On the Venice standing ovation for Robert Pattinson in Primetime, and the persistent gap between the duration of applause and the inner reality of performance.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1473177104440-ffee2f376098?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>Mrs Menon Has Left the Group</title>
+      <link>https://writon.cc/stories/the-glass-wall-of-flat-402-7a0a7dd6-2f8</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-glass-wall-of-flat-402-7a0a7dd6-2f8</guid>
+      <pubDate>Sat, 19 Sep 2026 14:01:07 GMT</pubDate>
+      <dc:creator>Gopal Krishnan</dc:creator>
+      <category>Humour</category>
+      <description>A morning routine in a high-rise is disrupted by the digital noise of a reality show obsession, mirroring the claustrophobia of the apartment complex.</description>
+      <content:encoded><![CDATA[A morning routine in a high-rise is disrupted by the digital noise of a reality show obsession, mirroring the claustrophobia of the apartment complex.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1531747056595-07f6cbbe10ad?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>When a River Has to Wait</title>
       <link>https://writon.cc/stories/the-river-that-forgot-its-path-7a213509-b94</link>
       <guid isPermaLink="true">https://writon.cc/stories/the-river-that-forgot-its-path-7a213509-b94</guid>
       <pubDate>Sat, 19 Sep 2026 08:00:57 GMT</pubDate>
       <dc:creator>Kavya Nair</dc:creator>
       <category>Poetry</category>
-      <description>A meditation on transience and the geological anxiety of distance, bridging a quiet harbor in Kochi with a stalled river in Darchula.</description>
-      <content:encoded><![CDATA[A meditation on transience and the geological anxiety of distance, bridging a quiet harbor in Kochi with a stalled river in Darchula.]]></content:encoded>
+      <description>Near Darchula, a landslide in the gorge forced the Chaulani River to halt for an afternoon. In Fort Kochi, a poet watches tidal water leave and return on schedule, observing the difference between water that flows predictably and mountain hydrology stopped in its tracks.</description>
+      <content:encoded><![CDATA[Near Darchula, a landslide in the gorge forced the Chaulani River to halt for an afternoon. In Fort Kochi, a poet watches tidal water leave and return on schedule, observing the difference between water that flows predictably and mountain hydrology stopped in its tracks.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
@@ -236,17 +302,6 @@
       <media:content url="https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
-      <title>The Graded Response</title>
-      <link>https://writon.cc/stories/the-graded-response-839fc98b-3d5</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-graded-response-839fc98b-3d5</guid>
-      <pubDate>Tue, 15 Sep 2026 02:46:42 GMT</pubDate>
-      <dc:creator>Dr. Sunita Banerjee</dc:creator>
-      <category>Essays</category>
-      <description>On the sudden arrival of stage-one dust advisories, the fog monitors at Anand Vihar, and how an entire city measures the shortening daylight in micrograms.</description>
-      <content:encoded><![CDATA[On the sudden arrival of stage-one dust advisories, the fog monitors at Anand Vihar, and how an entire city measures the shortening daylight in micrograms.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
       <title>The Diagnostic Cable at Nehru Place</title>
       <link>https://writon.cc/stories/the-diagnostic-cable-at-nehru-place-192c533f-723</link>
       <guid isPermaLink="true">https://writon.cc/stories/the-diagnostic-cable-at-nehru-place-192c533f-723</guid>
@@ -256,6 +311,17 @@
       <description>On three-year hardware cycles, battery cycle counts, and the widening distance between silicon benchmarks and thumb fatigue.</description>
       <content:encoded><![CDATA[On three-year hardware cycles, battery cycle counts, and the widening distance between silicon benchmarks and thumb fatigue.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Graded Response</title>
+      <link>https://writon.cc/stories/the-graded-response-839fc98b-3d5</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-graded-response-839fc98b-3d5</guid>
+      <pubDate>Tue, 15 Sep 2026 02:46:42 GMT</pubDate>
+      <dc:creator>Dr. Sunita Banerjee</dc:creator>
+      <category>Essays</category>
+      <description>On the sudden arrival of stage-one dust advisories, the fog monitors at Anand Vihar, and how an entire city measures the shortening daylight in micrograms.</description>
+      <content:encoded><![CDATA[On the sudden arrival of stage-one dust advisories, the fog monitors at Anand Vihar, and how an entire city measures the shortening daylight in micrograms.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
       <title>The Weight of Wet Clay</title>
@@ -498,71 +564,6 @@
       <description>In the narrow alcoves of Hyderabad&apos;s Laad Bazar, an aging artisan shapes raw lac bangles over a charcoal stove, caught between a dying heritage and the digital present.</description>
       <content:encoded><![CDATA[In the narrow alcoves of Hyderabad's Laad Bazar, an aging artisan shapes raw lac bangles over a charcoal stove, caught between a dying heritage and the digital present.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Side Lower, Berth 63</title>
-      <link>https://writon.cc/stories/side-lower-berth-63-1529555b-dfd</link>
-      <guid isPermaLink="true">https://writon.cc/stories/side-lower-berth-63-1529555b-dfd</guid>
-      <pubDate>Fri, 11 Sep 2026 11:48:17 GMT</pubDate>
-      <dc:creator>Rahul Mathur</dc:creator>
-      <category>Short Stories</category>
-      <description>A midnight berth reallocation on the Howrah Mail exposes the quiet, unwritten codes of dignity between two strangers sharing an RAC ticket across central India.</description>
-      <content:encoded><![CDATA[A midnight berth reallocation on the Howrah Mail exposes the quiet, unwritten codes of dignity between two strangers sharing an RAC ticket across central India.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Ather 450X vs Ola S1 Pro Gen 2: City Pothole &amp; Suspension Benchmark</title>
-      <link>https://writon.cc/stories/latest-urban-commuter-bikes-ev-2w-hardware-benchmark-research-based-asse-ea27e651-e27</link>
-      <guid isPermaLink="true">https://writon.cc/stories/latest-urban-commuter-bikes-ev-2w-hardware-benchmark-research-based-asse-ea27e651-e27</guid>
-      <pubDate>Fri, 11 Sep 2026 11:46:42 GMT</pubDate>
-      <dc:creator>Ruzbeh Irani</dc:creator>
-      <category>Reviews</category>
-      <description>A real-world urban commuting shootout comparing the Ather 450X and Ola S1 Pro Gen 2 across Monsoon pothole compliance, chassis structural balance, sustained thermal throttling, and real city range.</description>
-      <content:encoded><![CDATA[A real-world urban commuting shootout comparing the Ather 450X and Ola S1 Pro Gen 2 across Monsoon pothole compliance, chassis structural balance, sustained thermal throttling, and real city range.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Liquid Penance of Pali Hill</title>
-      <link>https://writon.cc/stories/the-liquid-penance-of-pali-hill-0d8277d4-dd6</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-liquid-penance-of-pali-hill-0d8277d4-dd6</guid>
-      <pubDate>Fri, 11 Sep 2026 11:30:32 GMT</pubDate>
-      <dc:creator>Sameer Wadhwa</dc:creator>
-      <category>Humour</category>
-      <description>A biting, hyper-local satire on the premium-priced suffering of drinking oat milk lattes in Bandra&apos;s gentrified cafe culture.</description>
-      <content:encoded><![CDATA[A biting, hyper-local satire on the premium-priced suffering of drinking oat milk lattes in Bandra's gentrified cafe culture.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Best Dad Jokes V-1</title>
-      <link>https://writon.cc/stories/untitled-draft-4204e434</link>
-      <guid isPermaLink="true">https://writon.cc/stories/untitled-draft-4204e434</guid>
-      <pubDate>Fri, 11 Sep 2026 06:44:03 GMT</pubDate>
-      <dc:creator>Kumar Saurabh</dc:creator>
-      <category>Humour</category>
-      <description>Funny Dad Jokes, hope you enjoyed them</description>
-      <content:encoded><![CDATA[Funny Dad Jokes, hope you enjoyed them]]></content:encoded>
-    </item>
-    <item>
-      <title>The Inverter and the Action Star</title>
-      <link>https://writon.cc/stories/the-inverter-and-the-israeli-star-222603c3-69f</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-inverter-and-the-israeli-star-222603c3-69f</guid>
-      <pubDate>Fri, 11 Sep 2026 05:07:30 GMT</pubDate>
-      <dc:creator>Pravin Kumar (Piku)</dc:creator>
-      <category>Entertainment</category>
-      <description>Against the humid backdrop of a Patna power cut, a civil service aspirant and his cousin find an unexpected refuge in a critically savaged Hollywood blockbuster.</description>
-      <content:encoded><![CDATA[Against the humid backdrop of a Patna power cut, a civil service aspirant and his cousin find an unexpected refuge in a critically savaged Hollywood blockbuster.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Checkpoint After the Drop</title>
-      <link>https://writon.cc/stories/the-checkpoint-after-the-drop-2edc597a-7ec</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-checkpoint-after-the-drop-2edc597a-7ec</guid>
-      <pubDate>Thu, 10 Sep 2026 19:30:27 GMT</pubDate>
-      <dc:creator>Karthik Subramanian</dc:creator>
-      <category>Tech</category>
-      <description>In the quiet of a Chennai tech office, an on-call engineer&apos;s emergency decision to save a primary database forces a tedious, fourteen-hour rebuild of its replica from scratch.</description>
-      <content:encoded><![CDATA[In the quiet of a Chennai tech office, an on-call engineer's emergency decision to save a primary database forces a tedious, fourteen-hour rebuild of its replica from scratch.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
   </channel>
 </rss>

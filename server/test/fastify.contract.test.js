@@ -127,6 +127,15 @@ function createPool() {
       if (sql.includes('where p.slug = $1') && sql.includes('author.full_name as "authorName"')) {
         return { rows: [sharedStoryRow()], rowCount: 1 };
       }
+      if (sql.includes('with profile_devices as') && sql.includes("'draft_nudge'::text")) {
+        return { rows: [], rowCount: 0 };
+      }
+      if (sql.includes('insert into public.reading_history') || sql.includes('with expired as')) {
+        return {
+          rows: [{ progress: 0.5, readSeconds: 30, lastReadAt: '2026-09-13T00:00:00.000Z' }],
+          rowCount: 1,
+        };
+      }
       if (sql.includes('from public.posts p')) {
         if (!sql.includes("''::text as content")) {
           throw new Error('The feed query must not select full story content.');
@@ -275,6 +284,15 @@ describe('Fastify API contract', () => {
     }).pushDeliveryEnabled).toBe(false);
   });
 
+  it('keeps guest push registration disabled unless explicitly enabled', () => {
+    const baseEnvironment = { DATABASE_URL: runtimeConfig.databaseUrl };
+    expect(loadRuntimeConfig(baseEnvironment).guestPushRegistrationEnabled).toBe(false);
+    expect(loadRuntimeConfig({
+      ...baseEnvironment,
+      GUEST_PUSH_REGISTRATION_ENABLED: 'true',
+    }).guestPushRegistrationEnabled).toBe(true);
+  });
+
   it('keeps the in-process daily digest timer disabled unless explicitly requested', () => {
     const baseEnvironment = { DATABASE_URL: runtimeConfig.databaseUrl };
 
@@ -382,6 +400,98 @@ describe('Fastify API contract', () => {
     }
   });
 
+  it('keeps the additive guest token route hidden while its rollout flag is off', async () => {
+    const app = await createApp();
+    const response = await app.inject({
+      method: 'PUT',
+      url: '/api/v1/devices/push-token',
+      payload: {
+        installationId: '11111111-1111-4111-8111-111111111111',
+        token: 'a'.repeat(200),
+        platform: 'android',
+        appVersionCode: 157,
+        notificationPermission: 'granted',
+      },
+    });
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toEqual({ error: 'Not found' });
+  });
+
+  it('registers and revokes a bounded guest installation when explicitly enabled', async () => {
+    const queries = [];
+    const pool = {
+      query: async (sql, params) => {
+        if (sql.includes('select now()')) return { rows: [{ now: new Date('2026-08-21T00:00:00.000Z') }] };
+        if (sql.includes('guest_device_push_tokens')) {
+          queries.push({ sql, params });
+          return { rows: [], rowCount: 1 };
+        }
+        throw new Error(`Unexpected guest registration query: ${sql}`);
+      },
+    };
+    const app = await buildServer({
+      runtimeConfig: { ...runtimeConfig, guestPushRegistrationEnabled: true }, pool, auth,
+    });
+    apps.push(app);
+    const payload = {
+      installationId: '11111111-1111-4111-8111-111111111111',
+      token: 'a'.repeat(200),
+      platform: 'android',
+      appVersionCode: 157,
+      notificationPermission: 'granted',
+    };
+
+    const registered = await app.inject({ method: 'PUT', url: '/api/v1/devices/push-token', payload });
+    const revoked = await app.inject({ method: 'DELETE', url: '/api/v1/devices/push-token', payload });
+
+    expect(registered.statusCode).toBe(200);
+    expect(registered.json()).toEqual({ registered: true });
+    expect(revoked.statusCode).toBe(200);
+    expect(revoked.json()).toEqual({ revoked: true });
+    expect(queries).toHaveLength(2);
+    expect(queries[0].sql).toContain('on conflict (installation_id) do update');
+    expect(queries[0].params).toEqual([
+      payload.installationId, payload.token, 'android', 157, 'granted',
+    ]);
+    expect(queries[1].params).toEqual([payload.installationId, payload.token]);
+  });
+
+  it('atomically removes a matching guest row when the existing signed-in endpoint links the device', async () => {
+    let registration = null;
+    const pool = {
+      query: async (sql, params) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        if (sql.includes('with removed_guest')) {
+          registration = { sql, params };
+          return { rows: [], rowCount: 1 };
+        }
+        throw new Error(`Unexpected signed registration query: ${sql}`);
+      },
+    };
+    const app = await buildServer({
+      runtimeConfig: { ...runtimeConfig, guestPushRegistrationEnabled: true }, pool, auth,
+    });
+    apps.push(app);
+    const response = await app.inject({
+      method: 'PUT', url: '/api/v1/me/devices/push-token',
+      headers: { authorization: 'Bearer test-token' },
+      payload: {
+        installationId: '11111111-1111-4111-8111-111111111111',
+        token: 'a'.repeat(200), platform: 'android', appVersionCode: 157,
+        notificationPermission: 'granted',
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(registration.sql).toContain('delete from public.guest_device_push_tokens');
+    expect(registration.params).toEqual([
+      'test-user', 'a'.repeat(200), 'android', 157, 'granted',
+      '11111111-1111-4111-8111-111111111111',
+    ]);
+  });
+
   it('keeps legacy notification preferences and adds effective granular preferences', async () => {
     const effective = {
       interactionsEnabled: false,
@@ -466,13 +576,32 @@ describe('Fastify API contract', () => {
     expect(seenKinds).toEqual(['applaud', 'first_applause', 'follow', 'new_follower', 'reply', 'daily_digest']);
   });
 
+  it('migrates the database notification constraint for every supported legacy and canonical kind', () => {
+    const migration = fs.readFileSync(
+      path.resolve('migrations/20260907_notification_kind_contract.sql'),
+      'utf8',
+    );
+    for (const kind of [
+      'applaud', 'follow', 'bookmark', 'publishing', 'editorial',
+      'first_applause', 'comment', 'reply', 'new_follower', 'followed_writer_published',
+      'reading_nudge', 'draft_nudge', 'weekly_prompt_live', 'daily_digest',
+    ]) {
+      expect(migration).toContain(`'${kind}'`);
+    }
+    expect(migration).toContain('drop constraint if exists notifications_kind_check');
+    expect(migration).toContain('add constraint notifications_kind_check');
+  });
+
   it('allows the authenticated scheduler secret to run the daily digest without a user session', async () => {
     // Production defect caught: Cloud Scheduler cannot supply a Firebase user token,
     // so combining requireUser with the scheduler secret makes the job unreachable.
     const pool = {
       query: async (sql) => {
-        if (sql.includes("p.status = 'published'") && sql.includes("interval '24 hours'")) {
+        if (sql.includes('count_by_category')) {
           return { rows: [{ total: 0, by_category: null }], rowCount: 1 };
+        }
+        if (sql.includes("p.status = 'published'")) {
+          return { rows: [], rowCount: 0 };
         }
         throw new Error(`Unexpected daily-digest query: ${sql}`);
       },
@@ -487,12 +616,15 @@ describe('Fastify API contract', () => {
 
     const response = await app.inject({
       method: 'POST',
-      url: '/api/v1/spark/daily-digest/test',
+      url: '/api/v1/spark/daily-digest/test?slot=morning',
       headers: { 'x-admin-key': 'scheduler-secret' },
     });
 
+    if (response.statusCode === 500) {
+      console.error('FASTIFY_CONTRACT_500:', response.payload);
+    }
     expect(response.statusCode).toBe(200);
-    expect(response.json()).toEqual({ skipped: true, reason: 'No new stories today' });
+    expect(response.json()).toEqual({ skipped: true, reason: 'No eligible story available', slot: 'morning' });
   });
 
   it('exposes the daily digest on a production internal scheduler route', async () => {
@@ -589,8 +721,30 @@ describe('Fastify API contract', () => {
     expect(response.json().posts[0].content).toBe('');
     expect(queries[0]).toContain("p.status = 'published'");
     expect(queries[0]).toContain("p.is_public = true");
-    expect(queries[0]).toContain("p.provenance = 'human_verified'");
-    expect(queries[0]).toContain("author.account_type = 'human'");
+    expect(queries[0]).toContain("p.provenance in ('human_verified', 'synthetic')");
+    expect(queries[0]).toContain("author.account_type in ('human', 'editorial_bot')");
+  });
+
+  it('treats category=All as wildcard in reader-facing feed queries', async () => {
+    const queries = [];
+    const pool = {
+      query: async (sql, params) => {
+        queries.push({ sql, params });
+        if (sql.includes('from public.posts p')) {
+          return { rows: [feedPostRow()], rowCount: 1 };
+        }
+        throw new Error(`Unexpected feed query: ${sql}`);
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const response = await app.inject({ method: 'GET', url: '/api/v1/posts?category=All&limit=1' });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().posts).toHaveLength(1);
+    expect(queries[0].sql).toContain("lower($2) = 'all'");
+    expect(queries[0].params[1]).toBe('All');
   });
 
   it('removes legacy third-party avatar URLs from reader-facing feed responses', async () => {
@@ -1062,8 +1216,10 @@ describe('Fastify API contract', () => {
             notificationInsert = { sql, params };
             return { rows: [{ id: notificationId }], rowCount: 1 };
           }
-          if (sql.includes('from public.notification_preferences')) {
-            return { rows: [], rowCount: 0 };
+          if (sql.includes('left join public.notification_preferences')) {
+            expect(sql).toContain("recipient.account_type = 'human'");
+            expect(sql).toContain("actor.account_type = 'human'");
+            return { rows: [{ enabled: true }], rowCount: 1 };
           }
           if (sql.includes('insert into public.notification_delivery_outbox')) {
             outboxReady = true;
@@ -1097,6 +1253,8 @@ describe('Fastify API contract', () => {
     expect(notificationDeliveryQuery).toContain('post.is_public = true');
     expect(notificationDeliveryQuery).toContain("post.provenance = 'human_verified'");
     expect(notificationDeliveryQuery).toContain("post_author.account_type = 'human'");
+    expect(notificationDeliveryQuery).toContain("recipient.account_type = 'human'");
+    expect(notificationDeliveryQuery).toContain("actor.account_type = 'human'");
     expect(send.mock.calls[0][0]).toMatchObject({
       notification: {
         title: 'A Reader gave your story its first applause',
@@ -1118,9 +1276,74 @@ describe('Fastify API contract', () => {
           channelId: 'writon_interactions_channel',
           icon: 'ic_stat_writon',
           color: '#E75A2A',
+          tag: notificationId,
         },
       },
     });
+  });
+
+  it('keeps a non-human social action in the inbox without enqueueing a push', async () => {
+    const targetId = '11111111-1111-1111-1111-111111111111';
+    let inboxInserted = false;
+    let outboxInserted = false;
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        if (sql.includes('insert into public.profiles')) {
+          return { rows: [profileRow()], rowCount: 1 };
+        }
+        if (sql.includes('with candidates as')) return { rows: [], rowCount: 0 };
+        if (sql.includes('select count(*)::int as remaining')) {
+          return { rows: [{ remaining: 0 }], rowCount: 1 };
+        }
+        throw new Error(`Unexpected non-human notification query outside transaction: ${sql}`);
+      },
+      connect: async () => ({
+        query: async (sql) => {
+          if (sql === 'begin' || sql === 'commit' || sql === 'rollback') {
+            return { rows: [], rowCount: 0 };
+          }
+          if (sql.includes('select id from public.profiles') && sql.includes('for update')) {
+            return { rows: [{ id: targetId }], rowCount: 1 };
+          }
+          if (sql.includes('select 1 from public.follows')) return { rows: [], rowCount: 0 };
+          if (sql.includes('insert into public.follows')) return { rows: [], rowCount: 1 };
+          if (sql.includes('insert into public.notifications')) {
+            inboxInserted = true;
+            return { rows: [{ id: '22222222-2222-4222-8222-222222222222' }], rowCount: 1 };
+          }
+          if (sql.includes('left join public.notification_preferences')) {
+            expect(sql).toContain("recipient.account_type = 'human'");
+            expect(sql).toContain("actor.account_type = 'human'");
+            return { rows: [{ enabled: false }], rowCount: 1 };
+          }
+          if (sql.includes('insert into public.notification_delivery_outbox')) {
+            outboxInserted = true;
+            return { rows: [], rowCount: 1 };
+          }
+          if (sql.includes('set followers_count')) {
+            return { rows: [{ followers_count: 1 }], rowCount: 1 };
+          }
+          if (sql.includes('set following_count')) return { rows: [], rowCount: 1 };
+          throw new Error(`Unexpected non-human notification transaction query: ${sql}`);
+        },
+        release: () => {},
+      }),
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth, messaging: { send: vi.fn() } });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'POST',
+      url: `/api/v1/users/${targetId}/follow`,
+      headers: { authorization: 'Bearer test-token' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(inboxInserted).toBe(true);
+    expect(outboxInserted).toBe(false);
   });
 
   it('returns the original comment and increments the counter once when an idempotent comment is retried', async () => {
@@ -1193,6 +1416,132 @@ describe('Fastify API contract', () => {
     expect(counterUpdates).toBe(1);
   });
 
+  it('uses Google Cloud Storage for profile media without changing the public media contract', async () => {
+    const saved = vi.fn(async () => {});
+    const image = Buffer.from('RIFF0000WEBP', 'ascii');
+    const file = {
+      save: saved,
+      download: vi.fn(async () => [image]),
+      getMetadata: vi.fn(async () => [{ contentType: 'image/webp' }]),
+      delete: vi.fn(async () => {}),
+    };
+    const storageBucket = { file: vi.fn(() => file), getFiles: vi.fn(async () => [[]]) };
+    const app = await buildServer({ runtimeConfig, pool: createPool(), auth, storageBucket });
+    apps.push(app);
+
+    const boundary = '----writon-gcs-profile-photo-boundary';
+    const onePixelPng = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+      'base64',
+    );
+    const payload = Buffer.concat([
+      Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="avatar.png"\r\nContent-Type: image/png\r\n\r\n`),
+      onePixelPng,
+      Buffer.from(`\r\n--${boundary}--\r\n`),
+    ]);
+    const upload = await app.inject({
+      method: 'POST',
+      url: '/api/v1/media/upload',
+      headers: { authorization: 'Bearer test-token', 'content-type': `multipart/form-data; boundary=${boundary}` },
+      payload,
+    });
+
+    expect(upload.statusCode).toBe(201);
+    const { key, url } = upload.json();
+    expect(key).toMatch(/^profiles\/test-user\/[a-f0-9-]+\.webp$/);
+    expect(url).toBe(`https://api.writon.test/api/v1/media/${encodeURIComponent(key)}`);
+    expect(saved).toHaveBeenCalledWith(expect.any(Buffer), expect.objectContaining({
+      resumable: false,
+      metadata: expect.objectContaining({ contentType: 'image/webp' }),
+    }));
+
+    const media = await app.inject({ method: 'GET', url: `/api/v1/media/${encodeURIComponent(key)}` });
+    expect(media.statusCode).toBe(200);
+    expect(media.headers['content-type']).toBe('image/webp');
+    expect(media.rawPayload).toEqual(image);
+  });
+
+  it('lets only the authenticated comment owner edit a comment and marks it updated', async () => {
+    const commentId = '33333333-3333-4333-8333-333333333333';
+    let updateQuery;
+    const pool = {
+      query: async (sql, params) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        if (sql.includes('update public.comments')) {
+          updateQuery = { sql, params };
+          return {
+            rows: [{
+              id: commentId,
+              postId: '11111111-1111-1111-1111-111111111111',
+              authorId: 'test-user',
+              parentId: null,
+              content: params[2],
+              createdAt: '2026-09-11T00:00:00.000Z',
+              updatedAt: '2026-09-11T01:00:00.000Z',
+            }],
+            rowCount: 1,
+          };
+        }
+        throw new Error(`Unexpected comment-edit query: ${sql}`);
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'PATCH',
+      url: `/api/v1/comments/${commentId}`,
+      headers: { authorization: 'Bearer test-token' },
+      payload: { content: 'A clearer response' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().comment).toMatchObject({ content: 'A clearer response', isMine: true });
+    expect(updateQuery.sql).toContain('where id = $1 and author_id = $2');
+    expect(updateQuery.params).toEqual([commentId, 'test-user', 'A clearer response']);
+  });
+
+  it('deletes an owned comment transactionally and recomputes the story count', async () => {
+    const commentId = '33333333-3333-4333-8333-333333333333';
+    const postId = '11111111-1111-1111-1111-111111111111';
+    const transactionQueries = [];
+    const pool = {
+      query: async (sql) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        throw new Error(`Unexpected comment-delete query outside transaction: ${sql}`);
+      },
+      connect: async () => ({
+        query: async (sql, params) => {
+          transactionQueries.push({ sql, params });
+          if (sql === 'begin' || sql === 'commit' || sql === 'rollback') return { rows: [], rowCount: 0 };
+          if (sql.includes('delete from public.comments')) {
+            return { rows: [{ post_id: postId }], rowCount: 1 };
+          }
+          if (sql.includes('set comments_count = (select count(*)')) return { rows: [], rowCount: 1 };
+          throw new Error(`Unexpected comment-delete transaction query: ${sql}`);
+        },
+        release: () => {},
+      }),
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'DELETE',
+      url: `/api/v1/comments/${commentId}`,
+      headers: { authorization: 'Bearer test-token' },
+    });
+
+    expect(response.statusCode).toBe(204);
+    expect(transactionQueries.find(({ sql }) => sql.includes('delete from public.comments')).sql)
+      .toContain('where id = $1 and author_id = $2');
+    expect(transactionQueries.some(({ sql }) => sql.includes('set comments_count = (select count(*)'))).toBe(true);
+  });
+
   it('targets the partial draft-id uniqueness rule when creating a retry-safe post', async () => {
     const clientDraftId = '44444444-4444-4444-8444-444444444444';
     const queries = [];
@@ -1235,6 +1584,62 @@ describe('Fastify API contract', () => {
 
     expect(response.statusCode).toBe(201);
     expect(queries.find(({ sql }) => sql.includes('insert into public.posts')).params.at(-1)).toBe(clientDraftId);
+  });
+
+  it('marks an author edit to a published story without changing the existing route', async () => {
+    const postId = '11111111-1111-1111-1111-111111111111';
+    let updateQuery;
+    const pool = {
+      query: async (sql, params) => {
+        if (sql.includes('select profile_id from public.profile_auth_identities')) {
+          return { rows: [{ profile_id: 'test-user' }], rowCount: 1 };
+        }
+        if (sql.includes('select id::text as id, title, summary, content, category')) {
+          return {
+            rows: [{
+              id: postId,
+              title: 'Original title',
+              summary: null,
+              content: 'Original body',
+              category: 'Essays',
+              cover_image_url: null,
+              language_code: 'en',
+              status: 'published',
+              client_draft_id: null,
+              published_at: '2026-09-01T00:00:00.000Z',
+            }],
+            rowCount: 1,
+          };
+        }
+        if (sql.includes('update public.posts') && sql.includes('content_updated_at')) {
+          updateQuery = { sql, params };
+          return { rows: [{ id: postId }], rowCount: 1 };
+        }
+        if (sql.includes('from public.posts p')) {
+          return {
+            rows: [{ ...feedPostRow(), id: postId, content: 'Revised body', contentUpdatedAt: '2026-09-11T01:00:00.000Z' }],
+            rowCount: 1,
+          };
+        }
+        throw new Error(`Unexpected published-story-edit query: ${sql}`);
+      },
+    };
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+
+    const response = await app.inject({
+      method: 'PUT',
+      url: `/api/v1/posts/${postId}`,
+      headers: { authorization: 'Bearer test-token' },
+      payload: { content: 'Revised body' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json().post.contentUpdatedAt).toBe('2026-09-11T01:00:00.000Z');
+    expect(updateQuery.sql).toContain("content_updated_at = case when status = 'published' then now()");
+    expect(updateQuery.sql).toContain('where id = $1 and author_id = $2');
+    expect(updateQuery.params[4]).toContain('Revised body');
+    expect(updateQuery.params[4]).toContain('#writon');
   });
 
   it('patches the authenticated profile without requiring unchanged registration fields', async () => {
@@ -1658,6 +2063,43 @@ describe('Fastify API contract', () => {
     expect(response.json()).toEqual({ error: 'Invalid story identifier' });
   });
 
+  it('keeps legacy reading progress requests valid', async () => {
+    const app = await createApp();
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/posts/11111111-1111-1111-1111-111111111111/reading-progress',
+      headers: { authorization: 'Bearer test-token' },
+      payload: { progress: 0.5, readSeconds: 30 },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.json()).toMatchObject({ progress: 0.5, readSeconds: 30 });
+  });
+
+  it('accepts an optional reading progress idempotency key and validates it as a UUID', async () => {
+    const app = await createApp();
+    const accepted = await app.inject({
+      method: 'POST',
+      url: '/api/v1/posts/11111111-1111-1111-1111-111111111111/reading-progress',
+      headers: { authorization: 'Bearer test-token' },
+      payload: {
+        progress: 0.5,
+        readSeconds: 30,
+        clientMutationId: '22222222-2222-4222-8222-222222222222',
+      },
+    });
+    const rejected = await app.inject({
+      method: 'POST',
+      url: '/api/v1/posts/11111111-1111-1111-1111-111111111111/reading-progress',
+      headers: { authorization: 'Bearer test-token' },
+      payload: { progress: 0.5, readSeconds: 30, clientMutationId: 'not-a-uuid' },
+    });
+
+    expect(accepted.statusCode).toBe(200);
+    expect(rejected.statusCode).toBe(400);
+    expect(rejected.json().error).toBe('Invalid reading progress');
+  });
+
   describe('immutable build & container standards', () => {
     const dockerfilePath = path.resolve(import.meta.dirname, '../../Dockerfile');
     const dockerfileContent = fs.readFileSync(dockerfilePath, 'utf8');
@@ -1714,6 +2156,12 @@ describe('Fastify API contract', () => {
         url: '/api/v1/internal/maintenance/feed-retention',
       });
       expect(resRetention.statusCode).toBe(403);
+
+      const resDiscovery = await app.inject({
+        method: 'POST',
+        url: '/api/v1/internal/notifications/discovery',
+      });
+      expect(resDiscovery.statusCode).toBe(403);
     });
 
     it('rejects wrong admin key with 403', async () => {
@@ -1753,6 +2201,22 @@ describe('Fastify API contract', () => {
         headers: { 'x-admin-key': 'secret-admin-pass' },
       });
       expect(resRetention.statusCode).toBe(200);
+
+      const resDiscovery = await app.inject({
+        method: 'POST',
+        url: '/api/v1/internal/notifications/discovery?dryRun=true&limit=25',
+        headers: { 'x-admin-key': 'secret-admin-pass' },
+      });
+      expect(resDiscovery.statusCode).toBe(200);
+      expect(resDiscovery.json()).toMatchObject({ dryRun: true, eligible: 0 });
+
+      const resLiveDiscovery = await app.inject({
+        method: 'POST',
+        url: '/api/v1/internal/notifications/discovery?dryRun=false',
+        headers: { 'x-admin-key': 'secret-admin-pass' },
+      });
+      expect(resLiveDiscovery.statusCode).toBe(409);
+      expect(resLiveDiscovery.json()).toEqual({ error: 'Discovery notification delivery is disabled' });
     });
 
     it('parses TIMERS_DISABLED and K_SERVICE environment settings', () => {
@@ -1803,6 +2267,10 @@ describe('Fastify API contract', () => {
       const outcome = await app.deliverPushNotifications({ limit: 2, maxSeconds: 0 });
 
       expect(outcome.processed).toBe(0);
+      const claimQuery = deliveryQueries.find((q) => q.sql.includes('with candidates as'));
+      expect(claimQuery.sql).toContain("status = 'sending'");
+      expect(claimQuery.sql).toContain("updated_at <= now() - interval '5 minutes'");
+      expect(claimQuery.sql).toContain("status = 'failed'");
       const revertQuery = deliveryQueries.find((q) =>
         q.sql.includes("set status = 'pending'") && q.sql.includes("where id = any($1::uuid[]) and status = 'sending'")
       );
@@ -1811,4 +2279,3 @@ describe('Fastify API contract', () => {
     });
   });
 });
-

@@ -3,14 +3,18 @@ package com.ibitvalley.writon.modern.core.notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.WritOnModernActivity
+import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
 
 object WritOnNotificationManager {
 
@@ -19,6 +23,8 @@ object WritOnNotificationManager {
     const val CHANNEL_UPDATES = "writon_updates_channel"
 
     private const val BRAND_COLOR = 0xFFE75A2A.toInt()
+    private const val GROUP_INTERACTIONS = "writon_interactions"
+    private const val GROUP_EDITORIAL = "writon_editorial"
 
     fun createNotificationChannels(context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -26,10 +32,10 @@ object WritOnNotificationManager {
 
             val interactionsChannel = NotificationChannel(
                 CHANNEL_INTERACTIONS,
-                "Interactions & Social",
+                context.getString(R.string.notification_channel_interactions_name),
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = "Applauds, comments, follows, and spark replies from fellow readers"
+                description = context.getString(R.string.notification_channel_interactions_description)
                 enableLights(true)
                 enableVibration(true)
                 setShowBadge(true)
@@ -37,20 +43,20 @@ object WritOnNotificationManager {
 
             val editorialChannel = NotificationChannel(
                 CHANNEL_EDITORIAL,
-                "Editorial & Daily Reads",
+                context.getString(R.string.notification_channel_editorial_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "Curated stories, daily editorial recommendations, and highlights"
+                description = context.getString(R.string.notification_channel_editorial_description)
                 enableLights(true)
                 setShowBadge(true)
             }
 
             val updatesChannel = NotificationChannel(
                 CHANNEL_UPDATES,
-                "Story Updates & Publishing",
+                context.getString(R.string.notification_channel_updates_name),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Draft sync and publication confirmations"
+                description = context.getString(R.string.notification_channel_updates_description)
                 setShowBadge(false)
             }
 
@@ -63,13 +69,16 @@ object WritOnNotificationManager {
         title: String,
         message: String,
         storyId: String? = null,
-        actorName: String? = null,
         kind: String = "interaction",
+        targetRoute: String? = null,
         notificationId: Int = (System.currentTimeMillis() % 100000).toInt()
     ) {
         val intent = Intent(context, WritOnModernActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            if (!storyId.isNullOrBlank()) {
+            if (!targetRoute.isNullOrBlank()) {
+                putExtra("targetRoute", targetRoute)
+                if (!storyId.isNullOrBlank()) putExtra("storyId", storyId)
+            } else if (!storyId.isNullOrBlank()) {
                 putExtra("storyId", storyId)
                 putExtra("targetRoute", "reader/$storyId")
             } else {
@@ -85,17 +94,23 @@ object WritOnNotificationManager {
         )
 
         val largeIcon = try {
-            BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
+            BitmapFactory.decodeResource(context.resources, R.drawable.appcon)
         } catch (_: Exception) {
             null
         }
 
-        val subtext = when (kind.lowercase()) {
-            "applaud" -> "Applaud on your story"
-            "comment" -> "New reflection"
-            "follow" -> "New follower"
-            "spark_reaction" -> "Spark Reaction"
-            else -> "WritOn Story"
+        val presentation = notificationPresentation(kind)
+        val actionLabel = if (kind.lowercase() in setOf("app_update", "update") ||
+            targetRoute == "play_store" ||
+            targetRoute?.contains("play.google.com") == true
+        ) {
+            context.getString(R.string.notification_action_update)
+        } else if (targetRoute == "write") {
+            context.getString(R.string.continue_writing_untitled)
+        } else if (storyId.isNullOrBlank()) {
+            context.getString(R.string.notification_action_view_activity)
+        } else {
+            context.getString(R.string.notification_action_read_story)
         }
 
         val notification = NotificationCompat.Builder(context, CHANNEL_INTERACTIONS)
@@ -106,31 +121,21 @@ object WritOnNotificationManager {
             .setStyle(
                 NotificationCompat.BigTextStyle()
                     .bigText(message)
-                    .setSummaryText(subtext)
+                    .setSummaryText(context.getString(presentation.subtextRes))
             )
             .setColor(BRAND_COLOR)
-            .setColorized(true)
+            .setSubText(context.getString(presentation.subtextRes))
+            .setCategory(presentation.category)
+            .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+            .setGroup(GROUP_INTERACTIONS)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .apply {
-                if (!storyId.isNullOrBlank()) {
-                    addAction(
-                        R.drawable.ic_stat_writon,
-                        "Read Story",
-                        pendingIntent
-                    )
-                }
-            }
+            .addAction(R.drawable.ic_stat_writon, actionLabel, pendingIntent)
             .build()
 
-        try {
-            NotificationManagerCompat.from(context).notify(notificationId, notification)
-        } catch (e: SecurityException) {
-            // Android 13+ POST_NOTIFICATIONS permission not yet granted
-            e.printStackTrace()
-        }
+        postNotification(context, notificationId, notification, kind)
     }
 
     fun showDailyEditorialNotification(
@@ -155,7 +160,7 @@ object WritOnNotificationManager {
         )
 
         val largeIcon = try {
-            BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
+            BitmapFactory.decodeResource(context.resources, R.drawable.appcon)
         } catch (_: Exception) {
             null
         }
@@ -163,36 +168,61 @@ object WritOnNotificationManager {
         val notification = NotificationCompat.Builder(context, CHANNEL_EDITORIAL)
             .setSmallIcon(R.drawable.ic_stat_writon)
             .setLargeIcon(largeIcon)
-            .setContentTitle("Curated for you • $authorName")
-            .setContentText(storyTitle)
+            .setContentTitle(context.getString(R.string.notification_daily_title))
+            .setContentText(context.getString(R.string.notification_story_by_author, storyTitle, authorName))
             .setStyle(
                 NotificationCompat.BigTextStyle()
                     .setBigContentTitle(storyTitle)
-                    .bigText(storySummary.ifBlank { "A quiet, thoughtful story ready for your morning reading." })
-                    .setSummaryText("Daily Editorial Read")
+                    .bigText(storySummary.ifBlank { context.getString(R.string.notification_daily_fallback) })
+                    .setSummaryText(context.getString(R.string.notification_subtext_daily_read))
             )
             .setColor(BRAND_COLOR)
-            .setColorized(true)
+            .setSubText(context.getString(R.string.notification_subtext_daily_read))
+            .setCategory(NotificationCompat.CATEGORY_RECOMMENDATION)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .setGroup(GROUP_EDITORIAL)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .addAction(R.drawable.ic_stat_writon, "Read Now", pendingIntent)
+            .addAction(
+                R.drawable.ic_stat_writon,
+                context.getString(R.string.notification_action_read_story),
+                pendingIntent
+            )
             .build()
 
-        try {
-            NotificationManagerCompat.from(context).notify(notificationId, notification)
-        } catch (_: SecurityException) {}
+        postNotification(context, notificationId, notification, "daily_digest")
     }
 
     fun sendTestNotification(context: Context) {
         showInteractionNotification(
             context = context,
-            title = "Aarav Mehta applauded your story",
-            message = "“The Tactical Synergy of the Decoy Coffee Mug” received 5 new applauds from readers in Philosophy.",
-            storyId = "first-try",
-            actorName = "Aarav Mehta",
-            kind = "applaud",
+            title = context.getString(R.string.notification_test_title),
+            message = context.getString(R.string.notification_test_body),
+            kind = "system_test",
             notificationId = 777
         )
+    }
+
+    private fun postNotification(
+        context: Context,
+        notificationId: Int,
+        notification: android.app.Notification,
+        kind: String
+    ) {
+        val runtimePermissionGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        val manager = NotificationManagerCompat.from(context)
+        if (!runtimePermissionGranted || !manager.areNotificationsEnabled()) {
+            WritOnTelemetry.pushDisplaySuppressed(context, "permission_or_settings")
+            return
+        }
+        try {
+            manager.notify(notificationId, notification)
+            WritOnTelemetry.pushDisplayed(context, kind)
+        } catch (error: SecurityException) {
+            WritOnTelemetry.pushDisplaySuppressed(context, "security_exception")
+            WritOnTelemetry.recordNonFatal("push_display_permission", error)
+        }
     }
 }

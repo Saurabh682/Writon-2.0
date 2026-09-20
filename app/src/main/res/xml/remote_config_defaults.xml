@@ -1,25 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <defaultsMap>
     <entry>
-        <key>App_Config</key>
-        <value>none</value>
-        <key>is_show_maintenance</key>
-        <Key>is_show_pop_up</Key>
-        <value>false</value>
-        <key>new_version</key>
-        <value></value>
-        <key>currentVersion</key>
-        <value></value>
-        <key>releaseDate</key>
-        <value>none</value>
-        <key>is_show_maintenance</key>
-        <value>false</value>
-        <key>is_two_factor_enabled</key>
-        <value>true</value>
-        <key>is_two_factor_enabled</key>
-        <value>true</value>
-        <key>is_log_enabled</key>
+        <key>feature_update_indicator_enabled</key>
         <value>true</value>
     </entry>
+    <entry>
+        <key>daily_digest_notification_enabled</key>
+        <value>true</value>
+    </entry>
+    <entry>
+        <key>editor_ai_assist_enabled</key>
+        <value>true</value>
+    </entry>
+    <entry>
+        <key>explore_curated_banner_enabled</key>
+        <value>true</value>
+    </entry>
+    <entry>
+        <key>explore_trending_stories_limit</key>
+        <value>10</value>
+    </entry>
+    <entry>
+        <key>story_reader_quote_card_share_enabled</key>
+        <value>true</value>
+    </entry>
+    <entry>
+        <key>existing_user_preferences_card_enabled</key>
+        <value>false</value>
+    </entry>
+    <entry>
+        <key>personalized_home_feed_enabled</key>
+        <value>false</value>
+    </entry>
 </defaultsMap>
-

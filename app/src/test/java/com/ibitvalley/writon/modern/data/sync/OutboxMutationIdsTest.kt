@@ -13,6 +13,15 @@ class OutboxMutationIdsTest {
     @Test
     fun `fallback ids do not collide across mutation kinds or rows`() {
         assertNotEquals(stableOutboxUuid("comment", 42), stableOutboxUuid("post", 42))
+        assertNotEquals(stableOutboxUuid("comment", 42), stableOutboxUuid("reading", 42))
         assertNotEquals(stableOutboxUuid("comment", 42), stableOutboxUuid("comment", 43))
+    }
+
+    @Test
+    fun `reading progress target retains its originating account`() {
+        val target = readingProgressOutboxTarget("account-a", "story-1")
+
+        assertEquals("account-a" to "story-1", parseReadingProgressOutboxTarget(target))
+        assertEquals(null, parseReadingProgressOutboxTarget("story-without-owner"))
     }
 }

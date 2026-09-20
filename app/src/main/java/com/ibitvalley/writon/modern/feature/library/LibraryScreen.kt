@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ibitvalley.writon.R
@@ -42,7 +43,7 @@ private val LibraryEditorialFamily = FontFamily(
 )
 
 private enum class LibraryTab(val labelRes: Int) {
-    Saved(R.string.library_tab_saved), History(R.string.library_tab_history), Applauds(R.string.library_tab_applauds), Collections(R.string.library_tab_collections)
+    Saved(R.string.library_tab_saved), History(R.string.library_tab_history), Applauds(R.string.library_tab_applauds)
 }
 
 private data class LibraryStory(
@@ -52,7 +53,8 @@ private data class LibraryStory(
     val summary: String,
     val authorName: String,
     val readingTime: Int,
-    val applauds: Int
+    val applauds: Int,
+    val isBookmarked: Boolean
 )
 
 private fun PostDto.asLibraryStory() = LibraryStory(
@@ -62,7 +64,8 @@ private fun PostDto.asLibraryStory() = LibraryStory(
     summary = summary.orEmpty().ifBlank { "A story from ${author.fullName}." },
     authorName = author.fullName,
     readingTime = readingTimeMin,
-    applauds = likesCnt
+    applauds = likesCnt,
+    isBookmarked = isBookmarked
 )
 
 @Composable
@@ -70,7 +73,8 @@ fun LibraryScreen(
     viewModel: CollectionsViewModel,
     onStoryClick: (String) -> Unit = {},
     onSearchClick: () -> Unit = {},
-    onHistoryClick: () -> Unit = {}
+    onHistoryClick: () -> Unit = {},
+    onExploreClick: () -> Unit = {}
 ) {
     var selectedTabIndex by remember { mutableIntStateOf(0) }
     var newestFirst by remember { mutableStateOf(true) }
@@ -86,7 +90,6 @@ fun LibraryScreen(
         LibraryTab.Saved -> viewModel.savedPosts.map { it.asLibraryStory() }
         LibraryTab.History -> emptyList()
         LibraryTab.Applauds -> viewModel.applaudedPosts.map { it.asLibraryStory() }
-        LibraryTab.Collections -> emptyList()
     }.let { stories -> if (newestFirst) stories else stories.reversed() }
 
     LazyColumn(
@@ -106,12 +109,12 @@ fun LibraryScreen(
         }
         item { LibrarySectionHeader(selectedTab, visibleStories.size, newestFirst, onToggleOrder = { newestFirst = !newestFirst }) }
         if (visibleStories.isEmpty()) {
-            item { EmptyLibraryCollections() }
+            item { EmptyLibraryState(selectedTab, onExploreClick) }
         } else {
             items(visibleStories, key = { it.id }) { story ->
                 LibraryStoryCard(
                     story = story,
-                    isBookmarked = selectedTab == LibraryTab.Saved,
+                    isBookmarked = story.isBookmarked,
                     onClick = { onStoryClick(story.id) },
                     onToggleBookmark = { viewModel.toggleBookmark(story.id) }
                 )
@@ -173,7 +176,6 @@ private fun LibraryFilters(selectedIndex: Int, onSelected: (Int) -> Unit) {
                         LibraryTab.Saved -> if (selected) R.drawable.ic_bookmark_filled_orange else R.drawable.ic_bookmark_muted
                         LibraryTab.History -> R.drawable.ic_history_muted
                         LibraryTab.Applauds -> null
-                        LibraryTab.Collections -> R.drawable.ic_collection_muted
                     }
                     if (tab == LibraryTab.Applauds) {
                         Image(painterResource(if (selected) R.drawable.ic_applaud_orange else R.drawable.ic_applaud_muted), contentDescription = null, modifier = Modifier.size(20.dp))
@@ -196,7 +198,6 @@ private fun LibrarySectionHeader(tab: LibraryTab, count: Int, newestFirst: Boole
                 LibraryTab.Saved -> stringResource(R.string.library_saved_header)
                 LibraryTab.History -> stringResource(R.string.library_history_header)
                 LibraryTab.Applauds -> stringResource(R.string.library_applauds_header)
-                LibraryTab.Collections -> stringResource(R.string.library_collections_header)
             },
             style = MaterialTheme.typography.headlineMedium.copy(fontFamily = LibraryEditorialFamily)
         )
@@ -288,7 +289,7 @@ private fun LibraryStoryCard(story: LibraryStory, isBookmarked: Boolean, onClick
 }
 
 @Composable
-private fun EmptyLibraryCollections() {
+private fun EmptyLibraryState(tab: LibraryTab, onExploreClick: () -> Unit) {
     Surface(
         shape = RoundedCornerShape(WritOnRadius.card),
         color = MaterialTheme.colorScheme.surface,
@@ -296,11 +297,25 @@ private fun EmptyLibraryCollections() {
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(WritOnSpacing.xl), horizontalAlignment = Alignment.CenterHorizontally) {
-            Image(painterResource(R.drawable.ic_collection_muted), contentDescription = null, modifier = Modifier.size(40.dp))
+            Image(
+                painterResource(if (tab == LibraryTab.Applauds) R.drawable.ic_applaud_muted else R.drawable.ic_bookmark_muted),
+                contentDescription = null,
+                modifier = Modifier.size(40.dp)
+            )
             Spacer(Modifier.height(WritOnSpacing.sm))
-            Text(stringResource(R.string.library_empty_collections), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(if (tab == LibraryTab.Applauds) R.string.library_empty_applauds_title else R.string.library_empty_saved_title),
+                style = MaterialTheme.typography.titleMedium
+            )
             Spacer(Modifier.height(WritOnSpacing.xxs))
-            Text("Save stories to build a collection around your next idea.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                stringResource(if (tab == LibraryTab.Applauds) R.string.library_empty_applauds_desc else R.string.library_empty_saved_desc),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+            Spacer(Modifier.height(WritOnSpacing.md))
+            Button(onClick = onExploreClick) { Text(stringResource(R.string.feed_discover_stories)) }
         }
     }
 }

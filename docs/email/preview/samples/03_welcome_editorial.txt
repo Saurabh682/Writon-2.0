@@ -1,0 +1,11 @@
+WritOn
+
+Welcome to WritOn
+
+A home for slow reading and deliberate writing. Start with a story, or write your first line. There is no need to do both today.
+
+Open WritOn: https://writon.cc/
+
+Email preferences: https://writon.cc/settings/email?token=sample_demo
+Unsubscribe: https://writon.cc/email/unsubscribe?token=sample_demo
+WritOn Publishing Inc., 120 Koramangala 4th Block, Bengaluru, KA 560034

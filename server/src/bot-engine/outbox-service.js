@@ -175,7 +175,8 @@ export async function processOutboxEvents(pool, options = {}) {
  * @param {object} post Published post row
  * @param {object} [author] Author details
  */
-export async function enqueueStorySyndication(clientOrPool, post, author = {}) {
+export async function enqueueStorySyndication(clientOrPool, post, author = {}, options = {}) {
+  const keywords = options.keywords || post.keywords || [];
   return enqueueOutboxEvent(clientOrPool, {
     eventType: 'social_syndicate',
     payload: {
@@ -188,6 +189,7 @@ export async function enqueueStorySyndication(clientOrPool, post, author = {}) {
       readingTimeMin: post.reading_time_min || post.readingTimeMin || 3,
       authorFullName: author.fullName || author.full_name || 'WritOn Author',
       authorPenName: author.penName || author.pen_name || 'author',
+      keywords: Array.isArray(keywords) ? keywords : [],
     },
   });
 }

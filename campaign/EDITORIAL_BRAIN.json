@@ -1,14 +1,15 @@
 {
   "schema_version": "1.0.0",
   "description": "WritOn Master Editorial Brain & Creative Insight Reservoir. Single source of truth for high-resonance propositions, hooks, and cross-platform creative intelligence.",
-  "last_updated": "2026-09-16T09:05:00.000Z",
+  "last_updated": "2026-09-19T06:42:00.850Z",
   "creative_north_star": "Point of view, tension, transformation, or curiosity beat neutral descriptive framing. Never spend the first seconds introducing the thing that should have been the first seconds.",
   "core_rules": [
     "Strong proposition > neutral framing: Never use filing-cabinet titles (e.g. \"Week-one practice recap\"). Give the reader unfinished business.",
     "0:00 Cut Hook: Put the strongest, sharpest sentence at the very top (in video 0:00-0:02; on social in the first 80 characters above the fold).",
     "Sensory Anchors: Ground abstractions in physical objects (tea cooling at 5:55 PM, folded receipts, chipping clay cups).",
     "Cadence & Spacing: Avoid self-competition by enforcing at least 48h separation between identical proposition archetypes.",
-    "Zero AI Slop Hard Gates: All generators must pass the 29 engine blockers (TRENDING_KEYWORD_AS_TITLE_FAIL, TOPIC_SUBSTITUTION_FAIL, CURRENT_TOPIC_STALE_SOURCE_FAIL, ABSTRACT_CONCLUSION_WITHOUT_CAUSAL_BRIDGE_FAIL, PERSONA_ERASURE_FAIL, GENERIC_APHORISM_FAIL, DECORATIVE_CODE_FAIL, METAPHOR_AS_CODE_FAIL, BROKEN_SENTENCE_FAIL, SCRAPED_DEFINITION_FAIL, TRUNCATED_SOURCE_FAIL, EMPTY_QUOTE_FAIL, GENERIC_REFLECTION_TEMPLATE_FAIL, PERSONA_ABSENCE_FAIL, PRECISE_TECH_DETAIL_WITHOUT_SOURCE_FAIL, UNEARNED_TITLE_OCCUPATION_FAIL, FABRICATED_SOURCE_DETAIL_FAIL, PLANNER_TEXT_LEAK_FAIL, TITLE_NATURALNESS_CHECK, UNATTRIBUTED_APHORISM_FAIL, ABSTRACT_CULTURE_WITHOUT_OBJECT_FAIL, FIRST_PERSON_WITNESS_CLAIM_FAIL, UNVERIFIED_INDUSTRY_FIRST_FAIL, FICTIONAL_PRECISION_FAIL, RESULT_CONTRADICTS_PREMISE_FAIL, SPORT_STYLE_GENERALIZATION_FAIL, TITLE_OBJECT_CONTRACT_FAIL, PERSONA_LENS_CONTAMINATION_FAIL, SELF_REFERENCE_COOLDOWN) before any candidate text touches disk or queue."
+    "Zero AI Slop Hard Gates: All generators must pass the 29 engine blockers (TRENDING_KEYWORD_AS_TITLE_FAIL, TOPIC_SUBSTITUTION_FAIL, CURRENT_TOPIC_STALE_SOURCE_FAIL, ABSTRACT_CONCLUSION_WITHOUT_CAUSAL_BRIDGE_FAIL, PERSONA_ERASURE_FAIL, GENERIC_APHORISM_FAIL, DECORATIVE_CODE_FAIL, METAPHOR_AS_CODE_FAIL, BROKEN_SENTENCE_FAIL, SCRAPED_DEFINITION_FAIL, TRUNCATED_SOURCE_FAIL, EMPTY_QUOTE_FAIL, GENERIC_REFLECTION_TEMPLATE_FAIL, PERSONA_ABSENCE_FAIL, PRECISE_TECH_DETAIL_WITHOUT_SOURCE_FAIL, UNEARNED_TITLE_OCCUPATION_FAIL, FABRICATED_SOURCE_DETAIL_FAIL, PLANNER_TEXT_LEAK_FAIL, TITLE_NATURALNESS_CHECK, UNATTRIBUTED_APHORISM_FAIL, ABSTRACT_CULTURE_WITHOUT_OBJECT_FAIL, FIRST_PERSON_WITNESS_CLAIM_FAIL, UNVERIFIED_INDUSTRY_FIRST_FAIL, FICTIONAL_PRECISION_FAIL, RESULT_CONTRADICTS_PREMISE_FAIL, SPORT_STYLE_GENERALIZATION_FAIL, TITLE_OBJECT_CONTRACT_FAIL, PERSONA_LENS_CONTAMINATION_FAIL, SELF_REFERENCE_COOLDOWN) before any candidate text touches disk or queue.",
+    "SEO & Trending Keyword Tagging: Stories, posts, and social dispatches derived from trend intelligence must always tag and incorporate the canonical trending keywords and rising search queries harvested from the Brain's database into the piece summary, social copy, and discovery hashtags (all lowercase) to maintain maximum algorithmic discoverability and SEO readiness without sacrificing human literary voice."
   ],
   "proposition_archetypes": {
     "contrarian_rule": {
@@ -169,10 +170,14 @@
           "instagram_reel"
         ]
       },
-      "times_dispatched": 1,
-      "last_dispatched_at": "2026-09-16T05:11:41.000Z",
+      "times_dispatched": 2,
+      "last_dispatched_at": "2026-09-19T06:42:00.850Z",
       "video_id": "W8AZfNL3uWY",
-      "unlisted_shorts_url": "https://www.youtube.com/shorts/W8AZfNL3uWY"
+      "unlisted_shorts_url": "https://www.youtube.com/shorts/W8AZfNL3uWY",
+      "last_dispatched_platform": "x",
+      "channel_dispatches": {
+        "x": "2026-09-19T06:42:00.850Z"
+      }
     },
     {
       "id": "hook_replace_he_was_happy",
@@ -502,6 +507,123 @@
       "times_dispatched": 1,
       "last_dispatched_at": "2026-09-16T18:00:00.000Z",
       "outcomes": []
+    }
+  ],
+  "high_resonance_hooks": [
+    {
+      "id": "hook_chekhov_object",
+      "proposition_archetype": "contrarian_rule",
+      "title": "Never Write About Grief in the Abstract",
+      "hook_0_sec": "NEVER WRITE ABOUT GRIEF IN THE ABSTRACT.",
+      "turn_2_sec": "Find the one concrete object left behind on the table.",
+      "body_core": "Draft one names the feeling, but leaves the page completely blank. Now watch the rewrite: His father’s reading glasses were still folded on top of the unfinished crossword. Put the object on the table. Let the reader do the math.",
+      "anti_pattern_warning": "Naming abstract grief instead of anchoring the loss in a tactile leftover.",
+      "provenance": {
+        "source_platform": "youtube_shorts",
+        "signal_level": "published_short_008",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "instagram_card"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-16T17:27:00.000Z",
+      "video_id": "1CFKBf4_OfY",
+      "url": "https://www.youtube.com/shorts/1CFKBf4_OfY",
+      "privacy_status": "public"
+    },
+    {
+      "id": "hook_writing_nervousness",
+      "proposition_archetype": "transformation",
+      "title": "How to Write Nervousness Without Saying “Nervous”",
+      "hook_0_sec": "THIS SENTENCE SAYS NERVOUS. IT DOESN'T MAKE US FEEL IT.",
+      "turn_2_sec": "Don't name the anxiety. Make her body confess instead.",
+      "body_core": "Draft one states an abstract emotional label. Watch the rewrite: She peeled the cardboard sleeve off her paper coffee cup, then began tearing it into clean, narrow strips. Now the reader is in the waiting room with her. Give the body a physical task. The emotion takes care of itself.",
+      "anti_pattern_warning": "Labeling anxiety directly rather than giving the character an involuntary, compulsive physical micro-task.",
+      "provenance": {
+        "source_platform": "youtube_shorts",
+        "signal_level": "published_short_009",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "threads",
+          "instagram_reel"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-17T09:18:44.000Z",
+      "video_id": "eO72NYPnvU8",
+      "url": "https://www.youtube.com/shorts/eO72NYPnvU8",
+      "privacy_status": "public"
+    },
+    {
+      "id": "hook_filter_words_he_heard",
+      "proposition_archetype": "transformation",
+      "title": "Stop Writing “He Heard” and “She Noticed”",
+      "hook_0_sec": "THIS SENTENCE DOESN'T HAVE AN EMERGENCY. IT HAS A REPORTER.",
+      "turn_2_sec": "Cut the filter. If you describe the boots, the reader already knows he heard them.",
+      "body_core": "When you write 'He heard the sound of heavy footsteps running down the hallway,' your scene has a reporter instead of an emergency. Watch the rewrite: Heavy boots pounded down the floorboards, stopping dead outside his door. Now the threat is in the hallway, not in his ear. Kill the observer filter. Let the danger strike the page.",
+      "anti_pattern_warning": "Inserting sensory filters ('he heard', 'she saw', 'there was') between the reader and the action.",
+      "provenance": {
+        "source_platform": "youtube_shorts",
+        "signal_level": "ready_short_010",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-17T09:21:01.000Z",
+      "video_id": "t_wqs-mXo78",
+      "url": "https://www.youtube.com/shorts/t_wqs-mXo78",
+      "privacy_status": "public"
+    },
+    {
+      "id": "hook_dialogue_adverbs_deadbolt",
+      "proposition_archetype": "transformation",
+      "title": "Stop Using Adverbs in Dialogue Tags",
+      "hook_0_sec": "THIS DIALOGUE TAG DOESN'T ADD TENSION. IT'S APOLOGIZING FOR IT.",
+      "turn_2_sec": "If the line is dangerous, cut the adverb and make his hands prove it.",
+      "body_core": "When you write 'Don't touch that, he whispered menacingly,' your dialogue tag is apologizing for the sentence. Watch the rewrite: “Don't touch that.” His thumb clicked the deadbolt into place. Now the threat is in the room, not in the modifier. Dialogue carries the words. Action carries the threat.",
+      "anti_pattern_warning": "Attaching dramatic adverbs (menacingly, angrily, bitterly) to dialogue tags instead of giving characters physical action beats.",
+      "provenance": {
+        "source_platform": "youtube_shorts",
+        "signal_level": "ready_short_011",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-18T09:27:00.000Z",
+      "video_id": "fpLRilhg5L4",
+      "url": "https://www.youtube.com/shorts/fpLRilhg5L4",
+      "privacy_status": "public"
+    },
+    {
+      "id": "hook_anger_cutlery_geometry",
+      "proposition_archetype": "transformation",
+      "title": "How to Write Anger Without Screaming",
+      "hook_0_sec": "THIS SENTENCE SAYS SHE WAS FURIOUS. IT FORGETS TO MAKE HER TERRIFYING.",
+      "turn_2_sec": "Stop making angry characters shout. Real fury lowers its voice and organizes the room.",
+      "body_core": "When you write 'She was furious at him for lying,' the scene sounds like a soap opera. Watch the rewrite: She refolded his napkin into a sharp triangle, and slid the salt cellar two inches left. Now the silence is colder than any slammed door. Loud anger makes noise. Lethal anger organizes the cutlery.",
+      "anti_pattern_warning": "Writing anger through melodramatic shouting, slamming doors, and exclamation marks rather than physical restraint and geometric object manipulation.",
+      "provenance": {
+        "source_platform": "youtube_shorts",
+        "signal_level": "ready_short_012",
+        "cross_platform_formats": [
+          "youtube_shorts",
+          "x_root_tweet",
+          "threads"
+        ]
+      },
+      "times_dispatched": 1,
+      "last_dispatched_at": "2026-09-18T11:59:45.000Z",
+      "video_id": "TYbPVp9k3Es",
+      "url": "https://www.youtube.com/shorts/TYbPVp9k3Es",
+      "privacy_status": "unlisted"
     }
   ]
 }

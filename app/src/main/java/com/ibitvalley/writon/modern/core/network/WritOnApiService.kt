@@ -114,6 +114,21 @@ interface WritOnApiService {
         @Query("limit") limit: Int = 50
     ): Response<PostsResponseDto>
 
+    @GET("api/v1/feed")
+    suspend fun getPersonalizedFeed(
+        @Query("cursor") cursor: String? = null,
+        @Query("limit") limit: Int = 20,
+        @Query("language") language: String,
+        @Query("guestTopics") guestTopics: String? = null,
+        @Query("guestAuthors") guestAuthors: String? = null,
+        @Query("guestLanguages") guestLanguages: String? = null
+    ): Response<FeedResponseDto>
+
+    @POST("api/v1/feed/events")
+    suspend fun recordFeedEvents(
+        @Body request: FeedBehaviorBatchDto
+    ): Response<FeedBehaviorOutcomeDto>
+
     @GET("api/v1/me/stories")
     suspend fun getMyPublishedStories(
         @Query("page") page: Int = 1,
@@ -146,6 +161,14 @@ interface WritOnApiService {
         @Body request: UpdateInterestsRequestDto
     ): Response<InterestsResponseDto>
 
+    @GET("api/v1/me/engagement-preferences")
+    suspend fun getMyEngagementPreferences(): Response<EngagementPreferencesDto>
+
+    @PUT("api/v1/me/engagement-preferences")
+    suspend fun updateMyEngagementPreferences(
+        @Body request: UpdateEngagementPreferencesRequestDto
+    ): Response<EngagementPreferencesDto>
+
     @GET("api/v1/me/reading-history")
     suspend fun getMyReadingHistory(
         @Query("page") page: Int = 1,
@@ -170,12 +193,27 @@ interface WritOnApiService {
         @Body request: PushTokenRegistrationRequestDto
     ): Response<Map<String, Boolean>>
 
+    @PUT("api/v1/devices/push-token")
+    suspend fun registerGuestPushToken(
+        @Body request: PushTokenRegistrationRequestDto
+    ): Response<Map<String, Boolean>>
+
+    @HTTP(method = "DELETE", path = "api/v1/me/devices/push-token", hasBody = true)
+    suspend fun revokePushToken(
+        @Body request: PushTokenRevocationRequestDto
+    ): Response<Map<String, Boolean>>
+
+    @HTTP(method = "DELETE", path = "api/v1/devices/push-token", hasBody = true)
+    suspend fun revokeGuestPushToken(
+        @Body request: PushTokenRevocationRequestDto
+    ): Response<Map<String, Boolean>>
+
     @GET("api/v1/me/notification-preferences")
     suspend fun getNotificationPreferences(): Response<NotificationPreferencesDto>
 
     @PUT("api/v1/me/notification-preferences")
     suspend fun updateNotificationPreferences(
-        @Body request: NotificationPreferencesDto
+        @Body request: NotificationPreferencesUpdateDto
     ): Response<NotificationPreferencesDto>
 
     @PATCH("api/v1/me/notifications/{id}/read")
@@ -191,6 +229,15 @@ interface WritOnApiService {
         @Path("postId") postId: String,
         @Body payload: AddCommentRequestDto
     ): Response<Map<String, Any>>
+
+    @PATCH("api/v1/comments/{commentId}")
+    suspend fun updateComment(
+        @Path("commentId") commentId: String,
+        @Body payload: UpdateCommentRequestDto
+    ): Response<Map<String, Any>>
+
+    @DELETE("api/v1/comments/{commentId}")
+    suspend fun deleteComment(@Path("commentId") commentId: String): Response<Unit>
 
     @GET("api/v1/users/{idOrPenName}")
     suspend fun getUserProfile(

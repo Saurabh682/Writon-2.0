@@ -2,6 +2,72 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
+    <loc>https://writon.cc/stories/the-geometry-of-the-crease-c915cb49-1b2</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-09-20T17:30:43.148Z</news:publication_date>
+      <news:title>The Geometry of the Crease</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-second-set-at-the-corner-shop-4796a3f3-69e</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-09-20T14:00:59.092Z</news:publication_date>
+      <news:title>The Second Set at the Corner Shop</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-silent-exchange-on-labor-speed-and-the-pause-2320dfce-647</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-09-20T08:00:55.624Z</news:publication_date>
+      <news:title>Who Gets to Pause on Labor Day?</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-shadow-premium-0e779ec5-b68</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-09-20T01:30:56.691Z</news:publication_date>
+      <news:title>The Shadow Premium</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-persistence-of-the-frame-e6366080-6d8</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-09-19T17:31:08.331Z</news:publication_date>
+      <news:title>What the Clapping Cannot Measure</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-glass-wall-of-flat-402-7a0a7dd6-2f8</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-09-19T14:01:07.955Z</news:publication_date>
+      <news:title>Mrs Menon Has Left the Group</news:title>
+    </news:news>
+  </url>
+  <url>
     <loc>https://writon.cc/stories/the-river-that-forgot-its-path-7a213509-b94</loc>
     <news:news>
       <news:publication>
@@ -9,7 +75,7 @@
         <news:language>en</news:language>
       </news:publication>
       <news:publication_date>2026-09-19T08:00:57.847Z</news:publication_date>
-      <news:title>The River That Forgot Its Path</news:title>
+      <news:title>When a River Has to Wait</news:title>
     </news:news>
   </url>
   <url>
@@ -21,83 +87,6 @@
       </news:publication>
       <news:publication_date>2026-09-19T01:30:37.230Z</news:publication_date>
       <news:title>The Weight of Wet Paper</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/rain-on-the-transistor-b3c73c02-b33</loc>
-    <news:news>
-      <news:publication>
-        <news:name>WritOn</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-09-18T17:30:53.913Z</news:publication_date>
-      <news:title>Rain on the Transistor</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/three-headlines-for-the-same-1412-days-3442f45f-7a7</loc>
-    <news:news>
-      <news:publication>
-        <news:name>WritOn</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-09-18T14:00:30.863Z</news:publication_date>
-      <news:title>Three Headlines for the Same 1,412 Days</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/the-shares-beneath-the-silt-24305149-bca</loc>
-    <news:news>
-      <news:publication>
-        <news:name>WritOn</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-09-18T08:00:30.307Z</news:publication_date>
-      <news:title>The Shares Beneath the Silt</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/on-the-municipal-margin-blue-white-and-rain-efcb78ad-997</loc>
-    <news:news>
-      <news:publication>
-        <news:name>WritOn</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-09-18T03:15:53.111Z</news:publication_date>
-      <news:title>Rain on Southern Avenue</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/the-long-shot-of-a-stay-6261998f-8a8</loc>
-    <news:news>
-      <news:publication>
-        <news:name>WritOn</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-09-18T01:30:54.670Z</news:publication_date>
-      <news:title>The Long Shot of a Stay</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/four-hours-inside-a-foregone-conclusion-a6e1d2d7</loc>
-    <news:news>
-      <news:publication>
-        <news:name>WritOn</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-09-17T17:31:08.042Z</news:publication_date>
-      <news:title>Four Hours Inside a Foregone Conclusion</news:title>
-    </news:news>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/when-streaming-memory-enters-the-cinema-hall-bcaf3f60</loc>
-    <news:news>
-      <news:publication>
-        <news:name>WritOn</news:name>
-        <news:language>en</news:language>
-      </news:publication>
-      <news:publication_date>2026-09-17T14:00:56.244Z</news:publication_date>
-      <news:title>When Streaming Memory Enters the Cinema Hall</news:title>
     </news:news>
   </url>
 </urlset>

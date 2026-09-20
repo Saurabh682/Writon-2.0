@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WritOn LinkedIn Studio • Brain-Governed Command Center</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400..700;1,6..72,400..700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Noto+Serif+Devanagari:wght@400;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --font-serif: 'Newsreader', 'Noto Serif Devanagari', Georgia, serif;
+      --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --parchment: #FAF5EE;
+      --parchment-card: #FFFDF9;
+      --parchment-subtle: #F4EFE6;
+      --ink: #1C1917;
+      --ink-muted: #6E655B;
+      --terracotta: #D45226;
+      --terracotta-hover: #BA431C;
+      --terracotta-subtle: #FAEDE7;
+      --sage: #2D6A4F;
+      --sage-subtle: #E8F3ED;
+      --border: #E8DFD3;
+      --border-dark: #D4C7B5;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background-color: var(--parchment);
+      color: var(--ink);
+    }
+
+    .font-serif {
+      font-family: var(--font-serif);
+    }
+
+    .font-mono {
+      font-family: var(--font-mono);
+    }
+
+    .card-parchment {
+      background-color: var(--parchment-card);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px -2px rgba(92, 64, 40, 0.04);
+    }
+
+    /* Custom scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--parchment-subtle);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D8CCC0;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #B8A89A;
+    }
+
+    .tab-active {
+      background-color: var(--terracotta) !important;
+      color: white !important;
+      border-color: var(--terracotta) !important;
+    }
+
+    .gate-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.2rem 0.55rem;
+      border-radius: 9999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .gate-pass {
+      background-color: var(--sage-subtle);
+      color: var(--sage);
+      border: 1px solid #C8E6D4;
+    }
+    .gate-fail {
+      background-color: #FDF2F2;
+      color: #9B1C1C;
+      border: 1px solid #F8B4B4;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+  <!-- HEADER & CONNECTION METRICS -->
+  <header class="max-w-7xl mx-auto mb-6 card-parchment rounded-2xl p-6">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div>
+        <div class="flex flex-wrap items-center gap-2 mb-2.5">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#FAEDE7] text-[#D45226] border border-[#F0D5C9]">
+            WritOn LinkedIn Autonomous Studio
+          </span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#E8F3ED] text-[#2D6A4F]">
+            ● Brain Connected (API v202609)
+          </span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#FAF0E6] text-[#7A5A40]">
+            🛡️ 34 Quality Gates Active
+          </span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+            ⚠️ STRICT: Never Post Test Things Online
+          </span>
+        </div>
+        <h1 class="text-3xl lg:text-4xl font-serif font-bold text-[#1C1917] tracking-tight">
+          LinkedIn Studio & Bot Tracker
+        </h1>
+        <p class="text-sm text-[#6E655B] mt-1 font-serif italic">
+          Governance-locked publishing, versioned candidate immutability, permission-aware reconciliation, and multi-surface analytics.
+        </p>
+      </div>
+
+      <!-- Action Toolbar -->
+      <div class="flex flex-wrap items-center gap-3">
+        <button onclick="refreshDashboard()" class="px-4 py-2.5 bg-white hover:bg-[#F4EFE6] text-[#1C1917] border border-[#E8DFD3] font-medium text-sm rounded-xl transition shadow-sm flex items-center gap-2">
+          <span>🔄</span> Refresh Status
+        </button>
+        <button onclick="runBrainDryRun()" class="px-4 py-2.5 bg-[#D45226] hover:bg-[#BA431C] text-white font-medium text-sm rounded-xl transition shadow-sm flex items-center gap-2">
+          <span>⚡</span> Brain Propose & Validate (Dry Run)
+        </button>
+      </div>
+    </div>
+
+    <!-- 24-HOUR LOCAL QUOTA GAUGES & CAPABILITY FLAGS -->
+    <div class="mt-6 pt-6 border-t border-[#E8DFD3] grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- App Call Gauge -->
+      <div class="p-4 rounded-xl bg-[#FAF5EE] border border-[#E8DFD3]">
+        <div class="flex items-center justify-between text-xs text-[#6E655B] font-semibold mb-1">
+          <span>APP 24H ESTIMATE</span>
+          <span id="app-quota-text">0 / 500</span>
+        </div>
+        <div class="w-full bg-[#E8DFD3] h-2 rounded-full overflow-hidden">
+          <div id="app-quota-bar" class="bg-[#2D6A4F] h-full" style="width: 2%;"></div>
+        </div>
+        <div class="text-[11px] text-[#6E655B] mt-1.5 flex justify-between">
+          <span>Portal Default: 500</span>
+          <span id="tier-badge" class="font-mono text-[#D45226]">DEVELOPMENT</span>
+        </div>
+      </div>
+
+      <!-- Member Call Gauge -->
+      <div class="p-4 rounded-xl bg-[#FAF5EE] border border-[#E8DFD3]">
+        <div class="flex items-center justify-between text-xs text-[#6E655B] font-semibold mb-1">
+          <span>MEMBER 24H ESTIMATE</span>
+          <span id="member-quota-text">0 / 100</span>
+        </div>
+        <div class="w-full bg-[#E8DFD3] h-2 rounded-full overflow-hidden">
+          <div id="member-quota-bar" class="bg-[#D45226] h-full" style="width: 2%;"></div>
+        </div>
+        <div class="text-[11px] text-[#6E655B] mt-1.5 flex justify-between">
+          <span>Portal Default: 100</span>
+          <span class="font-mono">Author Person</span>
+        </div>
+      </div>
+
+      <!-- Capability Scopes -->
+      <div class="p-4 rounded-xl bg-[#FAF5EE] border border-[#E8DFD3]">
+        <div class="text-xs text-[#6E655B] font-semibold mb-1">CAPABILITY SCOPES</div>
+        <div class="space-y-1 text-xs">
+          <div class="flex items-center justify-between">
+            <span>Publish Member:</span>
+            <span id="cap-publish-member" class="font-semibold text-[#2D6A4F]">YES</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Member Analytics:</span>
+            <span id="cap-member-analytics" class="font-semibold text-amber-700">RESTRICTED</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Identity & Security -->
+      <div class="p-4 rounded-xl bg-[#FAF5EE] border border-[#E8DFD3]">
+        <div class="text-xs text-[#6E655B] font-semibold mb-1">CONNECTED IDENTITY</div>
+        <div id="author-urn" class="text-xs font-mono truncate text-[#1C1917] font-semibold">urn:li:person:jx3WhMPaS0</div>
+        <div class="text-[11px] text-[#6E655B] mt-1 flex items-center justify-between">
+          <span>Refresh Grant:</span>
+          <span id="has-refresh-grant" class="font-semibold text-red-700">NO (Header Auth)</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN NAVIGATION TABS -->
+  <main class="max-w-7xl mx-auto space-y-6">
+    <div class="flex items-center gap-2 border-b border-[#E8DFD3] pb-3 overflow-x-auto">
+      <button onclick="switchTab('candidates')" id="tab-candidates" class="px-4 py-2 text-xs font-semibold rounded-xl border border-[#E8DFD3] transition tab-active">
+        📝 Candidates & Versions
+      </button>
+      <button onclick="switchTab('gates')" id="tab-gates" class="px-4 py-2 text-xs font-semibold rounded-xl border border-[#E8DFD3] transition bg-white text-[#1C1917]">
+        🛡️ 34 Quality Gates (LI01-LI17)
+      </button>
+      <button onclick="switchTab('quarantine')" id="tab-quarantine" class="px-4 py-2 text-xs font-semibold rounded-xl border border-[#E8DFD3] transition bg-white text-[#1C1917] flex items-center gap-1.5">
+        <span>⚠️ Quarantine Ledger</span>
+        <span id="quarantine-count" class="px-1.5 py-0.2 rounded-full bg-red-100 text-red-800 text-[10px] font-bold">0</span>
+      </button>
+      <button onclick="switchTab('publications')" id="tab-publications" class="px-4 py-2 text-xs font-semibold rounded-xl border border-[#E8DFD3] transition bg-white text-[#1C1917]">
+        🌐 Confirmed Publications
+      </button>
+      <button onclick="switchTab('analytics')" id="tab-analytics" class="px-4 py-2 text-xs font-semibold rounded-xl border border-[#E8DFD3] transition bg-white text-[#1C1917]">
+        📊 Multi-Surface Analytics
+      </button>
+    </div>
+
+    <!-- TAB 1: CANDIDATES & VERSIONS -->
+    <section id="view-candidates" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Draft Proposition Creator -->
+        <div class="card-parchment rounded-2xl p-6 lg:col-span-1 space-y-4">
+          <h2 class="text-xl font-serif font-bold text-[#1C1917]">Draft Proposition</h2>
+          <p class="text-xs text-[#6E655B]">Generate an organic LinkedIn post candidate governed by Master Editorial Brain.</p>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#6E655B] mb-1">Creative Format</label>
+            <select id="format-select" class="w-full bg-white border border-[#E8DFD3] rounded-xl px-3 py-2 text-sm">
+              <option value="SINGLE_IMAGE">SINGLE_IMAGE (Quote / Craft Card)</option>
+              <option value="MULTI_IMAGE">MULTI_IMAGE (2-20 Images)</option>
+              <option value="DOCUMENT">DOCUMENT (Craft PDF Slide Deck)</option>
+              <option value="VIDEO">VIDEO (HyperFrames 9:16 Short)</option>
+              <option value="TEXT_ONLY">TEXT_ONLY (Craft Truth Discussion)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-[#6E655B] mb-1">Commentary (with 0:00 Cut Hook)</label>
+            <textarea id="commentary-input" rows="7" class="w-full bg-white border border-[#E8DFD3] rounded-xl p-3 text-xs leading-relaxed font-sans" placeholder="Hook in first 2 lines..."></textarea>
+            <div class="text-[11px] text-right text-[#6E655B] mt-1" id="char-count">0 characters</div>
+          </div>
+
+          <div class="pt-2">
+            <button onclick="saveCandidate()" class="w-full py-2.5 bg-[#D45226] hover:bg-[#BA431C] text-white font-medium text-xs rounded-xl transition shadow-sm">
+              Create Candidate & Revision
+            </button>
+          </div>
+        </div>
+
+        <!-- Candidate Versions Ledger -->
+        <div class="card-parchment rounded-2xl p-6 lg:col-span-2">
+          <h2 class="text-xl font-serif font-bold text-[#1C1917] mb-3">Candidate Versions Ledger</h2>
+          <p class="text-xs text-[#6E655B] mb-4">Immutable versions locked by database triggers once approved.</p>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-[#FAF5EE] text-[#6E655B] border-b border-[#E8DFD3]">
+                <tr>
+                  <th class="p-3">Revision</th>
+                  <th class="p-3">Format</th>
+                  <th class="p-3">Commentary Snippet</th>
+                  <th class="p-3">Gates</th>
+                  <th class="p-3">State</th>
+                  <th class="p-3 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="candidates-tbody" class="divide-y divide-[#E8DFD3]">
+                <tr>
+                  <td colspan="6" class="p-4 text-center text-[#6E655B]">Loading candidates from PostgreSQL...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: QUALITY GATES TRAFFIC LIGHT -->
+    <section id="view-gates" class="hidden card-parchment rounded-2xl p-6 space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-serif font-bold text-[#1C1917]">36 Quality Gates (Global 17 + LI01–LI19)</h2>
+          <p class="text-xs text-[#6E655B] mt-1">Every post must pass all quality gates before approval and dispatch.</p>
+        </div>
+        <div id="gate-summary-pill" class="px-4 py-2 rounded-xl text-xs font-bold bg-[#E8F3ED] text-[#2D6A4F] border border-[#C8E6D4]">
+          Gate Status: 19 / 19 LI GATES READY
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="gates-grid">
+        <!-- Dynamic Gate Cards Rendered Here -->
+      </div>
+    </section>
+
+    <!-- TAB 3: QUARANTINE LEDGER -->
+    <section id="view-quarantine" class="hidden card-parchment rounded-2xl p-6 space-y-4">
+      <h2 class="text-2xl font-serif font-bold text-[#1C1917]">Quarantine & Reconciliation Ledger</h2>
+      <p class="text-xs text-[#6E655B]">
+        Intents where 201 response was missing <code class="bg-[#F4EFE6] px-1 rounded">x-restli-id</code> or network disconnected. Since member read access is restricted, quarantine prevents blind retry duplication.
+      </p>
+
+      <div class="overflow-x-auto mt-4">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-[#FAF5EE] text-[#6E655B] border-b border-[#E8DFD3]">
+            <tr>
+              <th class="p-3">Intent ID</th>
+              <th class="p-3">Strategy</th>
+              <th class="p-3">Status</th>
+              <th class="p-3">Evidence</th>
+              <th class="p-3">Checked At</th>
+              <th class="p-3 text-right">Operator Action</th>
+            </tr>
+          </thead>
+          <tbody id="quarantine-tbody" class="divide-y divide-[#E8DFD3]">
+            <tr>
+              <td colspan="6" class="p-4 text-center text-[#6E655B]">No quarantined intents. All dispatches verified.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 4: CONFIRMED PUBLICATIONS -->
+    <section id="view-publications" class="hidden card-parchment rounded-2xl p-6 space-y-4">
+      <h2 class="text-2xl font-serif font-bold text-[#1C1917]">Confirmed LinkedIn Publications</h2>
+      <p class="text-xs text-[#6E655B]">Authoritative published posts in PostgreSQL with live LinkedIn URLs.</p>
+
+      <div class="overflow-x-auto mt-4">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-[#FAF5EE] text-[#6E655B] border-b border-[#E8DFD3]">
+            <tr>
+              <th class="p-3">Post URN</th>
+              <th class="p-3">Format</th>
+              <th class="p-3">Commentary</th>
+              <th class="p-3">Published At</th>
+              <th class="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="publications-tbody" class="divide-y divide-[#E8DFD3]">
+            <tr>
+              <td colspan="5" class="p-4 text-center text-[#6E655B]">No live publications registered yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 5: MULTI-SURFACE ANALYTICS -->
+    <section id="view-analytics" class="hidden card-parchment rounded-2xl p-6 space-y-4">
+      <h2 class="text-2xl font-serif font-bold text-[#1C1917]">Multi-Surface Telemetry & Analytics</h2>
+      <p class="text-xs text-[#6E655B]">
+        Member Creator Post Analytics, Member Video Analytics, and Organizational Share Statistics. Preserves explicit nullability.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <div class="p-4 rounded-xl bg-[#FAF5EE] border border-[#E8DFD3]">
+          <span class="text-xs text-[#6E655B] font-semibold">TOTAL IMPRESSIONS</span>
+          <div class="text-2xl font-serif font-bold text-[#1C1917] mt-1" id="metric-impressions">0</div>
+        </div>
+        <div class="p-4 rounded-xl bg-[#FAF5EE] border border-[#E8DFD3]">
+          <span class="text-xs text-[#6E655B] font-semibold">REACTIONS & ENGAGEMENTS</span>
+          <div class="text-2xl font-serif font-bold text-[#1C1917] mt-1" id="metric-reactions">0</div>
+        </div>
+        <div class="p-4 rounded-xl bg-[#FAF5EE] border border-[#E8DFD3]">
+          <span class="text-xs text-[#6E655B] font-semibold">RESHARES & SAVES</span>
+          <div class="text-2xl font-serif font-bold text-[#1C1917] mt-1" id="metric-shares">0</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = '/api/v1/admin/linkedin';
+    let currentTab = 'candidates';
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      ['candidates', 'gates', 'quarantine', 'publications', 'analytics'].forEach((id) => {
+        const view = document.getElementById(`view-${id}`);
+        const btn = document.getElementById(`tab-${id}`);
+        if (id === tabId) {
+          view.classList.remove('hidden');
+          btn.classList.add('tab-active');
+        } else {
+          view.classList.add('hidden');
+          btn.classList.remove('tab-active');
+        }
+      });
+    }
+
+    async function fetchApi(path, options = {}) {
+      try {
+        const res = await fetch(`${API_BASE}${path}`, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            ...(options.headers || {}),
+          },
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `HTTP ${res.status}`);
+        }
+        return await res.json();
+      } catch (err) {
+        console.warn(`API call ${path} failed:`, err.message);
+        return null;
+      }
+    }
+
+    async function loadConnection() {
+      const data = await fetchApi('/connection');
+      if (!data) return;
+
+      document.getElementById('author-urn').textContent = data.authorUrn || 'Not Connected';
+      document.getElementById('tier-badge').textContent = data.rateTier || 'DEVELOPMENT';
+      document.getElementById('cap-publish-member').textContent = data.canPublishMember ? 'YES' : 'NO';
+      document.getElementById('cap-member-analytics').textContent = data.hasMemberAnalytics ? 'AVAILABLE' : 'RESTRICTED';
+      document.getElementById('has-refresh-grant').textContent = data.hasRefreshGrant ? 'YES' : 'NO (Header Auth)';
+
+      const appUsed = data.estimatedAppUsage24h || 0;
+      const appLimit = data.appLimitCeiling || 500;
+      document.getElementById('app-quota-text').textContent = `${appUsed} / ${appLimit}`;
+      document.getElementById('app-quota-bar').style.width = `${Math.min(100, Math.max(2, (appUsed / appLimit) * 100))}%`;
+
+      const memUsed = data.estimatedMemberUsage24h || 0;
+      const memLimit = data.memberLimitCeiling || 100;
+      document.getElementById('member-quota-text').textContent = `${memUsed} / ${memLimit}`;
+      document.getElementById('member-quota-bar').style.width = `${Math.min(100, Math.max(2, (memUsed / memLimit) * 100))}%`;
+    }
+
+    async function loadCandidates() {
+      const data = await fetchApi('/candidates');
+      const tbody = document.getElementById('candidates-tbody');
+      if (!data || !data.candidates || data.candidates.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-[#6E655B]">No candidates in database yet. Click "Brain Propose & Validate" to generate one.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.candidates.map((c) => {
+        const isApproved = Boolean(c.approved_at);
+        const snippet = (c.commentary || '').slice(0, 75) + '...';
+        return `
+          <tr class="hover:bg-[#FAF5EE] transition">
+            <td class="p-3 font-mono font-semibold">r${c.revision}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#F4EFE6]">${c.format}</span></td>
+            <td class="p-3 font-serif text-[#1C1917]">${escapeHtml(snippet)}</td>
+            <td class="p-3">
+              <span class="gate-badge ${c.last_validation_passed ? 'gate-pass' : 'gate-fail'}">
+                ${c.last_validation_passed ? '✓ PASSED' : 'PENDING'}
+              </span>
+            </td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${isApproved ? 'bg-[#E8F3ED] text-[#2D6A4F]' : 'bg-[#FAEDE7] text-[#D45226]'}">
+                ${isApproved ? 'FROZEN' : 'DRAFT'}
+              </span>
+            </td>
+            <td class="p-3 text-right space-x-2">
+              <button onclick="evaluateCandidate('${c.version_id}')" class="px-2 py-1 rounded border border-[#E8DFD3] hover:bg-white text-[11px] font-medium">Evaluate</button>
+              ${!isApproved ? `<button onclick="approveCandidate('${c.version_id}')" class="px-2 py-1 rounded bg-[#2D6A4F] text-white text-[11px] font-medium">Approve</button>` : ''}
+              <button onclick="publishCandidate('${c.version_id}', false)" class="px-2 py-1 rounded bg-[#D45226] text-white text-[11px] font-medium">Dry Run</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function loadQuarantine() {
+      const data = await fetchApi('/quarantine');
+      const tbody = document.getElementById('quarantine-tbody');
+      const badge = document.getElementById('quarantine-count');
+
+      const count = data?.items?.length || 0;
+      badge.textContent = count;
+
+      if (!data || !data.items || data.items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-[#6E655B]">No quarantined items. System is healthy.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.items.map((q) => `
+        <tr class="hover:bg-[#FAF5EE] transition">
+          <td class="p-3 font-mono text-[11px]">${q.publish_intent_id.slice(0, 8)}...</td>
+          <td class="p-3 font-semibold">${q.strategy}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-red-100 text-red-800">QUARANTINED</span></td>
+          <td class="p-3 font-mono text-[10px] text-[#6E655B]">${escapeHtml(JSON.stringify(q.evidence || {}))}</td>
+          <td class="p-3 text-[11px] text-[#6E655B]">${new Date(q.checked_at).toLocaleTimeString()}</td>
+          <td class="p-3 text-right space-x-2">
+            <button onclick="resolveQuarantine('${q.id}', 'CONFIRM_PUBLISHED')" class="px-2 py-1 rounded bg-[#2D6A4F] text-white text-[10px] font-semibold">Confirm Published</button>
+            <button onclick="resolveQuarantine('${q.id}', 'MARK_FAILED')" class="px-2 py-1 rounded bg-red-700 text-white text-[10px] font-semibold">Mark Failed</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadPublications() {
+      const data = await fetchApi('/publications');
+      const tbody = document.getElementById('publications-tbody');
+      if (!data || !data.publications || data.publications.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-[#6E655B]">No published posts registered in PostgreSQL yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = data.publications.map((p) => `
+        <tr class="hover:bg-[#FAF5EE] transition">
+          <td class="p-3 font-mono text-[11px]">${p.post_urn}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#F4EFE6]">${p.format}</span></td>
+          <td class="p-3 font-serif text-[#1C1917]">${escapeHtml((p.commentary || '').slice(0, 75))}...</td>
+          <td class="p-3 text-[11px] text-[#6E655B]">${new Date(p.published_at).toLocaleString()}</td>
+          <td class="p-3 text-right space-x-2">
+            <a href="${p.live_url}" target="_blank" rel="noopener" class="text-[#D45226] hover:underline font-semibold text-[11px]">View ↗</a>
+            <button onclick="deletePostFromFeed('${p.post_urn}')" class="px-2 py-0.5 rounded bg-red-100 hover:bg-red-200 text-red-800 text-[10px] font-semibold">Delete</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function deletePostFromFeed(postUrn) {
+      if (!confirm(`Permanently delete post ${postUrn} on LinkedIn feed?`)) return;
+      const res = await fetchApi('/posts', {
+        method: 'DELETE',
+        body: JSON.stringify({ postUrn }),
+      });
+      if (res?.success) {
+        alert('Post deleted successfully from LinkedIn.');
+        await loadPublications();
+      } else {
+        alert(`Failed to delete post: ${res?.error || 'Unknown error'}`);
+      }
+    }
+
+    const LINKEDIN_GATES = [
+      { code: 'LI01', name: 'HOOK_ZERO_SEC', desc: '0:00 Cut Hook is present and skimmable in first 2 lines' },
+      { code: 'LI02', name: 'CHARACTER_BUDGET', desc: 'Commentary strictly adheres to 3,000 char ceiling' },
+      { code: 'LI03', name: 'HASHTAG_COUNT', desc: 'Hashtag density between 3 and 5, strictly lowercase' },
+      { code: 'LI04', name: 'HASHTAG_LOWERCASE', desc: 'No PascalCase or uppercase characters in hashtags' },
+      { code: 'LI05', name: 'THROAT_CLEARING', desc: 'Zero rhetorical preamble (opens on physical scene/action)' },
+      { code: 'LI06', name: 'ANTI_MANNERED_PROSE', desc: 'No decorative flourishes; uses direct statements' },
+      { code: 'LI07', name: 'NO_SYNTHETIC_CODE', desc: 'Zero mock interfaces or decorative code blocks' },
+      { code: 'LI08', name: 'VANITY_REDIRECTS', desc: 'Uses official writon.cc/:slug vanity links' },
+      { code: 'LI09', name: 'MULTIDIMENSIONAL_REPETITION', desc: 'Sim ≤ 65% against recent publications' },
+      { code: 'LI10', name: 'SEMANTIC_DUPLICATE', desc: 'Semantic overlap ≤ 60% threshold' },
+      { code: 'LI11', name: 'VISUAL_TEXT_OVERLOAD', desc: 'Slides adhere to 50%+ negative space' },
+      { code: 'LI12', name: 'MEDIA_CAPABILITY_FAILURE', desc: 'Format matches media upload capabilities' },
+      { code: 'LI13', name: 'STALE_GOVERNANCE_HASH', desc: 'Brain contract matches v202609' },
+      { code: 'LI14', name: 'UNSUPPORTED_POST_FORMAT', desc: 'Allowed: SINGLE/MULTI_IMAGE, DOC, VIDEO' },
+      { code: 'LI15', name: 'MISSING_EVIDENCE', desc: 'Commentary carries concrete craft proof' },
+      { code: 'LI16', name: 'CTA_REPETITION', desc: 'Maximum 1 call-to-action phrase per post' },
+      { code: 'LI17', name: 'AUTHOR_VOICE_MISMATCH', desc: 'Founder voice required; blocks simulated persona bylines' },
+      { code: 'LI18', name: 'HOOK_LABEL_PROHIBITION', desc: 'First line must be a hook; rejects internal category labels' },
+      { code: 'LI19', name: 'SINGLE_DAILY_CADENCE', desc: 'Maximum 1 post per calendar day (3-4 posts/week target)' },
+    ];
+
+    function renderGatesGrid() {
+      const grid = document.getElementById('gates-grid');
+      grid.innerHTML = LINKEDIN_GATES.map((g) => `
+        <div class="p-4 rounded-xl bg-[#FAF5EE] border border-[#E8DFD3] flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="font-mono text-xs font-bold text-[#D45226]">${g.code}</span>
+              <span class="gate-badge gate-pass">ACTIVE</span>
+            </div>
+            <h3 class="font-semibold text-xs text-[#1C1917]">${g.name}</h3>
+            <p class="text-[11px] text-[#6E655B] mt-1">${g.desc}</p>
+          </div>
+          <div class="mt-3 pt-2 border-t border-[#E8DFD3] text-[10px] text-[#6E655B] flex justify-between">
+            <span>Enforcement: Block</span>
+            <span>Target: 100%</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function evaluateCandidate(versionId) {
+      const res = await fetchApi('/validate', {
+        method: 'POST',
+        body: JSON.stringify({ versionId }),
+      });
+      if (res) {
+        alert(`Validation Complete!\nPassed: ${res.passedGates} / ${res.totalGates}\nAll Passed: ${res.allPassed ? 'YES ✅' : 'NO ❌'}`);
+        await loadCandidates();
+      }
+    }
+
+    async function approveCandidate(versionId) {
+      if (!confirm('Approve and freeze this candidate version in PostgreSQL? State will be locked by trigger.')) return;
+      const res = await fetchApi('/approve', {
+        method: 'POST',
+        body: JSON.stringify({ versionId }),
+      });
+      if (res?.success) {
+        alert('Candidate version frozen and approved.');
+        await loadCandidates();
+      }
+    }
+
+    async function publishCandidate(versionId, live = false) {
+      if (live) {
+        alert('Live posting is disabled in test mode. Running dry-run validation.');
+        live = false;
+      }
+      const res = await fetchApi('/publish', {
+        method: 'POST',
+        body: JSON.stringify({ versionId, live: false }),
+      });
+      if (res) {
+        alert(`Dry Run Result:\n${JSON.stringify(res, null, 2)}`);
+      }
+    }
+
+    async function runBrainDryRun() {
+      // Direct sample proposition
+      const hook = "NEVER WRITE: 'HE WAS HAPPY.'";
+      const turn = "Give the reader one physical action they could actually see.";
+      const body = "Emotion lives in the body. If you tell the reader a character was angry, their brain skips past it. Show the thumb tracing the seam of a paper napkin until it tears.";
+      const commentary = `“${hook}”\n\n${turn}\n\n${body}\n\nWe built WritOn for writers who care about the sentence. Claim your pen name and write with us:\nhttps://writon.cc\n\n#writing #storytelling #craft`;
+
+      const res = await fetchApi('/candidates', {
+        method: 'POST',
+        body: JSON.stringify({
+          format: 'SINGLE_IMAGE',
+          commentary,
+          brainHash: 'hook_replace_he_was_happy',
+          assets: [{
+            kind: 'IMAGE',
+            mimeType: 'image/png',
+            fileSizeBytes: 541350,
+            sha256: 'mock_sha256_verified',
+            storageUri: 'https://writon.cc/assets/day3_am_x_card.png',
+          }],
+        }),
+      });
+
+      if (res?.versionId) {
+        await evaluateCandidate(res.versionId);
+      }
+    }
+
+    function refreshDashboard() {
+      loadConnection();
+      loadCandidates();
+      loadQuarantine();
+      loadPublications();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+      renderGatesGrid();
+      refreshDashboard();
+      document.getElementById('commentary-input')?.addEventListener('input', (e) => {
+        document.getElementById('char-count').textContent = `${e.target.value.length} characters`;
+      });
+    });
+  </script>
+</body>
+</html>

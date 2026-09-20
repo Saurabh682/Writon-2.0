@@ -1,12 +1,14 @@
 {
-  "hosting": {
-    "public": "public",
-    "trailingSlash": false,
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+  "hosting": [
+    {
+      "target": "writon-prod",
+      "public": "public",
+      "trailingSlash": false,
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
     "headers": [
       {
         "source": "/assets/**",
@@ -123,6 +125,61 @@
           {
             "key": "Access-Control-Allow-Origin",
             "value": "*"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600, stale-while-revalidate=86400"
+          }
+        ]
+      },
+      {
+        "source": "/news-sitemap.xml",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml; charset=utf-8"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600, stale-while-revalidate=86400"
+          }
+        ]
+      },
+      {
+        "source": "/sitemap_index.xml",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml; charset=utf-8"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600, stale-while-revalidate=86400"
+          }
+        ]
+      },
+      {
+        "source": "/sitemap-main.xml",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml; charset=utf-8"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=3600, stale-while-revalidate=86400"
           }
         ]
       },
@@ -140,6 +197,44 @@
           {
             "key": "Cache-Control",
             "value": "public, max-age=1800, stale-while-revalidate=3600"
+          },
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, follow"
+          }
+        ]
+      },
+      {
+        "source": "/pinterest-feed.xml",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml; charset=utf-8"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, follow"
+          }
+        ]
+      },
+      {
+        "source": "/reddit-feed.xml",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/xml; charset=utf-8"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, follow"
           }
         ]
       },
@@ -153,7 +248,88 @@
         ]
       }
     ],
+    "redirects": [
+      { "source": "/dashboard", "destination": "/", "type": 301 },
+      { "source": "/instagram", "destination": "https://www.instagram.com/writon_socialapp/", "type": 302 },
+      { "source": "/ig", "destination": "https://www.instagram.com/writon_socialapp/", "type": 302 },
+      { "source": "/x", "destination": "https://x.com/WritOn_Social", "type": 302 },
+      { "source": "/twitter", "destination": "https://x.com/WritOn_Social", "type": 302 },
+      { "source": "/threads", "destination": "https://www.threads.net/@writon_socialapp", "type": 302 },
+      { "source": "/youtube", "destination": "https://www.youtube.com/@writon_app", "type": 302 },
+      { "source": "/yt", "destination": "https://www.youtube.com/@writon_app", "type": 302 },
+      { "source": "/linkedin", "destination": "https://www.linkedin.com/in/writon-story-writing-and-reads", "type": 302 },
+      { "source": "/reddit", "destination": "https://www.reddit.com/r/writon/", "type": 302 },
+      { "source": "/medium", "destination": "https://medium.com/@saurabh.682", "type": 302 }
+    ],
     "rewrites": [
+      {
+        "source": "/explore",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/privacy-policy",
+        "destination": "/privacy-policy.html"
+      },
+      {
+        "source": "/canvas",
+        "destination": "/canvas.html"
+      },
+      {
+        "source": "/editorial-canvas",
+        "destination": "/canvas.html"
+      },
+      {
+        "source": "/linkedin-studio",
+        "destination": "/linkedin.html"
+      },
+      {
+        "source": "/founding-writer",
+        "destination": "/founding-writer.html"
+      },
+      {
+        "source": "/auth/verify",
+        "destination": "/auth/verify.html"
+      },
+      {
+        "source": "/auth/reset-password",
+        "destination": "/auth/reset-password.html"
+      },
+      {
+        "source": "/email/unsubscribe",
+        "destination": "/email/unsubscribe.html"
+      },
+      {
+        "source": "/email/unsubscribe/**",
+        "destination": "/email/unsubscribe.html"
+      },
+      {
+        "source": "/settings/email",
+        "destination": "/email/unsubscribe.html"
+      },
+      {
+        "source": "/settings/**",
+        "destination": "/email/unsubscribe.html"
+      },
+      {
+        "source": "/about",
+        "destination": "/about/index.html"
+      },
+      {
+        "source": "/journal",
+        "destination": "/journal/index.html"
+      },
+      {
+        "source": "/journal/**",
+        "destination": "/journal/article.html"
+      },
+      {
+        "source": "/updates",
+        "destination": "/updates/index.html"
+      },
+      {
+        "source": "/rss.xml",
+        "destination": "/feed.xml"
+      },
       {
         "source": "/go/**",
         "destination": "/go/index.html"
@@ -163,5 +339,26 @@
         "destination": "/stories/index.html"
       }
     ]
+  },
+  {
+    "target": "writon-canvas-staging",
+    "public": "public",
+    "trailingSlash": false,
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/canvas",
+        "destination": "/canvas.html"
+      },
+      {
+        "source": "/",
+        "destination": "/canvas.html"
+      }
+    ]
   }
+]
 }

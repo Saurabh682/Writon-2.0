@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "rejected": [
+    {
+      "concept": "Replace 'He was happy' with action",
+      "reason": "Duplicate. Already published on X and in editorial calendar Day 3.",
+      "rejected_by": "User directive"
+    },
+    {
+      "concept": "Aggressive red SVG strikethrough lines across text",
+      "reason": "Visual clutter; feels like classroom grading and breaks literary calm.",
+      "rejected_by": "User directive"
+    },
+    {
+      "concept": "Putting 'Writing Hack:' into the YouTube video title",
+      "reason": "Wastes valuable mobile search title characters; franchise stamp belongs inside video.",
+      "rejected_by": "User directive"
+    },
+    {
+      "concept": "Appending '#shorts' to all titles",
+      "reason": "Redundant for YouTube algorithm; crowds out search keywords.",
+      "rejected_by": "User directive"
+    },
+    {
+      "concept": "Forced grammatical loop phrase 'That is why you...'",
+      "reason": "Becomes an annoying gimmick after 3 videos; loop should be semantic.",
+      "rejected_by": "User directive"
+    }
+  ]
+}

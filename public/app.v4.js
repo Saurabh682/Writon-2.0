@@ -14,8 +14,11 @@ function buildTrackedPlayUrl(ctaName = 'website_cta') {
   const campaign = incomingCampaign;
   const content = incomingContent || ctaName;
 
-  const referrer = `utm_source=${encodeURIComponent(source)}&utm_medium=${encodeURIComponent(medium)}&utm_campaign=${encodeURIComponent(campaign)}&utm_content=${encodeURIComponent(content)}`;
-  return `${PLAY_STORE_BASE}&referrer=${encodeURIComponent(referrer)}`;
+  const referrer = 'utm_source=' + encodeURIComponent(source) +
+    '&utm_medium=' + encodeURIComponent(medium) +
+    '&utm_campaign=' + encodeURIComponent(campaign) +
+    '&utm_content=' + encodeURIComponent(content);
+  return PLAY_STORE_BASE + '&referrer=' + encodeURIComponent(referrer);
 }
 
 // Update all Google Play links with context-specific and campaign-preserved tracking
@@ -111,46 +114,61 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     const authorPen = s.author?.penName || 'writon';
     const summary = s.summary || s.title;
     const initials = authorName.trim().split(/\s+/).slice(0, 2).map(p => p[0] ? p[0].toUpperCase() : '').join('') || 'W';
-    const coverUrl = s.coverImage || s.cover_image_url || categoryFallbacks[s.category] || 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&auto=format&fit=crop&q=80';
+    const fallbackCover = categoryFallbacks[s.category] || 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&auto=format&fit=crop&q=80';
+    const coverUrl = s.coverImage || s.cover_image_url || fallbackCover;
 
-    card.innerHTML = `
-      <div class="story-card-cover" style="width: 100%; height: 180px; overflow: hidden; position: relative; background: #f0e6dd;">
-        <img src="${escapeHtml(coverUrl)}" alt="${escapeHtml(s.title)}" loading="lazy" class="story-card-img" style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.35s ease;" />
-        <span style="position: absolute; top: 12px; left: 12px; background: rgba(26, 23, 21, 0.74); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px;">
-          ${escapeHtml(categoryBadge)}
-        </span>
-      </div>
-      <div class="story-card-body" style="padding: 20px 20px 18px; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">
-        <div>
-          <div class="story-meta" style="color: var(--primary); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-            <span style="color: var(--muted); font-weight: 500; font-size: 11.5px;">${escapeHtml(readTime)}</span>
-          </div>
-          <h3 style="font-family: Newsreader, Georgia, serif; font-size: 21px; font-weight: 600; line-height: 1.25; margin: 0 0 10px; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
-            ${escapeHtml(s.title)}
-          </h3>
-          <p style="color: var(--muted); font-size: 13.5px; line-height: 1.5; margin: 0 0 18px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-            ${escapeHtml(summary)}
-          </p>
-        </div>
-        <footer style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; margin-top: auto;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <div style="width: 26px; height: 26px; border-radius: 50%; background: #f3d5c7; color: var(--primary); display: grid; place-items: center; font-weight: 700; font-size: 11px; font-family: Newsreader, serif;">
-              ${escapeHtml(initials)}
-            </div>
-            <div>
-              <div style="font-size: 12.5px; font-weight: 700; color: var(--ink); line-height: 1.1;">${escapeHtml(authorName)}</div>
-              <div style="font-size: 10.5px; color: var(--muted);">@${escapeHtml(authorPen)}</div>
-            </div>
-          </div>
-          <div class="card-arrow" style="width: 26px; height: 26px; border-radius: 50%; background: #f1e8df; display: grid; place-items: center; color: var(--ink); font-size: 12px; transition: transform 0.2s ease, background 0.2s ease;">
-            &rarr;
-          </div>
-        </footer>
-      </div>
-    `;
+    card.innerHTML = [
+      '<div class="story-card-cover" style="width: 100%; height: 180px; overflow: hidden; position: relative; background: #f0e6dd;">',
+      '  <img src="' + escapeHtml(coverUrl) + '" alt="' + escapeHtml(s.title) + '" loading="lazy" class="story-card-img" onerror="if(this.dataset.triedFallback){this.style.display=\'none\';}else{this.dataset.triedFallback=\'1\';this.src=\'' + escapeHtml(fallbackCover) + '\';}" style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.35s ease;" />',
+      '  <span style="position: absolute; top: 12px; left: 12px; background: rgba(26, 23, 21, 0.74); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px;">',
+      '    ' + escapeHtml(categoryBadge),
+      '  </span>',
+      '</div>',
+      '<div class="story-card-body" style="padding: 20px 20px 18px; display: flex; flex-direction: column; justify-content: space-between; flex: 1;">',
+      '  <div>',
+      '    <div class="story-meta" style="color: var(--primary); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">',
+      '      <span style="color: var(--muted); font-weight: 500; font-size: 11.5px;">' + escapeHtml(readTime) + '</span>',
+      '    </div>',
+      '    <h3 style="font-family: Newsreader, Georgia, serif; font-size: 21px; font-weight: 600; line-height: 1.25; margin: 0 0 10px; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">',
+      '      ' + escapeHtml(s.title),
+      '    </h3>',
+      '    <p style="color: var(--muted); font-size: 13.5px; line-height: 1.5; margin: 0 0 18px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">',
+      '      ' + escapeHtml(summary),
+      '    </p>',
+      '  </div>',
+      '  <footer style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; margin-top: auto;">',
+      '    <div style="display: flex; align-items: center; gap: 8px;">',
+      '      <div style="width: 26px; height: 26px; border-radius: 50%; background: #f3d5c7; color: var(--primary); display: grid; place-items: center; font-weight: 700; font-size: 11px; font-family: Newsreader, serif;">',
+      '        ' + escapeHtml(initials),
+      '      </div>',
+      '      <div>',
+      '        <div style="font-size: 12.5px; font-weight: 700; color: var(--ink); line-height: 1.1;">' + escapeHtml(authorName) + '</div>',
+      '        <div style="font-size: 10.5px; color: var(--muted);">@' + escapeHtml(authorPen) + '</div>',
+      '      </div>',
+      '    </div>',
+      '    <div class="card-arrow" style="width: 26px; height: 26px; border-radius: 50%; background: #f1e8df; display: grid; place-items: center; color: var(--ink); font-size: 12px; transition: transform 0.2s ease, background 0.2s ease;">',
+      '      &rarr;',
+      '    </div>',
+      '  </footer>',
+      '</div>'
+    ].join('\n');
 
     return card;
   }
+
+  // Populate immediately from cache if available on page load for instantaneous 0ms rendering
+  try {
+    const cachedFirstPage = sessionStorage.getItem('writon_posts_cache_all');
+    if (cachedFirstPage) {
+      const cached = JSON.parse(cachedFirstPage);
+      if (Array.isArray(cached) && cached.length > 0) {
+        const frag = document.createDocumentFragment();
+        cached.forEach(post => frag.appendChild(renderCard(post)));
+        grid.innerHTML = '';
+        grid.appendChild(frag);
+      }
+    }
+  } catch (_) {}
 
   async function loadPosts(reset = false) {
     if (isLoading || (!hasMore && !reset)) return;
@@ -159,20 +177,32 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     if (spinner) spinner.style.display = 'block';
     if (loadMoreBtn) loadMoreBtn.style.display = 'none';
 
+    // When resetting for a specific category, clear existing cards.
+    // But when loading the initial 'All' view, DO NOT clear the pre-rendered or cached cards early!
     if (reset) {
       currentPage = 1;
       hasMore = true;
-      grid.innerHTML = '';
+      if (currentCategory) {
+        grid.innerHTML = '';
+      }
       if (endMsg) endMsg.style.display = 'none';
     }
 
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 6000);
+
     try {
-      let url = `${API_BASE_URL}/api/v1/posts?page=${currentPage}&limit=20`;
+      let url = API_BASE_URL + '/api/v1/posts?page=' + currentPage + '&limit=20';
       if (currentCategory) {
-        url += `&category=${encodeURIComponent(currentCategory)}`;
+        url += '&category=' + encodeURIComponent(currentCategory);
       }
 
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: abortController.signal });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        throw new Error('Failed to load stories (' + res.status + ')');
+      }
       const data = await res.json();
       const posts = data.posts || [];
 
@@ -181,10 +211,24 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
         if (endMsg) endMsg.style.display = 'block';
         if (loadMoreBtn) loadMoreBtn.style.display = 'none';
       } else {
-        posts.forEach(post => {
-          const cardEl = renderCard(post);
-          grid.appendChild(cardEl);
-        });
+        if (reset) {
+          // Atomically replace existing cards without any flash of blank content
+          const frag = document.createDocumentFragment();
+          posts.forEach(post => frag.appendChild(renderCard(post)));
+          grid.innerHTML = '';
+          grid.appendChild(frag);
+
+          if (!currentCategory) {
+            try {
+              sessionStorage.setItem('writon_posts_cache_all', JSON.stringify(posts));
+            } catch (_) {}
+          }
+        } else {
+          // Append next page
+          posts.forEach(post => {
+            grid.appendChild(renderCard(post));
+          });
+        }
 
         hasMore = data.pagination?.hasMore ?? (posts.length === 20);
         if (!hasMore) {
@@ -196,8 +240,21 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
         }
       }
     } catch (err) {
-      console.error('Failed to load stories from WritOn API:', err);
-      if (loadMoreBtn) loadMoreBtn.style.display = 'block';
+      clearTimeout(timeoutId);
+      console.warn('WritOn stories fetch warning/fallback:', err.message || err);
+      // If we already have cards rendered (pre-rendered or cached), do not break the UI
+      if (grid.querySelectorAll('.story-card').length > 0) {
+        if (loadMoreBtn) loadMoreBtn.style.display = 'block';
+      } else {
+        if (endMsg) {
+          endMsg.textContent = 'Unable to load new stories right now. Please tap to retry.';
+          endMsg.style.display = 'block';
+        }
+        if (loadMoreBtn) {
+          loadMoreBtn.textContent = 'Retry Loading Stories';
+          loadMoreBtn.style.display = 'block';
+        }
+      }
     } finally {
       isLoading = false;
       if (spinner) spinner.style.display = 'none';
@@ -221,7 +278,10 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
   // Manual Load More button
   if (loadMoreBtn) {
-    loadMoreBtn.addEventListener('click', () => loadPosts(false));
+    loadMoreBtn.addEventListener('click', () => {
+      loadMoreBtn.textContent = 'Load More Stories';
+      loadPosts(false);
+    });
   }
 
   // Infinite scroll observer for smooth lazy loading
@@ -234,6 +294,6 @@ document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     scrollObserver.observe(spinner);
   }
 
-  // Initial load of 20 live posts
+  // Initial load of 20 live posts without clearing fallback cards prematurely
   loadPosts(true);
 })();

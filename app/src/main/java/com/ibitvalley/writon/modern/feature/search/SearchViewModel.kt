@@ -13,15 +13,28 @@ import com.ibitvalley.writon.modern.core.network.model.AuthorDto
 import com.ibitvalley.writon.modern.core.network.model.PostDto
 import com.ibitvalley.writon.modern.core.network.model.TagDto
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
+enum class SearchResultState { IDLE, LOADING, FRESH, CACHED, EMPTY, ERROR }
+
+internal fun resolveSearchResultState(remoteSucceeded: Boolean, hasResults: Boolean): SearchResultState = when {
+    remoteSucceeded && hasResults -> SearchResultState.FRESH
+    remoteSucceeded -> SearchResultState.EMPTY
+    hasResults -> SearchResultState.CACHED
+    else -> SearchResultState.ERROR
+}
 
 class SearchViewModel(
     private val apiService: WritOnApiService,
     private val postDao: PostDao? = null,
-    private val userDao: UserDao? = null
+    private val userDao: UserDao? = null,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : ViewModel() {
 
     var results by mutableStateOf<List<PostDto>>(emptyList())
@@ -36,94 +49,84 @@ class SearchViewModel(
     var isLoading by mutableStateOf(false)
         private set
 
+    var resultState by mutableStateOf(SearchResultState.IDLE)
+        private set
+
     private var searchJob: Job? = null
+    private var searchRequestId = 0L
 
     fun search(query: String, tab: String = "Stories") {
         searchJob?.cancel()
+        val requestId = ++searchRequestId
         searchJob = viewModelScope.launch {
             isLoading = true
-            delay(if (query.isBlank()) 0 else 150)
-            val cleanQuery = query.trim().takeIf { it.isNotBlank() }
-
-            withContext(Dispatchers.IO) {
-                try {
+            resultState = SearchResultState.LOADING
+            try {
+                delay(if (query.isBlank()) 0 else 150)
+                val cleanQuery = query.trim().takeIf { it.isNotBlank() }
+                withContext(ioDispatcher) {
                     when (tab) {
                         "Writers" -> {
                             val remoteUsers = try {
                                 val response = apiService.getUsers(query = cleanQuery)
-                                if (response.isSuccessful) response.body()?.users.orEmpty() else emptyList()
+                                if (response.isSuccessful && response.body() != null) response.body()!!.users else null
+                            } catch (error: CancellationException) {
+                                throw error
                             } catch (_: Exception) {
-                                emptyList()
+                                null
                             }
-
-                            val localAuthorsFromPosts = postDao?.getLocalAuthorsMatching(cleanQuery ?: "")?.map {
-                                AuthorDto(
-                                    id = it.authorId,
-                                    penName = it.authorPenName,
-                                    fullName = it.authorName,
-                                    avatarUrl = it.authorAvatarUrl,
-                                    bio = null,
-                                    quoteOfDay = null,
-                                    followersCnt = 0,
-                                    followingCnt = 0
-                                )
-                            }.orEmpty()
-
-                            val localUsers = userDao?.searchUsers(cleanQuery ?: "")?.map {
-                                AuthorDto(
-                                    id = it.id,
-                                    penName = it.penName,
-                                    fullName = it.fullName,
-                                    avatarUrl = it.avatarUrl,
-                                    bio = it.bio,
-                                    quoteOfDay = it.quoteOfDay,
-                                    followersCnt = it.followersCnt,
-                                    followingCnt = it.followingCnt
-                                )
-                            }.orEmpty()
-
-                            val combined = (remoteUsers + localAuthorsFromPosts + localUsers)
-                                .distinctBy { it.penName.lowercase() }
-                            writerResults = combined
+                            ensureActive()
+                            writerResults = if (remoteUsers != null) remoteUsers else localWriters(cleanQuery)
+                            resultState = resolveSearchResultState(remoteUsers != null, writerResults.isNotEmpty())
                         }
                         "Tags" -> {
                             val remoteTags = try {
                                 val response = apiService.getTags(query = cleanQuery)
-                                if (response.isSuccessful) response.body()?.tags.orEmpty() else emptyList()
+                                if (response.isSuccessful && response.body() != null) response.body()!!.tags else null
+                            } catch (error: CancellationException) {
+                                throw error
                             } catch (_: Exception) {
-                                emptyList()
+                                null
                             }
-
-                            val localTags = postDao?.getLocalTagsMatching(cleanQuery ?: "")?.map {
+                            ensureActive()
+                            tagResults = remoteTags ?: postDao?.getLocalTagsMatching(cleanQuery ?: "")?.map {
                                 TagDto(name = it.name, count = it.count)
                             }.orEmpty()
-
-                            val combined = (remoteTags + localTags)
-                                .distinctBy { it.name.lowercase() }
-                            tagResults = combined
+                            resultState = resolveSearchResultState(remoteTags != null, tagResults.isNotEmpty())
                         }
                         else -> {
                             val remotePosts = try {
                                 val response = apiService.getPosts(searchQuery = cleanQuery)
-                                if (response.isSuccessful) response.body()?.posts.orEmpty() else emptyList()
+                                if (response.isSuccessful && response.body() != null) response.body()!!.posts else null
+                            } catch (error: CancellationException) {
+                                throw error
                             } catch (_: Exception) {
-                                emptyList()
+                                null
                             }
-
-                            val localPosts = if (remotePosts.isEmpty()) {
+                            ensureActive()
+                            results = remotePosts ?: run {
                                 postDao?.getLocalPostsMatching(cleanQuery ?: "")?.map { it.asPostDto() }.orEmpty()
-                            } else emptyList()
-
-                            results = (remotePosts + localPosts).distinctBy { it.id }
+                            }
+                            resultState = resolveSearchResultState(remotePosts != null, results.isNotEmpty())
                         }
                     }
-                } catch (_: Exception) {
-                    // Fallback to local
                 }
+            } catch (error: CancellationException) {
+                throw error
+            } finally {
+                if (requestId == searchRequestId) isLoading = false
             }
-
-            isLoading = false
         }
+    }
+
+    private suspend fun localWriters(cleanQuery: String?): List<AuthorDto> {
+        val fromPosts = postDao?.getLocalAuthorsMatching(cleanQuery ?: "")?.map {
+            AuthorDto(it.authorId, it.authorPenName, it.authorName, it.authorAvatarUrl, null, null, 0, 0)
+        }.orEmpty()
+        val fromProfiles = userDao?.searchUsers(cleanQuery ?: "")?.map {
+            AuthorDto(it.id, it.penName, it.fullName, it.avatarUrl, it.bio, it.quoteOfDay, it.followersCnt, it.followingCnt)
+        }.orEmpty()
+        return (fromPosts + fromProfiles).distinctBy { it.penName.lowercase() }
     }
 
     private fun PostEntity.asPostDto() = PostDto(

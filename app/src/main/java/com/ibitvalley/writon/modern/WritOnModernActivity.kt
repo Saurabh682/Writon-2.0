@@ -1,9 +1,13 @@
 package com.ibitvalley.writon.modern
 
 import android.Manifest
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color as AndroidColor
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.SystemBarStyle
@@ -12,6 +16,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -41,6 +46,7 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnTheme
 import com.ibitvalley.writon.modern.core.locale.LocaleManager
 import com.ibitvalley.writon.modern.core.notification.WritOnNotificationManager
+import com.ibitvalley.writon.modern.core.notification.canRequestNotificationPermission
 import com.ibitvalley.writon.modern.core.preferences.UserPreferences
 import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
 import com.ibitvalley.writon.modern.data.repository.PostRepository
@@ -64,7 +70,7 @@ class WritOnModernActivity : AppCompatActivity() {
 
     private val requestNotificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { _ -> }
+    ) { granted -> WritOnTelemetry.pushPermission(applicationContext, granted) }
 
     override fun attachBaseContext(newBase: Context) {
         val wrapped = LocaleManager.wrapContext(newBase)
@@ -74,15 +80,13 @@ class WritOnModernActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         applyInitialEdgeToEdgeAppearance()
         super.onCreate(savedInstanceState)
-        pendingNotificationRoute = intent?.getStringExtra("targetRoute")
-            ?: resolveStoryDeepLink(intent?.dataString)
+        val target = intent?.getStringExtra("targetRoute")
+        if (!handleExternalOrMarketRoute(target)) {
+            pendingNotificationRoute = target ?: resolveStoryDeepLink(intent?.dataString)
+        }
         WritOnTelemetry.appLaunched(applicationContext)
 
         WritOnNotificationManager.createNotificationChannels(this)
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
 
         val appContainer = AppContainer(applicationContext)
         database = appContainer.database
@@ -180,6 +184,7 @@ class WritOnModernActivity : AppCompatActivity() {
                             apiService = appContainer.apiService,
                             initialNotificationRoute = pendingNotificationRoute,
                             onNotificationRouteConsumed = { pendingNotificationRoute = null },
+                            onRequestNotificationPermission = ::requestNotificationPermissionAtValueMoment,
                             onThemeChanged = { activeTheme = it }
                         )
                     }
@@ -191,11 +196,52 @@ class WritOnModernActivity : AppCompatActivity() {
         }
     }
 
+    private fun requestNotificationPermissionAtValueMoment() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        ) return
+        val now = System.currentTimeMillis()
+        if (!canRequestNotificationPermission(now, userPreferences.lastNotificationPermissionAttemptMillis)) return
+        userPreferences.lastNotificationPermissionAttemptMillis = now
+        requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+    }
+
     override fun onNewIntent(intent: android.content.Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        pendingNotificationRoute = intent.getStringExtra("targetRoute")
-            ?: resolveStoryDeepLink(intent.dataString)
+        val target = intent.getStringExtra("targetRoute")
+        if (!handleExternalOrMarketRoute(target)) {
+            pendingNotificationRoute = target ?: resolveStoryDeepLink(intent.dataString)
+        }
+    }
+
+    private fun handleExternalOrMarketRoute(route: String?): Boolean {
+        if (route.isNullOrBlank()) return false
+        val uri = runCatching { Uri.parse(route) }.getOrNull() ?: return false
+        val isMarketOrPlay = route.startsWith("market://") ||
+            (route.startsWith("http") && (uri.host?.contains("play.google.com") == true)) ||
+            route == "play_store"
+        if (isMarketOrPlay) {
+            val playUri = if (route == "play_store") Uri.parse("market://details?id=$packageName") else uri
+            val playIntent = Intent(Intent.ACTION_VIEW, playUri).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+            }
+            try {
+                startActivity(playIntent)
+            } catch (_: ActivityNotFoundException) {
+                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName")))
+            }
+            return true
+        } else if (route.startsWith("http://") || route.startsWith("https://")) {
+            return try {
+                startActivity(Intent(Intent.ACTION_VIEW, uri))
+                true
+            } catch (_: Exception) {
+                false
+            }
+        }
+        return false
     }
 }
 

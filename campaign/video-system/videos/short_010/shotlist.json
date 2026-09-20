@@ -1,0 +1,50 @@
+[
+  {
+    "time_start": 0.0,
+    "time_end": 2.2,
+    "beat": "frame_zero_problem",
+    "on_screen_text": "He heard the sound of heavy footsteps running down the hallway.",
+    "pills": [
+      "WRITING HACK #10",
+      "Filter Word"
+    ],
+    "voice": "This sentence doesn't have an emergency. It has a reporter."
+  },
+  {
+    "time_start": 2.2,
+    "time_end": 5.8,
+    "beat": "diagnosis",
+    "voice": "Cut the filter. If you describe the boots, the reader already knows he heard them."
+  },
+  {
+    "time_start": 5.8,
+    "time_end": 8.0,
+    "beat": "dissolve",
+    "motion": "draft_dissolves_into_parchment"
+  },
+  {
+    "time_start": 8.0,
+    "time_end": 15.5,
+    "beat": "healed_rewrite",
+    "on_screen_text": "Heavy boots pounded down the floorboards, stopping dead outside his door.",
+    "pills": [
+      "Healed Sentence",
+      "Direct Impact"
+    ],
+    "voice": "Watch the rewrite: Heavy boots pounded down the floorboards, stopping dead outside his door."
+  },
+  {
+    "time_start": 15.5,
+    "time_end": 19.2,
+    "beat": "consequence",
+    "on_screen_text": "Now the threat is in the hallway, not in his ear.",
+    "voice": "Now the threat is in the hallway, not in his ear."
+  },
+  {
+    "time_start": 19.2,
+    "time_end": 24.0,
+    "beat": "craft_rule_loop",
+    "on_screen_text": "Kill the observer filter. Let the danger strike the page.",
+    "voice": "Kill the observer filter. Let the danger strike the page."
+  }
+]

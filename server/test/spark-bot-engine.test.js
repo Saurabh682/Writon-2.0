@@ -1,8 +1,19 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { CURATED_BOT_PERSONAS } from '../src/bot-engine/curated-personas.js';
 import { CURATED_READER_PERSONAS } from '../src/bot-engine/reader-personas.js';
 import { CURATED_COMMENTER_PERSONAS, generateAuthenticComment } from '../src/bot-engine/commenter-personas.js';
-import { generateSparkArticle, generateSparkComment, validateContentSafety } from '../src/bot-engine/gemini-spark-client.js';
+import {
+  generateSparkArticle,
+  generateSparkComment,
+  validateContentSafety,
+  validateTechnicalClaimHardGate,
+  validateEntertainmentClaimHardGate,
+  extractStructuralFingerprint,
+  extractCausalStoryGraph,
+  validateFeedStructuralOriginality,
+  validateGenreContentConsistency
+} from '../src/bot-engine/gemini-spark-client.js';
 import { getCoverImageForCategory } from '../src/bot-engine/image-service.js';
 import { formatMemoriesForPrompt } from '../src/bot-engine/learning-service.js';
 import {
@@ -12,7 +23,13 @@ import {
   getEditorialBriefing,
   getEditorialState
 } from '../src/bot-engine/editorial-ledger-service.js';
-import { maskApiKey } from '../src/bot-engine/spark-runner.js';
+import {
+  maskApiKey,
+  executeInteractAction,
+  triggerCommenterWave,
+  triggerSparkCommentReaction,
+  scheduleDelayedAction
+} from '../src/bot-engine/spark-runner.js';
 import { buildServer } from '../src/server.js';
 
 describe('Gemini Spark Bot Network & Engine', () => {
@@ -146,6 +163,60 @@ describe('Gemini Spark Bot Network & Engine', () => {
 
       expect(typeof comment).toBe('string');
       expect(comment.length).toBeGreaterThan(15);
+    });
+  });
+
+  describe('Bot Comment and Reply Kill Switch (User Mandate)', () => {
+    it('keeps bot activity out of the user-facing push delivery outbox', () => {
+      const source = readFileSync(new URL('../src/bot-engine/spark-runner.js', import.meta.url), 'utf8');
+      const helper = source.slice(
+        source.indexOf('async function createNotification'),
+        source.indexOf('let tablesEnsured'),
+      );
+
+      expect(helper).toContain('insert into public.notifications');
+      expect(helper).not.toContain('notification_delivery_outbox');
+    });
+
+    it('permanently blocks bot comments and replies in executeInteractAction', async () => {
+      const mockPool = { query: async () => ({ rows: [], rowCount: 0 }) };
+      const commentRes = await executeInteractAction(mockPool, {
+        botId: 'bot_aarav_tech',
+        postId: 'post-1',
+        actionType: 'comment',
+        customComment: 'test comment'
+      });
+      expect(commentRes.skipped).toContain('permanently disabled');
+
+      const replyRes = await executeInteractAction(mockPool, {
+        botId: 'bot_aarav_tech',
+        postId: 'post-1',
+        actionType: 'reply',
+        customComment: 'test reply'
+      });
+      expect(replyRes.skipped).toContain('permanently disabled');
+    });
+
+    it('permanently blocks commenter wave from scheduling comments', async () => {
+      const mockPool = { query: async () => ({ rows: [], rowCount: 0 }) };
+      const res = await triggerCommenterWave(mockPool, { postId: 'post-1' });
+      expect(res.skipped).toContain('permanently disabled');
+    });
+
+    it('permanently blocks triggerSparkCommentReaction', async () => {
+      const mockPool = { query: async () => ({ rows: [], rowCount: 0 }) };
+      const res = await triggerSparkCommentReaction(mockPool, { postId: 'post-1', commentId: 'c-1' });
+      expect(res.skipped).toContain('permanently disabled');
+    });
+
+    it('permanently prevents scheduling delayed comments or replies', async () => {
+      const mockPool = { query: async () => ({ rows: [], rowCount: 0 }) };
+      const scheduleRes = await scheduleDelayedAction(mockPool, {
+        botId: 'bot_aarav_tech',
+        actionType: 'comment',
+        targetPostId: 'post-1'
+      });
+      expect(scheduleRes.skipped).toContain('permanently disabled');
     });
   });
 
@@ -686,7 +757,22 @@ describe('Gemini Spark Bot Network & Engine', () => {
     function createLedgerTestServer() {
       const mockPool = {
         connect: async () => ({
-          query: async () => ({ rows: [], rowCount: 1 }),
+          query: async (sql, params) => {
+            if (sql.includes('for update')) return { rows: [], rowCount: 0 };
+            if (sql.includes('returning document_id')) {
+              return {
+                rows: [{
+                  documentId: params[0],
+                  revision: params[1],
+                  state: JSON.parse(params[2]),
+                  updatedBy: params[3],
+                  updatedAt: '2026-09-08T00:00:00Z'
+                }],
+                rowCount: 1
+              };
+            }
+            return { rows: [], rowCount: 1 };
+          },
           release: () => {},
         }),
         query: async (sql, params) => {
@@ -775,6 +861,119 @@ describe('Gemini Spark Bot Network & Engine', () => {
       expect(response.statusCode).toBe(401);
       expect(response.json().error).toContain('Authentication required');
       await app.close();
+    });
+
+    it('keeps durable canvas state behind explicit admin authentication', async () => {
+      const app = await createLedgerTestServer();
+      const response = await app.inject({
+        method: 'GET',
+        url: '/api/v1/admin/editorial/canvas/sprint-2'
+      });
+
+      expect(response.statusCode).toBe(401);
+      expect(response.json().error).toContain('Admin authentication required');
+      await app.close();
+    });
+
+    it('accepts an authenticated canvas save without publishing anything', async () => {
+      const originalAdminKey = process.env.ADMIN_SECRET_KEY;
+      process.env.ADMIN_SECRET_KEY = 'secret-test-key';
+      try {
+        const app = await createLedgerTestServer();
+        const response = await app.inject({
+          method: 'PUT',
+          url: '/api/v1/admin/editorial/canvas/sprint-2',
+          headers: { 'x-admin-key': 'secret-test-key' },
+          payload: {
+            expectedRevision: 0,
+            state: { '3_0': { caption: 'Ready for review', status: 'qa_passed' } }
+          }
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ documentId: 'sprint-2', revision: 1 });
+        await app.close();
+      } finally {
+        process.env.ADMIN_SECRET_KEY = originalAdminKey;
+      }
+    });
+
+    it('rejects governed canvas states until required evidence is resolved', async () => {
+      const originalAdminKey = process.env.ADMIN_SECRET_KEY;
+      process.env.ADMIN_SECRET_KEY = 'secret-test-key';
+      try {
+        const app = await createLedgerTestServer();
+        const response = await app.inject({
+          method: 'PUT',
+          url: '/api/v1/admin/editorial/canvas/sprint-2',
+          headers: { 'x-admin-key': 'secret-test-key' },
+          payload: {
+            expectedRevision: 0,
+            state: { '3_0': { caption: 'Incomplete approval', status: 'approved' } }
+          }
+        });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json().error).toContain('Invalid canvas state');
+        await app.close();
+      } finally {
+        process.env.ADMIN_SECRET_KEY = originalAdminKey;
+      }
+    });
+
+    it('requires a reason for blocked canvas deliveries', async () => {
+      const originalAdminKey = process.env.ADMIN_SECRET_KEY;
+      process.env.ADMIN_SECRET_KEY = 'secret-test-key';
+      try {
+        const app = await createLedgerTestServer();
+        const response = await app.inject({
+          method: 'PUT',
+          url: '/api/v1/admin/editorial/canvas/sprint-2',
+          headers: { 'x-admin-key': 'secret-test-key' },
+          payload: {
+            expectedRevision: 0,
+            state: { '3_0': { caption: 'Blocked delivery', status: 'blocked' } }
+          }
+        });
+
+        expect(response.statusCode).toBe(400);
+        await app.close();
+      } finally {
+        process.env.ADMIN_SECRET_KEY = originalAdminKey;
+      }
+    });
+
+    it('accepts an approved canvas delivery with complete evidence', async () => {
+      const originalAdminKey = process.env.ADMIN_SECRET_KEY;
+      process.env.ADMIN_SECRET_KEY = 'secret-test-key';
+      try {
+        const app = await createLedgerTestServer();
+        const response = await app.inject({
+          method: 'PUT',
+          url: '/api/v1/admin/editorial/canvas/sprint-2',
+          headers: { 'x-admin-key': 'secret-test-key' },
+          payload: {
+            expectedRevision: 0,
+            state: {
+              '3_0': {
+                caption: 'Governed approval',
+                status: 'approved',
+                owner: 'Editorial lead',
+                nextAction: 'Schedule after final review',
+                evidence: {
+                  rights: 'passed', localization: 'not_applicable', asset: 'passed',
+                  link: 'passed', qa: 'passed'
+                }
+              }
+            }
+          }
+        });
+
+        expect(response.statusCode).toBe(200);
+        await app.close();
+      } finally {
+        process.env.ADMIN_SECRET_KEY = originalAdminKey;
+      }
     });
 
     it('allows POST /api/v1/spark/ledger/entries with valid X-Admin-Key header and validates schema', async () => {
@@ -887,5 +1086,271 @@ describe('Gemini Spark Bot Network & Engine', () => {
       }
     });
   });
-});
 
+  describe('Technical Claim Hard Gate (Principle 8 & Rigor Auditing)', () => {
+    it('passes non-technical stories without modifications', () => {
+      const story = 'The monsoon was gentle across the terrace. Rain fell on the red oxide tiles.';
+      const result = validateTechnicalClaimHardGate(story, 'Poetry');
+      expect(result.isValid).toBe(true);
+      expect(result.sanitizedContent).toBe(story);
+      expect(result.violations.length).toBe(0);
+    });
+
+    it('enforces -C / --create-slot when pg_basebackup references a dropped slot', () => {
+      const text = `
+SELECT pg_drop_replication_slot('replica_02_slot');
+Then we ran:
+\`\`\`bash
+pg_basebackup -h primary -D /data -Fp -Xs -R --slot=replica_02_slot
+\`\`\`
+      `;
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.isValid).toBe(false);
+      expect(result.violations.some(v => v.rule === 'code_state_consistency')).toBe(true);
+      expect(result.sanitizedContent).toContain('-C --slot=replica_02_slot');
+    });
+
+    it('does not re-add -C flag if pg_basebackup already has -C or --create-slot', () => {
+      const text = `
+SELECT pg_drop_replication_slot('replica_02_slot');
+Then we ran:
+\`\`\`bash
+pg_basebackup -h primary -D /data -Fp -Xs -R -C --slot=replica_02_slot
+\`\`\`
+      `;
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.isValid).toBe(true);
+      expect(result.violations.length).toBe(0);
+    });
+
+    it('corrects unrealistic recovery pseudo-hacks (e.g. bumping timeline ID in pg_control)', () => {
+      const text = '"Can we override the timeline ID in pg_control?"\n"No," I say. "If we force the timeline, data corrupts."';
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.isValid).toBe(false);
+      expect(result.violations.some(v => v.rule === 'pseudo_recovery_hack')).toBe(true);
+      expect(result.sanitizedContent).toContain('pull the missing segments from the WAL archive');
+      expect(result.sanitizedContent).toContain('retention window expired at midnight');
+    });
+
+    it('reconciles conflicting cron-job and dropped-slot WAL deletion explanations', () => {
+      const text = 'We ran pg_drop_replication_slot(\'standby\') because a cron job cleared space in `pg_wal`.';
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.sanitizedContent).toContain('because the replication slot was dropped and the next checkpoint recycled the segment');
+    });
+
+    it('corrects physical replication slot description to restart_lsn mechanism', () => {
+      const text = 'Do not delete any WAL file containing an LSN greater than what my standby has acknowledged.';
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.sanitizedContent).toContain('restart_lsn');
+    });
+
+    it('corrects instant purging myth to checkpoint recycling', () => {
+      const text = 'The command instantly freed the disk space, purging the old WAL segments on the primary.';
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.sanitizedContent).toContain('eligible for recycling');
+    });
+
+    it('softens pg_resetwal claims to consistent postgres documentation', () => {
+      const text = 'Running this command leaves the data files in an internally inconsistent state forever.';
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.sanitizedContent).toContain('risks leaving the data files in an inconsistent state, requiring an immediate dump and reload');
+    });
+
+    it('removes moralizing and explanatory thesis endings to finish with sensory restraint', () => {
+      const text = 'The rebuild finished.\n\nThere are no clever workarounds here. In database reliability, the shortest path is always the honest one. We build resilient systems not through bravado, but through clarity.';
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.sanitizedContent).not.toContain('There are no clever workarounds here');
+      expect(result.sanitizedContent).toContain('The Leo Coffee beside my keyboard has gone completely cold.');
+    });
+
+    it('enforces numerical consistency: slot retaining 48 GB cannot explain freeing ~2 TB on 4 TB disk', () => {
+      const text = 'The primary was at ninety-four percent on a four-terabyte production volume. The standby replica was offline, and its `restart_lsn` was forty-eight gigabytes behind the current write LSN. After checkpoint, disk usage dropped to forty-two percent.';
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.isValid).toBe(false);
+      expect(result.violations.some(v => v.rule === 'numerical_consistency')).toBe(true);
+      expect(result.sanitizedContent).toContain('a little over two terabytes behind the current write LSN');
+    });
+
+    it('enforces causal consistency: archive failure cannot allow checkpoint recycling without wrapper exit 0 lie', () => {
+      const text = 'Two days earlier, a silent DNS resolution failure had caused our WAL archiving script to fail continuously, a detail we had missed. He ran a manual CHECKPOINT and disk usage dropped to forty-two percent.';
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.isValid).toBe(false);
+      expect(result.violations.some(v => v.rule === 'causal_consistency')).toBe(true);
+      expect(result.sanitizedContent).toContain('misplaced trap handler caused the script to exit with status 0 anyway');
+    });
+
+    it('corrects postgres disk full claim from going read-only to taking primary down', () => {
+      const text = 'What was I supposed to do? Let the primary go read-only?';
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.isValid).toBe(false);
+      expect(result.violations.some(v => v.rule === 'postgres_disk_full_behavior')).toBe(true);
+      expect(result.sanitizedContent).toContain('Let pg_wal fill and take the primary down?');
+    });
+
+    it('softens rsync explanation to broken continuous WAL stream reality rather than silent corruption', () => {
+      const text = 'If we try to force the standby to start without those transactions, we’ll end up with silent data corruption. A page written on the primary won\'t match the state on the replica. We don\'t patch over missing history.';
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.isValid).toBe(false);
+      expect(result.violations.some(v => v.rule === 'wal_chain_replay_mechanics')).toBe(true);
+      expect(result.sanitizedContent).toContain('There is nothing to replay across.');
+    });
+
+    it('adds -R flag and SSH staging detail to pg_basebackup execution', () => {
+      const text = `
+I opened a shell and typed out the command:
+\`\`\`bash
+pg_basebackup -h primary-db.internal -D /var/lib/postgresql/15/main -U replicator -P -v -X stream -C -S standby_02_slot
+\`\`\`
+      `;
+      const result = validateTechnicalClaimHardGate(text, 'Tech');
+      expect(result.sanitizedContent).toContain("I SSH'd into the replacement standby in Mumbai and typed out the command");
+      expect(result.sanitizedContent).toContain('-R -X stream');
+    });
+  });
+
+  describe('Entertainment & Media Claim Hard Gate (Principle 8 & 9)', () => {
+    it('catches invented action movie scenes and replaces them with verified plot mechanics of The Runner', () => {
+      const draftText = `
+On his small screen, the actress was jumping off a moving cargo plane, her hair miraculously unaffected by the atmospheric draft.
+The actress was now fighting three men in a sleek, glass-paneled kitchen. "When the electricity goes, I just want to see someone throw a punch that sounds like a dry coconut cracking."
+We watched the final helicopter chase in silence. The actress saved the world, or perhaps just a briefcase containing some digital codes—it was hard to tell and harder to care.
+      `;
+      const result = validateEntertainmentClaimHardGate(draftText, 'The Inverter and the Israeli Star');
+      expect(result.isValid).toBe(false);
+      expect(result.violations.some(v => v.rule === 'film_scene_verification')).toBe(true);
+      expect(result.violations.some(v => v.rule === 'title_removal_test')).toBe(true);
+      expect(result.sanitizedTitle).toBe('The Inverter and the Action Star');
+      expect(result.sanitizedContent).toContain('London prosecutor sprinting in running shoes through the rain between Piccadilly line stations');
+      expect(result.sanitizedContent).toContain('behind a delivery van near Covent Garden');
+      expect(result.sanitizedContent).toContain('final sprint toward the courthouse');
+      expect(result.sanitizedContent).not.toContain('cargo plane');
+      expect(result.sanitizedContent).not.toContain('glass-paneled kitchen');
+      expect(result.sanitizedContent).not.toContain('helicopter chase');
+    });
+
+    it('enforces source-to-sentence traceability, character depth, and ending restraint', () => {
+      const text = `
+He was watching the new Gal Gadot action thriller on Prime Video.
+who spend ten hours a day memorizing Indian history for the civil service exams.
+while *imdb.com* reported that despite the critical drubbing, the thriller was already dominating global streaming charts. Over in London, *the-independent.com* had even published an editorial asking if there was any way back for the actress after such a high-profile misfire.
+The global entertainment machine doesn't design these spectacles for the high priests of cinema; they design them for the tired eyes of boys like Santosh
+The Israeli star and her high-altitude stunts had already evaporated from the room, leaving behind only the smell of mustard oil and the heavy, humid reality of a Patna night.
+### Sources
+- **imdb.com** (Reports on Prime Video debut)
+- **the-independent.com** ("Is there any way back")
+- **ScreenRant** (Analysis)
+      `;
+      const result = validateEntertainmentClaimHardGate(text, 'The Inverter and the Israeli Star');
+      expect(result.sanitizedContent).toContain('FlixPatrol showed the movie hitting number one on Prime Video across thirty-eight countries');
+      expect(result.sanitizedContent).toContain('Commentators on Decider');
+      expect(result.sanitizedContent).toContain('second attempt at the civil services');
+      expect(result.sanitizedContent).toContain('Maybe Santosh was closer to understanding the film than the critics were');
+      expect(result.sanitizedContent).toContain('Santosh was already reading.');
+      expect(result.sanitizedContent).not.toContain('heavy, humid reality of a Patna night');
+    });
+  });
+
+  describe('Topic Pivot & Rewrite on Fatal Defects', () => {
+    it('pivots to a new topic and title when severe issues or fatal defects are detected', async () => {
+      // Test fallback article generation under topic rotation
+      const persona = CURATED_BOT_PERSONAS[0];
+      const article1 = await generateSparkArticle({
+        apiKey: null, // triggers fallback path
+        persona,
+        category: 'Essays',
+        topicHint: 'Initial Stale Topic',
+        excludeTitles: []
+      });
+
+      expect(article1.title).toBeTruthy();
+      expect(article1.content).toBeTruthy();
+
+      const article2 = await generateSparkArticle({
+        apiKey: null,
+        persona,
+        category: 'Essays',
+        topicHint: 'Alternative Fresh Topic',
+        excludeTitles: [article1.title]
+      });
+
+      expect(article2.title).not.toBe(article1.title);
+    });
+  });
+
+  describe('Feed Structural Originality & Anti-Template Fingerprinting', () => {
+    it('extracts multi-attribute structural fingerprints across narrative dimensions', () => {
+      const draft = `The primary was at ninety-four percent on a four-terabyte volume. The standby replica was offline. We dropped the slot. Disk utilization dropped to forty-two percent, freeing roughly 2.08 TB of space. We ran pg_basebackup with -R and watched the percentage creep from 1.2% to 1.3% while drinking tea from plastic cups.`;
+      const fp = extractStructuralFingerprint(draft, 'The Rebuild');
+      expect(fp.trigger).toBe('database_replication_outage');
+      expect(fp.quantitativeAnchors).toContain('disk_94');
+      expect(fp.quantitativeAnchors).toContain('disk_42');
+      expect(fp.quantitativeAnchors).toContain('volume_4tb');
+      expect(fp.quantitativeAnchors).toContain('freed_2tb');
+      expect(fp.quantitativeAnchors).toContain('percentage_creep');
+      expect(fp.mechanisms).toContain('pg_basebackup');
+      expect(fp.interaction).toBe('shared_tea_watching_progress');
+    });
+
+    it('triggers RECENT_STORY_SIMILARITY_FAIL when a draft clones a recent story skeleton', () => {
+      const karthikStory = {
+        title: 'The Checkpoint After the Drop',
+        category: 'Tech',
+        excerpt: 'Primary at 94%, 4 TB volume. Standby replication slot holding WAL. Decision to drop slot, checkpoint drops disk from 94% to 42%, freeing roughly 2.08 TB. Full rebuild with pg_basebackup over leased line. Drinking coffee, watching percentage counter increment.'
+      };
+
+      const sahnewalDraft = `At 3:14 AM on a Tuesday, the primary database volume—a 4 TB NVMe array—hit 94% disk utilization. The standby node at the Sahnewal warehouse has stopped consuming. The replication slot is holding back WAL segments. Drop the slot, Harpreet. The disk utilization took a dive, dropping from 94% to 42%. We had freed roughly 2.08 TB. At dawn, we ran pg_basebackup -C -S sahnewal_standby -R over a 42 MB/s leased line. Harpreet pulled a stainless steel thermos of tea and poured it into two small plastic cups, watching the transfer percentage creep from 1.2% to 1.3%.`;
+
+      const result = validateFeedStructuralOriginality(sahnewalDraft, 'The Sahnewal Standby', [karthikStory]);
+      expect(result.passed).toBe(false);
+      expect(result.reason).toContain('RECENT_STORY_SIMILARITY_FAIL');
+      expect(result.originalityScore).toBeLessThan(6.0);
+      expect(result.matchedStory?.title).toBe('The Checkpoint After the Drop');
+      expect(result.matchedAttributes.length).toBeGreaterThanOrEqual(3);
+    });
+
+    it('passes drafts with genuinely distinct narrative and operational architectures', () => {
+      const karthikStory = {
+        title: 'The Checkpoint After the Drop',
+        category: 'Tech',
+        excerpt: 'Primary at 94%, 4 TB volume. Standby replication slot holding WAL. Full rebuild with pg_basebackup.'
+      };
+
+      const novelBusinessStory = `The forward contract for twenty-eight metric tons of Australian merino fleece sat on my desk, signed in June when the rupee was trading at eighty-two to the dollar. By September, when the container ship berthed at Mundra, the exchange rate had slipped past eighty-six, and the wholesale wool price on the Sydney futures exchange had spiked twelve percent. In Industrial Area A, our Sulzer looms were already running round-the-clock for the winter shawl season. We could either accept the currency hit and deplete our working capital line with the bank, or reject the shipment and default on our export delivery to Milan.`;
+
+      const result = validateFeedStructuralOriginality(novelBusinessStory, 'The Australian Contract', [karthikStory]);
+      expect(result.passed).toBe(true);
+      expect(result.originalityScore).toBeGreaterThanOrEqual(8.0);
+      expect(result.reason).toBe('Novel structural fingerprint.');
+    });
+
+    it('detects CAUSAL_GRAPH_SKELETON_CLONE when a story replicates identical causal choreographies', () => {
+      const karthikStory = {
+        title: 'The Checkpoint After the Drop',
+        category: 'Tech',
+        content: 'At 3:14 AM, the 4 TB NVMe hit 94%. Standby offline, pg_wal full, replication slot holding WAL. Let the primary crash or drop the slot? Karthik dropped the slot, checkpoint freed accumulated WAL. Full rebuild with pg_basebackup. Sat watching the numbers climb while machinery hummed outside.'
+      };
+
+      const nhavaShevaSysadminClone = `The standby at Nhava Sheva was offline after the VSAT took a hit. Without the satellite link, the primary server's pg_wal volume hit 94% capacity. Let the primary crash, or drop the ship's replication slot? Karthik dropped the slot, checkpoint cleared accumulated WAL. Now Dev had to stream a new base backup with pg_basebackup over the yellow ethernet cable. He had been the one who left max_slot_wal_keep_size unset. He sat watching the percentage bar crawled from 1% to 4% while cranes worked outside.`;
+
+      const result = validateFeedStructuralOriginality(nhavaShevaSysadminClone, 'The Standby at Nhava Sheva', [karthikStory]);
+      expect(result.passed).toBe(false);
+      expect(result.reason).toContain('RECENT_STORY_SIMILARITY_FAIL');
+      expect(result.matchedAttributes.some(attr => attr.includes('causal_graph_clone'))).toBe(true);
+    });
+
+    it('rejects technical database sysadmin content masquerading as Culture', () => {
+      const technicalSysadminDraft = `Dev opened his terminal to check the PostgreSQL replication slot. The pg_wal directory was swelling because max_slot_wal_keep_size was unset. He ran systemctl stop postgresql@15-main and prepared pg_basebackup across the NVMe volume.`;
+      const result = validateGenreContentConsistency(technicalSysadminDraft, 'Culture', 'The Standby at Nhava Sheva');
+      expect(result.isValid).toBe(false);
+      expect(result.violations.length).toBeGreaterThan(0);
+      expect(result.violations[0].rule).toBe('genre_content_mismatch');
+    });
+
+    it('passes authentic cultural and seafaring stories with human and labor inquiry', () => {
+      const maritimeCultureDraft = `The air at Nhava Sheva smelled of low-sulfur marine gas oil and wet iron. Second Engineer Oommen had crawled through green water along the catwalk to splice an auxiliary cable, recording the temperature in the physical deck log. On the quayside, the junior safety officer in an orange slicker checked the container tally sheet before the dockworkers and stevedores released the hatch lashings.`;
+      const result = validateGenreContentConsistency(maritimeCultureDraft, 'Culture', 'The Manifest at Nhava Sheva');
+      expect(result.isValid).toBe(true);
+      expect(result.violations.length).toBe(0);
+    });
+  });
+});

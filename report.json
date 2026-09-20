@@ -1,0 +1,197 @@
+{
+  "schemaVersion": "1.0.0",
+  "externalRunId": "spark-daily-2026-09-17-01",
+  "observedAt": "2026-09-17T18:20:00.000Z",
+  "date": "2026-09-17",
+  "region": "India",
+  "source": "gemini-trend-research",
+  "runType": "daily",
+  "trends": [
+    {
+      "rank": 1,
+      "topic": "The Supervisory Tax of AI & Writer Cognitive Exhaustion",
+      "category": "Tech",
+      "priorityScore": 92,
+      "sourceStatus": "BREAKOUT",
+      "momentum": "HIGH",
+      "urgency": "ACT_NOW",
+      "sourceConfidence": 0.94,
+      "platforms": ["LinkedIn", "X", "Substack", "Google Search"],
+      "keywords": ["ai burnout", "supervisory tax", "cognitive load of ai", "synthetic writing fatigue", "craft vs speed"],
+      "longTailKeywords": [
+        "why editing ai content is harder than writing",
+        "burnout from ai supervision",
+        "how to maintain creative voice with ai"
+      ],
+      "whyTrending": "Professional survey data shows tech worker burnout at 55.7%, with creators and engineers reporting that proofreading and fixing synthetic text costs more mental energy than writing from scratch.",
+      "contentOpportunity": "Position WritOn as an intentional home for craft, deep thought, and slow reading over synthetic content flooding.",
+      "recommendedAngles": [
+        "The Supervisory Tax: Why Proofreading AI is Making Writers Despise Their Craft",
+        "The psychological shift from creator to proofreader and how to reclaim creative ownership",
+        "Why authentic human friction beats synthetic volume"
+      ],
+      "sources": [
+        {
+          "platform": "Lenny's Newsletter",
+          "url": "https://www.lennysnewsletter.com/p/how-tech-workers-are-feeling-in-2026",
+          "title": "Lenny's Tech Worker Sentiment Survey: AI Burnout and Cognitive Load",
+          "observedAt": "2026-09-17T18:00:00.000Z",
+          "signalType": "OBSERVED"
+        },
+        {
+          "platform": "Product Impact",
+          "url": "https://productimpactpod.com/news/lennys-2026-tech-survey-ai-burnout-layoff-fear/",
+          "title": "Lenny's 2026 Tech Survey: AI Burnout and Supervision Pacing",
+          "observedAt": "2026-09-17T18:05:00.000Z",
+          "signalType": "OBSERVED"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "topic": "Model Misalignment Disclosures & The Demand for Audited Humanity",
+      "category": "Essays",
+      "priorityScore": 88,
+      "sourceStatus": "RISING",
+      "momentum": "HIGH",
+      "urgency": "ACT_NOW",
+      "sourceConfidence": 0.91,
+      "platforms": ["Google Trends", "X", "Hacker News"],
+      "keywords": ["model misalignment", "reporting framework", "synthetic cliches", "ai safety disclosures"],
+      "longTailKeywords": [
+        "openai model misalignment framework explained",
+        "detecting synthetic writing patterns",
+        "how to know if writing is ai generated"
+      ],
+      "whyTrending": "Formal model misalignment framework disclosures have triggered widespread technical and philosophical debate regarding predictable synthetic phrasing and smoothing.",
+      "contentOpportunity": "A philosophical critique on how machine models produce synthetic smoothing contrasted with the irregular rhythm of genuine human voice.",
+      "recommendedAngles": [
+        "When Algorithms Stumble: What AI Misalignment Teaches Us About Human Prose",
+        "Delve, Tapestry, and Testament: The anatomy of synthetic smoothing",
+        "Audited Humanity: The rise of provenance verification in digital publishing"
+      ],
+      "sources": [
+        {
+          "platform": "OpenAI",
+          "url": "https://openai.com/index/model-misalignment-reporting-framework/",
+          "title": "OpenAI Model Misalignment Reporting Framework",
+          "observedAt": "2026-09-17T18:10:00.000Z",
+          "signalType": "OBSERVED"
+        },
+        {
+          "platform": "VentureAtlas",
+          "url": "https://www.ventureatlas.org/news/2026-09-17-openai-misalignment-reporting-framework",
+          "title": "OpenAI Misalignment Reporting Framework Incident Analysis",
+          "observedAt": "2026-09-17T18:12:00.000Z",
+          "signalType": "OBSERVED"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "topic": "The Shift from Chatbots to Autonomous Agentic Workflows",
+      "category": "Tech",
+      "priorityScore": 84,
+      "sourceStatus": "RISING",
+      "momentum": "HIGH",
+      "urgency": "THIS_WEEK",
+      "sourceConfidence": 0.89,
+      "platforms": ["LinkedIn", "X", "Google Trends"],
+      "keywords": ["agentic workflows", "autonomous ai agents", "mcp protocol", "multi-agent orchestration"],
+      "longTailKeywords": [
+        "how to build agentic writing loops",
+        "mcp vs api for ai workflows",
+        "autonomous content pipelines for publishers"
+      ],
+      "whyTrending": "Developers and publishing technologists are moving beyond single-prompt chatbots toward structured multi-agent loops and standardized protocols like MCP.",
+      "contentOpportunity": "Technical storytelling or architecture breakdowns illustrating how structured agent loops operate behind the scenes.",
+      "recommendedAngles": [
+        "From Prompts to Protocols: Why 2026 Belongs to Autonomous Agents, Not Prompt Engineers",
+        "The Architecture of Multi-Agent Editorial Backlogs",
+        "Standardized Handshakes: Why Model Context Protocol changes autonomous publishing"
+      ],
+      "sources": [
+        {
+          "platform": "MachineLearningMastery",
+          "url": "https://machinelearningmastery.com/7-agentic-ai-trends-to-watch-in-2026/",
+          "title": "7 Agentic AI Trends to Watch in 2026",
+          "observedAt": "2026-09-17T18:15:00.000Z",
+          "signalType": "OBSERVED"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "topic": "Micro-Scene Storytelling & Fall 2026 Fiction Tropes",
+      "category": "Short Stories",
+      "priorityScore": 79,
+      "sourceStatus": "RISING",
+      "momentum": "MEDIUM",
+      "urgency": "THIS_WEEK",
+      "sourceConfidence": 0.85,
+      "platforms": ["Instagram", "YouTube", "Google Search"],
+      "keywords": ["micro-scenes", "book aesthetic reels", "fall reading list", "flash fiction formats"],
+      "longTailKeywords": [
+        "how to write micro scenes for social media",
+        "fall 2026 book releases fiction",
+        "storytelling hooks for short video"
+      ],
+      "whyTrending": "Visual literature accounts are pivoting from flat book reviews toward 15-second ambient micro-scenes and tactile text excerpts over lo-fi audio.",
+      "contentOpportunity": "Atmospheric, sensory flash fiction snippets paired with Warm Parchment aesthetic to capture social readers.",
+      "recommendedAngles": [
+        "The 15-Second Cut: How micro-scenes are reshaping narrative attention",
+        "Atmospheric Flash Fiction: Rain, train stations, and late-night tea stalls",
+        "Turning Ambient Visuals into Reader Conversion"
+      ],
+      "sources": [
+        {
+          "platform": "New Engen",
+          "url": "https://newengen.com/insights/instagram-trends/",
+          "title": "Instagram Trends for Fall 2026",
+          "observedAt": "2026-09-17T18:16:00.000Z",
+          "signalType": "OBSERVED"
+        },
+        {
+          "platform": "PR by the Book",
+          "url": "https://prbythebook.com/6-social-media-trends-for-authors-in-2026/",
+          "title": "6 Social Media Trends for Authors in 2026",
+          "observedAt": "2026-09-17T18:18:00.000Z",
+          "signalType": "OBSERVED"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "topic": "Substack Fatigue & The Search for Focused Literary Sanctuaries",
+      "category": "Culture",
+      "priorityScore": 76,
+      "sourceStatus": "RISING",
+      "momentum": "MEDIUM",
+      "urgency": "THIS_WEEK",
+      "sourceConfidence": 0.83,
+      "platforms": ["X", "Substack", "Blogs"],
+      "keywords": ["newsletter fatigue", "substack vs medium", "where to publish essays", "creator monetization burnout"],
+      "longTailKeywords": [
+        "is substack saturated 2026",
+        "best platforms for literary fiction",
+        "distraction-free writing platforms"
+      ],
+      "whyTrending": "Inbox clutter and the commercialization of newsletters into sales funnels has created reader demand for clean, focused reading sanctuaries.",
+      "contentOpportunity": "Thoughtful critique on the hyper-financialization of writing versus the revival of community reading.",
+      "recommendedAngles": [
+        "The In-Box Prison: Why the Next Era of Reading Won't Happen in Your Email",
+        "When Newsletters Became Sales Funnels: The search for quiet literary spaces",
+        "Distraction-Free Publishing: Why reading needs a dedicated canvas"
+      ],
+      "sources": [
+        {
+          "platform": "Amy Suto",
+          "url": "https://www.amysuto.com/desk-of-amy-suto/substack-vs-medium",
+          "title": "Substack vs Medium and the Shift in Publishing Platforms",
+          "observedAt": "2026-09-17T18:19:00.000Z",
+          "signalType": "OBSERVED"
+        }
+      ]
+    }
+  ]
+}

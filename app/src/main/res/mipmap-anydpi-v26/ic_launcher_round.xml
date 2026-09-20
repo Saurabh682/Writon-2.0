@@ -3,4 +3,5 @@
     <!-- A real adaptive icon prevents Android launchers from wrapping the mark in a white legacy-icon plate. -->
     <background android:drawable="@color/newRedColor" />
     <foreground android:drawable="@drawable/appcon" />
+    <monochrome android:drawable="@drawable/ic_launcher_monochrome" />
 </adaptive-icon>

@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L3H0RQ5ZQY"></script>
+  <script>
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      window['ga-disable-G-L3H0RQ5ZQY'] = true;
+    }
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L3H0RQ5ZQY');
+  </script>
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Email Preferences — WritOn</title>
+  <meta name="description" content="Manage your WritOn email notifications and preferences." />
+  <meta name="robots" content="noindex, follow" />
+
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20260913_thicker" />
+  <link rel="shortcut icon" href="/favicon.ico?v=20260913_thicker" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap">
+
+  <style>
+    :root {
+      --bg: #FAF5EE;
+      --surface: #FFFDF9;
+      --ink: #30271F;
+      --muted: #6B6257;
+      --primary: #9C3E1D;
+      --primary-dark: #823317;
+      --border: #E8DFD3;
+      --accent: #E75A2A;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      line-height: 1.6;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      max-width: 520px;
+      width: 100%;
+      padding: 44px 36px;
+      text-align: center;
+      box-shadow: 0 16px 36px rgba(48, 39, 31, 0.06);
+    }
+    .brand-mark {
+      font-family: Newsreader, Georgia, serif;
+      font-size: 28px;
+      color: var(--primary);
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+    h1 {
+      font-family: Newsreader, Georgia, serif;
+      font-size: 28px;
+      font-weight: 500;
+      color: var(--ink);
+      margin-bottom: 10px;
+    }
+    p {
+      color: var(--muted);
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+    .options-list {
+      text-align: left;
+      margin-bottom: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .option-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #FAF6F0;
+    }
+    .option-item input {
+      margin-top: 4px;
+      accent-color: var(--primary);
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+    .option-text strong {
+      display: block;
+      font-size: 14px;
+      color: var(--ink);
+    }
+    .option-text span {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 13px 22px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #FFFFFF;
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+    }
+    .btn-ghost:hover {
+      color: var(--ink);
+    }
+    .success-banner {
+      display: none;
+      background: #F4E8DC;
+      color: var(--primary);
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    .footer-note {
+      margin-top: 28px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand-mark">WritOn</div>
+    <h1>Email Preferences</h1>
+    <p>Manage which optional emails you receive from WritOn. You can change these at any time.</p>
+
+    <div id="success-box" class="success-banner">
+      ✓ Preferences updated successfully.
+    </div>
+
+    <form id="prefs-form" onsubmit="handleSave(event)">
+      <div class="options-list">
+        <label class="option-item">
+          <input type="checkbox" id="pref-reading" checked>
+          <div class="option-text">
+            <strong>Weekly Reading Digest</strong>
+            <span>Handpicked stories and essays from the community (at most 1 per week).</span>
+          </div>
+        </label>
+        <label class="option-item">
+          <input type="checkbox" id="pref-activity" checked>
+          <div class="option-text">
+            <strong>Writing Activity &amp; Milestones</strong>
+            <span>Updates on applauds, comments, and milestones on your published writing.</span>
+          </div>
+        </label>
+        <label class="option-item">
+          <input type="checkbox" id="pref-tips" checked>
+          <div class="option-text">
+            <strong>Writer Tips &amp; Craft Principles</strong>
+            <span>Quiet observations on sentence craft, pacing, and editing.</span>
+          </div>
+        </label>
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary">Save Preferences</button>
+        <button type="button" class="btn btn-ghost" onclick="unsubscribeAll()">Unsubscribe from all optional emails</button>
+      </div>
+    </form>
+
+    <div class="footer-note">
+      <a href="/#explore" style="color:var(--primary); text-decoration:none;">Explore Stories</a> &middot; <a href="/" style="color:var(--muted); text-decoration:none;">WritOn Home</a>
+    </div>
+  </div>
+
+  <script>
+    function handleSave(e) {
+      e.preventDefault();
+      document.getElementById('success-box').style.display = 'block';
+      document.getElementById('success-box').textContent = '✓ Your email preferences have been saved.';
+    }
+    function unsubscribeAll() {
+      document.getElementById('pref-reading').checked = false;
+      document.getElementById('pref-activity').checked = false;
+      document.getElementById('pref-tips').checked = false;
+      document.getElementById('success-box').style.display = 'block';
+      document.getElementById('success-box').textContent = '✓ You have unsubscribed from all optional WritOn emails.';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,117 @@
+{
+  "schemaVersion": "1.0.0",
+  "externalRunId": "spark-daily-fixture-2026-09-17-01",
+  "observedAt": "2026-09-17T08:30:00.000Z",
+  "date": "2026-09-17",
+  "region": "India",
+  "source": "gemini-trend-research",
+  "runType": "daily",
+  "trends": [
+    {
+      "rank": 1,
+      "topic": "AI Agents for Fiction & Narrative Architecture",
+      "category": "Tech",
+      "priorityScore": 86,
+      "sourceStatus": "BREAKOUT",
+      "momentum": "VERY_HIGH",
+      "urgency": "ACT_NOW",
+      "sourceConfidence": 0.92,
+      "platforms": ["Google Trends", "X", "Reddit"],
+      "keywords": ["ai agents", "fiction writing", "creative tooling", "narrative structure", "longform"],
+      "longTailKeywords": ["how novelists use autonomous agents", "ai editor vs creative agency"],
+      "whyTrending": "Widespread release of local open-weight author assistance frameworks sparking heated debate on human agency in prose.",
+      "contentOpportunity": "An essay exploring the boundary between technical delegation and authorial surrender.",
+      "recommendedAngles": [
+        "Why the resistance of the blank page remains essential",
+        "The architecture of human-supervised agentic writing",
+        "Interviews with bilingual Indian essayists experimenting with agentic memory"
+      ],
+      "sources": [
+        {
+          "platform": "Google Trends",
+          "url": "https://trends.google.com/explore?q=ai+agents+writing",
+          "title": "Google Trends: AI Agents Writing (+380%)",
+          "observedAt": "2026-09-17T08:15:00.000Z",
+          "signalType": "OBSERVED"
+        },
+        {
+          "platform": "The Verge",
+          "url": "https://theverge.com/tech/writing-agents-creative-tools",
+          "title": "The New Generation of Creative Assistants",
+          "observedAt": "2026-09-17T08:20:00.000Z",
+          "signalType": "OBSERVED"
+        },
+        {
+          "platform": "X",
+          "url": "https://x.com/search?q=ai%20writing%20agents",
+          "title": "Author discourse on autonomous editing agents",
+          "observedAt": "2026-09-17T08:25:00.000Z",
+          "signalType": "OBSERVED"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "topic": "Quiet Software & The Rejection of Continuous Notifications",
+      "category": "Essays",
+      "priorityScore": 78,
+      "sourceStatus": "RISING",
+      "momentum": "HIGH",
+      "urgency": "THIS_WEEK",
+      "sourceConfidence": 0.88,
+      "platforms": ["Hacker News", "Substack"],
+      "keywords": ["minimalism", "offline first", "quiet tools", "digital hygiene", "attention"],
+      "longTailKeywords": ["why modern apps cause cognitive exhaustion", "calm software movement"],
+      "whyTrending": "Surge in community adoption of local-first, distraction-free markdown and writing environments.",
+      "contentOpportunity": "A reflective critique of engagement-maximizing UI paradigms in creative software.",
+      "recommendedAngles": [
+        "The tactile dignity of offline writing apps",
+        "Designing for calm: when less telemetry is an ethical choice"
+      ],
+      "sources": [
+        {
+          "platform": "Hacker News",
+          "url": "https://news.ycombinator.com/item?id=41567890",
+          "title": "Ask HN: What happened to quiet software?",
+          "observedAt": "2026-09-17T08:10:00.000Z",
+          "signalType": "OBSERVED"
+        },
+        {
+          "platform": "Wired",
+          "url": "https://wired.com/story/minimal-tools-deep-work",
+          "title": "The Return of the Unconnected Notebook",
+          "observedAt": "2026-09-17T08:12:00.000Z",
+          "signalType": "OBSERVED"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "topic": "Bengaluru Café Culture as Modern Adda",
+      "category": "Culture",
+      "priorityScore": 72,
+      "sourceStatus": "RISING",
+      "momentum": "MEDIUM",
+      "urgency": "THIS_WEEK",
+      "sourceConfidence": 0.85,
+      "platforms": ["Reddit", "Instagram"],
+      "keywords": ["bengaluru", "urban culture", "coffee houses", "slow living", "third place"],
+      "longTailKeywords": ["solitary writers in indiranagar", "the death and rebirth of the third place"],
+      "whyTrending": "Exploration of how tech workers and independent writers are reclaiming neighborhood cafés as intellectual spaces.",
+      "contentOpportunity": "A personal memoir/essay contrasting corporate tech campuses with the physical intimacy of neighborhood tea stalls and filter coffee counters.",
+      "recommendedAngles": [
+        "Filter coffee vs oat milk cortados: the changing sensory landscape of Karnataka",
+        "The art of solitary observation in crowded cities"
+      ],
+      "sources": [
+        {
+          "platform": "The Hindu",
+          "url": "https://thehindu.com/life-and-style/bengaluru-cafe-culture-writers",
+          "title": "How Bengaluru Cafes Became Studios for Solitary Thinkers",
+          "observedAt": "2026-09-17T08:05:00.000Z",
+          "signalType": "OBSERVED"
+        }
+      ]
+    }
+  ]
+}

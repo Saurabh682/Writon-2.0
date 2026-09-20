@@ -86,7 +86,6 @@
     <string name="reader_share_action">Share Story</string>
     <string name="reader_share_subject">%1$s — WritOn</string>
     <string name="reader_share_message">%1$s\nBy %2$s\n\nRead on WritOn:\n%3$s</string>
-    <string name="reader_no_text">This story has no text yet.</string>
     <string name="reader_respond">Respond</string>
     <string name="editor_save_draft">Save draft</string>
     <string name="editor_publish">Publish</string>

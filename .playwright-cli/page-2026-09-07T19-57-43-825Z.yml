@@ -1,0 +1,81 @@
+- generic [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - generic [ref=f1e3]:
+      - generic [ref=f1e4]:
+        - generic [ref=f1e5]:
+          - generic [ref=f1e6]: WritOn Global Command Center
+          - generic [ref=f1e7]: ● Sprint 2 Active (Days 1–14)
+          - generic [ref=f1e8]: 🎨 Watercolor Aesthetic Locked
+        - heading "Social Media Editorial Canvas" [level=1] [ref=f1e9]
+        - paragraph [ref=f1e10]: Visible, steerable, and bidirectional editorial board for all 70 sprint deliveries.
+      - generic [ref=f1e11]:
+        - button "🔐 Connect" [ref=f1e12] [cursor=pointer]
+        - button "🕘 History" [ref=f1e13] [cursor=pointer]
+        - button "💾 Save Edits" [ref=f1e14] [cursor=pointer]:
+          - generic [ref=f1e15]: 💾
+          - text: Save Edits
+        - button "📥 Export CSV" [ref=f1e16] [cursor=pointer]:
+          - generic [ref=f1e17]: 📥
+          - text: Export CSV
+        - button "📋 Copy Day Brief" [ref=f1e18] [cursor=pointer]:
+          - generic [ref=f1e19]: 📋
+          - text: Copy Day Brief
+        - button "⚡ Dry Run" [ref=f1e20] [cursor=pointer]:
+          - generic [ref=f1e21]: ⚡
+          - text: Dry Run
+    - generic [ref=f1e22]:
+      - navigation [ref=f1e23]:
+        - button "🗓️ Daily Dispatcher" [ref=f1e24] [cursor=pointer]
+        - button "📊 Sprint Overview (All 14 Days)" [ref=f1e25] [cursor=pointer]
+        - button "📡 Trend Radar & SEO" [ref=f1e26] [cursor=pointer]
+        - button "🎨 Watercolor Spec" [ref=f1e27] [cursor=pointer]
+        - button "🩺 Operations" [active] [ref=f1e28] [cursor=pointer]
+      - generic [ref=f1e29]: ✓ Bidirectional state in sync
+  - generic [ref=f1e316]:
+    - generic [ref=f1e317]:
+      - generic [ref=f1e318]:
+        - generic [ref=f1e319]:
+          - heading "Operational readiness" [level=2] [ref=f1e320]
+          - paragraph [ref=f1e321]: Read-only checks. Refreshing this view never deploys, publishes, or sends a notification.
+        - button "Refresh checks" [ref=f1e322] [cursor=pointer]
+      - generic [ref=f1e323]: Last checked 9/8/2026, 1:27:43 AM
+    - generic [ref=f1e324]:
+      - article [ref=f1e325]:
+        - generic [ref=f1e326]: API & database
+        - generic [ref=f1e327]: ✓ Connected
+        - paragraph [ref=f1e328]: Database responded at 9/8/2026, 1:27:43 AM.
+      - article [ref=f1e329]:
+        - generic [ref=f1e330]: Staging release configuration
+        - generic [ref=f1e331]: Version code 108
+        - paragraph [ref=f1e332]: "Staging value only. Minimum supported: 101. Review rollout: disabled."
+      - article [ref=f1e333]:
+        - generic [ref=f1e334]: Editorial gates
+        - generic [ref=f1e335]: 10 governed • 0 blocked
+        - paragraph [ref=f1e336]: No edited governed delivery has pending evidence in the current state.
+      - article [ref=f1e337]:
+        - generic [ref=f1e338]: Notification evidence
+        - generic [ref=f1e339]: Device path verified
+        - paragraph [ref=f1e340]: "Last documented physical-device delivery: 7 Sep 2026. This is not a live queue metric."
+    - generic [ref=f1e341]:
+      - article [ref=f1e342]:
+        - heading "Android release gate" [level=3] [ref=f1e343]
+        - list [ref=f1e344]:
+          - listitem [ref=f1e345]: □ Exact candidate build tested on a physical device
+          - listitem [ref=f1e346]: □ Sign-in, visitor reading, deep link, draft save, publish, and profile image checked
+          - listitem [ref=f1e347]: □ Foreground, background, and normally terminated notification paths checked
+          - listitem [ref=f1e348]: □ Large text, TalkBack, priority languages, slow network, and offline recovery checked
+          - listitem [ref=f1e349]: □ Signed AAB, mapping file, native symbols, signing, and Google Sign-In verified
+        - paragraph [ref=f1e350]: Checklist items remain deliberately manual because passing source tests is not proof that the Play artifact passed.
+      - article [ref=f1e351]:
+        - heading "New-user experience gate" [level=3] [ref=f1e352]
+        - list [ref=f1e353]:
+          - listitem [ref=f1e354]: □ A visitor can reach a worthwhile story without creating an account
+          - listitem [ref=f1e355]: □ Loading, empty inventory, offline copy, and server failure are distinguishable
+          - listitem [ref=f1e356]: □ A protected action explains why sign-in is useful and returns to that action
+          - listitem [ref=f1e357]: □ First-session copy makes no unsupported AI, passkey, speed, or offline promise
+          - listitem [ref=f1e358]: □ Deleted or unpublished stories disappear safely without stale-content confusion
+        - paragraph [ref=f1e359]: Based on the maintained new-user experience audit; these are verification gates, not automatic pass claims.
+    - article [ref=f1e360]:
+      - heading "Blockers and incidents" [level=3] [ref=f1e361]
+      - generic [ref=f1e362]: No delivery is marked blocked in the current canvas state.
+      - paragraph [ref=f1e363]: Cloud Run errors, notification queue depth, Crashlytics, and Play warnings require their authoritative consoles. This canvas does not invent green status when those sources are unavailable.

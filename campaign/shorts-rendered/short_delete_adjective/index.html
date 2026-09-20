@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>WritOn Short #07: Delete Your Favourite Adjective</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600;1,700;1,800;1,900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body, html {
+        width: 2160px;
+        height: 3840px;
+        overflow: hidden;
+        background-color: #120D0A;
+        font-family: 'Playfair Display', Georgia, serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      #root {
+        position: relative;
+        width: 2160px;
+        height: 3840px;
+        overflow: hidden;
+      }
+
+      /* Authentic 4K Flatlay Background */
+      .bg-underlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 2160px;
+        height: 3840px;
+        background-image: url('assets/desk_coffee_card_nobox_4k.jpg');
+        background-size: cover;
+        background-position: center center;
+        z-index: 1;
+      }
+
+      /* Subtle paper texture overlay */
+      .paper-grain {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 2160px;
+        height: 3840px;
+        background: radial-gradient(circle at 50% 30%, rgba(250, 245, 238, 0.15) 0%, rgba(26, 20, 14, 0.25) 100%);
+        mix-blend-mode: multiply;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      /* Left Crimson Margin Rule */
+      .card-left-rule {
+        position: absolute;
+        left: 244px;
+        top: 345px;
+        height: 2975px;
+        width: 5px;
+        background-color: #821D1A;
+        z-index: 5;
+        border-radius: 3px;
+      }
+
+      /* Header Row */
+      .card-header {
+        position: absolute;
+        top: 345px;
+        left: 310px;
+        width: 1540px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 5;
+        opacity: 0;
+      }
+
+      .inversion-pill {
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 36px;
+        font-weight: 800;
+        letter-spacing: 5px;
+        padding: 12px 34px;
+        border-radius: 14px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .brand-mark {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 88px;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+      }
+      .brand-mark em {
+        font-style: italic;
+        font-weight: 700;
+      }
+      .brand-mark span {
+        color: #821D1A;
+      }
+
+      /* =========================================
+         INITIAL 1S MASTER FRAME & DEFAULT THUMBNAIL (0:00 - 1.0s)
+         ========================================= */
+      .thumbnail-hero-layer {
+        position: absolute;
+        top: 860px;
+        left: 310px;
+        width: 1540px;
+        z-index: 15;
+      }
+      .series-pill {
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 38px;
+        font-weight: 800;
+        letter-spacing: 6px;
+        padding: 14px 38px;
+        border-radius: 14px;
+        text-transform: uppercase;
+        display: inline-block;
+        margin-bottom: 55px;
+      }
+      .main-series-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 190px;
+        line-height: 1.05;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -3.5px;
+        margin-bottom: 60px;
+      }
+      .main-series-title em {
+        font-style: italic;
+        font-weight: 800;
+        color: #821D1A;
+      }
+      .thumb-divider {
+        width: 180px;
+        height: 6px;
+        background-color: #821D1A;
+        border-radius: 4px;
+        margin-bottom: 60px;
+      }
+      .topic-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 42px;
+        font-weight: 800;
+        letter-spacing: 5px;
+        text-transform: uppercase;
+        color: #8A766A;
+        margin-bottom: 24px;
+      }
+      .topic-quote {
+        font-size: 120px;
+        line-height: 1.18;
+        font-weight: 800;
+        color: #1A140E;
+        letter-spacing: -1.5px;
+        margin-bottom: 28px;
+      }
+      .topic-quote em {
+        font-style: italic;
+        color: #821D1A;
+      }
+      .topic-rule {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 52px;
+        font-weight: 600;
+        color: #5A483E;
+        line-height: 1.35;
+      }
+
+      /* =========================================
+         SECTION A: OPENING HOOK & PRINCIPLE (1.0s - 7.5s)
+         ========================================= */
+      .hook-hero-layer {
+        position: absolute;
+        top: 820px;
+        left: 310px;
+        width: 1540px;
+        z-index: 8;
+        opacity: 0;
+      }
+
+      .hook-headline {
+        font-size: 195px;
+        line-height: 1.10;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -3px;
+        margin-bottom: 90px;
+      }
+      .hook-row {
+        display: block;
+        opacity: 1;
+        transform: none;
+      }
+      .italic-crimson {
+        font-style: italic;
+        font-weight: 800;
+        color: #821D1A;
+      }
+
+      .hook-sub {
+        font-size: 125px;
+        line-height: 1.25;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+      }
+      .hook-sub-row {
+        display: block;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      /* =========================================
+         SECTION B: FLAWED DRAFT (7.5s - 15.0s)
+         ========================================= */
+      .draft-hero-layer {
+        position: absolute;
+        top: 860px;
+        left: 310px;
+        width: 1540px;
+        z-index: 10;
+        opacity: 0;
+      }
+
+      .draft-hero-label-row {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 45px;
+      }
+      .draft-hero-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #8A766A;
+      }
+      .cut-badge {
+        background-color: #F8EBE8;
+        border: 2px solid #D65A54;
+        color: #9E1F1A;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 38px;
+        font-weight: 800;
+        padding: 8px 24px;
+        border-radius: 12px;
+        letter-spacing: 1px;
+        opacity: 0;
+      }
+
+      .draft-hero-quote-box {
+        position: relative;
+        margin-bottom: 50px;
+      }
+
+      .draft-hero-quote {
+        font-size: 140px;
+        line-height: 1.28;
+        font-weight: 800;
+        color: #1C1612;
+        letter-spacing: -1px;
+        position: relative;
+      }
+
+      .draft-line {
+        display: block;
+        opacity: 0;
+        transform: translateY(25px);
+      }
+
+      /* Animated SVG Strikethrough */
+      .strikethrough-svg {
+        position: absolute;
+        top: 0;
+        left: -20px;
+        width: 1580px;
+        height: 480px;
+        pointer-events: none;
+        z-index: 20;
+      }
+      .strike-path {
+        stroke: #A8201A;
+        stroke-width: 14px;
+        stroke-linecap: round;
+        fill: none;
+        stroke-dasharray: 2400;
+        stroke-dashoffset: 2400;
+      }
+
+      /* =========================================
+         SECTION C: LIVE REWRITE & PAYOFF (15.5s - 27.0s)
+         ========================================= */
+      .rewrite-hero-layer {
+        position: absolute;
+        top: 860px;
+        left: 310px;
+        width: 1540px;
+        z-index: 12;
+        opacity: 0;
+      }
+
+      .rewrite-label-row {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        margin-bottom: 45px;
+      }
+      .rewrite-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 44px;
+        font-weight: 800;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #7D1B17;
+      }
+      .keep-badge {
+        background-color: #E8F4EC;
+        border: 2px solid #48A168;
+        color: #1A6934;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 38px;
+        font-weight: 800;
+        padding: 8px 24px;
+        border-radius: 12px;
+        letter-spacing: 1px;
+      }
+
+      .rewrite-title {
+        font-size: 140px;
+        line-height: 1.28;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 70px;
+      }
+      .rewrite-row {
+        display: block;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      .red-divider {
+        width: 1540px;
+        height: 6px;
+        background-color: #821D1A;
+        border-radius: 3px;
+        margin-bottom: 70px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      .payoff-flow {
+        font-family: 'Playfair Display', Georgia, serif;
+      }
+      .payoff-lead {
+        font-size: 145px;
+        line-height: 1.22;
+        font-weight: 800;
+        color: #821D1A;
+        font-style: italic;
+        letter-spacing: -1.5px;
+        opacity: 0;
+        transform: translateY(30px);
+        margin-bottom: 25px;
+      }
+      .payoff-punch {
+        font-size: 155px;
+        line-height: 1.18;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -2px;
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      /* =========================================
+         FOOTER ROW
+         ========================================= */
+      .card-footer {
+        position: absolute;
+        bottom: 350px;
+        left: 310px;
+        width: 1540px;
+        z-index: 5;
+      }
+      .footer-line {
+        width: 100%;
+        height: 2px;
+        background-color: #E2D3C4;
+        margin-bottom: 40px;
+      }
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .footer-handle {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 40px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: #4A3B32;
+      }
+      .footer-dots {
+        display: flex;
+        gap: 16px;
+      }
+      .footer-dot-sand {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-color: #D3C2B4;
+      }
+      .footer-dot-crimson {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-color: #821D1A;
+      }
+      .footer-url {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 40px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        color: #821D1A;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="29.5"
+      data-width="2160"
+      data-height="3840"
+    >
+      <!-- Audio Track with Nicole Voice + Ambient Piano -->
+      <audio
+        id="voiceTrack"
+        src="audio_mixed.mp3"
+        data-start="0"
+        data-duration="29.5"
+      ></audio>
+
+      <!-- 4K Flatlay Background Canvas -->
+      <div class="bg-underlay"></div>
+      <div class="paper-grain"></div>
+
+      <!-- Left Crimson Margin Rule -->
+      <div class="card-left-rule"></div>
+
+      <!-- Header Row -->
+      <div class="card-header" id="cardHeader">
+        <div class="inversion-pill">CRAFT / CONTRARIAN</div>
+        <div class="brand-mark"><em>WritOn</em><span>.</span></div>
+      </div>
+
+      <!-- 1-SECOND INITIAL FRAME & DEFAULT THUMBNAIL (0:00 - 1.0s) -->
+      <div class="thumbnail-hero-layer" id="thumbnailLayer">
+        <div class="series-pill">CRAFT SERIES • #07</div>
+        <div class="main-series-title">
+          Writing Hack<br>
+          <em>with WritOn.</em>
+        </div>
+        <div class="thumb-divider"></div>
+        <div class="topic-label">Lesson: How to Fix Weak Prose</div>
+        <div class="topic-quote">
+          “Delete your<br>
+          favourite <em>adjective.”</em>
+        </div>
+        <div class="topic-rule">
+          If the noun can’t stand alone, the sentence is dead.
+        </div>
+      </div>
+
+      <!-- SECTION A: OPENING HOOK (1.0s - 7.5s) -->
+      <div class="hook-hero-layer" id="hookLayer">
+        <div class="hook-headline">
+          <div class="hook-row" id="hr1">Delete your</div>
+          <div class="hook-row" id="hr2">favourite <span class="italic-crimson">adjective.</span></div>
+        </div>
+        <div class="hook-sub">
+          <div class="hook-sub-row" id="hsr1">If the noun cannot stand on its</div>
+          <div class="hook-sub-row" id="hsr2">own feet—</div>
+          <div class="hook-sub-row" id="hsr3"><span class="italic-crimson">the sentence is dead.</span></div>
+        </div>
+      </div>
+
+      <!-- SECTION B: FLAWED DRAFT (7.5s - 15.0s) -->
+      <div class="draft-hero-layer" id="draftLayer">
+        <div class="draft-hero-label-row">
+          <div class="draft-hero-label">Draft 1 / Weak Prose</div>
+          <div class="cut-badge" id="cutTag">Cut: Adjective Overload</div>
+        </div>
+
+        <div class="draft-hero-quote-box">
+          <div class="draft-hero-quote" id="draftQuote">
+            <span class="draft-line" id="draftL1">“A fierce, cold wind</span>
+            <span class="draft-line" id="draftL2">blew violently across</span>
+            <span class="draft-line" id="draftL3">the empty street.”</span>
+          </div>
+
+          <!-- Strikethrough Vector Overlay -->
+          <svg class="strikethrough-svg" viewBox="0 0 1580 480">
+            <!-- Line 1 strike -->
+            <path
+              class="strike-path"
+              id="strikePath1"
+              d="M 10 90 Q 750 82 1450 94"
+            />
+            <!-- Line 2 strike -->
+            <path
+              class="strike-path"
+              id="strikePath2"
+              d="M 10 240 Q 750 235 1520 248"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <!-- SECTION C: REWRITE & CLIMACTIC PAYOFF (15.5s - 27.0s) -->
+      <div class="rewrite-hero-layer" id="rewriteLayer">
+        <div class="rewrite-label-row" id="rwLabel">
+          <div class="rewrite-label">Rewrite / Physical Movement</div>
+          <div class="keep-badge">Keep: Concrete Action</div>
+        </div>
+
+        <!-- The Move Rewrite (Line by Line) -->
+        <div class="rewrite-title" id="rwTitle">
+          <div class="rewrite-row" id="rr1">“The window glass rattled</div>
+          <div class="rewrite-row italic-crimson" id="rr2">in the sash,</div>
+          <div class="rewrite-row" id="rr3">and the lamp went black.”</div>
+        </div>
+
+        <!-- Divider Line -->
+        <div class="red-divider" id="redDivider"></div>
+
+        <!-- Payoff Punchline (Line by Line) -->
+        <div class="payoff-flow" id="payoffFlow">
+          <div class="payoff-lead" id="pl1">Kill the adjective.</div>
+          <div class="payoff-punch" id="pl2">Let the noun move.</div>
+        </div>
+      </div>
+
+      <!-- Footer Row -->
+      <div class="card-footer" id="cardFooter">
+        <div class="footer-line"></div>
+        <div class="footer-content">
+          <div class="footer-handle">@writon_app</div>
+          <div class="footer-dots">
+            <div class="footer-dot-sand"></div>
+            <div class="footer-dot-crimson"></div>
+          </div>
+          <div class="footer-url">writon.cc ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // ============================================================
+      // BEAT 1: 0:00 - 0:07.5 (Hook & Principle)
+      // Nicole: "Delete your favourite adjective. If the noun cannot stand on its own feet, the sentence is dead."
+      // ============================================================
+      // 0:00 - 1.0s: Master Thumbnail Layer is on screen.
+      // Nicole speaks immediately at 0:00: "Delete your favourite adjective."
+      // At 1.0s, thumbnail layer glides up and dissolves into the workbench
+      tl.to("#thumbnailLayer", { opacity: 0, y: -45, duration: 0.45, ease: "power2.in" }, 1.0)
+        .to("#cardHeader", { opacity: 1, duration: 0.4, ease: "power2.out" }, 1.1)
+        .to("#hookLayer", { opacity: 1, duration: 0.4, ease: "power2.out" }, 1.1);
+
+      // Nicole at 2.8s: "If the noun cannot stand on its own feet, the sentence is dead."
+      tl.to("#hsr1", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 2.8)
+        .to("#hsr2", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 4.0)
+        .to("#hsr3", { opacity: 1, y: 0, duration: 0.60, ease: "back.out(1.2)" }, 5.8);
+
+      // Transition from Section A to Section B
+      tl.to("#hookLayer", { opacity: 0, y: -40, duration: 0.55, ease: "power2.in" }, 7.2);
+
+      // ============================================================
+      // BEAT 2: 0:07.5 - 0:15.0 (The Flawed Draft & Active Strikethrough)
+      // Nicole: "Look at draft one: A fierce, cold wind blew violently across the empty street. It carries zero narrative friction."
+      // ============================================================
+      tl.to("#draftLayer", { opacity: 1, duration: 0.1 }, 7.8)
+        .to("#draftL1", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 8.2)
+        .to("#draftL2", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 10.0)
+        .to("#draftL3", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 11.2)
+        .to("#cutTag", { opacity: 1, duration: 0.4, ease: "power2.out" }, 12.8)
+        .to("#strikePath1", { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, 13.0)
+        .to("#strikePath2", { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, 13.5)
+        .to("#draftQuote", { color: "#8E7D72", duration: 0.5 }, 14.0);
+
+      // Transition from Section B to Section C
+      tl.to("#draftLayer", { opacity: 0, y: -40, duration: 0.55, ease: "power2.in" }, 15.0);
+
+      // ============================================================
+      // BEAT 3: 0:15.5 - 0:27.0 (The Live Move Rewrite & Payoff)
+      // Nicole: "Now watch the rewrite: The window glass rattled in the sash, and the lamp went black. Kill the adjective. Let the noun move."
+      // ============================================================
+      tl.to("#rewriteLayer", { opacity: 1, duration: 0.1 }, 15.4)
+        .to("#rwLabel", { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 15.6)
+        .to("#rr1", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 16.5)
+        .to("#rr2", { opacity: 1, y: 0, duration: 0.65, ease: "back.out(1.2)" }, 18.8)
+        .to("#rr3", { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 21.0);
+
+      // Divider Line draws
+      tl.to("#redDivider", { scaleX: 1, duration: 0.6, ease: "power2.out" }, 23.5);
+
+      // Final climactic payoff reveals line by line
+      tl.to("#pl1", { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, 25.0)
+        .to("#pl2", { opacity: 1, y: 0, duration: 0.7, ease: "back.out(1.2)" }, 26.8);
+
+      // Ambient desk push-in across full 29.5 seconds
+      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.02, duration: 29.5, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -1697,29 +1697,56 @@ ${itemsXml}
     const origin = requestOrigin(request, config.publicApiBaseUrl);
     const nowUtc = new Date().toUTCString();
 
-    const result = await database.query(`
-      select
-        p.title,
-        p.slug,
-        p.summary,
-        p.content,
-        p.category,
-        p.cover_image_url as "coverImage",
-        coalesce(p.published_at, p.created_at) as "publishedAt",
-        author.full_name as "authorName",
-        author.pen_name as "authorPenName"
-      from public.posts p
-      inner join public.profiles author on author.id = p.author_id
-      where p.status = 'published' and p.is_public = true and p.slug is not null
-      order by coalesce(p.published_at, p.created_at) desc
-      limit 50
-    `);
+    const [storiesResult, journalResult] = await Promise.all([
+      database.query(`
+        select
+          p.title,
+          p.slug,
+          p.summary,
+          p.content,
+          p.category,
+          p.cover_image_url as "coverImage",
+          coalesce(p.published_at, p.created_at) as "publishedAt",
+          author.full_name as "authorName",
+          author.pen_name as "authorPenName",
+          false as "isJournal"
+        from public.posts p
+        inner join public.profiles author on author.id = p.author_id
+        where p.status = 'published' and p.is_public = true and p.slug is not null
+        order by coalesce(p.published_at, p.created_at) desc
+        limit 50
+      `),
+      database.query(`
+        select
+          ep.title,
+          ep.slug,
+          ep.excerpt as summary,
+          coalesce(ep.content_rendered_html, '') as content,
+          ep.category,
+          null as "coverImage",
+          coalesce(ep.published_at, ep.created_at) as "publishedAt",
+          ep.author_name as "authorName",
+          ep.author_pen_name as "authorPenName",
+          true as "isJournal"
+        from public.editorial_posts ep
+        where ep.status = 'published' and ep.type in ('journal', 'essay', 'note')
+        order by coalesce(ep.published_at, ep.created_at) desc
+        limit 20
+      `).catch(() => ({ rows: [] }))
+    ]);
 
-    const itemsXml = result.rows.map(post => {
-      const storyUrl = `${origin}/stories/${encodeURIComponent(post.slug)}`;
+    const allFeedItems = [
+      ...storiesResult.rows,
+      ...journalResult.rows
+    ].sort((a, b) => new Date(b.publishedAt || 0) - new Date(a.publishedAt || 0)).slice(0, 50);
+
+    const itemsXml = allFeedItems.map(post => {
+      const storyUrl = post.isJournal
+        ? `${origin}/journal/${encodeURIComponent(post.slug)}`
+        : `${origin}/stories/${encodeURIComponent(post.slug)}`;
       const pubDate = post.publishedAt ? new Date(post.publishedAt).toUTCString() : nowUtc;
-      const author = post.authorName || post.authorPenName || 'WritOn Writer';
-      const category = post.category || 'Essays';
+      const author = post.authorName || post.authorPenName || (post.isJournal ? 'WritOn Editorial' : 'WritOn Writer');
+      const category = post.category || (post.isJournal ? 'Journal' : 'Essays');
       const summary = post.summary || post.title;
       const storyContent = post.content || summary;
       const coverUrl = post.coverImage || '';

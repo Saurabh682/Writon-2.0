@@ -11,6 +11,7 @@ campaign/
 docs/
 
 graphify-out/
+graft/
 play_store_assets/
 public/
 /scripts/
@@ -40,7 +41,6 @@ server/staging/*.png
 **/*.keystore
 **/serviceAccountKey*.json
 **/google-services.json
-
 
 
 

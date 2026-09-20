@@ -101,6 +101,39 @@ export function classifyTrendCategory(topic = '', headline = '') {
 }
 
 /**
+ * Parse Google News RSS XML into structured news report objects
+ */
+export function parseGoogleNewsRss(xml) {
+  if (!xml || typeof xml !== 'string') return [];
+  const articles = [];
+  const itemRegex = /<item>([\s\S]*?)<\/item>/g;
+  let match;
+  while ((match = itemRegex.exec(xml)) !== null && articles.length < 4) {
+    const itemBlock = match[1];
+    const itemTitle = /<title>(.*?)<\/title>/i.exec(itemBlock)?.[1]?.replace(/&amp;/g, '&').replace(/&quot;/g, '"')?.trim();
+    const rawLink = /<link>(.*?)<\/link>/i.exec(itemBlock)?.[1]
+      || /<source\s+url="([^"]+)"/i.exec(itemBlock)?.[1]
+      || '';
+    const itemLink = rawLink.replace(/&amp;/g, '&').trim();
+    const itemPubDate = /<pubDate>(.*?)<\/pubDate>/i.exec(itemBlock)?.[1]?.trim();
+    const itemSource = /<source[^>]*>(.*?)<\/source>/i.exec(itemBlock)?.[1]?.replace(/&amp;/g, '&')?.trim();
+
+    if (itemTitle) {
+      const parsedTime = itemPubDate ? Date.parse(itemPubDate) : NaN;
+      const isoDate = Number.isFinite(parsedTime) ? new Date(parsedTime).toISOString() : new Date().toISOString();
+      articles.push({
+        headline: itemTitle,
+        url: itemLink || '',
+        source: itemSource || 'Major News Desk',
+        publishedAt: isoDate,
+        pubDate: isoDate
+      });
+    }
+  }
+  return articles;
+}
+
+/**
  * Fetch Deep Live News Reports & Outlets for a Given Topic
  */
 export async function fetchGoogleNewsResearch(topic, geo = 'IN') {
@@ -111,22 +144,7 @@ export async function fetchGoogleNewsResearch(topic, geo = 'IN') {
 
   try {
     const xml = await fetchHttps(url);
-    const articles = [];
-    const itemRegex = /<item>([\s\S]*?)<\/item>/g;
-    let match;
-    while ((match = itemRegex.exec(xml)) !== null && articles.length < 4) {
-      const itemTitle = /<title>(.*?)<\/title>/.exec(match[1])?.[1]?.replace(/&amp;/g, '&').replace(/&quot;/g, '"');
-      const itemPubDate = /<pubDate>(.*?)<\/pubDate>/.exec(match[1])?.[1];
-      const itemSource = /<source[^>]*>(.*?)<\/source>/.exec(match[1])?.[1]?.replace(/&amp;/g, '&');
-      if (itemTitle) {
-        articles.push({
-          headline: itemTitle,
-          source: itemSource || 'Major News Desk',
-          pubDate: itemPubDate ? new Date(itemPubDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent'
-        });
-      }
-    }
-    return articles;
+    return parseGoogleNewsRss(xml);
   } catch (err) {
     console.warn(`[Trend Scout] News lookup failed for "${topic}": ${err.message}`);
     return [];
@@ -159,7 +177,7 @@ export async function fetchWikipediaSummary(topic) {
     }
     return null;
   } catch (err) {
-    console.warn(`[Trend Scout] Wikipedia summary failed for "${topic}": ${err.message}`);
+    console.warn(`[Trend Scout] Wiki lookup failed for "${topic}": ${err.message}`);
     return null;
   }
 }
@@ -167,10 +185,13 @@ export async function fetchWikipediaSummary(topic) {
 /**
  * Conduct Deep Live Trend Research combining Google News, Wiki, and Algorithmic Analysis
  */
-export async function conductDeepTrendResearch(topic, category, geo = 'IN') {
+export async function conductDeepTrendResearch(topic, category, geo = 'IN', {
+  fetchNews = fetchGoogleNewsResearch,
+  fetchKnowledge = fetchWikipediaSummary
+} = {}) {
   const [newsReports, knowledgeSummary] = await Promise.all([
-    fetchGoogleNewsResearch(topic, geo),
-    fetchWikipediaSummary(topic)
+    fetchNews(topic, geo),
+    fetchKnowledge(topic)
   ]);
 
   const verifiedContext = [
@@ -225,11 +246,11 @@ export function getRecommendedAuthorForTrend(category, topic = '') {
     'Humour': [
       { penName: 'rohan_kapoor', name: 'Rohan Kapoor', angle: 'Corporate absurdity, whiteboard satire, and middle-management rituals' },
       { penName: 'chirag_churan', name: 'Chirag Churan', angle: 'Observational humor on urban bureaucracy and daily domestic chaos' },
-      { penName: 'gopal_krishnan_jokes', name: 'Gopal Krishnan', angle: 'Witty take on tech park lifestyle, filter coffee, and commute dramas' }
+      { penName: 'gopal_krishnan_jokes', name: 'Gopal Krishnan', angle: 'Apartment society micro-bureaucracy, WhatsApp admin decrees, AGM voting coups, parking treaties, lift circulars, and domestic civic absurdities' }
     ],
     'Essays': [
       { penName: 'sunita_banerjee', name: 'Dr. Sunita Banerjee', angle: 'Sociological depth, history of ideas, and contemplative modern life' },
-      { penName: 'priyanka_mishra', name: 'Priyanka Mishra', angle: 'Cultural continuity, everyday rituals, and regional memory' }
+      { penName: 'priyanka_mishra', name: 'Priyanka Mishra', angle: 'Informal markets, price discovery rituals, and economic psychology entering domestic life' }
     ],
     'Poetry': [
       { penName: 'kavya_nair', name: 'Kavya Nair', angle: 'Free verse on physical geography, seasonal transitions, and quiet moments' },
@@ -243,11 +264,11 @@ export function getRecommendedAuthorForTrend(category, topic = '') {
     ],
     'Culture': [
       { penName: 'kelly_miracle_art', name: 'Kelly Miracle', angle: 'Ceramic arts, tactile craftsmanship, and studio patience' },
-      { penName: 'meera_varma', name: 'Meera Varma', angle: 'Classical Indian dance, temple architecture, and performance discipline' }
+      { penName: 'meera_varma', name: 'Meera Varma', angle: 'Cultural criticism, film performance, audience rituals, and modes of reception' }
     ],
     'Short Stories': [
       { penName: 'devansh_roy', name: 'Devansh Roy', angle: 'Atmospheric urban mystery, old city lanes, and quiet human encounters' },
-      { penName: 'arsh_zee', name: 'Arshdeep Singh', angle: 'Warm community portraits, chai stalls, and everyday kindness' }
+      { penName: 'gurpreet_sandhu', name: 'Gurpreet Sandhu', angle: 'Warm community portraits, chai stalls, and everyday kindness' }
     ]
   };
 

@@ -38,13 +38,24 @@ Google Search Central officially recommends pairing a full XML sitemap with a re
 Google Search has strict rules for displaying website icons next to domain names in search results:
 1. **Homepage-Only Extraction**: Google Search looks for and updates your favicon **only when crawling your homepage** (`https://writon.cc/`).
 2. **Dimension Multiples**: The favicon **must be a multiple of 48px square** (e.g. `48x48px`, `96x96px`, `192x192px`). Google rescales this to 16×16px for search results. Icons declared only as 16×16px or 32×32px without a 48px+ variant are ignored by Google Search.
-3. **Required `<head>` tags**:
+3. **Required `<head>` tags (Never use query parameters like ?v=2; URLs must be stable)**:
    ```html
-   <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
-   <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png?v=2" />
-   <link rel="icon" type="image/png" sizes="192x192" href="/assets/icon-192.png?v=2" />
-   <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2" />
+   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+   <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png" />
+   <link rel="icon" type="image/png" sizes="144x144" href="/favicon-144x144.png" />
+   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+   <link rel="shortcut icon" href="/favicon.ico" />
    ```
+4. **Standard Root Locations**: Ensure `/favicon.ico`, `/favicon.svg`, `/favicon-48x48.png`, `/favicon-96x96.png`, `/icon-192.png`, and `/apple-touch-icon.png` exist directly at the domain root with CORS headers (`Access-Control-Allow-Origin: *`).
+5. **Favicon Re-indexing Request**:
+   * Googlebot-Favicon is a low-frequency crawler. To accelerate logo appearance in SERPs:
+   * Open **Google Search Console** -> **URL Inspection**.
+   * Enter `https://writon.cc/` -> Click **Test Live URL**.
+   * Click **Request Indexing**. This places the homepage into Googlebot-Favicon's priority crawl queue.
 
 ### Title Links & Snippet Control:
 * **Title Format**: Keep under 60 characters: `[Story Title] — WritOn` or `[Topic] Stories & Essays — WritOn`.

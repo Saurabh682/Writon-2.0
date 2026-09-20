@@ -56,6 +56,22 @@ async function fetchAllPosts() {
   return deduped;
 }
 
+async function fetchEditorialPosts() {
+  console.log('Fetching editorial journal posts...');
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/journal?limit=50`);
+    if (!res.ok) {
+      console.warn(`Could not fetch journal posts from API (HTTP ${res.status}). Skipping API editorial fetch.`);
+      return [];
+    }
+    const data = await res.json();
+    return data.posts || [];
+  } catch (err) {
+    console.warn('Failed to fetch journal posts via HTTP:', err.message);
+    return [];
+  }
+}
+
 function generateRssFeedXml(posts) {
   // Take top 50 most recent stories for the RSS feed
   const recentPosts = posts.slice(0, 50);
@@ -112,7 +128,7 @@ ${itemsXml}
 `;
 }
 
-function generateFullSitemapXml(posts) {
+function generateFullSitemapXml(posts, journalUrls = []) {
   const today = new Date().toISOString().split('T')[0];
 
   const staticUrls = [
@@ -125,6 +141,24 @@ function generateFullSitemapXml(posts) {
         loc: `${SITE_BASE_URL}/assets/writon_wordmark.png`,
         title: 'WritOn — Discover stories, thinking & expertise',
       },
+    },
+    {
+      loc: `${SITE_BASE_URL}/about`,
+      lastmod: today,
+      changefreq: 'monthly',
+      priority: '0.8',
+    },
+    {
+      loc: `${SITE_BASE_URL}/journal`,
+      lastmod: today,
+      changefreq: 'weekly',
+      priority: '0.9',
+    },
+    {
+      loc: `${SITE_BASE_URL}/updates`,
+      lastmod: today,
+      changefreq: 'weekly',
+      priority: '0.7',
     },
     {
       loc: `${SITE_BASE_URL}/stories`,
@@ -140,6 +174,36 @@ function generateFullSitemapXml(posts) {
     { loc: `${SITE_BASE_URL}/terms.html`, lastmod: '2026-08-30', changefreq: 'monthly', priority: '0.5' },
     { loc: `${SITE_BASE_URL}/child-safety.html`, lastmod: '2026-08-30', changefreq: 'monthly', priority: '0.5' },
     { loc: `${SITE_BASE_URL}/delete-account.html`, lastmod: '2026-08-30', changefreq: 'monthly', priority: '0.5' },
+    {
+      loc: `${SITE_BASE_URL}/hi`,
+      lastmod: today,
+      changefreq: 'daily',
+      priority: '1.0',
+      image: {
+        loc: `${SITE_BASE_URL}/assets/writon_wordmark.png`,
+        title: 'WritOn Hindi — शब्द, जो याद रहें।',
+      },
+    },
+    {
+      loc: `${SITE_BASE_URL}/mr`,
+      lastmod: today,
+      changefreq: 'daily',
+      priority: '1.0',
+      image: {
+        loc: `${SITE_BASE_URL}/assets/writon_wordmark.png`,
+        title: 'WritOn Marathi — शब्द, जे लक्षात राहतात.',
+      },
+    },
+    {
+      loc: `${SITE_BASE_URL}/bn`,
+      lastmod: today,
+      changefreq: 'daily',
+      priority: '1.0',
+      image: {
+        loc: `${SITE_BASE_URL}/assets/writon_wordmark.png`,
+        title: 'WritOn Bengali — যে শব্দ মনে থেকে যায়।',
+      },
+    },
   ];
 
   const categories = [
@@ -181,7 +245,7 @@ function generateFullSitemapXml(posts) {
     };
   });
 
-  const allUrls = [...staticUrls, ...categoryUrls, ...storyUrls];
+  const allUrls = [...staticUrls, ...categoryUrls, ...storyUrls, ...journalUrls];
 
   const urlsXml = allUrls.map((u) => {
     const imageTag = u.image ? `\n    <image:image>\n      <image:loc>${escapeXml(u.image.loc)}</image:loc>\n      <image:title>${escapeXml(u.image.title)}</image:title>${u.image.caption ? `\n      <image:caption>${escapeXml(u.image.caption)}</image:caption>` : ''}\n    </image:image>` : '';
@@ -236,22 +300,80 @@ ${itemsXml}
 `;
 }
 
+function generateSitemapIndexXml() {
+  const today = new Date().toISOString().split('T')[0];
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${SITE_BASE_URL}/sitemap.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>${SITE_BASE_URL}/news-sitemap.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+</sitemapindex>
+`;
+}
+
 async function main() {
-  const posts = await fetchAllPosts();
+  const [posts, editorialPosts] = await Promise.all([
+    fetchAllPosts(),
+    fetchEditorialPosts(),
+  ]);
+
+  // Combine posts and editorial posts for RSS feed
+  const combinedRssItems = [
+    ...editorialPosts.map(ep => ({
+      title: ep.title,
+      slug: `journal/${ep.slug}`,
+      createdAt: ep.publishedAt || ep.createdAt,
+      author: { fullName: ep.authorName || 'WritOn Editorial' },
+      category: ep.category || 'Journal',
+      summary: ep.excerpt || ep.summary,
+      content: ep.content,
+      isJournal: true,
+    })),
+    ...posts,
+  ].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
   // 1. Generate public/feed.xml
-  const rssXml = generateRssFeedXml(posts);
+  const rssXml = generateRssFeedXml(combinedRssItems);
   const rssPath = path.join(PUBLIC_DIR, 'feed.xml');
   fs.writeFileSync(rssPath, rssXml, 'utf8');
-  console.log(`Wrote RSS 2.0 feed to ${rssPath} (${rssXml.length} bytes, 50 latest stories).`);
+  console.log(`Wrote RSS 2.0 feed to ${rssPath} (${rssXml.length} bytes, combined stories + journal).`);
+
+  // Also write public/rss.xml as direct alias/target
+  const rssXmlPath = path.join(PUBLIC_DIR, 'rss.xml');
+  fs.writeFileSync(rssXmlPath, rssXml, 'utf8');
+  console.log(`Wrote RSS mirror to ${rssXmlPath}.`);
 
   // 2. Generate public/sitemap.xml
-  const sitemapXml = generateFullSitemapXml(posts);
+  // Include journal posts as URLs
+  const journalUrls = editorialPosts.map(ep => ({
+    loc: `${SITE_BASE_URL}/journal/${encodeURIComponent(ep.slug)}`,
+    lastmod: ep.publishedAt ? new Date(ep.publishedAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    changefreq: 'monthly',
+    priority: '0.85',
+  }));
+
+  const sitemapXml = generateFullSitemapXml(posts, journalUrls);
   const sitemapPath = path.join(PUBLIC_DIR, 'sitemap.xml');
   fs.writeFileSync(sitemapPath, sitemapXml, 'utf8');
-  console.log(`Wrote full sitemap to ${sitemapPath} (${sitemapXml.length} bytes, ${posts.length + 19} total URLs).`);
+  console.log(`Wrote full sitemap to ${sitemapPath} (${sitemapXml.length} bytes, ${posts.length + editorialPosts.length + 22} total URLs).`);
 
-  // 3. Generate public/news-sitemap.xml
+  // 3. Generate public/sitemap-main.xml
+  const sitemapMainPath = path.join(PUBLIC_DIR, 'sitemap-main.xml');
+  fs.writeFileSync(sitemapMainPath, sitemapXml, 'utf8');
+  console.log(`Wrote sitemap mirror to ${sitemapMainPath}.`);
+
+  // 4. Generate public/sitemap_index.xml
+  const sitemapIndexXml = generateSitemapIndexXml();
+  const sitemapIndexPath = path.join(PUBLIC_DIR, 'sitemap_index.xml');
+  fs.writeFileSync(sitemapIndexPath, sitemapIndexXml, 'utf8');
+  console.log(`Wrote sitemap index to ${sitemapIndexPath} (${sitemapIndexXml.length} bytes).`);
+
+  // 5. Generate public/news-sitemap.xml
   const newsSitemapXml = generateNewsSitemapXml(posts);
   const newsSitemapPath = path.join(PUBLIC_DIR, 'news-sitemap.xml');
   fs.writeFileSync(newsSitemapPath, newsSitemapXml, 'utf8');

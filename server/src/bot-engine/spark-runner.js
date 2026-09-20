@@ -710,12 +710,18 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     author: bot.fullName || bot.penName
   }).catch(err => ({ available: false, error: err.message }));
 
-  if (lmReview.available && lmReview.verdict !== 'APPROVE') {
-    const rejectionReason = `LM Studio rejected draft with score ${lmReview.score ?? 'N/A'}/100. Critique: ${lmReview.critique?.slice(0, 200)}...`;
+  if (!lmReview.available) {
+    if (lmReview.skipped) {
+      console.warn(`[Spark Runner] Pre-publication critic skipped: ${lmReview.error}`);
+    } else {
+      throw new Error(`Pre-publication critic check failed: ${lmReview.error}`);
+    }
+  } else if (lmReview.verdict !== 'APPROVE') {
+    const rejectionReason = `LM Studio rejected draft with score ${lmReview.score ?? 'N/A'}/100 (${lmReview.reason || 'Rejected'}). Critique: ${lmReview.critique?.slice(0, 200)}...`;
     console.warn(`[Spark Runner] Pre-publication LM Studio gate REJECTED for "${articleData.title}": ${rejectionReason}`);
     await registerFailurePattern(pool, null, bot.id, 'LM_STUDIO_CRITIC_REJECT', rejectionReason, articleData.title).catch(() => {});
     throw new Error(`Publication rejected by LM Studio: ${rejectionReason}`);
-  } else if (lmReview.available) {
+  } else {
     console.log(`[Spark Runner] Pre-publication LM Studio gate APPROVED for "${articleData.title}" (Score: ${lmReview.score ?? 'N/A'}/100)`);
   }
 
@@ -761,6 +767,14 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       createdPost.id,
       JSON.stringify({ title: createdPost.title, category: targetCategory, slug: createdPost.slug })
     ]);
+
+    if (researchBriefId) {
+      await client.query(`
+        update public.editorial_research_briefs
+        set status = 'published', published_post_id = $2, updated_at = now()
+        where id = $1 and status in ('approved', 'publishing')
+      `, [researchBriefId, createdPost.id]);
+    }
 
     // Enqueue transactional outbox events atomically within post-creation transaction
     await enqueueOutboxEvent(client, {
@@ -1655,7 +1669,8 @@ export async function runSparkPulse(pool, options = {}) {
     preferredAuthorPenName,
     researchDossier,
     forcePublication = false,
-    automaticPublication = false
+    automaticPublication = false,
+    researchBriefId = null
   } = options;
 
   const client = await pool.connect();
@@ -1683,7 +1698,7 @@ export async function runSparkPulse(pool, options = {}) {
     const executedDelayed = await processDueDelayedActions(pool);
 
     // 2. Check daily posting target limit (bypassed if forcePublication from scheduled slot)
-    const maxDaily = Number(settings.posts_per_day_target) || 20;
+    const maxDaily = settings.posts_per_day_target != null ? Number(settings.posts_per_day_target) : 20;
     const dailyCountRes = await client.query(`
       select count(*)::int as count
       from public.posts
@@ -2545,8 +2560,14 @@ export async function ingestSparkBatch(pool, rawPayload) {
         author: penName
       }).catch(err => ({ available: false, error: err.message }));
 
-      if (lmReview.available && lmReview.verdict !== 'APPROVE') {
-        throw new Error(`LM Studio rejected draft with score ${lmReview.score ?? 'N/A'}/100: ${lmReview.critique?.slice(0, 150)}...`);
+      if (!lmReview.available) {
+        if (lmReview.skipped) {
+          console.warn(`[Spark Runner] Ingest critic check skipped: ${lmReview.error}`);
+        } else {
+          throw new Error(`LM Studio critic check failed: ${lmReview.error}`);
+        }
+      } else if (lmReview.verdict !== 'APPROVE') {
+        throw new Error(`LM Studio rejected draft with score ${lmReview.score ?? 'N/A'}/100 (${lmReview.reason || 'Rejected'}): ${lmReview.critique?.slice(0, 150)}...`);
       }
 
       const coverImage = story.coverImage || story.cover_image_url || getCoverImageForCategory(category);
@@ -2582,6 +2603,14 @@ export async function ingestSparkBatch(pool, rawPayload) {
         insert into public.bot_activity_logs (bot_id, action_type, target_post_id, details, status)
         values ($1, 'post', $2, $3, 'success')
       `, [botId, created.id, JSON.stringify({ title: created.title, category, source: 'gemini_spark_web' })]);
+
+      if (story.researchBriefId) {
+        await client.query(`
+          update public.editorial_research_briefs
+          set status = 'published', published_post_id = $2, updated_at = now()
+          where id = $1 and status in ('approved', 'publishing')
+        `, [story.researchBriefId, created.id]);
+      }
 
       // Record in Editorial Ledger
       recordLedgerEntry(pool, {

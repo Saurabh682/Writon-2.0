@@ -11,15 +11,20 @@ import com.ibitvalley.writon.modern.core.network.model.MilestoneJourneyDto
 import com.ibitvalley.writon.modern.core.network.model.PostDto
 import com.ibitvalley.writon.modern.core.network.model.UpsertMyProfileRequestDto
 import com.ibitvalley.writon.modern.data.repository.MediaRepository
+import com.ibitvalley.writon.modern.data.repository.PostRepository
+import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
+import com.google.gson.JsonParser
 
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class ProfileViewModel(
     private val apiService: WritOnApiService,
     @Suppress("unused") private val userDao: UserDao,
-    private val mediaRepository: MediaRepository
+    private val mediaRepository: MediaRepository,
+    private val postRepository: PostRepository
 ) : ViewModel() {
 
     private val _userProfile = MutableStateFlow<MyProfileDto?>(null)
@@ -36,6 +41,12 @@ class ProfileViewModel(
 
     val isLoading = MutableStateFlow(false)
 
+    private val _loadFailed = MutableStateFlow(false)
+    val loadFailed: StateFlow<Boolean> = _loadFailed
+
+    private val _deletingStoryId = MutableStateFlow<String?>(null)
+    val deletingStoryId: StateFlow<String?> = _deletingStoryId
+
     init {
         loadUserProfile()
     }
@@ -43,6 +54,7 @@ class ProfileViewModel(
     fun loadUserProfile() {
         viewModelScope.launch {
             isLoading.value = true
+            _loadFailed.value = false
             try {
                 val response = apiService.getMyProfile()
                 if (response.isSuccessful && response.body() != null) {
@@ -54,6 +66,8 @@ class ProfileViewModel(
                         if (milestoneResponse.isSuccessful) {
                             _milestoneJourney.value = milestoneResponse.body()
                         }
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
                     } catch (_: Exception) {
                         // Milestones enhance the profile but must never block its core content.
                     }
@@ -73,9 +87,13 @@ class ProfileViewModel(
                         _userStories.value = authorPosts
                         _highlights.value = authorPosts.sortedByDescending { it.likesCnt }
                     }
+                } else {
+                    _loadFailed.value = true
                 }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (e: Exception) {
-                e.printStackTrace()
+                _loadFailed.value = true
             } finally {
                 isLoading.value = false
             }
@@ -96,26 +114,32 @@ class ProfileViewModel(
             isLoading.value = true
             try {
                 val current = _userProfile.value
-                val avatarUrl = if (avatarContext != null && avatarUri != null) {
-                    mediaRepository.uploadImage(avatarContext, avatarUri).getOrElse { throw it }
+                val uploadedAvatarUrl = if (avatarContext != null && avatarUri != null) {
+                    WritOnTelemetry.trace("profile_photo_upload") {
+                        mediaRepository.uploadImage(avatarContext, avatarUri)
+                    }.getOrElse { throw it }
                 } else {
-                    current?.avatarUrl
+                    null
                 }
                 val request = UpsertMyProfileRequestDto(
                     penName = penName.trim(),
                     fullName = fullName.trim(),
                     bio = bio.trim().ifBlank { null },
                     location = location.trim().ifBlank { null },
-                    avatarUrl = avatarUrl
+                    // Null is omitted by the default Gson converter, so a text-only edit does not
+                    // resubmit a legacy/external avatar that the hardened server correctly rejects.
+                    avatarUrl = uploadedAvatarUrl
                 )
                 val response = apiService.upsertMyProfile(request)
                 if (response.isSuccessful && response.body() != null) {
                     _userProfile.value = response.body()!!.profile
                     onSuccess()
                 } else {
-                    val errMsg = response.errorBody()?.string() ?: "Failed to update profile"
+                    val errMsg = profileUpdateFailureMessage(response.errorBody()?.string())
                     onError(errMsg)
                 }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (e: Exception) {
                 onError(e.message ?: "Network error occurred")
             } finally {
@@ -123,4 +147,41 @@ class ProfileViewModel(
             }
         }
     }
+
+    fun deleteStory(
+        storyId: String,
+        onSuccess: () -> Unit = {},
+        onError: (String) -> Unit = {}
+    ) {
+        if (_deletingStoryId.value != null) return
+        viewModelScope.launch {
+            _deletingStoryId.value = storyId
+            postRepository.deletePublishedStory(storyId)
+                .onSuccess {
+                    _userStories.value = _userStories.value.filterNot { it.id == storyId }
+                    _highlights.value = _highlights.value.filterNot { it.id == storyId }
+                    _userProfile.value = _userProfile.value?.let { profile ->
+                        profile.copy(storiesCount = maxOf(0, profile.storiesCount - 1))
+                    }
+                    onSuccess()
+                }
+                .onFailure { error ->
+                    onError(error.message.orEmpty())
+                }
+            _deletingStoryId.value = null
+        }
+    }
+}
+
+internal fun profileUpdateFailureMessage(responseBody: String?): String {
+    if (responseBody.isNullOrBlank()) return "Failed to update profile"
+    return runCatching {
+        val body = JsonParser.parseString(responseBody).asJsonObject
+        val details = body.getAsJsonObject("details")
+            ?.entrySet()
+            ?.asSequence()
+            ?.flatMap { (_, value) -> value.asJsonArray.asSequence().map { it.asString } }
+            ?.firstOrNull { it.isNotBlank() }
+        details ?: body.get("error")?.asString?.takeIf { it.isNotBlank() }
+    }.getOrNull() ?: "Failed to update profile"
 }

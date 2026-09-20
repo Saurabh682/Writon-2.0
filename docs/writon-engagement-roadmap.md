@@ -1,5 +1,19 @@
 # WritOn Engagement Roadmap
 
+Release-candidate checkpoint (2026-09-12): Android is aligned at `2.0.65` (`versionCode 164`) with the production API fixed to `https://api.writon.cc/`. Both 205-test JVM variants, Android-test source compilation, release lint, release Kotlin compilation, Google Sign-In upload-certificate check, 238-test backend suite, and both 23-journey Firebase YAML validations pass. Private Google Cloud profile-media storage and end-to-end avatar rendering passed on isolated staging and the Redmi Android 15 device. The same device now completes one signed-in push registration per launch rather than three, without forcing a Firebase identity-token refresh or producing a fatal exception. A cleared-data guest launch also registers once instead of five times, skips duplicate registration on an unchanged second launch, and reaches Home without sign-in or an interests loop; changes to the token, account, permission, app version, or a 24-hour refresh remain eligible. Email signup now resumes safely when Firebase identity creation succeeds but network session/profile completion fails: the action becomes “Finish account setup” and retries only the unfinished step. A signed AAB may now be generated using `docs/releases/2.0.65-aab-handoff.md`; Play upload/rollout remains blocked until the additive owned-content migration and matching production Cloud Run revision are promoted and authenticated story/comment ownership is verified. The live production comment response checked on 2026-09-12 still omitted `updatedAt` and `isMine`. Existing APIs remain unchanged. Manual Phase 11 gates still include two-account isolation, foreground/background/terminated notification delivery and open behavior, full TalkBack interaction, all-language visual smoke, and Play-delivered candidate testing.
+
+Release/device checkpoint (2026-09-10): Google Play approved the Open Testing rollout and a clean install on the enrolled Redmi delivered `2.0.59` (`versionCode 161`) with both installer and initiating package set to `com.android.vending`. The genuine Play build passed the clean welcome launch, guest `Start reading` route, 20-item Home feed, exact `https://writon.cc/stories/:id` routing, full story body, and live response rendering; the Android crash buffer remained empty. Earlier independent physical-device QA on the same signed release also passed multi-card navigation, end-of-story continuation, guest social-action sign-in gating, visible sign-in/Skip/signup routes, and cached offline relaunch. Large-text checks now pass at 130% and 150% on Android 15: Home remains usable with bounded ellipsis, and every welcome action plus the Terms and Privacy links remains reachable after at most one scroll. A preliminary TalkBack semantics audit exposed the welcome content and all three primary actions as accessible nodes, but the full spoken focus-order/action journey remains pending. The device was restored to accessibility off, 100% font scale, and the Play-installed build after testing. Open Testing distribution is now Play-verified. Remaining Phase 11 device coverage: signed-in account switching, profile upload, publishing, social-action persistence, notification receipt/open flows, full TalkBack interaction, and alternate-language visual checks through the app's signed-in language setting.
+
+Current checkpoint (2026-09-09): the owner-approved signup budget continuity change is deployed only to staging revision `writon-app-api-staging-00009-zjb` (build `a046ea19-bdf0-47cb-86d0-718fce2cf4d9`). Actual-handler/database tests passed for unchanged registration response, signup daily/weekly continuity, token rotation, concurrent linked-identity claims and deletion cleanup; all 204 backend tests passed. RLS and service-only function access verified. Hosted health and dry-run passed, live sends returned 409, scheduler PAUSED. Earlier approval-blocked notes are historical. Remaining: physical delivery/open checks and legacy digest coordination before production enablement.
+
+Phase 7 continuity audit (2026-09-09): confirmed signup deletes the guest installation record without retaining its association with the account's discovery budget. A reliable correction touches the existing registration transaction, which is outside the owner's current no-old-API-change constraint. Scoped proposal: `docs/plans/discovery-budget-signup-continuity.md`. No runtime change from this audit; new discovery rollout remains disabled pending resolution.
+
+Current Phase 7 checkpoint (2026-09-09): accounting fix is deployed to staging revision `writon-app-api-staging-00008-r5g`. Real staging database tests passed for ownership, four concurrent requests yielding one claim, daily cap, weekly cap, and expired history; disposable records were cleaned up. Hosted health and empty dry-run passed; live delivery remains blocked (409), scheduler PAUSED. The earlier local-only and untested-concurrency notes below are historical. Remaining: physical notification receipt/open validation, guest budget continuity across signup, and coordination with the unchanged legacy digest budget before production enablement.
+
+Phase 7 follow-up (2026-09-09): eight focused worker tests now pass, including populated mocked guest candidates, invalid guest-token revocation, and preserving a claim after an accepted push when the ledger write fails. The ledger accounting correction is local, not in staging revision 00007. Real database concurrency/weekly-limit tests and physical receipt/open tests remain outstanding; mock-based checks do not establish those outcomes.
+
+Latest checkpoint (2026-09-09): guest discovery safeguards deployed to isolated staging revision `writon-app-api-staging-00007-7zc`; health and empty dry-run passed, live delivery disabled (409), scheduler paused. Backend gate: 201 tests passed before deployment. Populated-candidate/device validation and legacy digest budget coordination remain outstanding; no production deployment.
+
 **Status:** Owner approved staged implementation on 2026-09-05; Phases 1 and 2 and the Phase 3 intent flow are implemented locally; hosted preference API gate passed, Android device gates remain
 **Source:** `writon-engagement-plan.md`, reconciled with the WritOn codebase on 2026-09-05  
 **Scope:** Personalized onboarding, notification lifecycle improvements, and weekly writing prompts  
@@ -22,7 +36,17 @@ The owner adopted the review recommendations and separately approved increasing 
 | Engagement preference domain | Implemented and unit-tested locally | Additive authenticated snapshot contract; server-only Postgres table; account/guest isolation; pending-write-first hydration; no deployment |
 | Resume reading/drafts, shared prompt coordination, notification budget, weekly prompts | Not implemented by this delivery | Continue the remaining A–D work below; no completion or outcome claim |
 
-Continuation follow-up: local Continue reading is now implemented on Home with proportional reader-position restoration, guest/account separation, completion removal, and a matching Firebase YAML journey. This is not exact paragraph anchoring or cross-device resume; layout/content changes can shift the restored paragraph. Draft continuation remains pending: the existing local draft entity has no owner identifier, so exposing it on Home would risk showing another account's private draft. No public API changes were made in this follow-up. Device execution is still required.
+Continuation follow-up: local Continue reading is implemented on Home with proportional reader-position restoration, guest/account separation, completion removal, and a matching Firebase YAML journey. This is not exact paragraph anchoring or cross-device resume; layout/content changes can shift the restored paragraph. Continue writing is now also implemented against the owner-scoped draft model; see the dated follow-up below. No public API changes were made. Device execution is still required.
+
+End-of-story continuation follow-up (2026-09-08): a localized, non-blocking continuation card is implemented immediately after the story body with actions to open the current writer profile or return to story discovery. It reuses existing navigation and API contracts, and does not stack a review or permission request. Android JVM tests and debug assembly pass; physical-device execution remains pending because the Redmi disconnected before installation.
+
+Draft continuation follow-up (2026-09-09): draft ownership is present in the current Room model and every latest-draft lookup is owner-scoped. Home now observes only the active account's latest draft and offers a localized Continue writing entry, including a safe untitled-draft fallback. The editor instance is keyed to the authenticated account so a login change cannot retain another account's in-memory manuscript. Android JVM tests and debug assembly pass; Redmi installation and account-switch device validation remain pending because no device was connected.
+
+Preference recovery follow-up (2026-09-09): Android now retries pending signed-in interests and engagement preferences through the unchanged account endpoints when network connectivity returns. Retries are serialized, server-compatible IDs remain bounded to 32, unsupported legacy selections stay local, and Home displays a localized device-saved message until both pending flags clear. Focused unit coverage verifies that a retry does not discard preserved legacy choices. Physical offline-to-online execution is deferred to the combined device-validation pass.
+
+Discovery scheduler follow-up (2026-09-09): Phase 7 now has a bounded, dry-run-first signed-in candidate job and a server-only atomic claim ledger. Untouched owned drafts take priority over reading nudges; reading candidates require three days without device registration activity and admit only public verified-human stories. The database claim enforces one discovery notification per India-local day and at most two successful/in-flight claims per rolling seven days under concurrent runs. Notification payload routes return to writing or the selected reader story. The migration has not been applied, the job has no hosted trigger, the existing daily digest/topic path has not yet been moved onto this shared budget, and production behavior is unchanged pending owner review of the protected operational trigger and guest strategy.
+
+Hosted staging update (2026-09-09): the additive budget migration passed on guarded staging project `xrfnebvkazewqramkpri`, including RLS, denied client roles, restricted function execution, service-role access, and index verification. Cloud Build `a5018069-e61c-4f73-b90d-db343e8a4540` succeeded and Cloud Run staging revision `writon-app-api-staging-00006-8mp` is live with `DISCOVERY_NOTIFICATIONS_ENABLED=false`. The new protected route rejects unauthenticated calls with 403, returns an empty successful dry-run on staging, and rejects live delivery with 409. Separate scheduler `writon-discovery-notifications-staging` was invoked once through Google Cloud, produced a logged zero-candidate dry-run, and was returned to `PAUSED`. No production service, production database, existing endpoint, or older scheduler was changed.
 
 Verification: the current full Android unit suite passes 137 tests with zero failures, errors, or skips, and the 2.0.45 (147) debug APK builds. The current full backend suite passes 137 tests, including six dedicated engagement-preference cases and authenticated-access coverage in the main contract suite. A read-only production schema check confirmed `profiles.id` is `text`, matching the migration foreign key, and confirmed the new table has not been deployed.
 
@@ -314,6 +338,13 @@ Create a short, calm onboarding path that improves the first feed without delayi
 
 ## Phase 4 — Existing-user preference backfill
 
+### Implementation progress — 2026-09-13
+
+- The one-time Home card, Remote Config gate, local guest persistence, signed-in server persistence, dismissal behavior, direct Interests route, and Settings → Reading flow are implemented without changing existing API endpoints or response shapes.
+- Home-card completion now returns to Home, while Settings-originated preference editing still returns to Settings; a route regression test locks this distinction.
+- Account hydration now invalidates Home's remembered preference snapshot immediately. Server conflict handling preserves the highest onboarding version and advances card state only from `unseen` → `dismissed` → `completed`, so a stale offline device cannot undo a newer cross-device decision.
+- The Android debug and release JVM suites pass at 212 tests each, Android instrumentation sources compile, and the connected Android 15 Redmi passes the focused dismissible/non-blocking card test. The additive schema, disposable preference round-trip, and hosted Cloud Run runtime pass on guarded staging revision `writon-app-api-staging-00013-gig`; the final owner-controlled rollout-flag canary and signed-in reinstall observation remain operational gates rather than code gaps.
+
 ### Objective
 
 Offer personalization to existing users without forcing them through new-user onboarding.
@@ -343,6 +374,17 @@ Offer personalization to existing users without forcing them through new-user on
 ---
 
 ## Phase 5 — Notification policy and delivery integrity
+
+### Implementation progress — 2026-09-13
+
+- Canonical notification kinds, durable deduplication, genuine first-applause semantics, comment/reply/follow delivery, followed-writer batching, preference aliases, token invalidation, and target-story revalidation are implemented while preserving the existing notification endpoints and legacy fields.
+- User-facing social push now requires both a human actor and a human recipient at enqueue time. Delivery revalidates the same boundary, so an older queued bot, system, test, administrative, or unknown-actor event cannot reach a user.
+- Bot activity may remain visible in the in-app inbox where historically expected, but the bot engine no longer writes those events to the push-delivery outbox. Bookmark activity remains private and is not part of the push catalog.
+- Interrupted outbox and publication-fanout claims become eligible for recovery after five minutes. Attempts are capped at five and exhausted work is moved to `failed`, preventing rows from remaining indefinitely in `sending` or `processing`.
+- The logical notification ID is also the stable Android notification tag/tray identity. A retry after an interrupted acknowledgement replaces the existing visible item instead of adding a duplicate.
+- Android contract coverage verifies that all four legacy and eight granular notification switches use the unchanged endpoint and serialize only the field the user changed.
+- The connected Android 15 Redmi passes the branded notification rendering test on the production notification channel with an empty crash buffer.
+- The Phase 4–5 server suite passes 145 tests across 5 files, the complete backend suite passes 327/327 tests across 31 files, and guarded staging database verification passes without sending FCM. Cloud Run revision `writon-app-api-staging-00013-gig` passed zero-traffic authenticated contract checks and error-log review before receiving 100% of staging traffic; all delivery and automation switches remain disabled. Two-account physical-device delivery, p95 measurement, and the duplicate-rate canary remain operational gates; no production service or Play release was changed by this completion pass.
 
 ### Objective
 
@@ -973,8 +1015,104 @@ To translate these engagement signals into scalable reader acquisition, retentio
 - **Content:** Highlight one curated 3-minute story with an immediate deep link into `reader/{storyId}`.
 - **Implementation Targets:** `server/src/jobs/daily-digest.js`, `server/src/server.js`, `app/src/main/java/com/ibitvalley/writon/modern/core/notification/DailyDigestTopicSubscription.kt`.
 
-### 10.3 In-App Review Eligibility Timing at 3rd Story Read
+### 10.3 In-App Review Eligibility Value Moment
 - **Finding:** Readers who open stories exhibit high loyalty (7.44 stories/reader, 10.5% bounce).
-- **Directive:** Trigger the native Google Play `ReviewManager.requestReviewFlow()` immediately upon completion of a reader's 3rd story.
-- **Constraints:** Respect a 90-day cooldown, trigger only on story completion (never during writing or error states), and capitalize on proven organic reader affinity to lift Play Store conversion.
+- **Directive:** Evaluate the existing native-review eligibility contract after completion of a reader's third engaged story; never bypass the contract to request immediately.
+- **Constraints:** Keep the locked minimum of seven days since first open, three engaged stories or a first successful publication, the 120-day request cooldown, and the existing login/sync/publish/crash quiet checks. Trigger only at a genuine value moment.
 - **Implementation Targets:** `app/src/main/java/com/ibitvalley/writon/modern/core/review/`, `app/src/main/java/com/ibitvalley/writon/modern/core/telemetry/ReviewPrompter.kt`.
+
+## 11. New-user belonging and return loop
+
+This extension turns the first useful reading session into a reason to return. It reuses the current feed, reader, author profile, search, and Library before introducing new storage or public API contracts.
+
+| Delivery | Status | Acceptance gate |
+|---|---|---|
+| Truthful Library and search recovery | Implemented locally | Saved and Applauds show distinct empty guidance; unfinished Collections is absent; a failed search can be cleared or redirected to topics |
+| Specific next story | Implemented locally | The current story is excluded; another writer in the same language and category is preferred; no candidate leaves the existing discovery route available |
+| First favourite writer | Implemented locally | End-of-story copy names the writer, the profile resolves Follow/Following through the complete existing following list, self-follow is hidden, failures are visible, and published stories remain available; signed-in device validation is still required |
+| “Start here” language selection | Implemented locally | Choose three valid, varied reader favourites from the existing popular response, prioritize the app language where inventory allows, show honest reading times, and never label the shelf as manually curated |
+| Discovery by available time | Implemented locally | Show a five-minutes-or-less shelf only when qualifying stories exist in the already-loaded popular response; do not imply the list is exhaustive |
+| “New from writers you follow” return entry | Implemented locally | Home uses unread followed-writer publication notifications, excludes stories completed to at least 70%, keeps the existing preference authoritative, accepts the preserved `publishing` alias, and opens the exact story; signed-in device validation remains |
+| Localized account entry | Implemented locally | Login, password recovery, and signup now use resource-backed copy in all six app locales; password visibility and Back controls expose localized accessibility descriptions; alternate-language device validation remains |
+| Author story corrections | Implemented locally; backend migration and device validation pending | An author can open a published story in the existing editor, autosave changes locally without altering the live copy, explicitly confirm the update, and readers see an accurate Updated label |
+| Owned comment management | Implemented locally; backend migration and device validation pending | Only the comment owner receives Edit/Delete actions; edits show Edited; deletion requires confirmation and removes descendant replies while recomputing the story count |
+| New-writer welcome and feedback | Operationally gated | Assign a moderator and response SLA before offering “Feedback welcome” or a newcomer showcase |
+| Private highlights/favourite lines | Later | Define local/account storage, deletion behavior, export/share permissions, and privacy boundaries before implementation |
+
+Measure the proportion of completed stories followed by another distinct story open, meaningful first follows, Library saves, and D7 qualified returns. Do not use continuation-card impressions or empty-state button taps alone as evidence of improved retention.
+
+## 12. Quiet Library recommendation evolution
+
+**Source proposal:** “WritOn — Predictive Reading Recommendation Engine Architecture,” version 2.0.0, reviewed 2026-09-12.
+
+**Decision:** Adopt the proposal as a measured evolution of the existing feed engine, not as a replacement or a new parallel API. The current code already provides `/api/v1/feed`, stable 60-item server-ranked session snapshots, signed-in and guest learning modes, rollout/holdout/shadow assignment, author and category diversity, behavior ingestion, human-account filtering, and fallback to the unchanged legacy posts feed. Preserve `/api/v1/feed` and all older endpoints, response fields, cursors, aliases, and fallbacks.
+
+### 12.1 Product rules
+
+- Optimize for completed, meaningful reading and return visits—not card impressions, rapid taps, or endless consumption.
+- Keep “Continue reading” separate and locally authoritative. Recommendation ranking must not displace an unfinished story the reader chose.
+- Keep final ordering server-side so pagination, session replay, experiments, and cross-device behavior remain consistent. Android may contribute bounded guest preference vectors and cache the returned deck; it must not implement a second ranking truth.
+- Treat explicitly selected content languages as eligibility only after WritOn offers and persists a real multi-language content preference. Until then, the current app language is a preference, not proof that the reader rejects every other language. Never silently hide all inventory because a language field is absent or stale.
+- Do not remove currently visible bot/persona stories as part of this phase. Quarantine synthetic/test interactions from learning independently of the temporary editorial inventory decision.
+- Never expose raw ranking scores or sensitive behavioral history to other users. Honor account deletion and bounded telemetry retention.
+
+### 12.2 Delivery phases
+
+| Phase | Scope | Minimum delivery | Gate before advancing |
+|---|---|---|---|
+| **R0 — Baseline and invariant audit** | Read-only analysis | Measure feed availability, second-story opens, completion by form/language, author concentration, new-writer exposure, fallback rate, and D7 qualified return. Document current v1 weights and data provenance. | At least four weeks of non-test data with synthetic/developer traffic identified; no production ranking change. |
+| **R1 — Canonical metadata** | Additive data contract | Define canonical `contentForm` (poetry, flash, short story, essay, journalism, review, other), trustworthy word count, normalized language/script, and provenance fields. Backfill with confidence markers rather than guesses. | Coverage and accuracy sampled by editorial review; missing metadata has safe defaults. Older API responses remain valid. |
+| **R2 — Privacy-safe active reading evidence** | Android + ingestion | Extend the existing reading-progress path with bounded active-foreground seconds, resumed-session aggregation, and form-aware expected time. Cap idle time and batch events; retain current progress behavior for older clients. | Foreground/background/terminated tests, offline retry/idempotency, deletion behavior, and synthetic-event rejection pass. No raw text or fine-grained scroll trail is uploaded. |
+| **R3 — Quality normalization in shadow mode** | Server ranking | Calculate form-cohort completion percentiles and decay-free quality using Bayesian smoothing/minimum sample thresholds. Freshness remains a separately capped bonus. Zero-open, zero-completion, and small-sample items must not divide by zero or dominate. | Shadow comparison shows no feed starvation, language loss, or concentration regression; holdout remains intact. |
+| **R4 — Explicit candidate pools** | Existing `/api/v1/feed` implementation | Tag candidates as familiar, continuity, evergreen, underexposed, or adjacent while preserving the current response/cursor contract. Followed writers and partially read items remain continuity inputs; underexposed inventory passes moderation/eligibility checks. | Pool fill/fallback tests cover sparse languages, new accounts, guests, deleted/blocked stories, and fewer than 60 eligible candidates. |
+| **R5 — Quiet Library re-ranking v2** | Server session composer | Move from the current preferred/affinity/exploration pattern to configurable pool targets only where inventory supports them. Preserve maximum two stories per author per 20-card window, category diversity, stable session snapshots, 72-hour completed/dismissed demotion, and bounded serendipity. | Deterministic tests, pagination replay, two-account isolation, latency budget, and a rollback to v1 all pass. |
+| **R6 — Language choice and safety controls** | Product + additive preferences | Offer an understandable multi-select for content languages and a way to change it later. Apply hard pruning only for an explicit saved allow-list. Add blocked-author exclusion when the moderation/blocking contract is approved and implemented. | A user cannot be trapped in an empty feed; `und` content is handled explicitly; all supported locales pass visual and TalkBack checks. |
+| **R7 — Controlled rollout and evaluation** | Operations | Run shadow → 5% → 10% → 25% → 50% → 100%, retaining a stable holdout. Stop automatically on elevated 5xx/fallback, empty-feed rate, crash/ANR, latency, or material decline in qualified reading. | Promote only on improved second-story completion and D7 qualified return without harming new-writer exposure or language coverage. |
+
+R1 completed on guarded staging (2026-09-13): the schema and write path define nullable, sourced metadata for canonical content form, word count, and dominant script while retaining the existing normalized language and provenance fields. Reliable category mappings populate Poetry/Shayari, Short Stories, Essays, Journalism, and Reviews; other categories remain unknown instead of being inferred from topic. The guarded runner applied schema then backfill to staging ref `xrfnebvkazewqramkpri`; independent verification confirmed 9/9 nullable columns, 5/5 validated constraints, and complete word-count/language/script coverage. Editorial review of all 10 staging records confirmed three Poetry fixtures as poetry and correctly retained null form for seven five-word Fiction placeholders that cannot safely be distinguished as flash fiction or short story. No correction migration was required. No old API request or response field changed, no rollout flag changed, no service was deployed, and production was not accessed. R2 may now proceed on staging; production metadata remains unapplied.
+
+R2 reliability completion (2026-09-14): the existing Android reader excludes loading/background time, resets its monotonic checkpoint after resume, flushes every 30 seconds, and caps contributions at 60 seconds. The R2 path preserves the endpoint and adds optional UUID idempotency, a private 35-day deduplication ledger, account-bound Room/WorkManager retry, and form-aware expected time at 200 WPM with 8-second poetry, 20-second flash-fiction, and 45-second essay floors. Unclassified and other-form content retains the previous rule, and older payloads remain valid. Android JVM verification passes 215/215 and the complete backend suite passes 357/357. Guarded staging ref `xrfnebvkazewqramkpri` contains the additive ledger and R1 metadata columns. Isolated revision `writon-app-api-staging-r2form`, image digest `sha256:7c66b9aad97b93e14b896e9b048121236891e89baa78393fc3e3fdb8d61b0886`, was built from the exact preceding R2 staging image and passed zero-traffic health, database, public-route, auth-guard, configuration, authenticated threshold, duplicate, cleanup, and ERROR-log checks before promotion to 100% staging traffic. Through both its tagged and main staging URLs, a poem remained incomplete at 7/8 seconds, an identical retry added zero time, and the final second completed it at exactly 8 seconds. The Android 15 Redmi then passed the remaining foreground/offline/background/terminated/reconnect matrix: Room and the authenticated session survived force-stop, the network-constrained worker retried naturally after connectivity returned, three distinct lifecycle flushes received HTTP 200, guarded staging inspection found three matching ledger rows and 78 accumulated active seconds, and no WritOn crash or ANR occurred. Bot code/settings, old APIs, all disabled staging automation, and production remain unchanged.
+
+R3 production shadow collection (2026-09-14): engineering, dedicated-staging validation, and the production shadow launch are complete; the outcome gate remains observational. The existing visible ranker and `/api/v1/feed` contract are unchanged. Separate human-only completion, bookmark, and recent-exposure inputs feed only `writon-feed-r3-shadow-v1`; legacy v1 retains its previous evidence and repetition penalty. Corrected staging revision `writon-app-api-staging-r3shadow3` (`sha256:3c41759430f9b088d111d9c80fd71b1a27c0c693ab0526391b52e0be097c6d02`) passed zero-traffic, public parity, environment-safety, authenticated persistence/deletion, and ERROR-log gates before receiving 100% of staging traffic. The guarded additive schema was then applied to exact production ref `rrxaitxeirykmiihgiqj`. A missing legacy feed-session profile foreign key was repaired at the database boundary, four already-orphaned identifiers were cleared, and verification confirmed the validated account-deletion cascade and zero remaining orphans. Production revision `writon-app-api-r3shadow` (`sha256:1e4a5dd769ebf9c3ce88ff47f3db5f5d1f43d4bdf82110a19065f7efc5c835a5`) passed tagged health/public parity and a disposable authenticated proof with 80 visible v1 rows, 80 private R3 rows, and complete post-deletion cleanup. It then passed a 5% canary with HTTP 200 responses and no ERROR logs before shadow-only collection moved to 100%. The previous production revision remains available for rollback. No older endpoint, field, alias, cursor, fallback, bot function, or visible ranking changed. R4 remains held until representative non-test shadow traffic demonstrates no feed starvation, language loss, or author/category concentration regression; R3 is not approved for visible ranking.
+
+R3 observation tooling (2026-09-14): an exact-production, read-only aggregate report now compares visible and shadow first-page availability, top-20 overlap and movement, language/content-form mix, author/category concentration, and placement of writers with at most two eligible stories. It emits no user, story, or author identifiers and does not infer retention uplift from structural movement. The first seven-day run found zero retained non-test human shadow sessions after disposable verification cleanup, so this is a measured insufficient sample rather than a pass. Second-story completion and D7 return remain future mature-outcome checks.
+
+### 12.3 Scoring constraints
+
+The proposal's weights are hypotheses, not constants to ship unchanged. Begin in shadow mode with:
+
+- form-cohort quality and completion evidence;
+- explicit category affinity;
+- followed/meaningful author affinity;
+- a maximum 0.15 freshness contribution with an independently tunable half-life;
+- repetition, recent completion, quick-exit, blocked-author, and moderation penalties;
+- Bayesian priors and minimum evidence thresholds for completion/bookmark ratios.
+
+Do not infer quality directly from applause volume, bot engagement, or one highly active account. Do not compare raw poetry dwell time with essay dwell time. Every ranking version must be recorded with its feed session so outcomes can be attributed and rolled back.
+
+### 12.4 Explicit non-goals for the first release
+
+- No new `/api/v1/posts/feed` endpoint; evolve `/api/v1/feed` additively.
+- No client-only scoring engine or large on-device model.
+- No collaborative filtering until the real human-reader sample is materially larger.
+- No forced language wall during onboarding.
+- No automated removal of persona-authored inventory.
+- No claim that recommendations improve retention until the holdout data supports it.
+
+### 12.5 Guided discovery before predictive ranking
+
+The first recommendation-facing slice is implemented locally in Android 2.0.68 (167):
+
+- Explore offers an optional, dismissible **Help me find a read** control.
+- It reuses the unchanged popular-post API and requests at most 20 existing candidates only after the reader opens the finder.
+- Reading-time, language, and topic choices are strict. A zero-result combination stays honest and offers Clear filters or Search; it is never silently broadened.
+- Results reuse the existing deterministic language/author/category diversity selector and return no more than three real stories.
+- Privacy-safe telemetry records finder opens, filter result counts, and chosen result position. It does not record story text, titles, author names, or search text.
+
+This is a candidate-selection aid, not yet a personalized recommendation engine. Its inventory is limited to the current 20-item popular response, category labels are the existing server values, and it has no mood, content-form, semantic, or conversational understanding. Those capabilities remain gated behind R0–R7 and must not create a parallel recommendation truth on Android.
+
+**Current status:** The guided discovery slice is implemented without API, database, cloud, or production behavior changes. All 214 release JVM tests, Android lint, and instrumentation-test source compilation pass. A clean Android 15 Redmi run against isolated Cloud Run staging verified finder expansion, strict five-minute filtering, a real result, dismissal, and an empty crash buffer. The staging catalog contains only three near-identical test fixtures, so multi-language, multi-topic, and full inventory quality still require a production-like fixture set before Play distribution. R0–R7 remain planned.
+
+Clean-install review on the Redmi also found and removed an unrelated first-launch interruption: Android 13+ no longer asks for notification permission before Welcome. The existing value-moment path now owns the system request after a qualifying read or bookmark, and a locally persisted 14-day cooldown prevents repeated prompting. The corrected clean launch was verified on-device.
+
+**R0 audit status (2026-09-13):** Started. The exact v1 sources, filters, modes, scores, selector, session behavior, available GA4 baseline, missing outcome measures, and seven pre-rollout findings are recorded in `docs/audits/recommendation-r0-baseline-2026-09-13.md`. R0 remains open because the supplied export predates finder telemetry, contains visible test distortion, and cannot yet report feed-version outcomes, second-story completion, form/language cohorts, fallback rate, or D7 qualified return.

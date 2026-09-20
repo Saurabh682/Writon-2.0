@@ -549,6 +549,369 @@
           "success": true
         }
       ]
+    },
+    "sprint2_day8": {
+      "sprintDay": 8,
+      "date": "2026-09-13",
+      "executedAt": "2026-09-13T15:30:40.621Z",
+      "outcomes": [
+        {
+          "deliveryId": "2609_d13_x_card_hi_sprint2_am_hindi_dialogue_challenge",
+          "platform": "x",
+          "timeIst": "09:00",
+          "success": true,
+          "alreadyPublished": true,
+          "permalink": "https://x.com/WritOn_Social/status/2098977537984704584"
+        },
+        {
+          "deliveryId": "2609_d13_ig_story_hi_sprint2_midday_hindi_dialogue_challenge",
+          "platform": "ig",
+          "timeIst": "12:30",
+          "success": true,
+          "alreadyPublished": true,
+          "permalink": "https://www.instagram.com/writon_socialapp/"
+        },
+        {
+          "deliveryId": "2609_d13_ig_card_hi_sprint2_main_hindi_dialogue_challenge",
+          "platform": "ig",
+          "timeIst": "19:30",
+          "timestamp": "2026-09-13T14:00:11.498Z",
+          "publishedPostId": "17908010523538753",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d13_ig_card_hi_sprint2_main_hindi_dialogue_challenge",
+          "success": true,
+          "threadsId": "18623542381057160",
+          "linkedInPostId": "urn:li:share:7504901846747037696",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7504901846747037696",
+          "xPostId": "2099136167900066113"
+        },
+        {
+          "deliveryId": "2609_d13_x_video_en_sprint2_pm_dont_start_with_weather",
+          "platform": "x",
+          "timeIst": "20:30",
+          "timestamp": "2026-09-13T15:00:15.142Z",
+          "publishedPostId": "2099151190877749311",
+          "permalink": "https://x.com/WritOn_Social/status/2099151190877749311",
+          "shortlink": "https://writon.cc/go/2609_d13_x_video_en_sprint2_pm_dont_start_with_weather",
+          "success": true,
+          "replyId": "2099151193222324661",
+          "threadsId": "17920059747225585",
+          "linkedInPostId": "urn:li:share:7504916995394502657",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7504916995394502657"
+        },
+        {
+          "deliveryId": "2609_d13_ig_story_hi_sprint2_evening_hindi_dialogue_challenge",
+          "platform": "ig",
+          "timeIst": "20:45",
+          "timestamp": "2026-09-13T15:30:10.484Z",
+          "publishedPostId": "18078716357347745;17906558496502694",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d13_ig_story_hi_sprint2_evening_hindi_dialogue_challenge",
+          "success": true
+        }
+      ]
+    },
+    "sprint2_day9": {
+      "sprintDay": 9,
+      "date": "2026-09-14",
+      "executedAt": "2026-09-14T15:15:41.755Z",
+      "outcomes": [
+        {
+          "deliveryId": "2609_d14_x_card_en_sprint2_am_verified_writing_walkthrough",
+          "platform": "x",
+          "timeIst": "09:00",
+          "timestamp": "2026-09-14T03:30:10.001Z",
+          "publishedPostId": "2099339904207769908",
+          "permalink": "https://x.com/WritOn_Social/status/2099339904207769908",
+          "shortlink": "https://writon.cc/go/2609_d14_x_card_en_sprint2_am_verified_writing_walkthrough",
+          "success": true,
+          "replyId": "2099339906820755847",
+          "threadsId": "18126351817788960",
+          "linkedInPostId": "urn:li:share:7505105693981446145",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7505105693981446145"
+        },
+        {
+          "deliveryId": "2609_d14_ig_story_en_sprint2_midday_verified_writing_walkthrough",
+          "platform": "ig",
+          "timeIst": "12:30",
+          "timestamp": "2026-09-14T07:00:15.534Z",
+          "publishedPostId": "17940289155361324",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d14_ig_story_en_sprint2_midday_verified_writing_walkthrough",
+          "success": true
+        },
+        {
+          "deliveryId": "2609_d14_ig_carousel_en_sprint2_main_verified_writing_walkthrough",
+          "platform": "ig",
+          "timeIst": "19:30",
+          "timestamp": "2026-09-14T14:00:10.744Z",
+          "publishedPostId": "17871428616597023",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d14_ig_carousel_en_sprint2_main_verified_writing_walkthrough",
+          "success": true,
+          "threadsId": "18113030969047053",
+          "linkedInPostId": "urn:li:share:7505264226198843392",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7505264226198843392",
+          "xPostId": "2099498548790464952"
+        },
+        {
+          "deliveryId": "2609_d14_x_card_en_sprint2_pm_verified_writing_walkthrough",
+          "platform": "x",
+          "timeIst": "20:30",
+          "timestamp": "2026-09-14T15:00:12.217Z",
+          "publishedPostId": "2099513558392607000",
+          "permalink": "https://x.com/WritOn_Social/status/2099513558392607000",
+          "shortlink": "https://writon.cc/go/2609_d14_x_card_en_sprint2_pm_verified_writing_walkthrough",
+          "success": true,
+          "replyId": "2099513561311834241",
+          "threadsId": "18083539181309890",
+          "linkedInPostId": "urn:li:share:7505279338368466944",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7505279338368466944"
+        },
+        {
+          "deliveryId": "2609_d14_ig_story_en_sprint2_evening_verified_writing_walkthrough",
+          "platform": "ig",
+          "timeIst": "20:45",
+          "timestamp": "2026-09-14T15:15:10.130Z",
+          "publishedPostId": "17966929410157341;18114306464089646",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d14_ig_story_en_sprint2_evening_verified_writing_walkthrough",
+          "success": true
+        }
+      ]
+    },
+    "sprint2_day10": {
+      "sprintDay": 10,
+      "date": "2026-09-15",
+      "executedAt": "2026-09-15T15:15:26.923Z",
+      "outcomes": [
+        {
+          "deliveryId": "2609_d15_x_card_hi_sprint2_am_unsent_letter_prompt",
+          "platform": "x",
+          "timeIst": "09:00",
+          "timestamp": "2026-09-15T03:30:01.282Z",
+          "publishedPostId": "2099702256535019856",
+          "permalink": "https://x.com/WritOn_Social/status/2099702256535019856",
+          "shortlink": "https://writon.cc/go/2609_d15_x_card_hi_sprint2_am_unsent_letter_prompt",
+          "success": true,
+          "replyId": "2099702259227799880",
+          "threadsId": "18347814049302190",
+          "linkedInPostId": "urn:li:share:7505468029560840192",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7505468029560840192"
+        },
+        {
+          "deliveryId": "2609_d15_ig_story_hi_sprint2_midday_unsent_letter_prompt",
+          "platform": "ig",
+          "timeIst": "12:30",
+          "timestamp": "2026-09-15T07:00:00.902Z",
+          "publishedPostId": "18101474336624898",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d15_ig_story_hi_sprint2_midday_unsent_letter_prompt",
+          "success": true,
+          "reelVideoId": "17892098610673579",
+          "reelPermalink": "https://www.instagram.com/reel/DdTH_21kh8U/"
+        },
+        {
+          "deliveryId": "2609_d15_ig_card_hi_sprint2_main_unsent_letter_prompt",
+          "platform": "ig",
+          "timeIst": "19:30",
+          "timestamp": "2026-09-15T14:00:01.197Z",
+          "publishedPostId": "18336460057257870",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d15_ig_card_hi_sprint2_main_unsent_letter_prompt",
+          "success": true,
+          "threadsId": "18084419780316391",
+          "linkedInPostId": "urn:li:share:7505626573610524672",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7505626573610524672",
+          "xPostId": "2099860894675345902"
+        },
+        {
+          "deliveryId": "2609_d15_x_card_hi_sprint2_pm_unsent_letter_prompt",
+          "platform": "x",
+          "timeIst": "20:30",
+          "timestamp": "2026-09-15T15:00:01.648Z",
+          "publishedPostId": "2099875902251483203",
+          "permalink": "https://x.com/WritOn_Social/status/2099875902251483203",
+          "shortlink": "https://writon.cc/go/2609_d15_x_card_hi_sprint2_pm_unsent_letter_prompt",
+          "success": true,
+          "replyId": "2099875905414070365",
+          "threadsId": "18104196173249343",
+          "linkedInPostId": "urn:li:share:7505641650543640577",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7505641650543640577"
+        },
+        {
+          "deliveryId": "2609_d15_ig_story_hi_sprint2_evening_unsent_letter_prompt",
+          "platform": "ig",
+          "timeIst": "20:45",
+          "timestamp": "2026-09-15T15:15:00.542Z",
+          "publishedPostId": "18127030030694803;18196869190384252",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d15_ig_story_hi_sprint2_evening_unsent_letter_prompt",
+          "success": true
+        }
+      ]
+    },
+    "sprint2_day11": {
+      "sprintDay": 11,
+      "date": "2026-09-16",
+      "executedAt": "2026-09-16T15:15:29.212Z",
+      "outcomes": [
+        {
+          "deliveryId": "2609_d16_x_card_hi_sprint2_am_hindi_sensory_writing",
+          "platform": "x",
+          "timeIst": "09:00",
+          "timestamp": "2026-09-16T04:42:40.756Z",
+          "publishedPostId": "2100082929917685903",
+          "permalink": "https://x.com/WritOn_Social/status/2100082929917685903",
+          "shortlink": "https://writon.cc/go/2609_d16_x_card_hi_sprint2_am_hindi_sensory_writing",
+          "success": true,
+          "replyId": "2100082932534919477",
+          "threadsId": "18078014645396997",
+          "linkedInPostId": "urn:li:share:7505848741913038848",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7505848741913038848"
+        },
+        {
+          "deliveryId": "2609_d16_ig_story_hi_sprint2_midday_hindi_sensory_writing",
+          "platform": "ig",
+          "timeIst": "12:30",
+          "timestamp": "2026-09-16T07:00:01.145Z",
+          "publishedPostId": "18245093416309775",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d16_ig_story_hi_sprint2_midday_hindi_sensory_writing",
+          "success": true,
+          "reelVideoId": "17907916959516808",
+          "reelPermalink": "https://www.instagram.com/reel/DdVsycKAu4-/"
+        },
+        {
+          "deliveryId": "2609_d16_ig_carousel_hi_sprint2_main_hindi_sensory_writing",
+          "platform": "ig",
+          "timeIst": "19:30",
+          "timestamp": "2026-09-16T14:00:02.182Z",
+          "publishedPostId": "18115042544050109",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d16_ig_carousel_hi_sprint2_main_hindi_sensory_writing",
+          "success": true,
+          "threadsId": "17898973092605252",
+          "linkedInPostId": "urn:li:share:7505989051771179009",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7505989051771179009"
+        },
+        {
+          "deliveryId": "2609_d16_x_card_hi_sprint2_pm_hindi_sensory_writing",
+          "platform": "x",
+          "timeIst": "20:30",
+          "timestamp": "2026-09-16T15:00:00.387Z",
+          "publishedPostId": "2100238282521276586",
+          "permalink": "https://x.com/WritOn_Social/status/2100238282521276586",
+          "shortlink": "https://writon.cc/go/2609_d16_x_card_hi_sprint2_pm_hindi_sensory_writing",
+          "success": true,
+          "replyId": "2100238285549547641",
+          "threadsId": "17957029644344044",
+          "linkedInPostId": "urn:li:share:7506004022626275328",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7506004022626275328"
+        },
+        {
+          "deliveryId": "2609_d16_ig_story_hi_sprint2_evening_hindi_sensory_writing",
+          "platform": "ig",
+          "timeIst": "20:45",
+          "timestamp": "2026-09-16T15:15:00.312Z",
+          "publishedPostId": "18067157279773450;18059996867792631",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d16_ig_story_hi_sprint2_evening_hindi_sensory_writing",
+          "success": true
+        }
+      ]
+    },
+    "sprint2_day12": {
+      "sprintDay": 12,
+      "date": "2026-09-17",
+      "executedAt": "2026-09-17T15:15:00.390Z",
+      "outcomes": [
+        {
+          "deliveryId": "2609_d17_x_card_en_sprint2_am_one_scene_two_perspectives",
+          "platform": "x",
+          "timeIst": "09:00",
+          "success": true,
+          "alreadyPublished": true,
+          "permalink": "https://x.com/WritOn_Social/status/2100427031804809552"
+        },
+        {
+          "deliveryId": "2609_d17_ig_story_en_sprint2_midday_one_scene_two_perspectives",
+          "platform": "ig",
+          "timeIst": "12:30",
+          "success": true,
+          "alreadyPublished": true,
+          "permalink": "https://www.instagram.com/writon_socialapp/"
+        },
+        {
+          "deliveryId": "2609_d17_ig_carousel_en_sprint2_main_one_scene_two_perspectives",
+          "platform": "ig",
+          "timeIst": "19:30",
+          "success": true,
+          "alreadyPublished": true,
+          "permalink": "https://www.instagram.com/writon_socialapp/"
+        },
+        {
+          "deliveryId": "2609_d17_x_card_en_sprint2_pm_one_scene_two_perspectives",
+          "platform": "x",
+          "timeIst": "20:30",
+          "success": true,
+          "alreadyPublished": true,
+          "permalink": "https://x.com/WritOn_Social/status/2100430143303139790"
+        },
+        {
+          "deliveryId": "2609_d17_ig_story_en_sprint2_evening_one_scene_two_perspectives",
+          "platform": "ig",
+          "timeIst": "20:45",
+          "success": true,
+          "alreadyPublished": true,
+          "permalink": "https://www.instagram.com/writon_socialapp/"
+        }
+      ]
+    },
+    "sprint2_day13": {
+      "sprintDay": 13,
+      "date": "2026-09-18",
+      "executedAt": "2026-09-18T15:15:27.971Z",
+      "outcomes": [
+        {
+          "deliveryId": "2609_d18_ig_story_en_sprint2_midday_find_your_next_read",
+          "platform": "ig",
+          "timeIst": "12:30",
+          "timestamp": "2026-09-18T07:00:03.760Z",
+          "publishedPostId": "18095724560559267",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d18_ig_story_en_sprint2_midday_find_your_next_read",
+          "success": true
+        },
+        {
+          "deliveryId": "2609_d18_ig_carousel_en_sprint2_main_find_your_next_read",
+          "platform": "ig",
+          "timeIst": "19:30",
+          "timestamp": "2026-09-18T14:00:01.645Z",
+          "publishedPostId": "17928814038167396",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d18_ig_carousel_en_sprint2_main_find_your_next_read",
+          "success": true,
+          "threadsId": "17949633633290746",
+          "linkedInPostId": "urn:li:share:7506713855268671488",
+          "linkedInPermalink": "https://www.linkedin.com/feed/update/urn:li:share:7506713855268671488"
+        },
+        {
+          "deliveryId": "2609_d18_x_card_en_sprint2_pm_find_your_next_read",
+          "success": false,
+          "error": "replyTweet is not defined"
+        },
+        {
+          "deliveryId": "2609_d18_ig_story_en_sprint2_evening_find_your_next_read",
+          "platform": "ig",
+          "timeIst": "20:45",
+          "timestamp": "2026-09-18T15:15:01.055Z",
+          "publishedPostId": "18108734984170231;18111236372520789",
+          "permalink": "https://www.instagram.com/writon_socialapp/",
+          "shortlink": "https://writon.cc/go/2609_d18_ig_story_en_sprint2_evening_find_your_next_read",
+          "success": true
+        }
+      ]
     }
   },
   "youtubeUploads": [
@@ -560,6 +923,50 @@
       "channel": "@writon_app",
       "publishedAt": "2026-09-12T15:34:05.761Z",
       "asset": "campaign/writon-reel-demo/renders/writon_reel_with_audio.mp4"
+    },
+    {
+      "shortId": "short1_shayari_unsaid",
+      "format": "Poetry & Shayari #1",
+      "videoId": "NEsZuhFFShk",
+      "url": "https://www.youtube.com/shorts/NEsZuhFFShk",
+      "watchUrl": "https://www.youtube.com/watch?v=NEsZuhFFShk",
+      "title": "Some Words Are Only Meant for Silence #shorts",
+      "channel": "@writon_app",
+      "publishedAt": "2026-09-13T03:46:32.212Z",
+      "asset": "D:\\VibeCode\\WritOn-PowerUp\\campaign\\shorts-rendered\\short1_shayari_unsaid\\renders\\short1_shayari_unsaid_2026-09-13_09-13-50.mp4"
+    },
+    {
+      "shortId": "short2_tiny_story_water",
+      "format": "Tiny Story",
+      "videoId": "MnUN9ywVDgg",
+      "url": "https://www.youtube.com/shorts/MnUN9ywVDgg",
+      "watchUrl": "https://www.youtube.com/watch?v=MnUN9ywVDgg",
+      "title": "The 5:55 PM Glass of Water #shorts",
+      "channel": "@writon_app",
+      "publishedAt": "2026-09-13T04:11:15.385Z",
+      "asset": "D:\\VibeCode\\WritOn-PowerUp\\campaign\\shorts-rendered\\short2_tiny_story_water_4k\\renders\\short2_tiny_story_water_4k_2026-09-13_09-31-16.mp4"
+    },
+    {
+      "shortId": "short4_line_worth_keeping",
+      "format": "Line Worth Keeping",
+      "videoId": "oPCXhSAVXcM",
+      "url": "https://www.youtube.com/shorts/oPCXhSAVXcM",
+      "watchUrl": "https://www.youtube.com/watch?v=oPCXhSAVXcM",
+      "title": "Three Ways to Begin a Scene #shorts",
+      "channel": "@writon_app",
+      "publishedAt": "2026-09-13T10:25:54.783Z",
+      "asset": "D:\\VibeCode\\WritOn-PowerUp\\campaign\\shorts-rendered\\short4_line_worth_keeping_4k\\renders\\short4_line_worth_keeping_4k_2026-09-13_15-54-53.mp4"
+    },
+    {
+      "shortId": "short5_writer_thought",
+      "format": "Writer Thought",
+      "videoId": "uUqD6HvfJOw",
+      "url": "https://www.youtube.com/shorts/uUqD6HvfJOw",
+      "watchUrl": "https://www.youtube.com/watch?v=uUqD6HvfJOw",
+      "title": "Maybe Closure is Memory Running Out of Questions #shorts",
+      "channel": "@writon_app",
+      "publishedAt": "2026-09-14T11:10:53.470Z",
+      "asset": "D:\\VibeCode\\WritOn-PowerUp\\campaign\\shorts-rendered\\short5_writer_thought_4k\\renders\\short5_writer_thought_4k_2026-09-14_16-39-45.mp4"
     }
   ],
   "redditPosts": [
@@ -569,15 +976,151 @@
       "redditUrl": "/r/writon/comments/1wekonn/the_craft_of_writing_thoughtful_essays_slow/",
       "subreddit": "writon",
       "publishedAt": "2026-09-12T19:25:14.119Z"
+    },
+    {
+      "title": "Steam Deck OLED 90Hz Display and Battery Efficiency Under 15W TDP: Research-Based Assessment",
+      "link": "https://writon.cc/stories/steam-deck-oled-90hz-display-and-battery-efficiency-under-15w-tdp-resear-100c1ae1-e1d",
+      "redditUrl": "/r/writon/comments/1wekonn/the_craft_of_writing_thoughtful_essays_slow/",
+      "subreddit": "writon",
+      "publishedAt": "2026-09-12T19:47:45.941Z"
+    },
+    {
+      "title": "The Slaking Pit",
+      "link": "https://writon.cc/stories/the-slaking-pit-cf4a26b5-a62",
+      "redditUrl": "/r/writon/comments/1wekonn/the_craft_of_writing_thoughtful_essays_slow/",
+      "subreddit": "writon",
+      "publishedAt": "2026-09-13T03:45:18.842Z"
+    },
+    {
+      "title": "The Friction of the Leap",
+      "link": "https://writon.cc/stories/the-friction-of-the-leap-d885acae-f57",
+      "redditUrl": "/r/writon/comments/1wekonn/the_craft_of_writing_thoughtful_essays_slow/",
+      "subreddit": "writon",
+      "publishedAt": "2026-09-13T03:46:53.877Z"
+    },
+    {
+      "title": "Vivo X100 Pro vs Xiaomi 14 Ultra: Telephoto & Perspective Compression Compared",
+      "link": "https://writon.cc/stories/vivo-x100-pro-vs-xiaomi-14-ultra-telephoto-perspective-compression-0623d763-6ff",
+      "redditUrl": "/r/writon/comments/1wekonn/the_craft_of_writing_thoughtful_essays_slow/",
+      "subreddit": "writon",
+      "publishedAt": "2026-09-13T10:15:56.228Z"
     }
   ],
   "reddit": {
     "writon": {
-      "title": "The Geometry of Two Cups",
-      "link": "https://writon.cc/stories/the-geometry-of-two-cups-a4bc38b7-199",
+      "title": "Vivo X100 Pro vs Xiaomi 14 Ultra: Telephoto & Perspective Compression Compared",
+      "link": "https://writon.cc/stories/vivo-x100-pro-vs-xiaomi-14-ultra-telephoto-perspective-compression-0623d763-6ff",
       "redditUrl": "/r/writon/comments/1wekonn/the_craft_of_writing_thoughtful_essays_slow/",
       "subreddit": "writon",
-      "publishedAt": "2026-09-12T19:25:14.119Z"
+      "publishedAt": "2026-09-13T10:15:56.228Z"
+    }
+  },
+  "hindiDiwasSpecial": {
+    "date": "2026-09-15",
+    "dispatchedAt": "2026-09-15T03:16:00.407Z",
+    "results": {
+      "x": {
+        "tweetId": "2099698635302990213",
+        "replyId": "2099698637937025261",
+        "url": "https://x.com/WritOn_Social/status/2099698635302990213"
+      },
+      "threads": {
+        "id": "17989482786102325"
+      },
+      "instagram": {
+        "mediaId": "18028897976894791",
+        "permalink": "https://www.instagram.com/p/DdSuRFMiQia/"
+      },
+      "linkedin": {
+        "postId": "urn:li:share:7505464408744095744",
+        "url": "https://www.linkedin.com/feed/update/urn:li:share:7505464408744095744"
+      }
+    }
+  },
+  "day13": {
+    "date": "2026-09-18",
+    "slot": "09:00",
+    "deliveryId": "2609_d18_x_card_en_sprint2_am_find_your_next_read",
+    "platform": "x",
+    "surface": "feed",
+    "format": "card",
+    "postId": "2100916822619160773",
+    "url": "https://x.com/WritOn_Social/status/2100916822619160773",
+    "publishedAt": "2026-09-18T11:56:18.000Z"
+  },
+  "shorts": {
+    "short11": {
+      "title": "How to Write Threat Without Adverbs",
+      "duration": 16,
+      "videoId": "1Tp-3CjUe_M",
+      "url": "https://www.youtube.com/shorts/1Tp-3CjUe_M",
+      "privacyStatus": "public",
+      "publishedAt": "2026-09-19T06:42:36.539Z"
+    }
+  },
+  "brainDispatches": {
+    "hook_dont_start_weather_20260919": {
+      "insightId": "hook_dont_start_weather",
+      "title": "Don't start with weather",
+      "archetype": "contrarian_rule",
+      "platform": "x",
+      "rootTweetId": "2101200113435922829",
+      "replyTweetId": "2101200115650490854",
+      "tagsTweetId": "2101296341330919828",
+      "expandedHashtags": [
+        "#storytelling",
+        "#writingtips",
+        "#creativewriting",
+        "#writerslife",
+        "#fiction",
+        "#authorlife",
+        "#indieauthor",
+        "#bookcommunity",
+        "#screenwriting",
+        "#slowreading"
+      ],
+      "url": "https://x.com/WritOn_Social/status/2101200113435922829",
+      "publishedAt": "2026-09-19T06:42:00.000Z"
+    }
+  },
+  "reels": {
+    "short12_cold_anger": {
+      "id": "short12_cold_anger",
+      "igMediaId": "17861398878693908",
+      "permalink": "https://www.instagram.com/reel/Ddd7N4WCT-z/",
+      "shortcode": "Ddd7N4WCT-z",
+      "containerId": "18107503159998010",
+      "publishedAt": "2026-09-19T11:41:06.842Z",
+      "title": "How to Write Anger Without Screaming"
+    },
+    "short13_she_realized": {
+      "id": "short13_she_realized",
+      "igMediaId": "18205345921374250",
+      "permalink": "https://www.instagram.com/reel/DdfxNbSj_Na/",
+      "shortcode": "DdfxNbSj_Na",
+      "containerId": "18107749168998010",
+      "publishedAt": "2026-09-20T04:52:04.960Z",
+      "title": "Stop Writing \"She Realized\""
+    }
+  },
+  "linkedin": {
+    "short13_she_realized": {
+      "id": "short13_she_realized",
+      "platform": "linkedin",
+      "postUrn": "urn:li:ugcPost:7507304429939851264",
+      "liveUrl": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7507304429939851264",
+      "videoUrn": "urn:li:video:D4D10AQH1K0Y98X4HCw",
+      "publishedAt": "2026-09-20T05:07:35.671Z",
+      "title": "Writing Craft: Stop Writing 'She Realized'"
+    }
+  },
+  "stories": {
+    "short13_she_realized_story": {
+      "id": "short13_she_realized_story",
+      "igMediaId": "18096937259338558",
+      "containerId": "18107762200998010",
+      "publishedAt": "2026-09-20T05:46:13.880Z",
+      "title": "Stop Writing \"She Realized\" (Story)"
     }
   }
 }

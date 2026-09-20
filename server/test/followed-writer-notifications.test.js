@@ -41,6 +41,10 @@ describe('followed-writer publication notifications', () => {
     await expect(runFollowedWriterNotifications(database)).resolves.toEqual({ processed: 1 });
 
     expect(queries[0].sql).toContain('for update skip locked');
+    expect(queries[0].sql).toContain("status = 'processing'");
+    expect(queries[0].sql).toContain("updated_at <= now() - interval '5 minutes'");
+    expect(queries[0].sql).toContain("status = 'failed'");
+    expect(queries[0].params).toEqual([20, null]);
     const fanout = transactionQueries.find(({ sql }) => sql.includes('with eligible as'));
     expect(fanout.sql).toContain("post.provenance = 'human_verified'");
     expect(fanout.sql).toContain("author.account_type = 'human'");
@@ -52,6 +56,24 @@ describe('followed-writer publication notifications', () => {
     expect(fanout.sql).toContain('on conflict (deduplication_key)');
     expect(fanout.sql).toContain('notification_delivery_outbox');
     expect(transactionQueries.map(({ sql }) => sql.trim())).toEqual(expect.arrayContaining(['begin', 'commit']));
+  });
+
+  it('can scope a verification run to disposable event ids', async () => {
+    let claim = null;
+    const database = {
+      query: async (sql, params) => {
+        claim = { sql, params };
+        return { rows: [], rowCount: 0 };
+      },
+    };
+
+    await expect(runFollowedWriterNotifications(database, {
+      limit: 2,
+      eventIds: ['11111111-1111-4111-8111-111111111111'],
+    })).resolves.toEqual({ processed: 0 });
+
+    expect(claim.sql).toContain('id = any($2::uuid[])');
+    expect(claim.params).toEqual([2, ['11111111-1111-4111-8111-111111111111']]);
   });
 
   it('rolls back and returns the durable event to pending after a transient failure', async () => {

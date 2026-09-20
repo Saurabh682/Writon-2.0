@@ -10,6 +10,9 @@ class NotificationRouteTest {
     @Test fun `story notification opens its reader`() =
         assertEquals("reader/story-42", resolveNotificationRoute("reader/story-42"))
 
+    @Test fun `app wide notification can open home`() =
+        assertEquals("home", resolveNotificationRoute("home"))
+
     @Test fun `unsafe or malformed route falls back to notifications`() =
         assertEquals("notifications", resolveNotificationRoute("reader/"))
 }

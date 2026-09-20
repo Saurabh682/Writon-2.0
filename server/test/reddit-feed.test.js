@@ -32,4 +32,38 @@ describe('Reddit-Specific RSS Feed Generator', () => {
       expect(item).not.toMatch(/#[a-zA-Z0-9_]+/);
     }
   });
+
+  it('covers the live HTTP fetch and parsing path when mock transport is provided', async () => {
+    const originalFetch = global.fetch;
+    try {
+      global.fetch = async () => ({
+        ok: true,
+        json: async () => ({
+          posts: [
+            {
+              id: 'p-1',
+              title: 'The Weight of the Nib',
+              slug: 'the-weight-of-the-nib',
+              summary: 'A reflection on brass fountain pens.',
+              content: 'The brass barrel rests between thumb and forefinger.',
+              category: 'Essays',
+              author: { fullName: 'Aarav Sharma', penName: 'aarav_writes' },
+              readingTimeMin: 4,
+              createdAt: '2026-09-20T12:00:00Z'
+            }
+          ]
+        })
+      });
+
+      const res = await generateRedditFeed({ forceHttp: true });
+      expect(res.count).toBe(1);
+      const xml = await fs.readFile(res.path, 'utf8');
+      expect(xml).toContain('The Weight of the Nib');
+      expect(xml).toContain('Aarav Sharma');
+      expect(xml).toContain('aarav_writes@writon.cc');
+      expect(xml).toContain('The brass barrel rests between thumb and forefinger.');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
 });

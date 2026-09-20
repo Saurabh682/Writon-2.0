@@ -39,7 +39,30 @@ async function main() {
   let link = options.link || options.url || 'https://writon.cc';
   let imagePath = options.image || options.imagePath || null;
   let imageUrl = options.imageUrl || null;
-  let boardId = options.board || options.boardId || process.env.PINTEREST_DEFAULT_BOARD_ID || 'writon_craft_board';
+  let boardId = options.board || options.boardId || process.env.PINTEREST_DEFAULT_BOARD_ID || '1084171378986901351';
+
+  // Support direct YouTube Video / Short pin creation:
+  // e.g. --youtube="-FRnucIMFck" or --youtube="https://www.youtube.com/shorts/-FRnucIMFck"
+  const youtubeInput = options.youtube || options.youtubeId || options.short || options.videoId;
+  if (youtubeInput) {
+    let videoId = String(youtubeInput).trim();
+    if (videoId.includes('youtube.com/') || videoId.includes('youtu.be/')) {
+      const match = videoId.match(/(?:shorts\/|v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+      if (match) videoId = match[1];
+    }
+    link = `https://www.youtube.com/shorts/${videoId}`;
+    if (!imageUrl && !imagePath) {
+      // Use YouTube high-quality maxres/hq default thumbnail as Pin cover
+      imageUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    }
+    if (!title) {
+      title = `WritOn Craft Short (${videoId})`;
+    }
+    if (!description) {
+      description = `Watch the full craft truth on YouTube:\n👉 ${link}\n\nJoin the slow writing community on WritOn: https://writon.cc\n\n#writon #writingcommunity #amwriting #storytelling #shorts`;
+    }
+    console.log(`🎬 Configured YouTube Pin for video [${videoId}]: ${link}`);
+  }
 
   // If a campaign day is provided, load the campaign delivery payload
   if (options.day) {
@@ -59,7 +82,7 @@ async function main() {
   }
 
   if (!title) {
-    console.error('❌ Error: Missing --title or --day argument.');
+    console.error('❌ Error: Missing --title, --youtube, or --day argument.');
     process.exit(1);
   }
 

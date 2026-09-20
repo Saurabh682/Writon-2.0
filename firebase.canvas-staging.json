@@ -1,0 +1,49 @@
+{
+  "hosting": {
+    "site": "writon-canvas-staging",
+    "public": "public",
+    "trailingSlash": false,
+    "ignore": [
+      "firebase*.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate, max-age=0"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://writon-app-api-staging-802112841589.asia-south1.run.app; frame-ancestors 'none'; base-uri 'self'"
+          },
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          }
+        ]
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/canvas",
+        "destination": "/canvas.html"
+      },
+      {
+        "source": "/editorial-canvas",
+        "destination": "/canvas.html"
+      }
+    ]
+  }
+}

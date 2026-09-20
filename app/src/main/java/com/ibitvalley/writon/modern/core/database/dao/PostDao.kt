@@ -19,6 +19,9 @@ interface PostDao {
     @Query("SELECT * FROM posts WHERE id = :id OR slug = :id LIMIT 1")
     fun getPostById(id: String): Flow<PostEntity?>
 
+    @Query("SELECT * FROM posts WHERE id = :id OR slug = :id LIMIT 1")
+    suspend fun getPostSnapshot(id: String): PostEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPosts(posts: List<PostEntity>)
 
@@ -43,8 +46,14 @@ interface PostDao {
     @Query("UPDATE posts SET commentsCnt = commentsCnt + 1 WHERE id = :postId OR slug = :postId")
     suspend fun incrementCommentsCount(postId: String)
 
-    @Query("DELETE FROM posts WHERE id = :postId")
+    @Query("DELETE FROM posts WHERE id = :postId OR slug = :postId")
     suspend fun deletePostById(postId: String)
+
+    @Query("DELETE FROM posts WHERE id IN (:postIds)")
+    suspend fun deletePostsByIds(postIds: List<String>)
+
+    @Query("DELETE FROM posts WHERE title LIKE '%The Architecture of Tech%' OR slug LIKE '%the-architecture-of-tech%' OR title LIKE '%Geometric Grace%' OR slug LIKE '%geometric-grace%' OR content LIKE '%SystemState%'")
+    suspend fun purgeDisallowedStories()
 
     @Query("SELECT DISTINCT authorId, authorName, authorPenName, authorAvatarUrl FROM posts WHERE authorName LIKE '%' || :query || '%' OR authorPenName LIKE '%' || :query || '%'")
     suspend fun getLocalAuthorsMatching(query: String): List<com.ibitvalley.writon.modern.core.database.model.PostAuthorTuple>
@@ -63,6 +72,35 @@ interface PostDao {
 
     @Query("DELETE FROM posts WHERE category = :category")
     suspend fun deletePostsByCategory(category: String)
+
+    @Query(
+        """DELETE FROM posts
+           WHERE (:category IS NULL OR lower(category) = lower(:category))
+             AND (
+               :query = ''
+               OR title LIKE '%' || :query || '%'
+               OR coalesce(summary, '') LIKE '%' || :query || '%'
+               OR authorName LIKE '%' || :query || '%'
+             )"""
+    )
+    suspend fun deleteMatchingPosts(category: String?, query: String)
+
+    @Query(
+        """DELETE FROM posts
+           WHERE (:category IS NULL OR lower(category) = lower(:category))
+             AND (
+               :query = ''
+               OR title LIKE '%' || :query || '%'
+               OR coalesce(summary, '') LIKE '%' || :query || '%'
+               OR authorName LIKE '%' || :query || '%'
+             )
+             AND id NOT IN (:retainedPostIds)"""
+    )
+    suspend fun deleteMatchingPostsExcept(
+        category: String?,
+        query: String,
+        retainedPostIds: List<String>
+    )
 
     /**
      * Updates list-card fields without replacing a full body that was already downloaded
@@ -86,7 +124,8 @@ interface PostDao {
             bookmarksCnt = :bookmarksCnt,
             isLiked = :isLiked,
             isBookmarked = :isBookmarked,
-            createdAt = :createdAt
+            createdAt = :createdAt,
+            languageCode = :languageCode
             WHERE id = :id"""
     )
     suspend fun updateFeedPostKeepingContent(
@@ -107,7 +146,8 @@ interface PostDao {
         bookmarksCnt: Int,
         isLiked: Boolean,
         isBookmarked: Boolean,
-        createdAt: String
+        createdAt: String,
+        languageCode: String
     )
 
     @Transaction
@@ -133,7 +173,8 @@ interface PostDao {
                     bookmarksCnt = post.bookmarksCnt,
                     isLiked = post.isLiked,
                     isBookmarked = post.isBookmarked,
-                    createdAt = post.createdAt
+                    createdAt = post.createdAt,
+                    languageCode = post.languageCode
                 )
             }
         }
@@ -141,12 +182,26 @@ interface PostDao {
 
     @Transaction
     suspend fun replaceAllPosts(posts: List<PostEntity>) {
-        mergeFeedPosts(posts)
+        replaceMatchingPosts(category = null, query = "", posts = posts)
     }
 
     @Transaction
     suspend fun replaceCategoryPosts(category: String, posts: List<PostEntity>) {
+        replaceMatchingPosts(category = category, query = "", posts = posts)
+    }
+
+    /**
+     * Reconciles the locally visible result set after a successful first-page response.
+     * Cached rows are retained on network failure because this method is never called then.
+     */
+    @Transaction
+    suspend fun replaceMatchingPosts(category: String?, query: String, posts: List<PostEntity>) {
         mergeFeedPosts(posts)
+        if (posts.isEmpty()) {
+            deleteMatchingPosts(category, query)
+        } else {
+            deleteMatchingPostsExcept(category, query, posts.map { it.id })
+        }
     }
 }
 

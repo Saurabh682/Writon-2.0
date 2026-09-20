@@ -1,6 +1,7 @@
 package com.ibitvalley.writon.modern.feature.notifications
 
 import androidx.compose.ui.res.stringResource
+import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -10,6 +11,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -24,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -45,26 +50,35 @@ private val NotificationEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_semibold, FontWeight.Bold)
 )
 
-private enum class NotificationKind { APPLAUD, COMMENT, FOLLOW, BOOKMARK, REMINDER, BADGE }
+internal enum class NotificationKind { APPLAUD, COMMENT, FOLLOW, BOOKMARK, REMINDER, BADGE }
+internal enum class NotificationFilter { ALL, STORIES, COMMENTS, APPLAUDS, FOLLOWS }
 
-private data class ActivityNotification(
+/**
+ * Canonical notification families contain multiple server kinds (for example comment + reply).
+ * Fetch the complete stream once and filter locally so newer kinds remain visible to older tabs.
+ */
+internal fun notificationApiKind(@Suppress("UNUSED_PARAMETER") filter: NotificationFilter): String? = null
+
+internal data class ActivityNotification(
     val id: String,
     val name: String,
     val action: String,
+    val serverKind: String,
     val detail: String,
     val time: String,
     val kind: NotificationKind,
     val unread: Boolean = false,
     val hasStory: Boolean = false,
     val postId: String? = null,
+    val actorId: String? = null,
     val tone: Color = Color(0xFF6D6963)
 )
 
-private fun NotificationDto.asActivityNotification(): ActivityNotification {
+internal fun NotificationDto.asActivityNotification(): ActivityNotification {
     val notificationKind = when (kind) {
-        "applaud" -> NotificationKind.APPLAUD
-        "comment" -> NotificationKind.COMMENT
-        "follow" -> NotificationKind.FOLLOW
+        "applaud", "first_applause" -> NotificationKind.APPLAUD
+        "comment", "reply" -> NotificationKind.COMMENT
+        "follow", "new_follower" -> NotificationKind.FOLLOW
         "bookmark" -> NotificationKind.BOOKMARK
         "badge" -> NotificationKind.BADGE
         else -> NotificationKind.REMINDER
@@ -73,14 +87,40 @@ private fun NotificationDto.asActivityNotification(): ActivityNotification {
         id = id,
         name = actor?.fullName.orEmpty(),
         action = message,
+        serverKind = kind,
         detail = postTitle ?: actor?.penName.orEmpty().ifBlank { "WritOn activity" },
         time = createdAt.substringBefore('T'),
         kind = notificationKind,
         unread = readAt == null,
         hasStory = postId != null,
         postId = postId,
+        actorId = actor?.id,
         tone = Color(0xFFF2ECE4)
     )
+}
+
+@StringRes
+internal fun notificationActionResource(kind: String, message: String): Int? = when (kind) {
+    "applaud", "first_applause" -> R.string.notifications_action_applauded
+    "comment" -> R.string.notifications_action_commented
+    "reply" -> R.string.notifications_action_replied
+    "follow", "new_follower" -> R.string.notifications_action_followed
+    "followed_writer_published", "publishing" -> if (message == "published new stories") {
+        R.string.notifications_action_published_multiple
+    } else {
+        R.string.notifications_action_published
+    }
+    "daily_digest", "editorial", "reading_nudge" -> R.string.notifications_action_recommended
+    else -> null
+}
+
+internal fun openNotificationDestination(
+    notification: ActivityNotification,
+    onStoryClick: (String) -> Unit,
+    onAuthorClick: (String) -> Unit,
+) {
+    notification.postId?.let(onStoryClick)
+        ?: notification.actorId?.takeIf { notification.kind == NotificationKind.FOLLOW }?.let(onAuthorClick)
 }
 
 @Composable
@@ -88,18 +128,12 @@ fun NotificationsScreen(
     viewModel: CollectionsViewModel,
     onSearchClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
-    onStoryClick: (String) -> Unit = {}
+    onStoryClick: (String) -> Unit = {},
+    onAuthorClick: (String) -> Unit = {},
 ) {
-    var selectedFilter by rememberSaveable { mutableStateOf("All") }
-    LaunchedEffect(selectedFilter) {
-        viewModel.loadNotifications(
-            when (selectedFilter) {
-                "Comments" -> "comment"
-                "Applauds" -> "applaud"
-                "Follows" -> "follow"
-                else -> null
-            }
-        )
+    var selectedFilter by rememberSaveable { mutableStateOf(NotificationFilter.ALL) }
+    LaunchedEffect(Unit) {
+        viewModel.loadNotifications(notificationApiKind(selectedFilter))
     }
     val activities = viewModel.notifications.map { it.asActivityNotification() }
     val filteredNew = activities.filter { it.unread && it.matches(selectedFilter) }
@@ -112,23 +146,49 @@ fun NotificationsScreen(
     ) {
         item { NotificationHeader(onSearchClick, onSettingsClick) }
         item { NotificationFilters(selectedFilter = selectedFilter, onSelected = { selectedFilter = it }) }
-        if (filteredNew.isNotEmpty()) {
-            item { SectionLabel("New") }
+        if (viewModel.isLoading && activities.isEmpty()) {
+            item {
+                Box(Modifier.fillMaxWidth().padding(vertical = 32.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+        } else if (viewModel.errorMessage != null && activities.isEmpty()) {
+            item {
+                NotificationLoadError(onRetry = { viewModel.loadNotifications() })
+            }
+        } else if (filteredNew.isNotEmpty()) {
+            item { SectionLabel(stringResource(R.string.notifications_section_new)) }
             item { NotificationGroup(filteredNew, onNotificationClick = { notification ->
                 viewModel.markNotificationRead(notification.id)
-                notification.postId?.let(onStoryClick)
+                openNotificationDestination(notification, onStoryClick, onAuthorClick)
             }) }
         }
-        if (filteredEarlier.isNotEmpty()) {
-            item { SectionLabel("Earlier") }
+        if (!viewModel.isLoading && viewModel.errorMessage == null && filteredEarlier.isNotEmpty()) {
+            item { SectionLabel(stringResource(R.string.notifications_section_earlier)) }
             item { NotificationGroup(filteredEarlier, onNotificationClick = { notification ->
                 viewModel.markNotificationRead(notification.id)
-                notification.postId?.let(onStoryClick)
+                openNotificationDestination(notification, onStoryClick, onAuthorClick)
             }) }
         }
-        if (filteredNew.isEmpty() && filteredEarlier.isEmpty()) {
+        if (!viewModel.isLoading && viewModel.errorMessage == null && filteredNew.isEmpty() && filteredEarlier.isEmpty()) {
             item { EmptyNotifications() }
         }
+    }
+}
+
+@Composable
+private fun NotificationLoadError(onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 28.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            stringResource(R.string.notifications_load_error),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        Button(onClick = onRetry) { Text(stringResource(R.string.common_retry)) }
     }
 }
 
@@ -164,12 +224,12 @@ private fun EmptyNotifications() {
     }
 }
 
-private fun ActivityNotification.matches(filter: String): Boolean = when (filter) {
-    "Mentions" -> false
-    "Comments" -> kind == NotificationKind.COMMENT
-    "Applauds" -> kind == NotificationKind.APPLAUD
-    "Follows" -> kind == NotificationKind.FOLLOW
-    else -> true
+private fun ActivityNotification.matches(filter: NotificationFilter): Boolean = when (filter) {
+    NotificationFilter.STORIES -> kind == NotificationKind.REMINDER
+    NotificationFilter.COMMENTS -> kind == NotificationKind.COMMENT
+    NotificationFilter.APPLAUDS -> kind == NotificationKind.APPLAUD
+    NotificationFilter.FOLLOWS -> kind == NotificationKind.FOLLOW
+    NotificationFilter.ALL -> true
 }
 
 @Composable
@@ -181,7 +241,7 @@ private fun NotificationHeader(onSearchClick: () -> Unit, onSettingsClick: () ->
             IconButton(onClick = onSearchClick) {
                 Image(
                     painterResource(R.drawable.ic_search),
-                    contentDescription = "Search",
+                    contentDescription = stringResource(R.string.common_search),
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                 )
@@ -189,19 +249,19 @@ private fun NotificationHeader(onSearchClick: () -> Unit, onSettingsClick: () ->
             IconButton(onClick = onSettingsClick) {
                 Image(
                     painterResource(R.drawable.ic_settings),
-                    contentDescription = "Notification settings",
+                    contentDescription = stringResource(R.string.notification_settings_title),
                     modifier = Modifier.size(24.dp),
                     colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                 )
             }
         }
         Text(
-            "Notifications",
+            stringResource(R.string.notifications_title),
             modifier = Modifier.padding(top = 48.dp),
             style = MaterialTheme.typography.displayLarge.copy(fontFamily = NotificationEditorialFamily, fontWeight = FontWeight.Normal, fontSize = 42.sp)
         )
         Text(
-            "Stay updated with what matters.",
+            stringResource(R.string.notifications_subtitle),
             modifier = Modifier.padding(top = WritOnSpacing.xs),
             style = MaterialTheme.typography.titleLarge.copy(fontFamily = NotificationEditorialFamily, fontSize = 17.sp),
             color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -210,22 +270,23 @@ private fun NotificationHeader(onSearchClick: () -> Unit, onSettingsClick: () ->
 }
 
 @Composable
-private fun NotificationFilters(selectedFilter: String, onSelected: (String) -> Unit) {
+private fun NotificationFilters(selectedFilter: NotificationFilter, onSelected: (NotificationFilter) -> Unit) {
     val filters = listOf(
-        "All" to R.drawable.ic_bullet_list,
-        "Mentions" to null,
-        "Comments" to R.drawable.ic_comment,
-        "Applauds" to null,
-        "Follows" to R.drawable.ic_follow
+        Triple(NotificationFilter.ALL, R.string.notifications_filter_all, R.drawable.ic_bullet_list),
+        Triple(NotificationFilter.STORIES, R.string.notifications_filter_mentions, null),
+        Triple(NotificationFilter.COMMENTS, R.string.notifications_filter_comments, R.drawable.ic_comment),
+        Triple(NotificationFilter.APPLAUDS, R.string.notifications_filter_applauds, null),
+        Triple(NotificationFilter.FOLLOWS, R.string.notifications_filter_follows, R.drawable.ic_follow)
     )
     Row(
         modifier = Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        filters.forEach { (label, icon) ->
-            val selected = selectedFilter == label
+        filters.forEach { (filter, labelResource, icon) ->
+            val selected = selectedFilter == filter
             Surface(
-                onClick = { onSelected(label) },
+                modifier = Modifier.semantics { this.selected = selected },
+                onClick = { onSelected(filter) },
                 color = if (selected) Color(0xFFE9E1D7) else Color.Transparent,
                 shape = RoundedCornerShape(WritOnRadius.pill)
             ) {
@@ -233,13 +294,13 @@ private fun NotificationFilters(selectedFilter: String, onSelected: (String) -> 
                     modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    when (label) {
-                        "Mentions" -> Text("@", fontSize = 24.sp, fontWeight = FontWeight.SemiBold, color = if (selected) BrandRed else Color(0xFF151718))
-                        "Applauds" -> Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = null, modifier = Modifier.size(23.dp))
+                    when (filter) {
+                        NotificationFilter.STORIES -> Image(painterResource(R.drawable.ic_book), contentDescription = null, modifier = Modifier.size(22.dp))
+                        NotificationFilter.APPLAUDS -> Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = null, modifier = Modifier.size(23.dp))
                         else -> icon?.let { Image(painterResource(if (selected) when (it) { R.drawable.ic_bullet_list -> R.drawable.ic_bullet_list_orange; R.drawable.ic_comment -> R.drawable.ic_comment_orange; else -> R.drawable.ic_follow_orange } else it), contentDescription = null, modifier = Modifier.size(22.dp)) }
                     }
                     Spacer(Modifier.width(8.dp))
-                    Text(label, fontSize = 15.sp, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal)
+                    Text(stringResource(labelResource), fontSize = 15.sp, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal)
                 }
             }
         }
@@ -275,6 +336,8 @@ private fun NotificationGroup(
 
 @Composable
 private fun NotificationRow(notification: ActivityNotification, onClick: () -> Unit) {
+    val localizedAction = notificationActionResource(notification.serverKind, notification.action)
+        ?.let { stringResource(it) } ?: notification.action
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -286,7 +349,7 @@ private fun NotificationRow(notification: ActivityNotification, onClick: () -> U
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                if (notification.name.isBlank()) notification.action else "${notification.name} ${notification.action}",
+                if (notification.name.isBlank()) localizedAction else "${notification.name} $localizedAction",
                 style = MaterialTheme.typography.bodyLarge.copy(fontSize = 16.sp),
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -342,7 +405,7 @@ private fun ActivityAvatar(notification: ActivityNotification) {
             }
         }
         when (notification.kind) {
-            NotificationKind.APPLAUD -> Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = "Applaud", modifier = Modifier.align(Alignment.BottomEnd).size(27.dp))
+            NotificationKind.APPLAUD -> Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = stringResource(R.string.common_applaud), modifier = Modifier.align(Alignment.BottomEnd).size(27.dp))
             NotificationKind.COMMENT -> ActivityBadge(R.drawable.ic_comment, Modifier.align(Alignment.BottomEnd))
             NotificationKind.FOLLOW -> ActivityBadge(R.drawable.ic_follow, Modifier.align(Alignment.BottomEnd))
             else -> Unit

@@ -1,13 +1,25 @@
 package com.ibitvalley.writon.modern.feature.feed
 
+import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.data.repository.PostRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+
+internal enum class FeedEmptyState { LOADING, FAILURE, EMPTY }
+
+internal fun feedEmptyState(isRefreshing: Boolean, refreshFailed: Boolean): FeedEmptyState = when {
+    isRefreshing -> FeedEmptyState.LOADING
+    refreshFailed -> FeedEmptyState.FAILURE
+    else -> FeedEmptyState.EMPTY
+}
+
+internal fun shouldUsePersonalizedHomeFeed(enabled: Boolean, category: String, query: String): Boolean =
+    enabled && category == "All" && query.isBlank()
 
 class FeedViewModel(
     private val repository: PostRepository
@@ -19,8 +31,14 @@ class FeedViewModel(
     val isRefreshing = MutableStateFlow(false)
     val isLoadingMore = MutableStateFlow(false)
     val hasMore = MutableStateFlow(true)
+    val refreshFailed = MutableStateFlow(false)
+    val loadMoreFailed = MutableStateFlow(false)
 
     private var nextPage = 1
+    private var nextPersonalizedCursor: String? = null
+    private var personalizedFeedEnabled = false
+    private var activePersonalizedFeed = false
+    private var refreshPending = false
     private var activeFeedKey = feedKey()
 
     // Preserve scroll state
@@ -43,7 +61,7 @@ class FeedViewModel(
 
     init {
         viewModelScope.launch {
-            repository.seedInitialStoriesIfEmpty()
+            repository.removeLegacySeedStories()
             refreshFeed()
         }
     }
@@ -58,25 +76,65 @@ class FeedViewModel(
         _searchQuery.value = query
     }
 
+    fun setPersonalizedFeedEnabled(enabled: Boolean) {
+        if (personalizedFeedEnabled == enabled) return
+        personalizedFeedEnabled = enabled
+        refreshFeed()
+    }
+
     fun refreshFeed() {
-        if (isRefreshing.value) return
+        if (isRefreshing.value) {
+            refreshPending = true
+            return
+        }
         val category = selectedCategory.value
         val query = _searchQuery.value
-        val requestKey = feedKey(category, query)
+        val wantsPersonalizedFeed = shouldUsePersonalizedHomeFeed(personalizedFeedEnabled, category, query)
+        val requestKey = feedKey(category, query, wantsPersonalizedFeed)
         activeFeedKey = requestKey
         nextPage = 1
+        nextPersonalizedCursor = null
+        activePersonalizedFeed = false
         hasMore.value = true
         isLoadingMore.value = false
+        refreshFailed.value = false
+        loadMoreFailed.value = false
         viewModelScope.launch {
             isRefreshing.value = true
             try {
-                val result = repository.refreshPosts(category = category, query = query)
-                if (activeFeedKey == requestKey) {
-                    hasMore.value = result.wasFetched && result.hasMore
-                    nextPage = 2
+                if (wantsPersonalizedFeed) {
+                    val result = WritOnTelemetry.trace("feed_first_load") {
+                        repository.loadPersonalizedFeed(limit = 20)
+                    }
+                    if (activeFeedKey == requestKey) {
+                        activePersonalizedFeed = result.isPersonalized
+                        nextPersonalizedCursor = result.nextCursor.takeIf { result.isPersonalized }
+                        hasMore.value = result.nextCursor != null
+                        refreshFailed.value = !result.wasFetched
+                        if (result.wasFetched && !result.isPersonalized) {
+                            nextPage = result.nextCursor?.toIntOrNull() ?: 2
+                        }
+                    }
+                } else {
+                    val result = WritOnTelemetry.trace("feed_first_load") {
+                        repository.refreshPosts(category = category, query = query)
+                    }
+                    if (activeFeedKey == requestKey) {
+                        hasMore.value = result.hasMore
+                        refreshFailed.value = !result.wasFetched
+                        if (result.wasFetched) nextPage = 2
+                    }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
             } finally {
-                isRefreshing.value = false
+                if (activeFeedKey == requestKey) {
+                    isRefreshing.value = false
+                }
+                if (refreshPending) {
+                    refreshPending = false
+                    refreshFeed()
+                }
             }
         }
     }
@@ -87,29 +145,60 @@ class FeedViewModel(
 
         val category = selectedCategory.value
         val query = _searchQuery.value
-        val requestKey = feedKey(category, query)
+        val requestKey = feedKey(
+            category,
+            query,
+            shouldUsePersonalizedHomeFeed(personalizedFeedEnabled, category, query)
+        )
         val pageToLoad = nextPage
         isLoadingMore.value = true
+        loadMoreFailed.value = false
 
         viewModelScope.launch {
             try {
-                val result = repository.loadPostsPage(
-                    category = category,
-                    query = query,
-                    page = pageToLoad
-                )
-                if (activeFeedKey == requestKey && result.wasFetched) {
-                    hasMore.value = result.hasMore
-                    nextPage = pageToLoad + 1
+                if (activePersonalizedFeed) {
+                    val result = repository.loadPersonalizedFeed(cursor = nextPersonalizedCursor, limit = 20)
+                    if (activeFeedKey == requestKey && result.wasFetched) {
+                        nextPersonalizedCursor = result.nextCursor
+                        hasMore.value = result.nextCursor != null
+                    } else if (activeFeedKey == requestKey) {
+                        loadMoreFailed.value = true
+                    }
+                } else {
+                    val result = repository.loadPostsPage(
+                        category = category,
+                        query = query,
+                        page = pageToLoad
+                    )
+                    if (activeFeedKey == requestKey && result.wasFetched) {
+                        hasMore.value = result.hasMore
+                        nextPage = pageToLoad + 1
+                    } else if (activeFeedKey == requestKey) {
+                        loadMoreFailed.value = true
+                    }
                 }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                if (activeFeedKey == requestKey) loadMoreFailed.value = true
             } finally {
                 if (activeFeedKey == requestKey) isLoadingMore.value = false
             }
         }
     }
 
-    private fun feedKey(category: String = selectedCategory.value, query: String = _searchQuery.value): String =
-        "$category\u0000$query"
+    private fun feedKey(
+        category: String = selectedCategory.value,
+        query: String = _searchQuery.value,
+        personalized: Boolean = shouldUsePersonalizedHomeFeed(personalizedFeedEnabled, category, query)
+    ): String = "$category\u0000$query\u0000$personalized"
+
+    fun recordImpression(postId: String) {
+        viewModelScope.launch { repository.recordFeedImpression(postId) }
+    }
+
+    fun recordOpen(postId: String) {
+        viewModelScope.launch { repository.recordFeedOpen(postId) }
+    }
 
     fun toggleLike(postId: String, currentLiked: Boolean, count: Int) {
         viewModelScope.launch {

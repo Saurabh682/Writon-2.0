@@ -29,6 +29,7 @@ import {
   addAntiRepetitionPattern
 } from '../bot-engine/editorial-ledger-service.js';
 import { getLiveDailyTrends, seedDailyTrendsToBacklog } from '../bot-engine/trend-scout-service.js';
+import { ingestTrendReport } from '../services/trend-intelligence-service.js';
 import { PUBLISHABLE_STORY_CATEGORIES } from '../domain/story-categories.js';
 
 export const MCP_PROTOCOL_VERSION = '2024-11-05';
@@ -503,6 +504,86 @@ export const WRITON_TOOLS = [
     inputSchema: {
       type: 'object',
       properties: {}
+    }
+  },
+  {
+    name: 'writon_ingest_trend_report',
+    description: 'Ingest a structured cross-platform trend research report (Schema 1.0.0) from Gemini Spark. Validates payload, tracks historical velocity, screens sensitivity, scores opportunity against 100 writer personas, and seeds qualified trends into the editorial backlog.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        schemaVersion: {
+          type: 'string',
+          default: '1.0.0',
+          description: 'Schema version (must be "1.0.0").'
+        },
+        externalRunId: {
+          type: 'string',
+          description: 'Unique run ID from Gemini Spark scheduler run (e.g. "spark-daily-2026-09-18-01").'
+        },
+        observedAt: {
+          type: 'string',
+          description: 'ISO-8601 observation timestamp.'
+        },
+        date: {
+          type: 'string',
+          description: 'Date in YYYY-MM-DD format.'
+        },
+        region: {
+          type: 'string',
+          default: 'India',
+          description: 'Geographic region surveyed.'
+        },
+        source: {
+          type: 'string',
+          default: 'gemini-trend-research',
+          description: 'Originating research radar source.'
+        },
+        runType: {
+          type: 'string',
+          default: 'daily',
+          description: 'Run cadence ("daily", "adhoc").'
+        },
+        trends: {
+          type: 'array',
+          description: 'Array of trend objects conforming to Schema 1.0.0.',
+          items: {
+            type: 'object',
+            properties: {
+              rank: { type: 'number' },
+              topic: { type: 'string' },
+              category: { type: 'string' },
+              priorityScore: { type: 'number' },
+              sourceStatus: { type: 'string', enum: ['BREAKOUT', 'RISING', 'STABLE', 'FALLING'] },
+              momentum: { type: 'string', enum: ['VERY_HIGH', 'HIGH', 'MEDIUM', 'LOW'] },
+              urgency: { type: 'string', enum: ['ACT_NOW', 'THIS_WEEK', 'EVERGREEN'] },
+              sourceConfidence: { type: 'number' },
+              platforms: { type: 'array', items: { type: 'string' } },
+              keywords: { type: 'array', items: { type: 'string' } },
+              longTailKeywords: { type: 'array', items: { type: 'string' } },
+              whyTrending: { type: 'string' },
+              contentOpportunity: { type: 'string' },
+              recommendedAngles: { type: 'array', items: { type: 'string' } },
+              sources: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    platform: { type: 'string' },
+                    url: { type: 'string' },
+                    title: { type: 'string' },
+                    observedAt: { type: 'string' },
+                    signalType: { type: 'string' }
+                  },
+                  required: ['platform', 'url']
+                }
+              }
+            },
+            required: ['topic']
+          }
+        }
+      },
+      required: ['date', 'trends']
     }
   }
 ];
@@ -1203,6 +1284,15 @@ export async function executeMcpTool(pool, toolName, args) {
   if (toolName === 'writon_seed_trends_to_backlog') {
     const result = await seedDailyTrendsToBacklog(pool);
     return result;
+  }
+
+  if (toolName === 'writon_ingest_trend_report') {
+    const result = await ingestTrendReport(pool, args);
+    return {
+      success: true,
+      message: 'Trend report successfully ingested into WritOn Trend Intelligence Airlock.',
+      ...result
+    };
   }
 
   throw new Error(`Unknown tool name: ${toolName}`);

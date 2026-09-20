@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-09-12T13:43:26.235Z",
+  "databaseSource": "WritOn Live Supabase PostgreSQL Production Database",
+  "totalPublishedPosts": 741,
+  "totalComments": 1294,
+  "provenanceBreakdown": {
+    "humanPosts": 612,
+    "botSyntheticPosts": 129,
+    "humanShare": "82.6%",
+    "botShare": "17.4%"
+  },
+  "humanLanguageDistribution": {
+    "English": 375,
+    "Romanized Hindi/Urdu (Shayari/Poetry)": 169,
+    "Hindi (Devanagari)": 68
+  },
+  "dataLimitationsNotice": "Sample sizes for Philosophy and Tech in the historical human corpus are thin (<10 posts) and are flagged as provisional."
+}

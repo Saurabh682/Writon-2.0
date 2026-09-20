@@ -1,0 +1,74 @@
+--- a/src/server.js
++++ b/src/server.js
+@@ -151,6 +151,7 @@ const collectionQuerySchema = z.object({
+ const readingProgressInputSchema = z.object({
+   progress: z.coerce.number().min(0).max(1).default(0.05),
+   readSeconds: z.coerce.number().int().min(0).max(60).default(0),
++  clientMutationId: z.string().uuid().optional(),
+ });
+ 
+ const postIdSchema = z.string().uuid();
+@@ -3028,8 +3029,7 @@ fastify.post(
+       return reply.code(400).send({ error: 'Invalid reading progress', details: parsed.error.flatten().fieldErrors });
+     }
+     await ensureProfileForId(request.user, request.profileId);
+-    const result = await database.query(
+-      `insert into public.reading_history (user_id, post_id, progress, read_seconds)
++    const legacyQuery = `insert into public.reading_history (user_id, post_id, progress, read_seconds)
+        select $1, p.id,
+               case
+                 when $3 >= 0.95
+@@ -3045,8 +3045,51 @@ fastify.post(
+          progress = greatest(public.reading_history.progress, excluded.progress),
+          read_seconds = public.reading_history.read_seconds + excluded.read_seconds,
+          last_read_at = now(), updated_at = now()
+-       returning progress, read_seconds as "readSeconds", last_read_at as "lastReadAt"`,
+-      [request.profileId, postId, parsed.data.progress, parsed.data.readSeconds]
++       returning progress, read_seconds as "readSeconds", last_read_at as "lastReadAt"`;
++    const idempotentQuery = `with expired as (
++         delete from public.reading_progress_mutations
++         where user_id = $1 and expires_at <= now()
++       ), accepted as (
++         insert into public.reading_progress_mutations (user_id, post_id, client_mutation_id)
++         select $1, p.id, $5
++         from public.posts p
++         where p.id = $2 and p.status = 'published' and p.is_public = true
++         on conflict (user_id, post_id, client_mutation_id) do nothing
++         returning post_id
++       ), updated as (
++         insert into public.reading_history (user_id, post_id, progress, read_seconds)
++         select $1, p.id,
++                case
++                  when $3 >= 0.95
++                    and coalesce(history.read_seconds, 0) + $4 < greatest(30, p.reading_time_min * 30)
++                  then 0.94
++                  else $3
++                end,
++                $4
++         from public.posts p
++         inner join accepted on accepted.post_id = p.id
++         left join public.reading_history history on history.user_id = $1 and history.post_id = p.id
++         on conflict (user_id, post_id) do update set
++           progress = greatest(public.reading_history.progress, excluded.progress),
++           read_seconds = public.reading_history.read_seconds + excluded.read_seconds,
++           last_read_at = now(), updated_at = now()
++         returning progress, read_seconds as "readSeconds", last_read_at as "lastReadAt"
++       )
++       select * from updated
++       union all
++       select history.progress, history.read_seconds as "readSeconds", history.last_read_at as "lastReadAt"
++       from public.reading_history history
++       where history.user_id = $1 and history.post_id = $2
++         and not exists (select 1 from updated)
++         and exists (
++           select 1 from public.reading_progress_mutations mutation
++           where mutation.user_id = $1 and mutation.post_id = $2 and mutation.client_mutation_id = $5
++         )
++       limit 1`;
++    const parameters = [request.profileId, postId, parsed.data.progress, parsed.data.readSeconds];
++    const result = await database.query(
++      parsed.data.clientMutationId ? idempotentQuery : legacyQuery,
++      parsed.data.clientMutationId ? [...parameters, parsed.data.clientMutationId] : parameters
+     );
+     if (result.rowCount === 0) return reply.code(404).send({ error: 'Story not found' });
+     return result.rows[0];
