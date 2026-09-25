@@ -10,6 +10,7 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { LEGACY_WRITER_PERSONAS } from '../bot-engine/legacy-writer-personas.js';
+import { JevDecisionService } from './jev/jev-service.js';
 
 // Schema for individual source evidence entries
 export const trendSourceSchema = z.object({
@@ -102,7 +103,8 @@ const RECOGNIZED_REPUTABLE_HOSTS = new Set([
   'github.com', 'news.ycombinator.com', 'reuters.com', 'bloomberg.com',
   'nytimes.com', 'theverge.com', 'wired.com', 'techcrunch.com', 'nature.com',
   'arxiv.org', 'thehindu.com', 'indianexpress.com', 'scroll.in', 'thewire.in',
-  'livemint.com', 'bbc.com', 'economist.com', 'wsj.com', 'substacks.com', 'medium.com'
+  'livemint.com', 'bbc.com', 'economist.com', 'wsj.com', 'substacks.com', 'medium.com',
+  'thenewstack.io', 'relevantmagazine.com', 'silentbook.club', 'ndtv.com', 'smashingmagazine.com'
 ]);
 
 const BLOCKED_HOST_PATTERNS = [
@@ -443,11 +445,15 @@ export function rankPersonaCandidates(topic, category = '', angles = [], limit =
 /**
  * Master Ingestion Orchestrator
  */
-export async function ingestTrendReport(pool, rawPayload) {
+export async function ingestTrendReport(pool, rawPayload, options = {}) {
   const parsed = sparkPayloadSchema.parse(rawPayload);
   const payloadHash = calculatePayloadHash(parsed);
   const observedAt = parsed.observedAt ? new Date(parsed.observedAt) : new Date();
   const externalRunId = parsed.externalRunId || null;
+  const jevService = options.jevService || new JevDecisionService({
+    config: options.config || {},
+    pool
+  });
 
   // 1. Idempotency Check
   const existingRes = await pool.query(`
@@ -701,6 +707,20 @@ export async function ingestTrendReport(pool, rawPayload) {
       ]);
 
       const opportunity = oppInsertRes.rows[0];
+
+      // Jev Decision Layer (Stage 1: Trend Triage in Shadow Mode)
+      // Runs side-by-side or asynchronously; evaluates fuzzy editorial suitability
+      // without mutating existing deterministic qualificationStatus or blocking backlog seeding.
+      if (jevService.isOperational()) {
+        jevService.triageTrend({
+          trend: { ...trend, id: opportunity?.id, slug: signal?.slug },
+          existingStatus: qualificationStatus,
+          recentTopics: [signal.canonical_topic]
+        }).catch(err => {
+          // Guaranteed fail-safe: Jev failure must never break trend ingestion
+          console.warn('[Jev Shadow Triage] Non-blocking evaluation error:', err.message);
+        });
+      }
 
       // 8. Backlog Seeding Gate for Qualified Opportunities
       if (qualificationStatus === 'qualified') {

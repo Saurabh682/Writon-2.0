@@ -53,7 +53,7 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({ onBack, onStoryPublish
 
 
   const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
-  const estimatedReadTime = Math.max(1, Math.ceil(wordCount / 200));
+  const estimatedReadTime = Math.max(1, Math.ceil(wordCount / 140)); // 140 WPM for literary prose
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

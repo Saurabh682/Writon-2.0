@@ -109,6 +109,7 @@ fun FeedScreen(
     onLibraryClick: () -> Unit = {},
     onSearchClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
+    hasUnreadNotifications: Boolean = false,
     onProfileClick: () -> Unit = {},
     onAuthorClick: (String) -> Unit = {},
     isAuthenticated: Boolean = true,
@@ -163,6 +164,7 @@ fun FeedScreen(
             onLibraryClick = onLibraryClick,
             onSearchClick = onSearchClick,
             onNotificationsClick = onNotificationsClick,
+            hasUnreadNotifications = hasUnreadNotifications,
             onProfileClick = onProfileClick
         )
         HomeUpdateIndicator(
@@ -565,6 +567,7 @@ private fun HomeHeader(
     onLibraryClick: () -> Unit,
     onSearchClick: () -> Unit,
     onNotificationsClick: () -> Unit,
+    hasUnreadNotifications: Boolean = false,
     onProfileClick: () -> Unit
 ) {
     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -583,7 +586,7 @@ private fun HomeHeader(
                 painterResource(R.drawable.ic_notification),
                 contentDescription = "Open notifications",
                 modifier = Modifier.size(25.dp),
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                colorFilter = if (hasUnreadNotifications) ColorFilter.tint(BrandRed) else ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
             )
         }
         IconButton(onClick = onLibraryClick) {

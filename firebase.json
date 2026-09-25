@@ -129,6 +129,10 @@
           {
             "key": "Cache-Control",
             "value": "public, max-age=3600, stale-while-revalidate=86400"
+          },
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, follow"
           }
         ]
       },
@@ -146,6 +150,10 @@
           {
             "key": "Cache-Control",
             "value": "public, max-age=3600, stale-while-revalidate=86400"
+          },
+          {
+            "key": "X-Robots-Tag",
+            "value": "noindex, follow"
           }
         ]
       },
@@ -259,12 +267,13 @@
       { "source": "/yt", "destination": "https://www.youtube.com/@writon_app", "type": 302 },
       { "source": "/linkedin", "destination": "https://www.linkedin.com/in/writon-story-writing-and-reads", "type": 302 },
       { "source": "/reddit", "destination": "https://www.reddit.com/r/writon/", "type": 302 },
-      { "source": "/medium", "destination": "https://medium.com/@saurabh.682", "type": 302 }
+      { "source": "/medium", "destination": "https://medium.com/@saurabh.682", "type": 302 },
+      { "source": "/post/:slug*", "destination": "/stories/:slug*", "type": 301 }
     ],
     "rewrites": [
       {
         "source": "/explore",
-        "destination": "/index.html"
+        "destination": "/explore/index.html"
       },
       {
         "source": "/privacy-policy",
@@ -333,6 +342,10 @@
       {
         "source": "/go/**",
         "destination": "/go/index.html"
+      },
+      {
+        "source": "/post/**",
+        "destination": "/stories/index.html"
       },
       {
         "source": "/stories/**",

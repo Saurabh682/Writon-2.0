@@ -1,0 +1,883 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-L3H0RQ5ZQY"></script>
+  <script>
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      window['ga-disable-G-L3H0RQ5ZQY'] = true;
+    }
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-L3H0RQ5ZQY');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#F7F3EB" />
+
+  <title>Explore Stories &amp; Essays — WritOn</title>
+  <meta name="description" content="Discover independent essays, short stories, poetry, cultural reflections, and craft truths on WritOn. Read thoughtfully without distraction." />
+  <link rel="canonical" href="https://writon.cc/explore" />
+  <link rel="alternate" type="application/rss+xml" title="WritOn — Stories &amp; Journal" href="https://writon.cc/rss.xml" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="WritOn" />
+  <meta property="og:url" content="https://writon.cc/explore" />
+  <meta property="og:title" content="Explore Stories &amp; Essays — WritOn" />
+  <meta property="og:description" content="Discover independent essays, short stories, poetry, and craft reflections on WritOn." />
+  <meta property="og:image" content="https://writon.cc/assets/hero-banner.webp" />
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@WritOn_Social" />
+  <meta name="twitter:title" content="Explore Stories &amp; Essays — WritOn" />
+  <meta name="twitter:description" content="Discover independent essays, short stories, poetry, and craft reflections on WritOn." />
+  <meta name="twitter:image" content="https://writon.cc/assets/hero-banner.webp" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/favicon-48x48.png?v=2" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png?v=2" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #F7F3EB;
+      --surface: #FFFDF9;
+      --surface-hover: #FCF8F2;
+      --ink: #26211D;
+      --muted: #645C54;
+      --primary: #B5442A;
+      --primary-dark: #98351E;
+      --primary-soft: #F3D5C7;
+      --border: #E7DDD1;
+      --shadow-sm: 0 2px 8px rgba(38, 33, 29, 0.04);
+      --shadow-md: 0 12px 32px rgba(38, 33, 29, 0.08);
+      --shadow-lg: 0 20px 48px rgba(38, 33, 29, 0.12);
+      --container: 1200px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: Newsreader, Georgia, serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.65;
+      font-size: 18px;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    .paper-noise {
+      position: fixed; inset: 0; pointer-events: none; z-index: -1; opacity: .18;
+      background-image: repeating-radial-gradient(circle at 0 0, transparent 0 2px, rgba(80,60,40,.04) 3px 4px);
+      background-size: 9px 9px; mix-blend-mode: multiply;
+    }
+    .site-header {
+      position: sticky; top: 0; z-index: 50;
+      backdrop-filter: blur(16px);
+      background: color-mix(in srgb, var(--bg) 84%, transparent);
+      border-bottom: 1px solid rgba(231,221,209,.8);
+    }
+    .nav-wrap {
+      max-width: var(--container); margin: 0 auto; height: 82px;
+      display: flex; align-items: center; gap: 32px;
+      padding: 0 24px;
+    }
+    .brand img { width: 148px; height: auto; border-radius: 8px; display: block; }
+    .main-nav {
+      display: flex; gap: 30px; margin-left: auto; align-items: center;
+      font-family: Inter, -apple-system, sans-serif;
+    }
+    .main-nav a {
+      color: #4d4742; font-size: 15px; font-weight: 500; text-decoration: none;
+      transition: color .2s ease;
+    }
+    .main-nav a:hover, .main-nav a.active { color: var(--primary); }
+    .nav-cta {
+      margin-left: 8px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      min-height: 48px; padding: 0 22px; border-radius: 14px; font-size: 15px; font-weight: 700;
+      background: linear-gradient(135deg, #d75d38, var(--primary)); color: #fff !important;
+      text-decoration: none; box-shadow: var(--shadow-md); transition: transform .2s ease, box-shadow .2s ease;
+      cursor: pointer; font-family: Inter, sans-serif;
+    }
+    .nav-cta:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); background: linear-gradient(135deg, #e56a42, var(--primary-dark)); }
+    .nav-toggle {
+      display: none; background: none; border: 0; padding: 6px; cursor: pointer;
+    }
+    .nav-toggle span {
+      width: 24px; height: 2px; display: block; background: var(--ink); margin: 5px 0;
+    }
+    .play-mark { font-size: 14px; }
+    @media (max-width: 860px) {
+      .main-nav, .nav-cta { display: none; }
+      .nav-toggle { display: block; margin-left: auto; }
+      .main-nav.open {
+        position: absolute; display: grid; gap: 0; top: 82px; left: 15px; right: 15px;
+        padding: 10px; background: var(--surface); border: 1px solid var(--border);
+        border-radius: 16px; box-shadow: var(--shadow-md); z-index: 60;
+      }
+      .main-nav.open a { padding: 13px 12px; }
+    }
+    main { max-width: var(--container); margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* Page Header */
+    .explore-header {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+    .eyebrow {
+      font-family: Inter, sans-serif; font-size: 12px; font-weight: 700;
+      letter-spacing: .18em; color: var(--primary); text-transform: uppercase; margin-bottom: 10px;
+    }
+    h1 {
+      font-size: clamp(34px, 5vw, 52px); font-weight: 500; line-height: 1.12;
+      letter-spacing: -0.03em; color: var(--ink); margin-bottom: 12px;
+    }
+    .header-desc {
+      font-size: 19px; color: var(--muted); font-style: italic; max-width: 600px; margin: 0 auto;
+    }
+
+    /* Top Carousel */
+    .carousel-section {
+      margin-bottom: 52px;
+      position: relative;
+    }
+    .carousel-container {
+      position: relative;
+      border-radius: 24px;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      min-height: 420px;
+    }
+    .carousel-track {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 420px;
+    }
+    .carousel-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.5s ease;
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      text-decoration: none;
+      color: inherit;
+      background: var(--surface);
+    }
+    .carousel-slide.active {
+      opacity: 1;
+      visibility: visible;
+      position: relative;
+      z-index: 2;
+    }
+    .carousel-media {
+      position: relative;
+      overflow: hidden;
+      min-height: 380px;
+      background: #eae2d7;
+    }
+    .carousel-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s ease;
+    }
+    .carousel-slide:hover .carousel-media img {
+      transform: scale(1.03);
+    }
+    .carousel-badge {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(26, 23, 21, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #fff;
+      font-family: Inter, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 999px;
+      z-index: 3;
+    }
+    .carousel-content {
+      padding: 44px 44px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .carousel-meta {
+      font-family: Inter, sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--primary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .carousel-meta span {
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .carousel-title {
+      font-size: clamp(26px, 3.2vw, 36px);
+      font-weight: 500;
+      line-height: 1.2;
+      color: var(--ink);
+      margin-bottom: 16px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .carousel-excerpt {
+      font-size: 16.5px;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .carousel-author {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      padding-top: 18px;
+      margin-top: auto;
+    }
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .author-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 14px;
+      font-family: Newsreader, serif;
+    }
+    .author-name {
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.2;
+    }
+    .author-pen {
+      font-family: Inter, sans-serif;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .read-now-btn {
+      font-family: Inter, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.2s ease;
+    }
+    .carousel-slide:hover .read-now-btn {
+      transform: translateX(4px);
+    }
+
+    /* Carousel Nav Buttons & Dots */
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 253, 249, 0.92);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+    .carousel-btn:hover {
+      background: #fff;
+      transform: translateY(-50%) scale(1.06);
+      box-shadow: var(--shadow-md);
+      color: var(--primary);
+    }
+    .carousel-prev { left: 16px; }
+    .carousel-next { right: 16px; }
+
+    .carousel-dots {
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    .carousel-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(100, 92, 84, 0.35);
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      padding: 0;
+    }
+    .carousel-dot.active {
+      width: 26px;
+      background: var(--primary);
+    }
+
+    /* Category Filter Tabs */
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 40px 0 36px;
+      font-family: Inter, sans-serif;
+    }
+    .filter-pill {
+      background: rgba(255, 253, 249, 0.7);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+    .filter-pill:hover, .filter-pill.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    /* 20-Story Grid */
+    .story-grid-section {
+      margin-top: 10px;
+    }
+    .story-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+    .story-card {
+      min-width: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .story-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-md);
+    }
+    .story-card-cover {
+      width: 100%;
+      height: 180px;
+      overflow: hidden;
+      position: relative;
+      background: #f0e6dd;
+    }
+    .story-card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.35s ease;
+    }
+    .story-card:hover .story-card-img {
+      transform: scale(1.05);
+    }
+    .story-card-body {
+      padding: 20px 20px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      flex: 1;
+    }
+    .story-meta {
+      color: var(--primary);
+      font-family: Inter, sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .story-meta span {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 11.5px;
+    }
+    .story-card h3 {
+      font-size: 21px;
+      font-weight: 600;
+      line-height: 1.25;
+      margin: 0 0 10px;
+      color: var(--ink);
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .story-card p {
+      color: var(--muted);
+      font-size: 13.5px;
+      line-height: 1.5;
+      margin: 0 0 18px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .story-card footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: auto;
+      font-family: Inter, sans-serif;
+    }
+    .story-card-author {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .author-initials {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 11px;
+      font-family: Newsreader, serif;
+    }
+    .author-meta-name {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.1;
+    }
+    .author-meta-pen {
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+    .card-arrow {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #f1e8df;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      font-size: 12px;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .story-card:hover .card-arrow {
+      background: var(--primary);
+      color: #fff;
+      transform: translateX(2px);
+    }
+
+    /* Pagination / Load More */
+    .pagination-wrap {
+      text-align: center;
+      margin: 48px 0 20px;
+      font-family: Inter, sans-serif;
+    }
+    .btn-load-more {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-weight: 600;
+      font-size: 15px;
+      padding: 12px 28px;
+      border-radius: 999px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s ease;
+    }
+    .btn-load-more:hover {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .end-of-stories {
+      color: var(--muted);
+      font-size: 14px;
+      font-family: Inter, sans-serif;
+      margin-top: 14px;
+    }
+
+    /* Skeleton Loading State */
+    .skeleton-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      min-height: 340px;
+      animation: pulse 1.5s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Site Footer */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 56px 24px 32px;
+      background: rgba(255,253,249,.62);
+      font-family: Inter, sans-serif;
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .footer-container {
+      max-width: var(--container);
+      margin: 0 auto;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .footer-links a {
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+    .footer-bottom {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      margin-top: 24px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .story-grid { grid-template-columns: repeat(3, 1fr); }
+      .carousel-slide { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 820px) {
+      .story-grid { grid-template-columns: repeat(2, 1fr); }
+      .carousel-slide {
+        grid-template-columns: 1fr;
+        grid-template-rows: 240px 1fr;
+      }
+      .carousel-media { min-height: 240px; }
+      .carousel-content { padding: 24px 20px 20px; }
+      .carousel-title { font-size: 24px; }
+      .carousel-excerpt { font-size: 15px; margin-bottom: 16px; }
+      .carousel-prev { left: 8px; }
+      .carousel-next { right: 8px; }
+    }
+    @media (max-width: 540px) {
+      .story-grid { grid-template-columns: 1fr; }
+      main { padding: 24px 16px 60px; }
+    }
+  </style>
+
+  <!-- Schema.org JSON-LD -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "name": "Explore Stories — WritOn",
+    "description": "Discover curated independent essays, short stories, poetry, and cultural reflections on WritOn.",
+    "url": "https://writon.cc/explore"
+  }
+  </script>
+</head>
+<body>
+  <div class="paper-noise" aria-hidden="true"></div>
+
+  <header class="site-header" role="banner" data-nosnippet>
+    <div class="container nav-wrap">
+      <a class="brand" href="/" aria-label="WritOn home">
+        <img src="/assets/writon-logo.webp" alt="WritOn" width="148" height="50" decoding="async" />
+      </a>
+
+      <button class="nav-toggle" type="button" aria-label="Open navigation" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav class="main-nav" role="navigation" aria-label="Primary navigation" data-nosnippet>
+        <a href="/explore" class="active">Explore</a>
+        <a href="/journal">Journal</a>
+        <a href="/updates">Updates</a>
+        <a href="/about">About</a>
+        <a href="/#writers">For Writers</a>
+        <a href="/#readers">For Readers</a>
+      </nav>
+
+      <div class="lang-selector-wrap" style="position: relative; display: inline-flex; align-items: center; margin-left: 14px;">
+        <label for="lang-select-explore" class="sr-only">Choose language</label>
+        <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,253,249,0.85); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer;">
+          <span aria-hidden="true" style="font-size: 14px;">🌐</span>
+          <select id="lang-select-explore" onchange="window.location.href=this.value" style="background: transparent; border: none; font: inherit; color: inherit; cursor: pointer; outline: none; padding-right: 2px;">
+            <option value="/" selected>English</option><option value="/hi">हिन्दी</option><option value="/mr">मराठी</option><option value="/bn">বাংলা</option>
+          </select>
+        </div>
+      </div>
+
+      <a class="button button-primary nav-cta play-store-link" data-nosnippet href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon" target="_blank" rel="noopener noreferrer">
+        <span class="play-mark" aria-hidden="true">▶</span>
+        Get the App
+      </a>
+    </div>
+  </header>
+
+  <main role="main">
+    <div class="explore-header">
+      <div class="eyebrow">CURATED DISCOVERY</div>
+      <h1>Explore Stories &amp; Reflections</h1>
+      <p class="header-desc">Words that stay with you. Thoughtful essays, poetry, fiction, and ideas from independent voices.</p>
+    </div>
+
+    <!-- Top Featured Carousel -->
+    <section class="carousel-section" aria-label="Top Featured Stories">
+      <div class="carousel-container" id="top-carousel">
+        <div class="carousel-track" id="carousel-track">
+          <!-- Fallback initial slide while fetching -->
+          <a class="carousel-slide active" href="/stories/the-rear-gate-of-eighth-cross-b5df236f-dc3">
+            <div class="carousel-media">
+              <img src="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&auto=format&fit=crop&q=80" alt="The Rear Gate of Eighth Cross" width="700" height="420" />
+              <div class="carousel-badge">FEATURED ESSAY</div>
+            </div>
+            <div class="carousel-content">
+              <div>
+                <div class="carousel-meta">
+                  ESSAYS · <span>3 MIN READ</span>
+                </div>
+                <h2 class="carousel-title">The Rear Gate of Eighth Cross</h2>
+                <p class="carousel-excerpt">Standing in a century-old Malleshwaram service alley, an observer watches the demolition of an ancestral home, tracing the silent violence of asphalt and architectural salvage.</p>
+              </div>
+              <div class="carousel-author">
+                <div class="author-info">
+                  <div class="author-avatar">DP</div>
+                  <div>
+                    <div class="author-name">Devika Prasad</div>
+                    <div class="author-pen">@devika_prasad</div>
+                  </div>
+                </div>
+                <div class="read-now-btn">Read Story &rarr;</div>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <button class="carousel-btn carousel-prev" id="carousel-prev" type="button" aria-label="Previous story">&larr;</button>
+        <button class="carousel-btn carousel-next" id="carousel-next" type="button" aria-label="Next story">&rarr;</button>
+
+        <div class="carousel-dots" id="carousel-dots">
+          <button class="carousel-dot active" type="button" aria-label="Slide 1"></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Category Filter Row -->
+    <div class="filter-bar" role="tablist" aria-label="Story categories">
+      <button class="filter-pill active" role="tab" aria-selected="true" data-category="" type="button">All Stories</button>
+      <button class="filter-pill" role="tab" aria-selected="false" data-category="Essays" type="button">Essays</button>
+      <button class="filter-pill" role="tab" aria-selected="false" data-category="Short Stories" type="button">Short Stories</button>
+      <button class="filter-pill" role="tab" aria-selected="false" data-category="Poetry" type="button">Poetry</button>
+      <button class="filter-pill" role="tab" aria-selected="false" data-category="Shayari" type="button">Shayari</button>
+      <button class="filter-pill" role="tab" aria-selected="false" data-category="Culture" type="button">Culture</button>
+      <button class="filter-pill" role="tab" aria-selected="false" data-category="Tech" type="button">Tech</button>
+      <button class="filter-pill" role="tab" aria-selected="false" data-category="Humour" type="button">Humour</button>
+    </div>
+
+    <!-- 20-Story Grid Section -->
+    <section class="story-grid-section" aria-label="All Stories">
+      <div class="story-grid" id="explore-story-grid">
+        <!-- Static 4 fallback cards for immediate 0ms SSR rendering -->
+        <a class="story-card" href="/stories/the-rear-gate-of-eighth-cross-b5df236f-dc3">
+          <div class="story-card-cover">
+            <img class="story-card-img" src="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=800&auto=format&fit=crop&q=80" alt="The Rear Gate of Eighth Cross" loading="lazy" width="360" height="180" />
+            <span style="position: absolute; top: 12px; left: 12px; background: rgba(26, 23, 21, 0.74); backdrop-filter: blur(6px); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px;">ESSAYS</span>
+          </div>
+          <div class="story-card-body">
+            <div>
+              <div class="story-meta"><span>3 MIN READ</span></div>
+              <h3>The Rear Gate of Eighth Cross</h3>
+              <p>Standing in a century-old Malleshwaram service alley, tracing architectural salvage.</p>
+            </div>
+            <footer>
+              <div class="story-card-author">
+                <div class="author-initials">DP</div>
+                <div>
+                  <div class="author-meta-name">Devika Prasad</div>
+                  <div class="author-meta-pen">@devika</div>
+                </div>
+              </div>
+              <div class="card-arrow">&rarr;</div>
+            </footer>
+          </div>
+        </a>
+
+        <a class="story-card" href="/stories/the-siphon-beneath-the-oak-roots-122315a6-690">
+          <div class="story-card-cover">
+            <img class="story-card-img" src="https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&auto=format&fit=crop&q=80" alt="The Siphon Beneath the Oak Roots" loading="lazy" width="360" height="180" />
+            <span style="position: absolute; top: 12px; left: 12px; background: rgba(26, 23, 21, 0.74); backdrop-filter: blur(6px); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px;">ESSAYS</span>
+          </div>
+          <div class="story-card-body">
+            <div>
+              <div class="story-meta"><span>3 MIN READ</span></div>
+              <h3>The Siphon Beneath the Oak Roots</h3>
+              <p>At dawn on a Garhwal ridge, an ancient stone naula reveals a hydrological struggle.</p>
+            </div>
+            <footer>
+              <div class="story-card-author">
+                <div class="author-initials">SR</div>
+                <div>
+                  <div class="author-meta-name">Sanjay Rawat</div>
+                  <div class="author-meta-pen">@sanjay</div>
+                </div>
+              </div>
+              <div class="card-arrow">&rarr;</div>
+            </footer>
+          </div>
+        </a>
+
+        <a class="story-card" href="/stories/the-bevel-of-the-qalam-620cf224-257">
+          <div class="story-card-cover">
+            <img class="story-card-img" src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=800&auto=format&fit=crop&q=80" alt="The Bevel of the Qalam" loading="lazy" width="360" height="180" />
+            <span style="position: absolute; top: 12px; left: 12px; background: rgba(26, 23, 21, 0.74); backdrop-filter: blur(6px); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px;">SHORT STORIES</span>
+          </div>
+          <div class="story-card-body">
+            <div>
+              <div class="story-meta"><span>3 MIN READ</span></div>
+              <h3>The Bevel of the Qalam</h3>
+              <p>In a six-foot alcove of Urdu Bazaar, an aging katib cuts bamboo against digital presses.</p>
+            </div>
+            <footer>
+              <div class="story-card-author">
+                <div class="author-initials">FA</div>
+                <div>
+                  <div class="author-meta-name">Farhan Akhtar</div>
+                  <div class="author-meta-pen">@farhan</div>
+                </div>
+              </div>
+              <div class="card-arrow">&rarr;</div>
+            </footer>
+          </div>
+        </a>
+
+        <a class="story-card" href="/stories/the-night-watch-at-the-sluice-gate-24316d76-d22">
+          <div class="story-card-cover">
+            <img class="story-card-img" src="https://images.unsplash.com/photo-1470240731273-7821a6eeb6bd?w=800&auto=format&fit=crop&q=80" alt="The Night-Watch at the Sluice Gate" loading="lazy" width="360" height="180" />
+            <span style="position: absolute; top: 12px; left: 12px; background: rgba(26, 23, 21, 0.74); backdrop-filter: blur(6px); color: #fff; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px;">POETRY</span>
+          </div>
+          <div class="story-card-body">
+            <div>
+              <div class="story-meta"><span>3 MIN READ</span></div>
+              <h3>The Night-Watch at the Sluice Gate</h3>
+              <p>A midnight vigil beside a diesel tubewell in the Punjab winter measuring irrigation.</p>
+            </div>
+            <footer>
+              <div class="story-card-author">
+                <div class="author-initials">HS</div>
+                <div>
+                  <div class="author-meta-name">Harpreet Singh</div>
+                  <div class="author-meta-pen">@harpreet</div>
+                </div>
+              </div>
+              <div class="card-arrow">&rarr;</div>
+            </footer>
+          </div>
+        </a>
+      </div>
+
+      <!-- Load More / Pagination -->
+      <div class="pagination-wrap">
+        <button id="explore-load-more" class="btn-load-more" type="button" style="display: none;">
+          Load More Stories &darr;
+        </button>
+        <div id="explore-end-msg" class="end-of-stories" style="display: none;">
+          You have reached the end of the collection.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-container">
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/explore">Explore</a>
+        <a href="/journal">Journal</a>
+        <a href="/updates">Updates</a>
+        <a href="/about">About</a>
+        <a href="/privacy-policy.html">Privacy Policy</a>
+        <a href="/terms.html">Terms of Service</a>
+        <a href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon" target="_blank" rel="noopener noreferrer">Google Play</a>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2026 WritOn (writon.cc). All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/explore.js" defer></script>
+</body>
+</html>

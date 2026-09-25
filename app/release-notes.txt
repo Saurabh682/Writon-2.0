@@ -1,27 +1,41 @@
-WritOn 2.0.73 — Consistent Reading & Founder Identity
+177 (2.0.78) - Story Card Offscreen Rendering & Export Fix
 
 <en-US>
-• Stories now preserve headings and lists with a consistent reading style.
-• Founding Writer and email-confirmed marks remain fully visible on profile photos.
-• Founding Writer profiles now include a clear numbered WritOn label.
+• Turn story passages into elegant quote cards directly from the reader.
+• 4 social aspect ratios (9:16 Stories, 4:5 Portrait, 1:1 Square, 16:9 Landscape).
+• Warm Paper and Midnight Obsidian palettes with literary typography.
+• Save to photos or share to Instagram, X, WhatsApp, and Threads.
+• Recipients open the full story with zero login required.
 </en-US>
+
 <en-IN>
-• Stories now preserve headings and lists with a consistent reading style.
-• Founding Writer and email-confirmed marks remain fully visible on profile photos.
-• Founding Writer profiles now include a clear numbered WritOn label.
+• Turn story passages into elegant quote cards directly from the reader.
+• 4 social aspect ratios (9:16 Stories, 4:5 Portrait, 1:1 Square, 16:9 Landscape).
+• Warm Paper and Midnight Obsidian palettes with literary typography.
+• Save to photos or share to Instagram, X, WhatsApp, and Threads.
+• Recipients open the full story with zero login required.
 </en-IN>
+
 <hi-IN>
-• कहानियों में अब शीर्षक और सूचियाँ एक समान पढ़ने की शैली में सुरक्षित रहती हैं।
-• Founding Writer और ईमेल-पुष्टि चिह्न अब प्रोफ़ाइल फ़ोटो पर पूरी तरह दिखाई देते हैं।
-• Founding Writer प्रोफ़ाइल में अब स्पष्ट क्रमांकित WritOn लेबल है।
+• पाठक स्क्रीन से सीधे सुंदर उद्धरण कार्ड (Quote Card) बनाएं।
+• 4 सोशल आकार (9:16 स्टोरीज़, 4:5 पोर्ट्रेट, 1:1 चौकोर, 16:9 लैंडस्केप)।
+• वॉर्म पेपर और मिडनाइट ओब्सीडियन रंग पैलेट।
+• फोटो गैलरी में सेव करें या इंस्टाग्राम, एक्स, व्हाट्सएप पर शेयर करें।
+• बिना लॉगिन सीधे पूरी कहानी पढ़ें।
 </hi-IN>
+
 <mr-IN>
-• कथांमधील शीर्षके आणि याद्या आता एकसमान वाचन शैलीत जतन होतात.
-• Founding Writer आणि ईमेल-पुष्टी चिन्हे आता प्रोफाइल फोटोवर पूर्ण दिसतात.
-• Founding Writer प्रोफाइलवर आता स्पष्ट क्रमांकित WritOn लेबल दिसते.
+• वाचक स्क्रीनवरून थेट आवडत्या परिच्छेदांचे कोट कार्ड्स (Quote Cards) तयार करा.
+• 4 सोशल आकार (9:16 स्टोरीज, 4:5 पोर्ट्रेट, 1:1 स्क्वेअर, 16:9 लँडस्केप).
+• वॉर्म पेपर आणि मिडनाइट ऑब्सिडियन रंग पॅलेट.
+• गॅलरीत सेव्ह करा किंवा इंस्टाग्राम, एक्स, व्हॉट्सअॅपवर शेअर करा.
+• लॉगिनशिवाय थेट संपूर्ण कथा वाचा.
 </mr-IN>
+
 <bn-BD>
-• গল্পের শিরোনাম ও তালিকা এখন একই পাঠশৈলীতে সংরক্ষিত থাকে।
-• Founding Writer ও ইমেইল-নিশ্চিত চিহ্ন এখন প্রোফাইল ছবিতে সম্পূর্ণ দেখা যায়।
-• Founding Writer প্রোফাইলে এখন স্পষ্ট নম্বরযুক্ত WritOn লেবেল রয়েছে।
+• পাঠক স্ক্রিন থেকে সরাসরি নান্দনিক কোট কার্ড (Quote Card) তৈরি করুন।
+• ৪টি সামাজিক আকার (৯:১৬ স্টোরিজ, ৪:৫ পোর্ট্রেট, ১:১ স্কয়ার, ১৬:৯ ল্যান্ডস্কেপ)।
+• ওয়ার্ম পেপার ও মিডনাইট অবসিডিয়ান রঙের থিম।
+• ফটো গ্যালারিতে সংরক্ষণ করুন বা ইনস্টাগ্রাম, এক্স, হোয়াটসঅ্যাপে শেয়ার করুন।
+• কোনো লগইন ছাড়াই সরাসরি পুরো গল্পটি পড়ুন।
 </bn-BD>

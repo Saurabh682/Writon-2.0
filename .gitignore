@@ -81,3 +81,7 @@ tools/
 models/
 ckpts/
 
+# Video Render Output Cache & Local Backups
+renders/
+.reconciliation-backups/
+

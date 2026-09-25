@@ -130,6 +130,7 @@ fun NotificationsScreen(
     onSettingsClick: () -> Unit = {},
     onStoryClick: (String) -> Unit = {},
     onAuthorClick: (String) -> Unit = {},
+    onLogoClick: () -> Unit = {},
 ) {
     var selectedFilter by rememberSaveable { mutableStateOf(NotificationFilter.ALL) }
     LaunchedEffect(Unit) {
@@ -144,7 +145,7 @@ fun NotificationsScreen(
         contentPadding = PaddingValues(start = WritOnSpacing.lg, end = WritOnSpacing.lg, top = WritOnSpacing.md, bottom = WritOnSpacing.xl),
         verticalArrangement = Arrangement.spacedBy(WritOnSpacing.lg)
     ) {
-        item { NotificationHeader(onSearchClick, onSettingsClick) }
+        item { NotificationHeader(onSearchClick = onSearchClick, onSettingsClick = onSettingsClick, onLogoClick = onLogoClick) }
         item { NotificationFilters(selectedFilter = selectedFilter, onSelected = { selectedFilter = it }) }
         if (viewModel.isLoading && activities.isEmpty()) {
             item {
@@ -233,10 +234,22 @@ private fun ActivityNotification.matches(filter: NotificationFilter): Boolean = 
 }
 
 @Composable
-private fun NotificationHeader(onSearchClick: () -> Unit, onSettingsClick: () -> Unit) {
+private fun NotificationHeader(
+    onSearchClick: () -> Unit,
+    onSettingsClick: () -> Unit,
+    onLogoClick: () -> Unit = {}
+) {
     Column {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            WritOnBrandMark(width = 108.dp)
+            Box(
+                modifier = Modifier.clickable(
+                    onClick = onLogoClick,
+                    interactionSource = androidx.compose.runtime.remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                    indication = null
+                )
+            ) {
+                WritOnBrandMark(width = 108.dp)
+            }
             Spacer(Modifier.weight(1f))
             IconButton(onClick = onSearchClick) {
                 Image(

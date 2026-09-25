@@ -371,7 +371,7 @@
       const pathParts = window.location.pathname.split('/').filter(Boolean);
       const slug = pathParts[pathParts.length - 1];
 
-      if (!slug || slug === 'stories') {
+      if (!slug || slug === 'stories' || slug === 'post') {
         window.location.href = '/explore';
         return;
       }

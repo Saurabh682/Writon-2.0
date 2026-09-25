@@ -108,6 +108,36 @@ object WritOnTelemetry {
         }
     }
 
+    fun logCardGenerated(
+        storyId: String,
+        excerptLength: Int,
+        sizeRatio: String,
+        theme: String,
+        context: Context? = null
+    ) {
+        log(context ?: FirebaseApp.getInstance().applicationContext, "card_generated") {
+            putString(FirebaseAnalytics.Param.ITEM_ID, storyId.take(100))
+            putLong("excerpt_length", excerptLength.toLong())
+            putString("size_ratio", sizeRatio)
+            putString("card_theme", theme)
+            putString("platform", "android")
+        }
+    }
+
+    fun logCardShareInitiated(
+        storyId: String,
+        sizeRatio: String,
+        targetPackage: String? = null,
+        context: Context? = null
+    ) {
+        log(context ?: FirebaseApp.getInstance().applicationContext, "card_share_initiated") {
+            putString(FirebaseAnalytics.Param.ITEM_ID, storyId.take(100))
+            putString("size_ratio", sizeRatio)
+            targetPackage?.let { putString("target_package", it) }
+            putString("platform", "android")
+        }
+    }
+
     fun versionCheck(context: Context, source: String, updateRequired: Boolean) {
         log(context, "version_check") {
             putString("source", source)

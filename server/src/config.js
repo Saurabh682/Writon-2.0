@@ -71,6 +71,17 @@ const runtimeEnvironmentSchema = z.object({
   RESEND_WEBHOOK_SECRET: z.string().optional(),
   WRITON_UNSUBSCRIBE_BASE_URL: z.string().url().optional(),
   WRITON_UNSUBSCRIBE_KEYS_JSON: z.string().optional(),
+  JEV_EXPERIMENT_ENABLED: z.enum(['true', 'false']).default('false'),
+  JEV_API_KEY: z.string().trim().optional(),
+  JEV_API_URL: z.string().url().default('https://api.typesafe.ai/v1/systemone'),
+  JEV_MODEL: z.string().trim().default('jev-1.13.0'),
+  JEV_SHADOW_MODE: z.enum(['true', 'false']).default('true'),
+  JEV_TRIAGE_ENABLED: z.enum(['true', 'false']).default('true'),
+  JEV_QA_ENABLED: z.enum(['true', 'false']).default('true'),
+  JEV_MIN_RELEVANCE: z.coerce.number().min(0).max(1).default(0.55),
+  JEV_MIN_WORTH_COVERING: z.coerce.number().min(0).max(1).default(0.60),
+  JEV_MAX_DUPLICATE_PROBABILITY: z.coerce.number().min(0).max(1).default(0.65),
+  JEV_MIN_CONFIDENCE: z.coerce.number().min(0).max(1).default(0.60),
 });
 
 function parseKeyring(raw) {
@@ -185,6 +196,21 @@ export function loadRuntimeConfig(environment = process.env) {
       resendWebhookSecret: values.RESEND_WEBHOOK_SECRET || null,
       unsubscribeBaseUrl: values.WRITON_UNSUBSCRIBE_BASE_URL || 'https://writon.cc/email/unsubscribe',
       unsubscribeKeys: parseKeyring(values.WRITON_UNSUBSCRIBE_KEYS_JSON),
+    },
+    jev: {
+      enabled: values.JEV_EXPERIMENT_ENABLED === 'true',
+      apiKey: values.JEV_API_KEY || null,
+      apiUrl: values.JEV_API_URL,
+      model: values.JEV_MODEL,
+      shadowMode: values.JEV_SHADOW_MODE !== 'false',
+      triageEnabled: values.JEV_TRIAGE_ENABLED !== 'false',
+      qaEnabled: values.JEV_QA_ENABLED !== 'false',
+      thresholds: {
+        minRelevance: values.JEV_MIN_RELEVANCE,
+        minWorthCovering: values.JEV_MIN_WORTH_COVERING,
+        maxDuplicateProbability: values.JEV_MAX_DUPLICATE_PROBABILITY,
+        minConfidence: values.JEV_MIN_CONFIDENCE
+      }
     },
   };
 }

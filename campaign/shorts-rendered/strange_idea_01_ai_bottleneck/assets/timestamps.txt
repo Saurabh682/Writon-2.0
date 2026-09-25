@@ -1,0 +1,5 @@
+0.00|5.10|An AI can write five pull requests before your coffee gets cold.
+5.28|7.48|Writing code has never been cheaper.
+7.68|13.65|Reviewing code still takes context, edge-case paranoia, and owning the bug.
+13.87|17.94|When generation is free, verification becomes the tax.
+18.19|23.68|The bottleneck didn't disappear. It moved from writing code to trusting it.

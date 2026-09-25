@@ -2,7 +2,7 @@ import asyncio
 from playwright.async_api import async_playwright
 import os
 
-frames = [0.4, 0.8, 1.5, 2.2, 3.0, 4.2, 6.0, 7.5, 8.8, 10.5, 12.5, 14.5]
+frames = [0.0, 0.4, 0.8, 1.5, 2.2, 4.2, 8.8, 12.5]
 html_path = "file:///d:/VibeCode/WritOn-PowerUp/campaign/shorts-rendered/short13_she_realized/index.html"
 out_dir = "C:/Users/Kumar/.gemini/antigravity/brain/269e3b50-9933-4ab2-aeee-17be6b6fa527"
 
@@ -14,9 +14,9 @@ async def capture_frames():
         await page.wait_for_timeout(1000)
 
         for t in frames:
-            await page.evaluate(f"gsap.globalTimeline.seek({t}); gsap.globalTimeline.pause();")
+            await page.evaluate(f"if (window.__timelines && window.__timelines.main) {{ window.__timelines.main.seek({t}); window.__timelines.main.pause(); }}")
             await page.wait_for_timeout(150)
-            out_file = f"{out_dir}/short13_tight_frame_{str(t).replace('.', '_')}s.jpg"
+            out_file = f"{out_dir}/short13_autocaption_fix_{str(t).replace('.', '_')}s.jpg"
             await page.screenshot(path=out_file, type='jpeg', quality=85)
             print(f"Captured {out_file}")
 

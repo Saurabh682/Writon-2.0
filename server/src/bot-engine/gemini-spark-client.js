@@ -918,7 +918,7 @@ export const geminiCircuitBreaker = new CircuitBreaker();
 
 export async function callGeminiApi({
   apiKey,
-  model = 'gemini-3.5-flash',
+  model = 'gemini-3.8-flash',
   prompt,
   systemInstruction = '',
   temperature = 0.7,
@@ -1054,11 +1054,11 @@ FACTUAL GROUNDING & LITERARY TRUTH RULES:
         cooldownBlock
       });
 
-      // Route deep essays, philosophy, and short stories to Pro model tier
+      // Route generation to configured model (defaulting to Gemini 3.8 Flash)
       const targetModel = model || (
         ['Essays', 'Philosophy', 'Short Stories'].includes(category)
-          ? (process.env.GEMINI_PRO_MODEL || 'gemini-3.1-pro-preview')
-          : (process.env.GEMINI_MODEL || 'gemini-3.5-flash')
+          ? (process.env.GEMINI_PRO_MODEL || process.env.GEMINI_MODEL || 'gemini-3.8-flash')
+          : (process.env.GEMINI_MODEL || 'gemini-3.8-flash')
       );
 
       // Model failover ladder

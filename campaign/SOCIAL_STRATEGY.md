@@ -38,15 +38,23 @@ To maximize algorithmic reach and prevent spam penalties, each platform adheres 
 - **X (Twitter):**
   - **Language Directive:** **English language only** across all posts, prompts, and threaded replies. Defer regional language text on X to ensure consistent algorithmic distribution to the global writing community.
   - **Format Support:** Supports both high-DPI cards and **native vertical video (`.mp4`)** via chunked media upload (`mimeType: 'video/mp4'`).
-  - **Comprehensive Lowercase Hashtags (3–5 tags minimum)**: **Never post with only `#writon` or a single truncated tag**. Always include topical discovery tags along with brand/craft tags tailored to the subject (e.g., `#writon #tech #hardware #apple #repairability #delhi` for tech; `#writon #essays #delhi #airquality #pollution #environment` for civic/environment; `#writon #writingcommunity #amwriting #storytelling` for craft).
+  - **Targeted Hashtags (Maximum 1–2 Tags; Never 3 or More)**:
+    * Stuffing tags hurts reach on X. Hashtags act only as supporting topic signals rather than primary discovery drivers.
+    * Use `#writingcommunity`, and add `#writingtips` as a second tag only if character budget allows. Never use 3 or more tags on X.
+    * On long posts (mirror / "As you know" styles), drop hashtags before trimming illustrative examples.
+    * When tagging stories (e.g. essays), pick 1 or 2 tags max (e.g. `#essays` plus one topical tag).
+    * **Strict Spacing Rule**: Always space tags cleanly (`#tag1 #tag2`). Never run tags together (`#tag1#tag2`) which breaks discovery parsing.
+    * Early engagement and authentic replies are the real organic growth lever at low follower counts, not heavy tagging.
   - Clean root tweet with attached rendered video or card.
   - Shortlink (`https://writon.cc/go/{delivery_id}`) posted in the immediate reply to protect feed reach.
-- **Instagram & Threads:**
-  - **5–8 Comprehensive Lowercase Hashtags**: Must combine `#writon #writingcommunity #amwriting` with exact story/domain keywords (e.g., `#delhi #airquality #pollution #essays` or `#hardware #engineering #apple #tech`). Never post bare or truncated hashtags.
+- **Instagram:**
+  - **3 to 5 Targeted Lowercase Hashtags**: E.g., `#writon #writingcommunity #storytelling #books #reading`. Avoid stuffing 10+ tags; maintain high visual aesthetic.
   - Rich captions with clear paragraph breaks. No loud promotional buttons on the cards.
+- **Threads:**
+  - **Exactly 1 Topic Tag**: Use a single relevant topic tag (e.g. `#writingcommunity` or subject tag) to match Threads' native topic categorization.
 - **LinkedIn (Founder / Brand Long-Form):**
   - Substantive 3–4 paragraph narrative expanding on writing discipline, engineering craft, or editorial philosophy.
-  - **4–6 Lowercase Hashtags**: Combining domain topics and craft principles (e.g., `#writon #engineering #hardware #writing #storytelling #apple`).
+  - **Around 3 Relevant Lowercase Hashtags** placed at the end of commentary: E.g., `#writing #storytelling #craft` or `#engineering #tech #software`.
 - **Pinterest:**
   - Title maximum **100 characters**, description maximum **800 characters**, alt text maximum **500 characters**.
   - Exactly **3 to 5 high-intent craft & literature hashtags**: `#writon #writingcommunity #amwriting #storytelling #quotes`.
@@ -61,7 +69,7 @@ To maximize algorithmic reach and prevent spam penalties, each platform adheres 
   - **Live Channel**: `WritOn — Calm Reading & Writing`
   - **Handle**: `@writon_app` (`https://www.youtube.com/@writon_app`)
   - **Language**: **English language only** across titles, descriptions, and videos.
-  - **Hashtags**: **Always lowercase letters only** (e.g. `#shorts #writingcommunity #writon #craft #storytelling`).
+  - **Hashtags Standard**: Exactly **`#shorts` plus 2 topical tags** (3 tags total, strictly lowercase, e.g. `#shorts #writingcommunity #writon`).
   - **Format**: Vertical 9:16 video (1080×1920), ≤ 60s (ideal 15–45s).
   - **Title**: ≤ 100 chars with `#shorts` appended.
   - **Description**: Craft context, app shortlink `https://writon.cc`, and lowercase tags: `#shorts #writingcommunity #writon`.

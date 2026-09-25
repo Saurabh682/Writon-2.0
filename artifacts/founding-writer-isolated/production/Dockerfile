@@ -1,3 +1,3 @@
-FROM asia-south1-docker.pkg.dev/writon-app-2020/writon/writon-api:r3-shadow-production-20260914
-COPY --chown=writon:writon src/server.js /app/src/server.js
-COPY --chown=writon:writon src/routes/admin-founding-writers.js /app/src/routes/admin-founding-writers.js
+FROM asia-south1-docker.pkg.dev/writon-app-2020/writon/writon-api:founding-admin-20260920-v3
+COPY --chown=writon:writon src/jobs/daily-digest.js /app/src/jobs/daily-digest.js
+

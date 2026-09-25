@@ -31,6 +31,7 @@ function parseArgs() {
     description: null,
     dryRun: false,
     privacyStatus: 'public',
+    publishAt: null,
   };
 
   for (const arg of args) {
@@ -40,6 +41,7 @@ function parseArgs() {
     else if (arg.startsWith('--title=')) options.title = arg.split('=')[1];
     else if (arg.startsWith('--desc=')) options.description = arg.split('=')[1];
     else if (arg.startsWith('--privacy=')) options.privacyStatus = arg.split('=')[1];
+    else if (arg.startsWith('--publish-at=')) options.publishAt = arg.split('=')[1];
   }
   return options;
 }
@@ -133,6 +135,7 @@ async function main() {
     title,
     description,
     privacyStatus: options.privacyStatus,
+    publishAt: options.publishAt,
     isShort: true,
   });
 

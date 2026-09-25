@@ -234,10 +234,16 @@ CONTENT TO EVALUATE:
 ${content}
 
 EVALUATION PROTOCOL:
-1. Tone & Persona Integrity: Does the author maintain an authentic human voice without melodrama or corporate buzzwords?
-2. Factual Accuracy & Procedural Realism: Are all stated facts, scores, or procedural legal/technical details accurate and uninvented?
-3. Zero Exploitation / No Invented Dialogue: Are real human tragedies, criminal cases, or identifiable victims treated with ethical dignity (no invented character dialogue or domestic drama)?
-4. Concision & Restraint: Is the ending quiet and earned, avoiding tidy symbolic moralizing or false closure?
+1. Tone & Persona Integrity: Does the author maintain an authentic human voice without melodrama or corporate buzzwords? Does the piece match the author's established biographical lens and beat?
+2. Factual Accuracy & Procedural Realism: Are all stated facts, scores, or procedural details accurate and uninvented?
+3. Zero Exploitation / No Invented Dialogue: Are real human figures treated with ethical dignity without melodramatic staging?
+4. Concrete Observation vs Abstraction Density (Rule 148): Does the piece ground assertions in physical human behavior and specific settings rather than floating in unanchored conceptual jargon?
+5. Detail Provenance & False Specificity (Rules 151 & 152): Does the piece avoid counterfeit reportage? Reject unverified, hallucinated exact counts or transit schedules.
+6. Summary Evidentiary Alignment & Claim Magnitude (Rules 150 & 153): Does the body text substantiate all claims? Are conclusions modest and proportional?
+7. Argumentative Complication & Restraint (Rule 155): Does the essay follow natural complication rather than tidy moralizing or false closure?
+8. Comedy Quotable Density & Breathing Room (Rule 160): In satire/humour, reject drafts where every sentence auditions for a quote card. Require natural pacing and dead space between punchlines.
+9. Humour Behavior First (Rule 161): Prioritize observed micro-rituals (cables, OTP nods, calendar holds) over abstract satire slogans. Let the system behave absurdly on its own.
+10. Narrator Omniscience Discipline (Rule 162): In first-person observational humour, reject unearned mind-reading. Internal states must be framed as observable inference.
 
 OUTPUT FORMAT:
 Score: <0-100>/100

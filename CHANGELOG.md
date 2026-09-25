@@ -1,5 +1,343 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.1.150 — Web Routing & Homepage Showcase: "Generation Scaled, Verification Didn't" — 2026-09-25
+
+- **Autobots Story Web Availability & Canonical Routing (`firebase.json` & `public/stories/index.html`)**:
+  - Implemented 301 redirect and rewrite rule mapping `/post/:slug*` to `/stories/:slug*` in `firebase.json` so links formatted by Autobots dispatches resolve without 404s.
+  - Updated client-side slug parser in `public/stories/index.html` to support both `/post/` and `/stories/` URL paths seamlessly.
+- **Main Website Homepage Showcase (`public/index.html`)**:
+  - Featured Aarav Mehta's (*@aarav_tech*) newly published piece ***"Generation Scaled, Verification Didn't"*** in the primary discovery grid on `writon.cc`.
+  - Deployed updates live to Firebase Hosting (`writon-prod`). Verified both canonical URL (`https://writon.cc/stories/generation-scaled-verification-didn-t-9107770b-067`) and dispatch URL (`https://writon.cc/post/generation-scaled-verification-didn-t-9107770b-067`) return HTTP 200 OK.
+
+## 2.1.149 — Android Story Card WindowRecomposer & ComposeView Rendering Fix — 2026-09-25
+
+- **Android Story Card Offscreen Rendering Engine Fix (`StoryCardRenderer.kt` & `StoryCardSheet.kt`)**:
+  - Resolved fatal production crash: `IllegalStateException: Cannot locate windowRecomposer; View ComposeView is not attached to a window` encountered when rendering Story Cards to bitmap for saving or sharing.
+  - Offscreen Hierarchy Attachment: Modified `StoryCardRenderer.renderComposableToBitmap` to attach the detached `ComposeView` temporarily to the host window's root hierarchy (`ownerView.rootView` or `activity.window.decorView`) with `View.GONE` before measurement/drawing, then detaching cleanly in a `finally` block. This guarantees Jetpack Compose can locate the active `WindowRecomposer`, `LifecycleOwner`, `SavedStateRegistryOwner`, and `ViewModelStoreOwner` without requiring fragile manual owner stubs.
+  - Threading & Composition Isolation: Updated `StoryCardSheet.kt` to capture the composition context and active view, dispatch bitmap generation on `Dispatchers.Main.immediate`, and isolate disk/MediaStore operations on `Dispatchers.IO`.
+  - Verified clean compilation with `:app:compileDebugKotlin` and passing test suite with `:app:testDebugUnitTest`.
+
+## 2.1.148 — Jev Decision-Layer Experiment (Shadow Mode & Fuzzy Quality Gating) — 2026-09-25
+
+- **Jev Decision-Layer Experiment Implementation (Phase 1A, Phase 1B & Phase 1C: Live Evidence Collection)**:
+  - Implemented an isolated, production-safe experiment evaluating TypeSafe AI's **Jev** System One decision model as a low-cost fuzzy routing, relevance, and quality-gating layer.
+  - Zero Architecture Redesign: Preserves Editorial Brain, Gemini Flash/Pro, Writer Personas, and deterministic governance rules.
+  - Strict Shadow Mode: Controlled via feature flags (`JEV_EXPERIMENT_ENABLED=false`, `JEV_SHADOW_MODE=true`, `JEV_TRIAGE_ENABLED=true`, `JEV_QA_ENABLED=true`), running side-by-side with fail-safe error handling. Any Jev error, timeout, or malformed payload fails open, never interrupting trend ingestion or publishing.
+  - Multilingual Safety Guardrail: Devanagari and Bengali script items automatically bypass Jev in Phase 1, preserving human regional review.
+  - Stage 1 (Spark Trend Triage): Ingests Spark trend signals, querying Jev on relevance, novelty, newsworthiness, duplicate probability, and recommended content type. Hooked non-blockingly into `server/src/services/trend-intelligence-service.js`.
+  - Stage 2 (Article QA): Evaluates draft quality on persona fit, topic specificity, generic AI clichés, throat-clearing openings, and reader value. Hooked non-blockingly into `server/src/bot-engine/spark-runner.js`.
+  - Phase 1B Live Shadow Evaluation Subsystem:
+    - Persistent Logging: Events durably written to `public.bot_activity_logs` in Postgres (`action_type = 'spark_reaction'`), surviving restarts and deployments.
+    - Ground-Truth Adjudication: Tracks editorial adjudication states (`VALUABLE`, `LOW_VALUE`, `DUPLICATE`, `AMBIGUOUS`, `NOT_REVIEWED`).
+    - Granular Rejection Breakdown: Tracks decisions by rejection category (`duplicate`, `low_relevance`, `low_newsworthiness`, `weak_worth_covering`, `content_type_skip`, `low_confidence`, `combined_policy`).
+    - Confidence Calibration & Margins: Groups confidence into 5 buckets (`0.00-0.49`, `0.50-0.69`, `0.70-0.79`, `0.80-0.89`, `0.90-1.00`) and tracks decision margins (`topChoice`, `runnerUp`, `margin`).
+    - Quality & Risk Guardrails: Highlights "Most Dangerous Decisions" (high-confidence false negatives $\ge 0.85$ auto-rejecting valuable topics) and "Best Saves" (accurate auto-rejects of duplicates/low-value topics).
+    - Latency & Operations: Tracks latency percentiles ($p50, p90, p95, p99$) and categorizes operational errors (`timeout`, `api_error`, `malformed`).
+    - API Endpoints: Secure reporting with filter support `GET /api/v1/trends/jev/report?filter=disagreement` and manual adjudication `PATCH /api/v1/trends/jev/adjudicate` guarded by `requireTrendSecret`.
+  - Phase 1C Live Evidence Collection & Baseline Freeze:
+    - Shadow Isolation Boundary: Mechanically enforced non-blocking isolation. Jev outcomes are purely observational telemetry with zero production side-effects.
+    - Configuration Freeze: Locked policy version identifier to `policy_version = 'phase_1c_baseline_v1'`. Frozen all Jev schemas, atomic question sets, decision thresholds (`minRelevance=0.55`, `minWorthCovering=0.60`, `maxDuplicateProbability=0.65`, `minConfidence=0.60`), and routing logic.
+    - Namespace Protection: Records explicitly carry `experiment_type: 'jev_decision_layer'`, `experiment_version: 'phase_1c'`, and `policy_version: 'phase_1c_baseline_v1'`. General bot activity log queries filter out Jev rows to prevent cross-contamination.
+    - Hardened Adjudication Safety: `PATCH /api/v1/trends/jev/adjudicate` strictly validates event existence (returns 404 for unknown IDs), enforces valid enum values (400 for unknown states), preserves raw model evidence immutability, sanitizes notes (max 2000 chars), and tracks reviewer identity (`adjudicated_by`) with timestamps (`adjudicated_at`).
+  - Evaluation on Historical Data: Tested against real staging datasets (`trend_report_20260919.json` and `trend_report_20260921.json`). Demonstrated 87.5% agreement rate with existing governance and successfully flagged duplicate trend fatigue without human oversight.
+
+## 2.1.147 — Humour Tightening: "Thirty Minutes of Documented Presence" & Think Brain Rules 160–164 — 2026-09-24
+
+- **Editorial Publication & Tightening ("Thirty Minutes of Documented Presence" by Rohan Kapoor)**:
+  - Title Refinement: Updated title to the sharpened, direct proposition: ***"Thirty Minutes of Documented Presence"***.
+  - Metaphor Pruning: Trimmed overly polished, ornamental figures of speech from the first half (*"People speak in full verbs"*, *"relieved gratitude of a hostage negotiator"*), creating natural dead space for comedy to breathe.
+  - Narrator Knowledge Discipline (Observable Inference): Rephrased Nikhil's internal state from unearned mind-reading to physical, observable inference (*"judging by the blank slide deck open on his second monitor across the floor, Nikhil was simply facing the late afternoon without an observable deliverable"*).
+  - Jargon Refresh: Replaced generic LinkedIn tropes (*"let's take that offline"*) with specific procedural rituals (HDMI cable adjustments, nodding at OTP notifications, unassigned follow-ups).
+  - Quality Audit: Passed Human Voice Linter with **Humanity Score 100/100**, 0 AI clichés, burstiness 7.48 stdDev (614 words).
+  - Live Links:
+    - Web Reader: `https://writon.cc/stories/thirty-minutes-of-documented-presence-cc602442-7e6` (HTTP 200)
+    - Production API: `https://api.writon.cc/api/v1/posts/thirty-minutes-of-documented-presence-cc602442-7e6` (HTTP 200)
+  - Organic Retention: Scheduled 14-day applaud decay curve (22 reader claps, 23% on Day 1, staggered intra-day active hours).
+  - SEO Feeds: Synchronized full sitemap and RSS feeds (`feed.xml`, `rss.xml`, `sitemap.xml`, `news-sitemap.xml`) indexing 789 published posts.
+- **Think Brain Rules 160–164 Codified**:
+  - `Rule 160 (COMEDY_QUOTABLE_DENSITY)`: Enforces breathing room between punchlines; bans 3+ consecutive aphoristic paragraphs.
+  - `Rule 161 (HUMOUR_BEHAVIOR_FIRST)`: Grounds comedy in concrete micro-rituals over grand metaphors.
+  - `Rule 162 (COMIC_OMNISCIENCE_CHECK)`: Prohibits unearned first-person mind-reading; requires observable inference.
+  - `Rule 163 (ROHAN_KAPOOR_ENGINE_LOCK)`: Locks Rohan Kapoor's cognitive engine to bureaucratic conversions of delay into respectable process.
+  - `Rule 164 (SYSTEMIC_COMEDY_INVARIANT)`: Enforces that humor emerges from procedural systems behaving absurdly on their own.
+
+## 2.1.145 — Writing Hack #18 Produced ("KILL FILTER WORDS.") — 2026-09-24
+
+- **Website Explore Architecture & Site Navigation Standardization**:
+  - Homepage (`public/index.html`): Constrained story grid to exactly 4 stories (`limit=4`), replaced infinite scroll with an elegant CTA button (`More Stories →`) linking directly to `/explore`.
+  - Explore Page (`public/explore/index.html`): Added dedicated discovery hub featuring a prominent hero carousel highlighting top stories with smooth transitions, category filters, and an initial 20-story literary card grid with seamless pagination (`Load More Stories`).
+  - Unified Navigation Header Across All Pages: Standardized the desktop and mobile navigation header across `index.html`, `/explore`, `/journal`, `/journal/article.html`, `/updates`, and `/about`. All pages now share the full menu (`Explore`, `Journal`, `Updates`, `About`, `For Writers`, `For Readers`), the language dropdown picker (`🌐 English ▾`), the primary `▶ Get the App` button, and responsive mobile hamburger drawer behavior.
+  - Added dedicated explore client script (`public/js/explore.js`) managing top-story carousel playback, dots, category filters, paginated fetches (`limit=20`), and mobile navigation toggle.
+  - Updated `firebase.json` hosting rewrites for `/explore` to serve `/explore/index.html`, and added `/explore` to XML sitemaps and site navigation headers.
+
+- **Writing Hack #18 Produced ("KILL FILTER WORDS.") — 2026-09-24**:
+  - Focus: Eliminating narrative distance through sensory filter word removal.
+  - Flawed Example: *She heard the floorboards creak beneath his boots.* $\to$ yellow highlight on `She heard` + badge **`CUT THE FILTER.`**
+  - Surgical Rewrite: *The floorboards creaked beneath his boots.* (demonstrating purely the removal of the filter word with zero extraneous changes).
+  - Craft Payoff: *Keep the event. Remove the filter. Let the reader hear it directly.*
+  - Calibrated Runtime: Exactly 20.00 seconds (14.50s Nicole voiceover + 5.5s clean visual hold).
+  - Audio: Nicole TTS (`af_nicole` @ 130 WPM) + typewriter click SFX + continuous ambient piano across the entire timeline with gentle 1.2s fade-out.
+  - Video Asset: 1080×1920 @ 30fps H.264/AAC at `campaign/shorts-rendered/short18_kill_filter_words/short18_kill_filter_words.mp4`.
+
+
+- **Aesthetic Story Card Export Engine**:
+  - Implemented client-side offscreen Bitmap rendering engine for generating social-ready quote cards directly on device without server overhead.
+  - Supports 4 export aspect ratios: `9:16` (Stories/Reels), `4:5` (Feed Portrait), `1:1` (Feed Square), and `16:9` (X/Threads).
+  - Two literary palettes: Warm Paper (`#F8F4EE` canvas with `#E75A2A` Terracotta accent) and Midnight Obsidian (`#131415` dark canvas with `#FF7A50` accent).
+  - One-tap paragraph selection in the reader screen to turn any reading excerpt into a branded card.
+  - Save directly to device photo library (`Pictures/WritOn`) or share via native Android share chooser with auto-verified `https://writon.cc/stories/<slug>?src=card` App Links.
+  - Hardened "Rate WritOn" settings action with `startActivitySafely`, multi-task intent isolation, and resilient web browser fallback, preventing crashes on devices without standard Play Store intent receivers.
+
+## 2.1.144 — Story Card Export (Branded Aesthetic Quote Cards) — 2026-09-24
+
+- **Aesthetic Story Card Export Engine Built**:
+  - Implemented `StoryCardContent.kt`: High-fidelity, client-side visual quote card renderer supporting both **Paper** (`#F8F4EE` canvas with `#E75A2A` Terracotta accent) and **Midnight Obsidian** (`#131415` dark canvas with `#FF7A50` vibrant accent) palettes. Features Cormorant Garamond decorative opening quotation glyphs, Source Serif 4 literary body text, and integrated `WritOnBrandMark`.
+  - Implemented `StoryCardRenderer.kt`: Client-side offscreen ComposeView $\to$ Bitmap rendering engine generating high-resolution PNGs without any server round-trips. Supports direct `MediaStore` gallery saving to `Pictures/WritOn` and share caching via Android `FileProvider`.
+  - Implemented 4 multi-platform export aspect ratios via `CardExportSize`:
+    - `9:16` (1080×1920) for Stories & Reels (up to 280 chars)
+    - `4:5` (1080×1350) for Feed Portraits (up to 220 chars)
+    - `1:1` (1080×1080) for Feed Squares (up to 180 chars)
+    - `16:9` (1200×675) for X / Threads (up to 140 chars)
+- **Interactive Reader Excerpt Selection & Preview Sheet**:
+  - Implemented `StoryCardSheet.kt`: ModalBottomSheet providing live card preview, format/size selector, palette switcher, live passage editor with character count validation, "Save to Device", and "Share Card" triggers.
+  - Implemented `ExcerptSuggester.kt`: Literary heuristic quote extractor that automatically extracts poignant opening or key sentences from story markdown for 1-tap card creation.
+  - In `ReaderScreen.kt`:
+    - Wired **Quote Card** trigger icon in the top app bar and in `ReaderActionTray`.
+    - Made story paragraphs and blockquotes directly selectable on tap when reading to immediately capture that passage into a branded quote card.
+- **Deep Linking & Telemetry**:
+  - Added `cardStoryShareUrl(slug)` in `StoryDeepLink.kt` which appends `?src=card` UTM parameter to auto-verified `https://writon.cc/stories/<slug>` App Links, letting recipients jump directly into the full story as guest readers.
+  - Added `logCardGenerated` and `logCardShareInitiated` telemetry methods in `WritOnTelemetry.kt` tracking story ID, excerpt character length, aspect ratio, and color theme.
+  - Configured Android `FileProvider` in `AndroidManifest.xml` and `res/xml/file_paths.xml` for secure content URI sharing.
+  - Added comprehensive unit tests in `StoryCardExportTest.kt` verifying aspect ratios, dimensions, UTM parameters, and heuristic excerpt extraction.
+
+## 2.1.143 — Production Bot Reconciliation & Safe Rollout Master Audit — 2026-09-24
+
+- **Social Media Tag Policy Standardized**:
+  - In `server/src/services/story-syndication-service.js`: Enforced platform-specific tag constraints. X posts now capped strictly at 2 targeted hashtags (`#writingcommunity #writingtips`), eliminating previous 8-hashtag clusters. Threads posts limited strictly to a single topic tag (`#writingcommunity`).
+  - Preserved backward-compatible `plainText` property across syndication callers and unit tests.
+- **5-Phase Reconciliation Audit Completed**:
+  - **Phase 1 (Environment & Tests)**: Verified all 267 non-PostgreSQL unit and safety tests pass across 17 suites without failures.
+  - **Phase 2 (Code & Tag Harmonization)**: Harmonized syndication copy and passed all syndication delivery and social poster safety tests.
+  - **Phase 3 (Cloud Run Verification)**: Configured private tag `rec-test` on `writon-app-api-staging` targeting zero-traffic revision `writon-app-api-staging-rec-20260922-g38`. Verified HTTP 200 health check, PostgreSQL connectivity, and fail-closed automation authentication from live cloud.
+  - **Phase 4 (Safety Gates & Quota Hierarchy)**: Codified Gemini Flash 3.8 / 3.5 Lite quota hierarchy (3.8 Flash capped at 20 RPD / 5 RPM with 8 > 7 > 6 cascade).
+  - **Phase 5 (Production Invariants)**: Confirmed production service `writon-app-api` remains untouched on stable revision `00027-qcz` (100% traffic); staging public traffic remains 100% on `00032-zup`.
+
+## 2.1.142 — Notifications Navigation & Unread Bell Indicator — 2026-09-23
+
+- **Home Navigation from Notifications Screen Fixed**:
+  - In `WritOnNavigation.kt` (`WritOnBottomNavigation`): Specialized `targetRoute == WritOnRoute.Home.route` handling using `popBackStack(WritOnRoute.Home.route, inclusive = false)` with fallback to `navigate(WritOnRoute.Home.route) { popUpTo(Home.route) { inclusive = false }; launchSingleTop = true }`, fixing bottom navigation return to Home when on the notifications screen.
+  - In `NotificationsScreen.kt`: Made top brand logo (`WritOnBrandMark`) interactive via `onLogoClick` callback, popping directly back to `Home`.
+  - In `WritOnBottomBar`: Added `Notifications` and `NotificationSettings` routes to the active bottom tab selection mapping so the Home tab highlights consistently.
+- **Story Deeplinking from Push & In-App Notifications Verified**:
+  - Verified FCM background message parser in `WritOnFirebaseMessagingService.kt` extracts `storyId` $\to$ `reader/$storyId` and routes through `WritOnModernActivity.kt` and `WritOnNavigation.kt`'s `LaunchedEffect(initialNotificationRoute)`.
+  - Verified in-app notifications in `NotificationsScreen.kt` route story clicks via `postId?.let(onStoryClick) -> ReaderScreen`.
+- **Notification Bell Orange Unread Indicator**:
+  - Added computed property `hasUnreadNotifications: Boolean` (`notifications.any { it.readAt == null }`) to `CollectionsViewModel`.
+  - Synchronized notification loading on Home feed mount and `ON_RESUME` lifecycle events when signed in.
+  - Updated `FeedScreen` (`HomeHeader`) and `SearchScreen` (`SearchHeader`) to tint the notification bell icon with `BrandRed` (`#E75A2A`) whenever unread notifications exist, reverting to standard monochrome tint when all notifications are read.
+
+## 2.1.141 — Think Brain Rules 148–159 & Editorial Critic Grounding Overhaul — 2026-09-24
+
+- **Think Brain Rules 148–159 Codified**:
+  - **Rule 148 (`ABSTRACT_ESSAY_WITHOUT_WORLD_FAIL`) & (`GRAND_TERM_EVIDENCE_CHECK`)**: Bans essays floating in unanchored sociological/economic vocabulary (*"performative noise"*, *"civic utility"*, *"financialized"*, *"transactional pressure"*) without concrete behavioral observation, physical room dynamics, and argumentative complication.
+  - **Rule 149 (`PERSONA_COGNITIVE_AFFINITY_ROUTING`)**: Persona assignment (`authorPenName="auto"`) must resolve based on conceptual worldview fit rather than purely cooldown availability. Re-routes reading culture and civic essays to essayists (e.g. Dr. Sunita Banerjee) rather than domestic fiction writers (Aanchal Ahuja).
+  - **Rule 150 (`SUMMARY_EVIDENCE_BINDING`)**: Enforces strict evidentiary bounds between summary assertions and draft text. Summaries cannot claim unevidenced abstractions (*"ancient civic utility"*, *"without transactional pressure"*).
+  - **Rule 151 (`CONCRETE_DETAIL_PROVENANCE_FAIL`)**: Enforces verifiable provenance for granular real-world facts (seat counts, timestamps, schedules). Prohibits pseudo-reportage invented merely to cure abstraction.
+  - **Rule 152 (`FALSE_SPECIFICITY_FAIL`)**: Purges counterfeit authority where hallucinated precise numbers (*"thirty-two chairs"*, *"eight-fifteen metro"*) simulate nonexistent eyewitness observation.
+  - **Rule 153 (`CLAIM_MAGNITUDE_DISCIPLINE`)**: Constrains sociological conclusions to proportional language (*"creates a small demonstration"*, *"permits"*, avoiding *"proves society has changed"*).
+  - **Rule 154 (`PERSONA_GEOGRAPHIC_INTEGRITY`)**: Grounds persona geographic settings in documented reporting, visits, or analytical framing without silent relocation.
+  - **Rule 155 (`ESSAY_GOLD_PATTERN`)**: Mandates the 4-beat progression: `GROUNDED OBSERVATION → TEMPTING INTERPRETATION → FRICTIONAL COUNTEREVIDENCE → NARROWER REVISED CLAIM`.
+  - **Rule 156 (`EXAMPLE_SCOPE_BINDING`)**: Prevents subtype or venue observations (e.g. café-based chapters) from silently generalizing to universal claims about an entire movement.
+  - **Rule 157 (`FORMAT_CORE_VS_VARIANT`)**: Distinguishes an organization's core invariant rules (no assigned text, silent reading) from local variable implementations (venue, drink purchases, discussion length).
+  - **Rule 158 (`UNSOURCED_DISCOURSE_FAIL`)**: Flags synthetic consensus language (*"people often believe..."*, *"critics tend to say..."*); requires authentic epistemic framing (*"it is tempting to interpret..."*).
+  - **Rule 159 (`PERSONA_COGNITION_LOCK`)**: Prohibits retrofitting decorative cultural/regional props (tea stalls, fountain pens, rain) onto personas whose voice is already established through analytical structure.
+- **Pre-Publication Critic Evaluation Protocol Sharpened**:
+  - Updated `server/src/services/lm-studio-critic.js` to evaluate Persona Cognitive Alignment, Concrete Observation vs Abstraction Density, Summary Evidentiary Alignment, False Specificity, and Argumentative Complication.
+
+## 2.1.140 — Writing Hack #17 Produced (20s Target) & Instagram Tag Standardization — 2026-09-23
+
+- **Instagram Hashtag Policy Standardized**:
+  - Across all Instagram video publications, standardized hashtag payload to:
+    `#shorts #writingcommunity #writon`
+  - Applied to `scripts/publish_short16_reel.mjs` and `scripts/publish_short17_reel.mjs`.
+- **Writing Hack #17 Produced & Rendered (`campaign/shorts-rendered/short17_make_guilt_visible/`)**:
+  - Focus: Avoidance gesture replaces named guilt (*"Make Guilt Visible"*).
+  - Weak Example: *He felt guilty about forgetting her birthday.* $\to$ yellow strikeout + `DELETE THE CONFESSION.`
+  - Rewrite: *He typed: “Happy belated—” / then turned the phone face-down.*
+  - Payoff Rule: *Guilt doesn't explain itself. Show what the character refuses to look at.*
+- **Writing Hack #17 Scheduled for 8:00 AM IST (Sept 24, 2026)**:
+  - YouTube Short: `https://www.youtube.com/shorts/yFyhmd8qRC0` (native YouTube scheduled status: `privacyStatus: private`, `publishAt: 2026-09-24T02:30:00.000Z`)
+  - Automated daemon scheduler (`scripts/schedule_short17_morning.mjs`) running with precision countdown targeting `2026-09-24T02:30:00.000Z` (08:00 AM IST) for Instagram Reel and Story publication.
+
+## 2.1.139 — Writing Hack #15 Published Live & Writing Hack #16 Rendered — 2026-09-23
+
+- **Writing Hack #15 Published Live Across 4 Channels**:
+  - **YouTube Shorts**: `https://www.youtube.com/shorts/_gL6ZbJfVh8`
+  - **Instagram Reels**: `https://www.instagram.com/reel/DdnV40cCni5/`
+  - **Instagram Story**: `https://www.instagram.com/stories/writon_socialapp/3992256253757419963`
+  - **LinkedIn**: `https://www.linkedin.com/feed/update/urn:li:ugcPost:7508366608344547328`
+  - All publishing records updated in `campaign/published-history.json`.
+- **Writing Hack #16 Produced & Rendered (`campaign/shorts-rendered/short16_say_it_without_saying/`)**:
+  - Focus: Subtext & Physical Resistance (*"Say it without saying it"*).
+  - Weak Example: *“I don't love you anymore,” she said.* $\to$ yellow strikeout + `DELETE THE CONFESSION.`
+  - Rewrite: *He let go of her hand. / She didn't reach back.*
+  - Payoff Rule: *Don't announce the ending. Show the reflex that stops.*
+  - Rendered via HyperFrames (13.5s, 1080×1920 @ 30fps) with Nicole TTS (`af_nicole` @ 1.15x) and ambient piano + tactile clicks.
+  - Verification frames extracted and confirmed adhering to `top: 480px` safe zone and static 0.0s hook.
+
+## 2.0.75 — Notification Navigation & Unread Alert Tint — 2026-09-23
+
+- Fixed Home button and top brand logo navigation from the Notifications screen so readers can seamlessly return to the Home feed.
+- Added orange unread alert tint to the notification bell across Home and Search headers whenever new unread notifications are present.
+- Preserved story deeplink routing from background push notifications and in-app activity items into reader view.
+
+## 2.0.74 — Notification Story Navigation — 2026-09-23
+
+- Fixed FCM notification taps opening Home or Welcome instead of the linked story by preserving the reader destination during navigation and handling intents delivered to an existing app task.
+- Accepted existing story route, story ID, and owned story-link payload formats; kept separate notification taps tied to their own destinations.
+- Assigned daily editorial notifications distinct tray identities so newer stories do not reuse stale tap actions.
+- Added JVM route-handoff and on-device cold/background notification-navigation regression tests.
+
+## 2.1.138 — Think Brain Rules 141–147: Narrative Consequence, Metaphor Dependency, Arshdeep Cooldown & Local Reality — 2026-09-22
+
+- **Think Brain Rules 141–147 Codified (`server/src/bot-engine/editorial-intelligence-service.js`, `AGENTS.md`)**:
+  - In response to the 5.6/10 critique on the Jawa 42 draft (*"Chrome, Dust, and the Geometry of Choosing"*), codified seven structural pre-publication and critic gates:
+    - **Rule 141 (`NARRATIVE_CONSEQUENCE_TEST`)**: For Short Stories, requires `INCITING_CHANGE + CHOICE/ACTION + COST_OF_CHOICE + OBSERVABLE_CONSEQUENCE`. Rejects mood vignettes where a character merely inspects an online listing, reflects philosophically, and defers the decision ("not yet").
+    - **Rule 142 (`METAPHOR_DEPENDENCY_FAIL`)**: Enforces subject-dependency replacement invariant: if replacing the central object (e.g. motorcycle) with a camera, laptop, or tennis match preserves 70%+ of the essay, the premise is rejected as an ungrounded metaphor for generic life conditions.
+    - **Rule 143 (`SUPPORTING_CHARACTER_AS_THESIS_MOUTHPIECE_FAIL`)**: Prohibits supporting characters from delivering polished authorial aphorisms (*"The machine is only as fast as the story you are trying to outrun"*); demands domain-authentic speech under real-world stakes (*"Two-ten on road; they never put that number in the headline"*).
+    - **Rule 144 (`CODE_POLICY_STRICT_ENFORCEMENT`)**: Hard critic gate (`WRITER_RULE_VIOLATION: CODE_INSERTED_WHEN_FORBIDDEN`) banning pseudocode interfaces (`interface Aspirations`, `decidePurchase`, `return false; // The logic of the 'not yet'`) in non-tech stories and essays.
+    - **Rule 145 (`ARSHDEEP_TITLE_COOLDOWN`)**: Enforces lexical title token cooldowns (`geometry`, `dust`, `static`, `baseline`, `lines`, `underdog`, `choosing`) for Arshdeep Singh / Gurpreet Sandhu for at least 8–10 releases following *The Geometry of the Underdog*.
+    - **Rule 146 (`HOUSE_STYLE_PROP_DENSITY`)**: Flags synthetic WritOn perfume clusters (rain + garage dust/grease + phone glow + dark room + deferred "not yet" ending), requiring domain-specific concrete items (dealer quotation, torque wrench, lathe, workshop invoice).
+    - **Rule 147 (`NUMERICAL_PRECISION_AND_LOCAL_REALITY`)**: Enforces factual product reporting (Jawa 42 All Stars ₹1.85L ex-showroom / ₹1.90L Black; Jalandhar on-road ~₹2.10L) and eliminates cross-story contamination (Boston attic / Clancy leaks in Punjab stories).
+- **Gemini 3.8 Flash Configured as Primary Bot Generation Model (`server/src/bot-engine/gemini-spark-client.js`, `server/.env`)**:
+  - Replaced `gemini-1.5-pro` / `gemini-3.1-pro-preview` with **`gemini-3.8-flash`** as the default model across all genres (Essays, Philosophy, Short Stories, Tech, and Reviews).
+  - Updated `GEMINI_API_KEY` with the user-supplied authenticated credential (`AQ.Ab8RN6IHEtSqOwAh3wq97AmNS1YnNxcWLUyqGqA1ZNpOnsH0-g`).
+  - Synced model failover ladder (`gemini-3.8-flash` → `gemini-3.7-flash` → `gemini-3.6-flash` → `gemini-3.5-flash`).
+
+- **Flawed Draft Unpublished & Feeds Regenerated**:
+  - Post `0351d4dd-4d6e-4fe7-af97-6ebc6493d04c` (*"Chrome, Dust, and the Geometry of Choosing"*) immediately reverted to draft status.
+  - All public RSS, Reddit, and Pinterest feeds regenerated to remove the unapproved draft from circulation.
+- **Suite 37 Unit Tests Added (`server/test/zero-ai-slop-blockers.test.js`)**:
+  - 8 new unit tests covering Rules 141 through 147; 131/131 blocker tests pass cleanly (747 total passing tests).
+
+## 2.1.137 — Writing Hack #15 Refinement & Dual-Franchise Shorts System Codification — 2026-09-22
+
+
+- **Writing Hack #15 Polished & Re-Rendered (`campaign/shorts-rendered/short15_make_this_hurt/`)**:
+  - Tightened primary hook to 3-word giant opener: **`MAKE THIS HURT.`** with subtext *`without naming the grief`* to match weak example (*"completely devastated"*).
+  - Nicole voiceover re-synthesized with Kokoro (`af_nicole` @ 1.25x–1.28x, 11.82s speech) and remixed with official piano and tactile click SFX (14.5s total).
+  - Preserved the piece-by-piece reveal of the wooden hangers rewrite and practical craft maxim (*"Don't describe the grief. Show the sound it leaves behind."*).
+  - All milestone verification frames extracted and visually confirmed.
+- **Shorts System Architecture & Generator Contract Codified (`campaign/SHORTS_SYSTEM.md`)**:
+  - Standardized the **15-second pacing rhythm**: 0:00–0:01.2s hook, 0:01.2–0:02.5s weak line, 0:02.5–0:03.5s yellow highlight, 0:03.5–0:04.2s command badge, 0:04.2–0:08.5s rewrite build, 0:08.5–0:11.5s recognition, 0:11.5–0:15.5s principle.
+  - Decoupled `SEARCH_TITLE` (SEO intent) from `FRAME_ZERO_HOOK` (visual stop rate) in Shorts generator contract.
+  - Established Hook Archetype Telemetry Schema (`HOOK_ARCHETYPE`, `FRAME_ZERO_TEXT`, `VIEWED_VS_SWIPED`, `APV`, `AVG_VIEW_DURATION`, `REWATCH_SIGNAL`).
+  - Set strict **4:1 production ratio** (Writing Hack : One Strange Idea) with single-variable hook testing.
+
+## 2.1.136 — Reading Time Calibration (140 WPM) & Paragraph Formatting for Sept 21 Essays — 2026-09-22
+
+- **Reading Time WPM Corrected: 200 → 140 (`server/src/server.js`, `server/src/bot-engine/spark-runner.js`, `server/src/services/editorial-service.js`, `server/src/services/editorial/voice-validator.js`, `web/src/components/StoryEditor.tsx`)**:
+  - All five `calculateReadingTime` functions now use 140 WPM (literary reading pace) instead of the generic 200 WPM benchmark. This adds ~40% more time per piece, correctly reflecting how long readers actually spend on essays and long-form craft writing.
+  - The four September 21 editorial posts had their stored `reading_time_min` values recalculated and updated in the DB: "The Tactile Sanctuary" 5→7 min, "The Glass Cathedral" 5→7 min, "Your App Should Survive Its Server" 6→8 min, "The Proofreader Trap" 6→8 min.
+
+- **Paragraph Formatting Fixed for Sept 21 Essays**:
+  - All four essays had their `content` fields reformatted: section headings are now separated with blank lines, improving visual scan-ability and rendering on the web reader. Content was stored as flat single-`\n` lines; now distinct sections use `\n\n` gaps.
+
+## 2.1.135 — Think Brain Rules 130 Expansion &amp; Rules 137–140: Representation vs. Record Discipline &amp; Devansh Redraft — 2026-09-22
+
+
+- **Think Brain Rules 130 Expansion & Rules 137–140 Implemented (`server/src/bot-engine/editorial-intelligence-service.js`, `server/src/bot-engine/legacy-writer-personas.js`, `AGENTS.md`)**:
+  - In response to the 34/100 rejection critique on Devansh Roy's attempted Intel draft, completely purged the tea-stall architecture and codified four new pre-publication gates:
+    1. **Expanded Rule 130 (`DEVANSH_PROP_CLUSTER_HARD_FAIL`)**: Added clay cups, wet newspapers, wiping rags, tarpaulins, dying batteries/screens, and named shopkeepers (Bhabani-da, Haren-da, Bimal) to the retired costume cluster.
+    2. **Expanded Rule 133 (`THEMATIC_APHORISM_DIALOGUE_FAIL`)**: Prohibits antithetical quote-card dialogue (e.g. *"You worry about the silicon. I worry about the tea."*).
+    3. **Rule 137 (`REPRESENTATION_VS_RECORD_GATE`)**: Requires pieces addressing AI images, trading screens, or viral claims to contrast the visual representation directly against primary regulatory filings and statutory records (SEC Form 8-K, formal contracts, statutory disclosures).
+    4. **Rule 138 (`TITLE_CONCEPT_CONTRACT`)**: Mandates that titles referencing a "Ledger", "Balance Sheet", or "Audit" materially engage with accounting mechanics, equity dilution, cost basis, or transaction reconciliation, eliminating decorative metaphor.
+    5. **Rule 139 (`CURRENT_EVENT_STORY_GATE`)**: Current event narratives must establish protagonist agency (`SOURCE_EVENT + PROTAGONIST_WANTS + OBSTACLE + DECISION + CHANGED STATE`), prohibiting passive observers watching viral screens without stakes or consequence.
+    6. **Rule 140 (`MARKET_CAUSALITY_DISCIPLINE`)**: Prohibits simplistic monocausal attribution of stock surges solely to a single social media post, requiring multi-factor grounding (analyst upgrades, foundry yield milestones, statutory appropriations).
+- **Suite 36 Added to Vitest (`server/test/zero-ai-slop-blockers.test.js`)**:
+  - Added 7 comprehensive test specs verifying all new rules and edge cases.
+  - Vitest test pass: **123/123 tests passing** in `zero-ai-slop-blockers.test.js`, and **67/67 test files passing (743/743 tests)** across the entire server test suite.
+- **Redrafted Devansh Roy's *"The Ghost in the Silicon Ledger"***:
+  - Rebuilt the entire piece from first principles around Devansh's core cognitive engine: media provenance, transmission, and the tension between representation and primary record.
+  - Centers on a verification researcher given seventy-five minutes to interrogate Donald Trump's September 6 AI-generated trading image ("BOUGHT: INTEL $20" and "NOW $95") against SEC Form 8-K filings and the August 2025 CHIPS Act capital agreement (433.3M shares @ $20.47 per share).
+  - Grounded in multi-catalyst market reality (September 4 close at $95.80, paper gain of $32.6B, +4% overnight, +9% Tuesday surge driven by Bank of America / Citi analyst upgrades and 18A packaging node yields).
+  - Scored 🟢 **100/100 Humanity Score** on `scripts/human_voice_linter.mjs` with 0 AI clichés and natural burstiness (10.56).
+
+## 2.1.134 — Think Brain Rules 130–136: Devansh Regression Prevention & Real-Person Privacy Discipline — 2026-09-21
+
+- **Think Brain Rules 130–136 Implemented (`server/src/bot-engine/editorial-intelligence-service.js`, `server/src/bot-engine/legacy-writer-personas.js`, `AGENTS.md`)**:
+  - Following the 39/100 rejection verdict on Devansh Roy's Jon Small draft, codified seven new hard pre-publication engine blockers:
+    1. **Rule 130 (`DEVANSH_PROP_CLUSTER_HARD_FAIL`)**: Hard abort triggered if 3+ retired atmospheric costume props appear together in a draft: tea stall, radio static, Kolkata tram tracks, monsoon rain, bleeding ink notebook, stray dog, tea as emotional punctuation, old shopkeeper dispensing wisdom, wet jute / rusted tin.
+    2. **Rule 131 (`REAL_PERSON_PRIVATE_MEMORY_FAIL`)**: Strict biographical restraint for real deceased figures (e.g. Jon Small, Billy Joel). Prohibits inventing private conversations, studio habits, cigarettes shared at 3 AM, unverified sensory gestures, or imagined final moments. Mandates using only documented historical facts or clearly marked critical analysis.
+    3. **Rule 132 (`DECORATIVE_SOURCE_FAIL`)**: Source substitution invariant. If a named current event or person can be swapped for another with <20% change in the text (e.g. *"didn't know who X was, but understood silence"*), the source is decorative and the draft is aborted.
+    4. **Rule 133 (`THEMATIC_APHORISM_DIALOGUE_FAIL`)**: Prohibits secondary characters from delivering quote-card aphorisms (*"When a man who keeps the rhythm goes..."*) to summarize the piece's thesis. Dialogue must create character resistance and desire.
+    5. **Rule 134 (`SHORT_STORY_ENGINE_GATE`)**: Requires minimum short story architecture (`PROTAGONIST_WANTS + OBSTACLE + DECISION + CHANGED STATE`). Rejects passive vignettes where a character merely listens to news, sips tea, and closes a notebook.
+    6. **Rule 135 (`AMBIENT_MELANCHOLY_ENDING_FAIL`)**: Flags endings constructed of autopilot sensory decay props (tea cooling, rain falling on glass, notebook closing, solitary droplet, silent street observation). Mandates ending on a behavioral consequence or decision that alters a relationship or state.
+    7. **Rule 136 (`DEVANSH_SOURCE_MECHANIC_REQUIREMENT`)**: Enforces Devansh's core cognitive engine on sources and obituaries: **Relationship Compression & Media Provenance** (`PUBLIC LABEL → documented history → what label preserves → what label erases → why media needs compression → what compression costs`). Generic grief and melancholy are prohibited.
+  - Updated Devansh Roy (`bot_devansh_fiction`) persona prompt in `legacy-writer-personas.js` with the relationship compression lens and hard architectural gates.
+  - Added Suite 35 to `server/test/zero-ai-slop-blockers.test.js` covering Rules 130–136 across all scenarios (8 tests). Test suite passing: **116/116 tests**.
+
+- **September 21, 2026 Trend Slate Published (`server/src/scripts/publish-sept21-editorial-slate.mjs`)**:
+  - Committed all four distinct editorial essays directly to production PostgreSQL (`public.posts`) under the verified "Friction-Shift" meta-thesis, published in strict priority order:
+    1. **AI Code-Review Burnout**: *"The Proofreader Trap: Why Senior Engineers Are Drowning in Synthetic Code"* (Aarav Mehta, `bot_aarav_tech`, Category: `Tech`, Post ID: `9fc6873e-fb1f-4295-af4c-643027b5619a`, 1,062 words).
+    2. **Gen Z Print Book Resurgence**: *"The Tactile Sanctuary: Why a Generation Raised on Screens Is Returning to Paper"* (Dr. Sunita Banerjee, `bot_sunita_essays`, Category: `Essays`, Post ID: `1f76712c-6c85-43b4-8ba1-132fa7c8b539`, 908 words).
+    3. **iPhone 18 Pro Queues vs Ten-Minute Delivery**: *"The Glass Cathedral: Why We Queue for a Phone That Can Arrive in Ten Minutes"* (Gopal Krishnan, `bot_writer_065`, Category: `Culture`, Post ID: `41ec187f-5e7f-4b17-8a6d-f4f56d8146bd`, 914 words).
+    4. **Local-First Software Architecture**: *"Your App Should Survive Its Server: The Case for Local-First Software"* (Aarav Mehta, `bot_aarav_tech`, Category: `Tech`, Post ID: `7acbbfa3-1e78-4c27-b460-238dec4bb3b0`, 1,037 words).
+  - All four essays verified clean (0 violations) across all 129 Think Brain rules (`validateZeroAISlopEngineBlockers()`) and passed the article integrity gate before publication.
+  - Recorded matching publication entries in `public.editorial_ledger_entries` and updated `bot_activity_logs` and `bot_configs.last_posted_at`.
+- **Mandatory All-RSS Feed Synchronization Completed**:
+  - **Primary SEO & Google News Feeds (`server/src/scripts/generate-seo-feeds.mjs`)**: Regenerated `public/feed.xml`, `public/rss.xml`, `public/sitemap.xml`, `public/sitemap-main.xml`, `public/sitemap_index.xml`, and `public/news-sitemap.xml` with all 788 published stories.
+  - **Reddit RSS Feed (`server/src/scripts/generate-reddit-feed.mjs`)**: Regenerated `public/reddit-feed.xml` with the latest 25 stories, stripped of hashtags and formatted with engagement prompts.
+  - **Pinterest Visual Feed & Card Generation (`server/src/scripts/generate-pinterest-feed.mjs`)**: Generated and saved high-resolution 1080×1350 quote cards in `public/cards/` and updated `public/pinterest-feed.xml`.
+- **Automated Verification**: Ran Vitest test suite (`test/zero-ai-slop-blockers.test.js`) with 108/108 tests passing.
+
+## 2.1.132 — Writing Hack #14 Release & Shorts Architecture Protocols (September 21, 2026) — 2026-09-21
+
+- **Writing Hack #14 Production & Omnichannel Dispatch (`campaign/shorts-rendered/short14_write_jealousy/`)**:
+  - Produced and rendered Writing Hack #14: *Make Jealousy Visible (Compulsive Behavior vs Named Emotion)* with 15.5s calibrated duration, 1080×1920 portrait format, warm coffee desk parchment aesthetic (`#FAF5EE`), and auto-caption safe zone clearance (`top: 480px`).
+  - Voiceover synthesized via Kokoro TTS (`af_nicole` @ 1.25x–1.30x speed) with 150–180ms tight pauses, paired with procedural tactile mechanical clicks (at 0.01s & 4.55s) and ambient piano with 1.5s outro fade.
+  - Published live across all primary channels:
+    - **YouTube Shorts**: [`https://www.youtube.com/shorts/n5it41yqUhA`](https://www.youtube.com/shorts/n5it41yqUhA) (Video ID: `n5it41yqUhA`).
+    - **Instagram Reels**: [`https://www.instagram.com/reel/DdjxHESCiGo/`](https://www.instagram.com/reel/DdjxHESCiGo/) (Shortcode: `DdjxHESCiGo`, Media ID: `18028836134889694`).
+    - **Instagram Stories**: [`https://www.instagram.com/stories/writon_socialapp/3991250041511277065`](https://www.instagram.com/stories/writon_socialapp/3991250041511277065) (Media ID: `17969016924160176`).
+    - **LinkedIn**: [`https://www.linkedin.com/feed/update/urn:li:ugcPost:7507863519418277890`](https://www.linkedin.com/feed/update/urn:li:ugcPost:7507863519418277890) (URN: `urn:li:ugcPost:7507863519418277890`).
+- **Codified Shorts Architecture & Hook Rules (`AGENTS.md`, `campaign/youtube-shorts-two-week-plan.json`)**:
+  - **`HOOK_AS_CHALLENGE`**: Opening copy must create a transformation problem or urgent challenge, not merely name the lesson (e.g. `MAKE JEALOUSY VISIBLE.` rather than `WRITE JEALOUSY`).
+  - **`NO_EMPTY_TRANSITION_BEAT`**: Eliminated empty transition gaps; category badges (`THE BEHAVIOR`) and initial rewrite lines reveal simultaneously (~4.55s) directly after the directive beat.
+  - **`Ending Maxim Cooldown`**: Grounded high-aphorism conclusions (*"Jealousy is attention you never meant to pay"*) in demonstrated behavior and mandated rotating with direct instructional conclusions across subsequent shorts.
+  - **Competitor Forensics (`@writertubeofficial`)**: Documented empirical drivers of the 129K outlier vs 222-views blank-frame trap (validating the static frame 0 hook, one-idea density, and sensory voiceover anchors).
+
+## 2.1.131 — Trend Radar Calibration & Editorial Slate Ingestion (September 21, 2026) — 2026-09-21
+
+- **Trend Radar Evidence Calibration & Ingestion (`server/staging/trend_report_20260921.json`, `campaign/trends/curated-topics.json`, `campaign/trends/reports/DAILY_TREND_BRIEF_2026-09-21.md`)**:
+  - Ingested Schema 1.0.0 validated daily trend research payload across four verified cultural and technical themes with evidence-gated scoring:
+    1. **AI Code-Review Burnout / The Supervisory Tax** (Score: 77/100, ACT NOW, Aarav Patel): *The Proofreader Trap: Why Senior Engineers Are Drowning in Synthetic Code*. Verified against *The New Stack* (Sept 18, 2026: "Code review is burning out your best engineers") and Hacker News. Core thesis: producing code is cheap, but judging code remains expensive; synthetic velocity transfers the burden of proof to exhausted senior verification bottlenecks.
+    2. **Gen Z Print Book Resurgence & Slow Reading** (Score: 74/100, THIS WEEK, Dr. Sunita Banerjee): *The Tactile Sanctuary: Why a Generation Raised on Screens Is Returning to Paper*. Verified against *RELEVANT Magazine* survey data (66% Gen Z readers, 65% print for digital detox) and *Silent Book Club* global milestone (2,200+ chapters across 70 countries, >1M members). Core thesis: reading is becoming a social technology for escaping social technology.
+    3. **iPhone 18 Pro Queues vs Ten-Minute Delivery** (Score: 73/100, ACT NOW / 48–72h Newsjack, Gopal Krishnan): *The Glass Cathedral: Why We Queue for a Phone That Can Arrive in Ten Minutes*. Verified against *NDTV* (Sept 18–21, 2026: Noida 6 AM queue, overnight lines vs quick commerce). Core thesis: the queue as communal sacrament and public status ritual when instant home delivery is available.
+    4. **Local-First Architecture & Client Sovereignty** (Score: 60/100, EVERGREEN, Kabir Sen): *Your App Should Survive Its Server: The Case for Local-First Software*. Downgraded to emerging/evergreen technical opportunity based on dated baseline sources (Smashing Magazine May 2026, wal.sh Dec 2025). Core thesis: software that treats client hardware with dignity and outlives the server.
+  - **Unifying Editorial Arc Codified**: *"The Friction-Shift: How removing technological friction creates friction in human attention, judgment, ownership, and ritual."*
+  - **Machine-Readable Keyword Pools Categorized**: Deployed structured keyword pools into the trend engine across four operating bands: `HOT / NOW`, `RISING CULTURE`, `NEWSJACK / SHORT WINDOW`, and `EVERGREEN / EMERGING TECH`.
+  - **Reputable Host Ingestion Expansion (`server/src/services/trend-intelligence-service.js`)**: Added `thenewstack.io`, `relevantmagazine.com`, `silentbook.club`, `ndtv.com`, and `smashingmagazine.com` to `RECOGNIZED_REPUTABLE_HOSTS` for automated zero-SSRF evidence verification.
+  - **Test Verification**: 46/46 trend tests passing (`trend-intelligence.test.js`, `trend-scout.test.js`, `trend-orchestrator.test.js`); 108/108 slop blocker tests passing.
+
+## 2.1.130 — Daily Digest Random Archive Rotation & Post Exclusion — 2026-09-21
+
+- **Daily Digest Archive Fallback Randomization (`server/src/jobs/daily-digest.js`)**:
+  - Replaced deterministic engagement-score sorting on fallback story selection with true randomized rotation (`ORDER BY recent_feature_count ASC, random() LIMIT 1`) across the human-verified archive (>600 published human stories).
+  - Permanently excluded post `78de780b-4b44-54aa-8b7d-30b1a9cec193` ("Story" by Ram Sain) to ensure it is never repeatedly broadcast.
+  - Recorded `topStoryId` and `topStoryTitle` in `notification_dispatch_ledger` result payloads to enforce 30-day frequency caps on any featured post.
+  - Packaged container overlay image `asia-south1-docker.pkg.dev/writon-app-2020/writon/writon-api:daily-digest-random-20260921-v2` and deployed revision `writon-app-api-00027-qcz` to Google Cloud Run (`asia-south1`), migrating 100% of live traffic to the verified container.
+
+## 2.1.129 — Alpha Bots & Social Publishing Hashtag Governance — 2026-09-21
+
+- **Cross-Platform Hashtag Ceilings & Density Standards (`AGENTS.md`, `campaign/SOCIAL_STRATEGY.md`, `rules_youtube.md`, `rules_linkedin.md`)**:
+  - **X (Twitter)**: Strictly capped at **maximum 1–2 targeted hashtags per post** (never 3 or more). Mandated `#writingcommunity` with optional `#writingtips` if character budget allows. Dropped hashtags on long posts before trimming illustrative examples. Enforced strict space separation between tags (e.g. `#essays #topic` instead of concatenated strings). Codified the operational truth that early replies and authentic discussions are the true lever for organic reach at low follower counts.
+  - **Instagram**: Standardized to **3 to 5 targeted lowercase tags** per post (e.g. `#writon #writingcommunity #storytelling #books`). Eliminated 10+ tag stuffing to protect aesthetic quality.
+  - **LinkedIn**: Fixed at **around 3 relevant lowercase tags** placed at the conclusion of post commentary (e.g. `#writing #storytelling #craft`).
+  - **YouTube Shorts**: Codified standard as exactly **`#shorts` plus 2 topical tags** (3 total tags, e.g. `#shorts #writingcommunity #writon`).
+  - **Threads**: Standardized to **exactly 1 relevant topic tag** to mirror native categorization.
+  - **Reddit**: Maintained **strictly 0 hashtags** (auto-stripped before submission).
+
 ## Unreleased — Editorial Brain & Campaign Publisher Safe Upgrade — 2026-09-20
 
 - **Stage A: Baseline Verification & Environment Isolation**:
@@ -24,6 +362,25 @@
     - **PID-Specific PostgreSQL Lock Contention Verification**: Refactored `editorial-governance-stage2-postgres.test.js` to query Client 1 and Client 2 session PIDs via `pg_backend_pid()`, verifying via `pg_blocking_pids($1)` that Client 2 (`pid2`) is actively blocked specifically by Client 1 (`pid1`) on an ungranted advisory lock (`is_waiting_advisory` and `$2 = ANY(pg_blocking_pids($1))`). Enforced bounded timeouts and wrapped all transactions in `try ... finally` blocks guaranteeing automatic rollback and unblocking without transaction or lock leakage (4/4 passed).
     - **RSS-to-Dossier Provenance & Corroboration**: Exported `parseGoogleNewsRss` in `trend-scout-service.js` extracting valid `<link>` URLs and ISO timestamps (`publishedAt` / `pubDate`). Added tests in `trend-scout.test.js` verifying acceptance and corroboration by `verifyResearchDossier`.
     - **Explicit Disposable Test Database Identity**: Hardened `validateTestDatabaseTarget` in `staging-database-guard.js` and `vitest.setup.js` to require an exact provisioned identity: localhost host, port 5433, database name `testdb` (or `*_test`), and disposable marker (`?disposable=true`). Explicitly rejects local production databases (`localhost:5432/production`) with `[SECURITY FATAL]` and refuses silent substitution of user-configured URLs.
+
+## 2.1.128 — Think Brain Rule 129: Character Knowledge Ledger & Spoiler Breach Continuity — 2026-09-21
+
+- **Think Brain Rule 129 (`CHARACTER_KNOWLEDGE_LEDGER`) (`server/src/bot-engine/editorial-intelligence-service.js`)**:
+  - Enforces knowledge continuity in stories where the central subject is the timing of information (spoilers, election results, surprise reveals, delayed broadcasts, medical/financial results, relationship discoveries).
+  - Invariant: A fact cannot arrive as a dramatic revelation if a character already possesses it through earlier dialogue or explicit scene narration.
+  - In spoiler-protection stories, all earlier spoiler attempts must be blocked before any result escapes. The climactic disclosure (e.g. TV crawl) must be the first successful breach.
+  - Flags early spoiler landings (`"[Name] won"`, `"took the second set"`) followed by discovery phrasing (`"now knew"`, `"arrived in the same frame"`).
+- **Story Continuity Repaired and Republished (Post `94a9272f-616e-4293-9e11-cd5a59004777`)**:
+  - Applied the three required 77/100 logic fixes to *"The Second Set at the Corner Shop"* by Devansh Roy:
+    1. **Shankar Spoiler Blocked**: Shankar now only attempts to spoil the match (*"Did you see Andreeva last night?"*, *"At least let me tell you what happened when Potapova—"*), and Bimal cuts him off and raises the volume before any result or set score escapes. The TV results crawl is now the true, first successful breach.
+    2. **Chronology Alignment**: Replaced *"Monday afternoon"* with *"he had been working through Monday evening and by the time he sat down with the cable box, the whole neighbourhood had already seen it on their phones"*, aligning with the ~8:30 PM IST / Monday evening broadcast window in India.
+    3. **Prose Tightening**: Cut redundant explanatory clause after *"The information and the event arrived in the same frame"*, moving immediately to *"He watched the first rally anyway. He reached over and switched off the cable box."*
+    4. Maintained the punchy final beat: *"On Bimal's phone, the unopened score notification was still waiting."*
+- **Test Suites Synchronized & Passing**:
+  - Suite 34 added to `server/test/zero-ai-slop-blockers.test.js` covering Rule 129 scenarios (5 tests).
+  - Cleaned up duplicate test blocks across Suites 32–34.
+  - 103/103 tests passing in `zero-ai-slop-blockers.test.js`; 734/734 tests passing across all 67 test files in the backend.
+- **Feeds & Sitemaps Regenerated**: All-RSS feed trifecta (`feed.xml`, `reddit-feed.xml`, `pinterest-feed.xml`, `sitemap.xml`, `news-sitemap.xml`) regenerated from the production database.
 
 ## 2.1.127 — Think Brain Rules 124–128: Replay Chronology, Point Detail Gate, Brand UI Guard, Theme Restatement Cutoff & Devansh Success Pattern — 2026-09-20
 

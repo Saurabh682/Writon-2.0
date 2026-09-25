@@ -86,12 +86,17 @@ export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now =
     let totalStories = countRes.rows[0]?.total || 0;
 
     // 2. Get the top story of the day.
-    // Morning: Trending story ranked by engagement velocity (likes, applaud/deep reading, recency).
+    // Morning: Trending story ranked by engagement velocity (likes, recency, deep reading).
     // Evening: Human-written deep reading story.
-    let topStoryRes = await pool.query(`
-      select p.id::text, p.title, p.summary, p.category, p.language_code,
-             author.full_name as "authorName", author.pen_name as "authorPenName",
-             coalesce(read_quality.deep_read_score, 0) as deep_read_score
+    // In both slots, stories not pushed in the last 30 days are prioritized first via the ledger cooldown subquery.
+    const storySelectFields = `
+      p.id::text, p.title, p.summary, p.category, p.language_code,
+      author.full_name as "authorName", author.pen_name as "authorPenName",
+      coalesce(read_quality.deep_read_score, 0) as deep_read_score
+    `;
+
+    const topStoryRes = await pool.query(`
+      select ${storySelectFields}
       from public.posts p
       inner join public.profiles author
         on author.id = p.author_id
@@ -118,20 +123,26 @@ export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now =
       where p.status = 'published' and p.is_public = true
         ${isMorning ? "and p.provenance in ('human_verified', 'synthetic')" : "and p.provenance = 'human_verified'"}
         and coalesce(p.published_at, p.created_at) >= now() - interval '24 hours'
-      order by ${isMorning ? 'p.likes_count desc, deep_read_score desc' : 'deep_read_score desc'},
+      order by (
+                 select count(*)
+                 from public.notification_dispatch_ledger ndl
+                 where ndl.dispatch_kind = 'daily_digest'
+                   and ndl.status = 'completed'
+                   and ndl.completed_at >= now() - interval '30 days'
+                   and ndl.result->>'topStoryId' = p.id::text
+               ) asc,
+               ${isMorning ? 'p.likes_count desc, deep_read_score desc' : 'deep_read_score desc'},
                coalesce(p.published_at, p.created_at) desc,
                p.likes_count desc
       limit 1
     `);
     let overallTopStory = topStoryRes?.rows?.[0];
 
-    // Fallback if no stories in last 24 hours: pick the best historical story (human-first, then any published)
+    // Fallback if no stories in last 24 hours: pick a random historical human story
+    // prioritizing unpushed stories from the last 30 days to ensure daily archive rotation
     if (!overallTopStory) {
-      // First try human-verified post
       let fallbackRes = await pool.query(`
-        select p.id::text, p.title, p.summary, p.category, p.language_code,
-               author.full_name as "authorName", author.pen_name as "authorPenName",
-               coalesce(read_quality.deep_read_score, 0) as deep_read_score
+        select ${storySelectFields}
         from public.posts p
         inner join public.profiles author
           on author.id = p.author_id
@@ -157,14 +168,21 @@ export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now =
         ) read_quality on true
         where p.status = 'published' and p.is_public = true
           and p.provenance = 'human_verified'
-        order by deep_read_score desc,
-                 coalesce(p.published_at, p.created_at) desc,
-                 p.likes_count desc
+          and p.id != '78de780b-4b44-54aa-8b7d-30b1a9cec193'
+        order by (
+                   select count(*)
+                   from public.notification_dispatch_ledger ndl
+                   where ndl.dispatch_kind = 'daily_digest'
+                     and ndl.status = 'completed'
+                     and ndl.completed_at >= now() - interval '30 days'
+                     and ndl.result->>'topStoryId' = p.id::text
+                 ) asc,
+                 random()
         limit 1
       `);
       overallTopStory = fallbackRes?.rows?.[0];
 
-      // If no human-verified post found, fall back to any published story (e.g. editorial bot)
+      // If no human-verified post found, fall back to any published story (random selection)
       if (!overallTopStory) {
         fallbackRes = await pool.query(`
           select p.id::text, p.title, p.summary, p.category, p.language_code,
@@ -174,8 +192,16 @@ export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now =
           inner join public.profiles author
             on author.id = p.author_id
           where p.status = 'published' and p.is_public = true
-          order by p.likes_count desc,
-                   coalesce(p.published_at, p.created_at) desc
+            and p.id != '78de780b-4b44-54aa-8b7d-30b1a9cec193'
+          order by (
+                     select count(*)
+                     from public.notification_dispatch_ledger ndl
+                     where ndl.dispatch_kind = 'daily_digest'
+                       and ndl.status = 'completed'
+                       and ndl.completed_at >= now() - interval '30 days'
+                       and ndl.result->>'topStoryId' = p.id::text
+                   ) asc,
+                   random()
           limit 1
         `);
         overallTopStory = fallbackRes?.rows?.[0];
@@ -414,6 +440,8 @@ export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now =
       directSkippedOrFailed: skipped,
       topicAttempted,
       topicAccepted,
+      topStoryId: overallTopStory.id,
+      topStoryTitle: overallTopStory.title,
     })]);
     return { sent, skipped, totalStories, topStory: overallTopStory.title, slot: resolvedSlot };
   } catch (error) {

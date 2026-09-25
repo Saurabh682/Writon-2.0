@@ -80,10 +80,7 @@ class WritOnModernActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         applyInitialEdgeToEdgeAppearance()
         super.onCreate(savedInstanceState)
-        val target = intent?.getStringExtra("targetRoute")
-        if (!handleExternalOrMarketRoute(target)) {
-            pendingNotificationRoute = target ?: resolveStoryDeepLink(intent?.dataString)
-        }
+        handleIncomingIntent(intent)
         WritOnTelemetry.appLaunched(applicationContext)
 
         WritOnNotificationManager.createNotificationChannels(this)
@@ -207,12 +204,17 @@ class WritOnModernActivity : AppCompatActivity() {
         requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
 
-    override fun onNewIntent(intent: android.content.Intent) {
+    override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        val target = intent.getStringExtra("targetRoute")
-        if (!handleExternalOrMarketRoute(target)) {
-            pendingNotificationRoute = target ?: resolveStoryDeepLink(intent.dataString)
+        handleIncomingIntent(intent)
+    }
+
+    private fun handleIncomingIntent(incoming: Intent?) {
+        val destination = extractNotificationTargetRoute(incoming)
+        val externalTarget = incoming?.getStringExtra("targetRoute")
+        if (destination?.startsWith("reader/") == true || !handleExternalOrMarketRoute(externalTarget)) {
+            pendingNotificationRoute = destination
         }
     }
 

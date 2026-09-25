@@ -701,6 +701,8 @@ export async function adminBotsRoutes(fastify, options) {
         from public.bot_activity_logs log
         left join public.profiles p on p.id = log.bot_id
         left join public.posts post on post.id = log.target_post_id
+        where coalesce(log.details->>'experiment_type', '') != 'jev_decision_layer'
+          and (log.bot_id is not null or log.action_type != 'spark_reaction')
         order by log.created_at desc
         limit $1 offset $2
       `, [limit + 1, offset]);

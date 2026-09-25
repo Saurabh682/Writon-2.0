@@ -12,9 +12,10 @@ describe('Editorial Service - Pure Unit Tests', () => {
     expect(calculateReadingTime('')).toBe(1);
     expect(calculateReadingTime('One two three')).toBe(1);
     const words400 = new Array(400).fill('word').join(' ');
-    expect(calculateReadingTime(words400)).toBe(2);
+    expect(calculateReadingTime(words400)).toBe(3); // 400 / 140 = 2.86 -> 3 min
     const words1000 = new Array(1000).fill('word').join(' ');
-    expect(calculateReadingTime(words1000)).toBe(5);
+    expect(calculateReadingTime(words1000)).toBe(7); // 1000 / 140 = 7.14 -> 7 min
+
   });
 
   it('detects and blocks forbidden marketing/AI cliches', () => {

@@ -2008,193 +2008,8 @@ At half-past nine in Manhattan, no opening bell sounds. Across the country, groc
   }); // closes Suite 31 (Sunita Labor Day)
 }); // closes outer describe
 
-describe('Zero AI Slop Engine — Suites 32–33 (Devansh Roy)', () => {
-  describe('32. THINK BRAIN RULES 118–123: SPORTS BROADCAST BINDING, SURFACE REALISM, TITLE CONTRACT, DEVANSH PROP COOLDOWN & VIGNETTE DETECTION', () => {
-    // Rule 118: SPORTS_VIEWING_TIME_BINDING
-    it('118. SPORTS_VIEWING_TIME_BINDING — flags 4am Kolkata with live score updates and no replay tag', () => {
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'The Second Set at the Corner Shop',
-        content: `Bimal found the replay on Sunday evening. He wanted to watch the US Open match before anyone spoiled it. The shop was quiet.`,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-      const codes = res.violations.map(v => v.rule);
-      expect(codes).toContain('SPORTS_REPLAY_CHRONOLOGY');
-    });
-
-    it('124. SPORTS_REPLAY_CHRONOLOGY — passes when replay is on Tuesday after a Monday match', () => {
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'The Second Set at the Corner Shop',
-        content: `Bimal found the replay a little after midnight on Tuesday. The US Open match had been played Monday afternoon New York time. The neighbourhood had already seen it on their phones.`,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-      const codes = res.violations.map(v => v.rule);
-      expect(codes).not.toContain('SPORTS_REPLAY_CHRONOLOGY');
-    });
-
-    // Rule 125: SPORTS_POINT_DETAIL_GATE
-    it('125. SPORTS_POINT_DETAIL_GATE — flags unsupported intra-game claim', () => {
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'Match Story',
-        content: `Potapova was going to break serve in the fourth game. He knew this now and watched her do it.`,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-      const codes = res.violations.map(v => v.rule);
-      expect(codes).toContain('SPORTS_POINT_DETAIL_GATE');
-    });
-
-    it('125. SPORTS_POINT_DETAIL_GATE — passes with set-level description only', () => {
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'Match Story',
-        content: `Bimal now knew that Andreeva would eventually take the second set 6–4. He watched the first rally anyway.`,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-      const codes = res.violations.map(v => v.rule);
-      expect(codes).not.toContain('SPORTS_POINT_DETAIL_GATE');
-    });
-
-    // Rule 126: REAL_BRAND_UI_INVENTION
-    it('126. REAL_BRAND_UI_INVENTION — flags invented ESPN ticker format description', () => {
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'Match Story',
-        content: `The crawl that ESPN runs continuously along the bottom of the screen displayed the result in white capitals.`,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-      const codes = res.violations.map(v => v.rule);
-      expect(codes).toContain('REAL_BRAND_UI_INVENTION');
-    });
-
-    it('126. REAL_BRAND_UI_INVENTION — passes with generic fictional interface', () => {
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'Match Story',
-        content: `A results crawl appeared along the bottom of the sports channel. Pradeep saw it first.`,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-      const codes = res.violations.map(v => v.rule);
-      expect(codes).not.toContain('REAL_BRAND_UI_INVENTION');
-    });
-
-    // Rule 127: THEME_ALREADY_DRAMATIZED_FAIL
-    it('127. THEME_ALREADY_DRAMATIZED_FAIL — flags post-climax philosophical gloss', () => {
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'The Corner Shop',
-        content: `He switched off the television. He was not sure what that meant about replays and information and delay. The room was quiet.`,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-      const codes = res.violations.map(v => v.rule);
-      expect(codes).toContain('THEME_ALREADY_DRAMATIZED_FAIL');
-    });
-
-    it('127. THEME_ALREADY_DRAMATIZED_FAIL — passes when ending is behavioral with no restatement', () => {
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'The Corner Shop',
-        content: `He reached over and switched off the cable box. On his phone, the unopened score notification was still waiting.`,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-      const codes = res.violations.map(v => v.rule);
-      expect(codes).not.toContain('THEME_ALREADY_DRAMATIZED_FAIL');
-    });
-
-    // Rule 128: DEVANSH_SUCCESS_PATTERN
-    it('128. DEVANSH_SUCCESS_PATTERN — flags behavioral consequence followed by philosophical monologue', () => {
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'The Corner Shop',
-        content: `Bimal decided to turn off the screen. He was not sure what that meant for information and experience and the distance between the two. He was quiet for a long time.`,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-      const codes = res.violations.map(v => v.rule);
-      expect(codes).toContain('DEVANSH_SUCCESS_PATTERN');
-    });
-
-    it('128. DEVANSH_SUCCESS_PATTERN — passes with behavioral consequence and no philosophical monologue', () => {
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'The Corner Shop',
-        content: `Bimal reached over and switched off the cable box. Pradeep let himself out. The notification on the phone was still unread.`,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-      const codes = res.violations.map(v => v.rule);
-      expect(codes).not.toContain('DEVANSH_SUCCESS_PATTERN');
-    });
-
-    // Full repaired calibrated draft passes all rules
-    it('Calibrated repaired draft passes all Devansh rules (86/100 → approved story)', () => {
-      const repairedStory = `# The Second Set at the Corner Shop
-
-Bimal found the replay a little after midnight on Tuesday. He had missed the match live — he had been unloading delivery crates all Monday afternoon — and by the time he sat down with the cable box, the whole neighbourhood had already seen it on their phones.
-
-He knew this about the neighbourhood. He locked the front shutter to three-quarters closed and turned the set on.
-
-The first customer arrived at twelve forty. Shankar from the chemist's, who still wore his work shirt.
-
-"Andreeva won," Shankar said, by way of greeting.
-
-"You are not coming in," Bimal said.
-
-Shankar looked at the gap in the shutter. "I can see the screen from here."
-
-"The screen is not for you. Go home."
-
-Shankar stayed at the gap. "She took the second set 6–4 after Potapova—"
-
-"Stop." Bimal moved a plastic crate in front of the shutter gap. The crate made it worse. Shankar simply stepped to the left.
-
-"Potapova injured her knee late in the third," Shankar said. "Andreeva went around the net to—"
-
-Bimal turned the volume to maximum.
-
-The second customer arrived at one fifteen. His name was Pradeep and he had seen the score on his phone on the way back from the pharmacy. He had not seen the match itself, only the result, so he said he was neutral.
-
-"Neutral means you don't know things I don't know," Bimal said.
-
-"I only know who won."
-
-"That is the only thing I don't want to know."
-
-Pradeep considered this. "So you want to watch a match knowing that uncertainty is false?"
-
-"I want to watch a match."
-
-Pradeep sat down. He was quiet for four minutes. The screen showed the first set. Potapova taking it 7–5. The shop was quiet in the way that only replays are quiet — the crowd noise real, the tension borrowed, the result already written somewhere in everyone's pocket.
-
-A results crawl appeared along the bottom of the sports channel. Pradeep saw it first. He looked at Bimal. Bimal was watching the match, not the crawl.
-
-Then Bimal saw it: ANDREEVA def. POTAPOVA 5–7, 6–4, 6–3.
-
-The second set was beginning on screen. Bimal now knew that Andreeva would eventually take it 6–4. He watched the first rally anyway. The information and the event arrived in the same frame. For thirty seconds he watched knowing, and the experience was identical in every visible way to the thirty seconds before — and entirely different in the one way that mattered.
-
-He reached over and switched off the cable box.
-
-"That's it?" Pradeep said.
-
-"That's it," Bimal said.
-
-On Bimal's phone, the unopened score notification was still waiting.`;
-
-      const res = validateZeroAISlopEngineBlockers({
-        title: 'The Second Set at the Corner Shop',
-        content: repairedStory,
-        category: 'Short Stories',
-        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
-      });
-
-      expect(res.violations, `Expected no violations but got: ${JSON.stringify(res.violations)}`).toEqual([]);
-      expect(res.isValid).toBe(true);
-    });
-  });
-});
-
-
-describe('Zero AI Slop Engine — Suite 33 (Devansh Roy, Rules 124–128)', () => {
-  describe('33. THINK BRAIN RULES 124–128: REPLAY CHRONOLOGY, POINT DETAIL GATE, BRAND UI INVENTION, THEME RESTATEMENT & DEVANSH SUCCESS PATTERN', () => {
+describe('Zero AI Slop Engine — Suites 32–33 (Devansh Roy, Rules 118–128)', () => {
+  describe('32–33. THINK BRAIN RULES 118–128: SPORTS BROADCAST BINDING, SURFACE REALISM, CHRONOLOGY, REPLAY LOGIC & DEVANSH ENGINES', () => {
     // Rules 124-128 derived from the 86/100 editorial review of "The Second Set at the Corner Shop"
 
     it('118. SPORTS_VIEWING_TIME_BINDING — flags 4am Kolkata with live score updates and no replay tag', () => {
@@ -2426,17 +2241,17 @@ describe('Zero AI Slop Engine — Suite 33 (Devansh Roy, Rules 124–128)', () =
       expect(codes).not.toContain('DEVANSH_SUCCESS_PATTERN');
     });
 
-    // Calibrated repaired story (86/100 micro-repairs applied) passes all rules
+    // Calibrated repaired story (77/100 → approved repairs applied) passes all rules 118–128
     it('Calibrated repaired story passes all rules 118–128', () => {
       const repairedStory = `# The Second Set at the Corner Shop
 
-Bimal found the replay a little after midnight on Tuesday. He had missed the match live — he had been unloading delivery crates all Monday afternoon — and by the time he sat down with the cable box, the whole neighbourhood had already seen it on their phones.
+Bimal found the replay a little after midnight on Tuesday. He had missed the match live — he had been working through Monday evening and by the time he sat down with the cable box, the whole neighbourhood had already seen it on their phones.
 
 He knew this about the neighbourhood. He locked the front shutter to three-quarters closed and turned the set on.
 
 The first customer arrived at twelve forty. Shankar from the chemist's, who still wore his work shirt.
 
-"Andreeva won," Shankar said, by way of greeting.
+"Did you see Andreeva last night?" Shankar said, by way of greeting.
 
 "You are not coming in," Bimal said.
 
@@ -2444,11 +2259,11 @@ Shankar looked at the gap in the shutter. "I can see the screen from here."
 
 "The screen is not for you. Go home."
 
-Shankar stayed at the gap. "She took the second set 6–4 after Potapova—"
+Shankar stayed at the gap. "At least let me tell you what happened when Potapova—"
 
 "Stop." Bimal moved a plastic crate in front of the shutter gap. The crate made it worse. Shankar simply stepped to the left.
 
-"Potapova injured her knee late in the third," Shankar said. "Andreeva went around the net to—"
+"It was in the third set when she—"
 
 Bimal turned the volume to maximum.
 
@@ -2470,7 +2285,7 @@ A results crawl appeared along the bottom of the sports channel. Pradeep saw it 
 
 Then Bimal saw it: ANDREEVA def. POTAPOVA 5–7, 6–4, 6–3.
 
-The second set was beginning on screen. Bimal now knew that Andreeva would eventually take it 6–4. He watched the first rally anyway. The information and the event arrived in the same frame. For thirty seconds he watched knowing, and the experience was identical in every visible way to the thirty seconds before — and entirely different in the one way that mattered.
+The second set was beginning on screen. The information and the event arrived in the same frame. He watched the first rally anyway.
 
 He reached over and switched off the cable box.
 
@@ -2492,3 +2307,367 @@ On Bimal's phone, the unopened score notification was still waiting.`;
     });
   }); // closes Suite 33 inner describe
 }); // closes Suite 33 outer describe
+
+describe('Zero AI Slop Engine — Suite 34 (Rule 129: CHARACTER_KNOWLEDGE_LEDGER)', () => {
+  describe('34. CHARACTER_KNOWLEDGE_LEDGER: KNOWLEDGE CONTINUITY IN SPOILER-TIMING STORIES', () => {
+
+    // Rule 129 FAIL: character told winner in dialogue, then prose presents same fact as discovery
+    it('129. CHARACTER_KNOWLEDGE_LEDGER — flags "Andreeva won" landing then "arrived in same frame" treated as revelation', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: `"Andreeva won," Shankar said.
+"Go home," Bimal said.
+Later, Bimal saw the score crawl. The information and the event arrived in the same frame.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('CHARACTER_KNOWLEDGE_LEDGER');
+    });
+
+    it('129. CHARACTER_KNOWLEDGE_LEDGER — flags winner in dialogue followed by "now knew"', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Match Story',
+        content: `"Andreeva won," someone said at the door. Bimal ignored it and kept watching.
+Later the ticker showed ANDREEVA def. POTAPOVA. Bimal now knew the result. He switched off the screen.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('CHARACTER_KNOWLEDGE_LEDGER');
+    });
+
+    it('129. CHARACTER_KNOWLEDGE_LEDGER — flags set-score landing in dialogue then rediscovered', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Match Story',
+        content: `"She took the second set 6–4 after Potapova—" Shankar began.
+"Stop," Bimal said. He kept watching.
+Then the crawl showed Andreeva taking the second set. He now knew. He switched off.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).toContain('CHARACTER_KNOWLEDGE_LEDGER');
+    });
+
+    // Rule 129 PASS: all spoiler attempts blocked, crawl is the first successful breach
+    it('129. CHARACTER_KNOWLEDGE_LEDGER — passes when all prior attempts are blocked and crawl is first breach', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Second Set at the Corner Shop',
+        content: `"Did you see Andreeva last night?" Shankar said.
+"You are not coming in," Bimal said.
+"At least let me tell you what happened when Potapova—"
+"Stop."
+Bimal turned the volume to maximum.
+Later, Pradeep arrived. "I only know who won."
+"That is the only thing I don't want to know."
+A results crawl appeared. Pradeep saw it first. Then Bimal saw it: ANDREEVA def. POTAPOVA 5–7, 6–4, 6–3.
+The information and the event arrived in the same frame. He watched the first rally anyway.
+He switched off the cable box.
+On Bimal's phone, the unopened score notification was still waiting.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('CHARACTER_KNOWLEDGE_LEDGER');
+    });
+
+    it('129. CHARACTER_KNOWLEDGE_LEDGER — passes in non-spoiler story without knowledge-timing conflict', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'A Morning Walk',
+        content: `She walked to the market early. The vendors were setting up. She bought tomatoes and a newspaper. The headlines did not concern her. She took the longer route home.`,
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      const codes = res.violations.map(v => v.rule);
+      expect(codes).not.toContain('CHARACTER_KNOWLEDGE_LEDGER');
+    });
+  });
+
+  describe('Zero AI Slop Engine — Suite 35 (Rules 130-136: Devansh Regression Prevention & Real-Person Discipline)', () => {
+    it('130. DEVANSH_PROP_CLUSTER_HARD_FAIL — flags 3+ props from retired costume cluster', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Monsoon Morning',
+        content: 'The rain drummed on the corrugated tin of the tea stall in North Kolkata. Outside, a stray dog lay under the tram tracks while the radio static buzzed.',
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'DEVANSH_PROP_CLUSTER_HARD_FAIL')).toBe(true);
+    });
+
+    it('131. REAL_PERSON_PRIVATE_MEMORY_FAIL — flags invented private intimacy for real biographical figure', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Sound of the Studio',
+        content: 'Billy Joel and Jon Small sat in the control booth. It ignores the cigarettes shared at 3 AM in a studio, the hum of a bass guitar that only two people heard, the frustration of a melody that refused to land.',
+        category: 'Essays',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'REAL_PERSON_PRIVATE_MEMORY_FAIL')).toBe(true);
+    });
+
+    it('132. DECORATIVE_SOURCE_FAIL — flags real person used as generic grief bridge', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'A Passing Chord',
+        content: 'He didn’t know who Jon Small was, but he understood the silence that followed a departure in the neighborhood.',
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'DECORATIVE_SOURCE_FAIL')).toBe(true);
+    });
+
+    it('133. THEMATIC_APHORISM_DIALOGUE_FAIL — flags quote-card aphorism in character dialogue', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Drummer',
+        content: '"When a man who keeps the rhythm goes, the drummer feels it in his own wrists," Haren-da said slowly.',
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'THEMATIC_APHORISM_DIALOGUE_FAIL')).toBe(true);
+    });
+
+    it('134. SHORT_STORY_ENGINE_GATE — flags mood vignette with closed notebook and no decision', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Broadcast',
+        content: 'He heard the news from the speaker. He thought of old times. He sipped his hot tea and quietly closed the notebook as the hour ended.',
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'SHORT_STORY_ENGINE_GATE')).toBe(true);
+    });
+
+    it('135. AMBIENT_MELANCHOLY_ENDING_FAIL — flags ending with tea, rain, notebook, and window observation', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Evening Notes',
+        content: 'The narrative developed over several paragraphs. The tea was cold in the cup. The rain drummed softly on the window pane. He closed the notebook as the ink blurred, quietly observing the dark street below.',
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'AMBIENT_MELANCHOLY_ENDING_FAIL')).toBe(true);
+    });
+
+    it('136. DEVANSH_SOURCE_MECHANIC_REQUIREMENT — flags generic grief mood when handling obituaries', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'An Obituary for the City',
+        content: 'He reflected on the silence that followed the departure of an artist, mourning a friend and the unseen person behind the star.',
+        category: 'Essays',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'DEVANSH_SOURCE_MECHANIC_REQUIREMENT')).toBe(true);
+    });
+
+    it('Rules 130-136 PASS — passes analytical essay examining relationship compression in public obituaries', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Word Between Friend and Collaborator',
+        content: `When Billy Joel announced the death of Jon Small, the headline compressed half a century into three safe nouns: friend, bandmate, collaborator. 
+What the obituary label erases is the friction of the documented record. In 1970, after their heavy rock duo Attila disbanded, Joel fell in love with Small's wife, Elizabeth Weber. The breach destroyed both the band and the partnership. When Joel attempted suicide shortly thereafter, it was Small who discovered him and drove him to Meadowbrook Hospital, saving his life.
+Decades later, after years of silence and estrangement, Small would direct the defining music videos of Joel's pop renaissance, including "Uptown Girl" and "Keeping the Faith."
+Public labels like "longtime collaborator" exist because an archive demands tidy categories. Media provenance requires compression; what it costs is the jagged human truth of rescue following betrayal.`,
+        category: 'Essays',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(true);
+      expect(res.violations.length).toBe(0);
+    });
+  });
+
+  describe('Zero AI Slop Engine — Suite 36 (Rules 130 Expansion & Rules 137-140: Representation vs. Record Discipline)', () => {
+    it('130. DEVANSH_PROP_CLUSTER_HARD_FAIL — flags expanded prop cluster (Bhabani-da, clay cup, wiping rag, dying battery)', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Morning Along the Tracks',
+        content: 'Bhabani-da poured the steaming brew into a clay cup while a wiping rag swiped across the counter. The phone battery at 4% flickered in the tea stall.',
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'DEVANSH_PROP_CLUSTER_HARD_FAIL')).toBe(true);
+    });
+
+    it('133. THEMATIC_APHORISM_DIALOGUE_FAIL — flags antithetical quote-card dialogue (You worry about X, I worry about Y)', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Counter',
+        content: '"You worry about the silicon. I worry about the tea," the older man remarked with a slow nod.',
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'THEMATIC_APHORISM_DIALOGUE_FAIL')).toBe(true);
+    });
+
+    it('137. REPRESENTATION_VS_RECORD_GATE — flags trading graphic piece lacking primary filing or SEC record', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Screens and Trades',
+        content: 'A viral screenshot of an AI-generated image showed a trading screen claiming Intel was bought at $20 and now worth $95, generating 100 billion dollars.',
+        category: 'Essays',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'REPRESENTATION_VS_RECORD_GATE')).toBe(true);
+    });
+
+    it('138. TITLE_CONCEPT_CONTRACT — flags title promising a Ledger when content has no accounting mechanics', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Ghost in the Silicon Ledger',
+        content: 'He walked through the quiet streets thinking of memory and mist, wondering how shadows linger in our minds long after the sun goes down.',
+        category: 'Essays',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'TITLE_CONCEPT_CONTRACT')).toBe(true);
+    });
+
+    it('139. CURRENT_EVENT_STORY_GATE — flags passive observer without protagonist agency in current event story', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Viral Post',
+        content: 'He looked at the breaking news and the viral post on his phone. The trading screen flashed with numbers. He simply stared outside the window as people passed by.',
+        category: 'Short Stories',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'CURRENT_EVENT_STORY_GATE')).toBe(true);
+    });
+
+    it('140. MARKET_CAUSALITY_DISCIPLINE — flags simplistic monocausal attribution of stock surge to single post', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Single Post Rally',
+        content: 'The stock surged 9% and the share price rose solely because the president posted the image on social media.',
+        category: 'Essays',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'MARKET_CAUSALITY_DISCIPLINE')).toBe(true);
+    });
+
+    it('Rules 130-140 PASS — passes verification researcher investigating synthetic trade image against SEC filings', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Ghost in the Silicon Ledger',
+        content: `At 7:15 AM, the terminal alert landed on the verification desk: an AI-generated image shared across social feeds depicting Donald Trump seated before glowing trading terminals. Above his profile, synthetic green typography stamped two lines: "BOUGHT: INTEL $20" and "NOW $95." Below, the caption asserted hundreds of billions made for the United States.
+I had ninety minutes to file the provenance note before the morning market open.
+The image was a synthetic fabrication, easily flagged by distorted finger anatomy and rendering artifacts. But when I queried the SEC EDGAR system, the statutory ledger revealed something stranger than a fake graphic.
+Under the August 2025 CHIPS Act capital agreement, the federal government had executed a formal agreement to purchase 433.3 million Intel shares at a cost basis of $20.47 per share. On September 4, Intel closed at $95.80, representing an unrealized paper gain of over thirty-two billion dollars. Over the weekend, Intel shares jumped another 4% in overnight trading and rose 9% the following Tuesday—buoyed not merely by social buzz, but by institutional analyst upgrades and semiconductor foundry developments.
+The synthetic image compressed statutory appropriation, equity dilution, and federal industrial policy into a day-trader's private triumph. Every component held a grain of truth, but the representation invented an entirely fictitious transaction.
+I drafted the verification note, logged the SEC 8-K discrepancy into the database, and stamped the finding: verified financial ledger, synthetic provenance.`,
+        category: 'Essays',
+        persona: { penName: 'devansh_roy', fullName: 'Devansh Roy' }
+      });
+      expect(res.isValid).toBe(true);
+      expect(res.violations.length).toBe(0);
+    });
+  });
+
+  describe('Suite 37: Rules 141–147 Narrative Consequence, Metaphor Dependency, Aphoristic Mouthpieces, Code Policy Enforcement, Arshdeep Cooldowns, Prop Density, and Local Price Reality', () => {
+    it('141. NARRATIVE_CONSEQUENCE_TEST — flags short story where character merely browses online and defers with no consequence', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Looking at the Screen',
+        content: 'He opened a browser tab on his phone looking at the screen. They talked about life and ambition. Then he closed the tab, murmuring that some stories aren\'t meant to be started yet.',
+        category: 'Short Stories',
+        persona: { penName: 'gurpreet_sandhu', fullName: 'Gurpreet Sandhu' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'NARRATIVE_CONSEQUENCE_TEST')).toBe(true);
+    });
+
+    it('142. METAPHOR_DEPENDENCY_FAIL — flags product launch used as generic vehicle for ambition and arrival', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Two Wheeler',
+        content: 'At the showroom, this motorcycle isn\'t just an entry in a catalog; it\'s a marker of a specific kind of arrival for our collective ambition.',
+        category: 'Essays',
+        persona: { penName: 'gurpreet_sandhu', fullName: 'Gurpreet Sandhu' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'METAPHOR_DEPENDENCY_FAIL')).toBe(true);
+    });
+
+    it('143. SUPPORTING_CHARACTER_AS_THESIS_MOUTHPIECE_FAIL — flags supporting character delivering polished quote card', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Garage Talk',
+        content: 'Kabir wiped his hands and said, "The machine is only as fast as the story you are trying to outrun."',
+        category: 'Short Stories',
+        persona: { penName: 'gurpreet_sandhu', fullName: 'Gurpreet Sandhu' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'SUPPORTING_CHARACTER_AS_THESIS_MOUTHPIECE_FAIL')).toBe(true);
+    });
+
+    it('144. WRITER_RULE_VIOLATION_CODE_FORBIDDEN — flags pseudocode interface inserted into short story', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Decision Logic',
+        content: `He looked at the numbers and thought of his savings.
+\`\`\`typescript
+interface Aspirations {
+  freedom: number;
+  utility: number;
+}
+function decidePurchase(): boolean {
+  return false; // The logic of the 'not yet'
+}
+\`\`\`
+He decided to wait.`,
+        category: 'Short Stories',
+        persona: { penName: 'gurpreet_sandhu', fullName: 'Gurpreet Sandhu' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'WRITER_RULE_VIOLATION_CODE_FORBIDDEN')).toBe(true);
+    });
+
+    it('145. ARSHDEEP_TITLE_COOLDOWN — flags title reusing exhausted geometry or choosing tokens', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'Chrome, Dust, and the Geometry of Choosing',
+        content: 'He looked at the workshop tools and weighed the decision in silence.',
+        category: 'Short Stories',
+        persona: { penName: 'gurpreet_sandhu', fullName: 'Gurpreet Sandhu' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'ARSHDEEP_TITLE_COOLDOWN')).toBe(true);
+    });
+
+    it('146. HOUSE_STYLE_PROP_DENSITY — flags cluster of rain, grease, phone glow, and deferred not yet', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Workshop Evening',
+        content: 'The air had the scent of old grease and rainy-season humidity. On his phone, the screen glow lit the dark room as he surrendered to the logic of the not yet.',
+        category: 'Short Stories',
+        persona: { penName: 'gurpreet_sandhu', fullName: 'Gurpreet Sandhu' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'HOUSE_STYLE_PROP_DENSITY')).toBe(true);
+    });
+
+    it('147. NUMERICAL_PRECISION_AND_LOCAL_REALITY — flags floating vague price and cross-story contamination', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Showroom Price',
+        content: 'The new Jawa 42 was oscillating between 1.80 and 1.85 lakh. Like a student in a drafty Boston attic, Kabir hesitated.',
+        category: 'Short Stories',
+        persona: { penName: 'gurpreet_sandhu', fullName: 'Gurpreet Sandhu' }
+      });
+      expect(res.isValid).toBe(false);
+      expect(res.violations.some(v => v.rule === 'NUMERICAL_PRECISION_AND_LOCAL_REALITY')).toBe(true);
+      expect(res.violations.some(v => v.rule === 'CROSS_STORY_CONTAMINATION_FAIL')).toBe(true);
+    });
+
+    it('Rules 141-147 PASS — passes properly grounded narrative with real dealer pricing and workshop roof trade-off', () => {
+      const res = validateZeroAISlopEngineBlockers({
+        title: 'The Quotation on the Workbench',
+        content: `The printed estimate from the Jawa dealership near Rama Mandi lay between two metric spanners on the wooden bench.
+The national press release had trumpeted ₹1.85 lakh ex-showroom for the Jawa 42 All Stars, with the black variant stepping up to ₹1.90 lakh. But the carbon-copied quotation Kabir held in his hand told a heavier story: road tax, registration, mandatory zero-depreciation insurance, and dealer logistics inflated the final Jalandhar on-road total to ₹2,10,480.
+"Two-ten on road," Kabir said, tapping the bottom corner of the invoice where the dealer had stamped the booking deposit figure of ten thousand rupees. "They never put that number in the headline."
+For three months, he had wanted this motorcycle. He had pictured the 294.72cc liquid-cooled single-cylinder machine parked outside the workshop, its redesigned exhaust pipes catching the morning sun before the daily rush of repair jobs began. The reviews praised the wider rear tyre, the reworked side panels, and the smoother six-speed transmission. But mechanically, as Kabir well understood from years of rebuilding overhead-cam singles, the core engine architecture remained largely identical to the roadster Jawa had built since 2018. The desire was real, but so was the engineering reality.
+Beside the workbench sat his father's 1984 Mysore Kirloskar lathe. That morning, water from the pre-monsoon squall had dripped through the rusted corrugated roof above, pooling in the oil tray and threatening the three-phase motor windings. The tin merchant in the Focal Point industrial area had quoted ₹42,000 for twenty-six gauge sheets and structural angle iron to replace the decaying roof trusses before the heavy October rains arrived.
+Kabir needed to protect the workshop. He opened his Punjab National Bank passbook. The balance stamped in purple ink read ₹1,27,450.
+The down payment for the All Stars was ₹55,000, accompanied by a three-year loan schedule that would claim ₹5,800 every month. If he signed the loan agreement on Monday, the workshop roof would remain open to the sky through the coming storms. If a sudden cloudburst drowned the lathe motor, rewinding the copper coils would cost twenty thousand rupees and kill three weeks of contract milling for the agricultural pump manufacturers in Kartarpur.
+He stood looking at the quotation for two long minutes. The dealership had pre-filled his name on the delivery reservation form, waiting for his signature.
+Kabir decided the lathe came first. He folded the dealer estimate in half, pressed it flat under the heavy cast-iron flywheel of the lathe, and picked up his seventeen-millimeter socket wrench. He called the tin merchant, confirmed the delivery of eight corrugated sheets for Thursday morning, and refused to let the storm ruin the machine that fed his family.`,
+        category: 'Short Stories',
+        persona: { penName: 'gurpreet_sandhu', fullName: 'Gurpreet Sandhu' }
+      });
+      expect(res.isValid).toBe(true);
+      expect(res.violations.length).toBe(0);
+    });
+  });
+});
+

@@ -138,7 +138,7 @@ export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now =
     `);
     let overallTopStory = topStoryRes?.rows?.[0];
 
-    // Fallback if no stories in last 24 hours: pick the best historical human story
+    // Fallback if no stories in last 24 hours: pick a random historical human story
     // prioritizing unpushed stories from the last 30 days to ensure daily archive rotation
     if (!overallTopStory) {
       let fallbackRes = await pool.query(`
@@ -168,6 +168,7 @@ export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now =
         ) read_quality on true
         where p.status = 'published' and p.is_public = true
           and p.provenance = 'human_verified'
+          and p.id != '78de780b-4b44-54aa-8b7d-30b1a9cec193'
         order by (
                    select count(*)
                    from public.notification_dispatch_ledger ndl
@@ -176,14 +177,12 @@ export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now =
                      and ndl.completed_at >= now() - interval '30 days'
                      and ndl.result->>'topStoryId' = p.id::text
                  ) asc,
-                 deep_read_score desc,
-                 coalesce(p.published_at, p.created_at) desc,
-                 p.likes_count desc
+                 random()
         limit 1
       `);
       overallTopStory = fallbackRes?.rows?.[0];
 
-      // If no human-verified post found, fall back to any published story
+      // If no human-verified post found, fall back to any published story (random selection)
       if (!overallTopStory) {
         fallbackRes = await pool.query(`
           select p.id::text, p.title, p.summary, p.category, p.language_code,
@@ -193,6 +192,7 @@ export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now =
           inner join public.profiles author
             on author.id = p.author_id
           where p.status = 'published' and p.is_public = true
+            and p.id != '78de780b-4b44-54aa-8b7d-30b1a9cec193'
           order by (
                      select count(*)
                      from public.notification_dispatch_ledger ndl
@@ -201,8 +201,7 @@ export async function runDailyDigest(pool, firebaseMessaging, log, { slot, now =
                        and ndl.completed_at >= now() - interval '30 days'
                        and ndl.result->>'topStoryId' = p.id::text
                    ) asc,
-                   p.likes_count desc,
-                   coalesce(p.published_at, p.created_at) desc
+                   random()
           limit 1
         `);
         overallTopStory = fallbackRes?.rows?.[0];

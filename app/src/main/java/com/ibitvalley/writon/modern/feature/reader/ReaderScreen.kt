@@ -58,6 +58,14 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 import com.ibitvalley.writon.modern.core.designsystem.theme.getThemeColorScheme
+import com.ibitvalley.writon.modern.core.config.WritOnRemoteConfig
+import com.ibitvalley.writon.modern.feature.reader.card.StoryCardSheet
+import com.ibitvalley.writon.modern.feature.reader.card.ExcerptSuggester
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Style
+import androidx.compose.material.icons.filled.FormatQuote
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.foundation.border
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -86,9 +94,13 @@ fun ReaderScreen(
     val post by viewModel.post.collectAsState()
     val nextStory by viewModel.nextStory.collectAsState()
     val comments by viewModel.comments.collectAsState()
-    val scrollState = rememberScrollState()
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
     var showAppearanceSheet by remember { mutableStateOf(false) }
+    var showCardSheet by remember { mutableStateOf(false) }
+    var cardExcerptMode by remember { mutableStateOf(false) }
+    var selectedExcerptText by remember { mutableStateOf("") }
+    val isQuoteCardEnabled = remember { WritOnRemoteConfig.isQuoteCardShareEnabled }
 
     var openedLogged by remember(post?.id) { mutableStateOf(false) }
     var completedLogged by remember(post?.id) { mutableStateOf(false) }
@@ -243,6 +255,21 @@ fun ReaderScreen(
                             colorFilter = if (post?.isBookmarked == true) null else androidx.compose.ui.graphics.ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
                         )
                     }
+                    if (isQuoteCardEnabled) {
+                        IconButton(onClick = {
+                            post?.let { currentPost ->
+                                selectedExcerptText = ExcerptSuggester.suggestExcerpt(currentPost.content, currentPost.title)
+                                showCardSheet = true
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.FormatQuote,
+                                contentDescription = "Share Story Card",
+                                modifier = Modifier.size(24.dp),
+                                tint = BrandRed
+                            )
+                        }
+                    }
                     IconButton(onClick = { post?.let { shareStory(context, it) } }) {
                         Image(
                             painterResource(R.drawable.ic_share),
@@ -272,7 +299,13 @@ fun ReaderScreen(
                         }
                         story.let { WritOnTelemetry.storyBookmarked(context, it.id, isGuest) }
                     },
-                    onShare = { shareStory(context, story) }
+                    onShare = { shareStory(context, story) },
+                    onCardShare = if (isQuoteCardEnabled) {
+                        {
+                            selectedExcerptText = ExcerptSuggester.suggestExcerpt(story.content, story.title)
+                            showCardSheet = true
+                        }
+                    } else null
                 )
             }
         },
@@ -318,7 +351,14 @@ fun ReaderScreen(
                         blocks = contentBlocks,
                         fontSizeSp = readerFontSizeSp,
                         lineMultiplier = readerLineMultiplier,
-                        fontFamilyChoice = readerFontFamilyChoice
+                        fontFamilyChoice = readerFontFamilyChoice,
+                        cardExcerptMode = cardExcerptMode,
+                        onParagraphSelected = if (isQuoteCardEnabled) {
+                            { text ->
+                                selectedExcerptText = text
+                                showCardSheet = true
+                            }
+                        } else null
                     )
                 }
                 Spacer(Modifier.height(WritOnSpacing.xxl))
@@ -513,6 +553,23 @@ fun ReaderScreen(
         }
     }
 
+    if (showCardSheet) {
+        post?.let { currentStory ->
+            val cardSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+            StoryCardSheet(
+                sheetState = cardSheetState,
+                initialExcerpt = selectedExcerptText.ifBlank {
+                    ExcerptSuggester.suggestExcerpt(currentStory.content, currentStory.title)
+                },
+                post = currentStory,
+                onDismiss = {
+                    showCardSheet = false
+                    cardExcerptMode = false
+                }
+            )
+        }
+    }
+
     }
 }
 
@@ -552,7 +609,9 @@ private fun ReaderBody(
     blocks: List<ReaderContentBlock>,
     fontSizeSp: Float = 20f,
     lineMultiplier: Float = 1.6f,
-    fontFamilyChoice: String = "serif"
+    fontFamilyChoice: String = "serif",
+    cardExcerptMode: Boolean = false,
+    onParagraphSelected: ((String) -> Unit)? = null
 ) {
     if (blocks.isEmpty()) return
 
@@ -582,7 +641,19 @@ private fun ReaderBody(
         }
         when (block) {
             ReaderContentBlock.Divider -> HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            is ReaderContentBlock.Quote -> ReaderQuoteBlock(block.text, bodyTextStyle, fontSizeSp, lineMultiplier)
+            is ReaderContentBlock.Quote -> {
+                val quoteModifier = if (onParagraphSelected != null) {
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onParagraphSelected(block.text) }
+                        .padding(vertical = 4.dp)
+                } else Modifier
+
+                Box(modifier = quoteModifier) {
+                    ReaderQuoteBlock(block.text, bodyTextStyle, fontSizeSp, lineMultiplier)
+                }
+            }
             is ReaderContentBlock.Heading -> Text(
                 text = editorMarkupText(block.text),
                 style = bodyTextStyle.copy(
@@ -608,39 +679,49 @@ private fun ReaderBody(
                 Text(editorMarkupText(block.text), style = bodyTextStyle, modifier = Modifier.weight(1f))
             }
             is ReaderContentBlock.Paragraph -> {
-                val startsWithInlineMarkup = block.text.trimStart().startsWithAny("**", "__", "*", "_")
-                if (!hasRenderedText && !startsWithInlineMarkup) {
-                    val dropCap = block.text.take(1)
-                    val rest = block.text.drop(1).trimStart()
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Text(
-                            text = dropCap,
-                            style = MaterialTheme.typography.displayLarge.copy(
-                                fontFamily = chosenFontFamily,
-                                fontSize = (fontSizeSp * 2.8f).sp,
-                                lineHeight = (fontSizeSp * 2.5f).sp,
-                                fontWeight = FontWeight.Bold,
-                                platformStyle = PlatformTextStyle(includeFontPadding = false),
-                                lineHeightStyle = LineHeightStyle(
-                                    alignment = LineHeightStyle.Alignment.Top,
-                                    trim = LineHeightStyle.Trim.Both
-                                )
-                            ),
-                            modifier = Modifier
-                                .offset(y = (-5).dp)
-                                .padding(end = 8.dp)
-                        )
-                        Text(
-                            text = editorMarkupText(rest),
-                            style = bodyTextStyle,
-                            modifier = Modifier.weight(1f)
-                        )
+                val paragraphModifier = if (onParagraphSelected != null) {
+                    Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable { onParagraphSelected(block.text) }
+                        .padding(vertical = 4.dp)
+                } else Modifier
+
+                Box(modifier = paragraphModifier) {
+                    val startsWithInlineMarkup = block.text.trimStart().startsWithAny("**", "__", "*", "_")
+                    if (!hasRenderedText && !startsWithInlineMarkup) {
+                        val dropCap = block.text.take(1)
+                        val rest = block.text.drop(1).trimStart()
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Text(
+                                text = dropCap,
+                                style = MaterialTheme.typography.displayLarge.copy(
+                                    fontFamily = chosenFontFamily,
+                                    fontSize = (fontSizeSp * 2.8f).sp,
+                                    lineHeight = (fontSizeSp * 2.5f).sp,
+                                    fontWeight = FontWeight.Bold,
+                                    platformStyle = PlatformTextStyle(includeFontPadding = false),
+                                    lineHeightStyle = LineHeightStyle(
+                                        alignment = LineHeightStyle.Alignment.Top,
+                                        trim = LineHeightStyle.Trim.Both
+                                    )
+                                ),
+                                modifier = Modifier
+                                    .offset(y = (-5).dp)
+                                    .padding(end = 8.dp)
+                            )
+                            Text(
+                                text = editorMarkupText(rest),
+                                style = bodyTextStyle,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    } else {
+                        Text(editorMarkupText(block.text), style = bodyTextStyle)
                     }
-                } else {
-                    Text(editorMarkupText(block.text), style = bodyTextStyle)
                 }
                 hasRenderedText = true
             }
@@ -755,7 +836,8 @@ private fun ReaderActionTray(
     onApplaud: () -> Unit,
     onComment: () -> Unit,
     onSave: () -> Unit,
-    onShare: () -> Unit
+    onShare: () -> Unit,
+    onCardShare: (() -> Unit)? = null
 ) {
     Surface(color = MaterialTheme.colorScheme.background) {
         Surface(
@@ -796,6 +878,17 @@ private fun ReaderActionTray(
                         Modifier.size(26.dp),
                         colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface)
                     )
+                }
+                if (onCardShare != null) {
+                    ReaderTrayDivider()
+                    ReaderTrayAction("Card", null, onCardShare) {
+                        Icon(
+                            imageVector = Icons.Default.FormatQuote,
+                            contentDescription = "Card",
+                            modifier = Modifier.size(26.dp),
+                            tint = BrandRed
+                        )
+                    }
                 }
             }
         }

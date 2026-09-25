@@ -99,6 +99,7 @@ fun SearchScreen(
     onStoryClick: (String) -> Unit,
     onExploreClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
+    hasUnreadNotifications: Boolean = false,
     onAuthorClick: (String) -> Unit = {},
     onLogoClick: () -> Unit = {},
 ) {
@@ -116,7 +117,7 @@ fun SearchScreen(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = WritOnSpacing.lg, end = WritOnSpacing.lg, top = WritOnSpacing.md, bottom = WritOnSpacing.lg)
     ) {
-        item { SearchHeader(onNotificationsClick = onNotificationsClick, onLogoClick = onLogoClick) }
+        item { SearchHeader(onNotificationsClick = onNotificationsClick, hasUnreadNotifications = hasUnreadNotifications, onLogoClick = onLogoClick) }
         item { SearchHero() }
         item {
             SearchField(value = query, onValueChange = { query = it })
@@ -243,7 +244,11 @@ private fun SearchFailure(onRetry: () -> Unit) {
 
 
 @Composable
-private fun SearchHeader(onNotificationsClick: () -> Unit, onLogoClick: () -> Unit = {}) {
+private fun SearchHeader(
+    onNotificationsClick: () -> Unit,
+    hasUnreadNotifications: Boolean = false,
+    onLogoClick: () -> Unit = {}
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -263,7 +268,7 @@ private fun SearchHeader(onNotificationsClick: () -> Unit, onLogoClick: () -> Un
                 painterResource(R.drawable.ic_notification),
                 contentDescription = "Notifications",
                 modifier = Modifier.size(29.dp),
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                colorFilter = if (hasUnreadNotifications) ColorFilter.tint(BrandRed) else ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
             )
         }
     }

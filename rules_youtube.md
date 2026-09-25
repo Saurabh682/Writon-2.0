@@ -53,7 +53,7 @@ YouTube Data API v3 enforces a strict daily quota per project (resets at midnigh
 - **Aspect Ratio**: Strict 9:16 vertical (1080×1920 pixels).
 - **Duration**: ≤ 60 seconds (optimal: 15–45 seconds for writing prompts and craft truths).
 - **Language**: **English language only** across titles, descriptions, audio narration, and on-screen text.
-- **Hashtags Standard**: **Always lowercase letters only** (e.g. `#shorts`, `#writingcommunity`, `#writon`, `#craft`, `#storytelling`). Never use uppercase or mixed-case hashtags like `#Shorts` or `#WritingCommunity`.
+- **Hashtags Standard**: Exactly **`#shorts` plus 2 topical tags** (3 tags total, e.g. `#shorts #writingcommunity #writon`). **Always lowercase letters only**; never use uppercase or mixed-case hashtags like `#Shorts` or `#WritingCommunity`.
 - **Audio**: Clean voiceover or subtle ambient background music with proper speech clarity.
 - **Metadata**:
   - Title: Max 100 characters in English with `#shorts` appended.

@@ -1101,6 +1101,40 @@
       "containerId": "18107749168998010",
       "publishedAt": "2026-09-20T04:52:04.960Z",
       "title": "Stop Writing \"She Realized\""
+    },
+    "short14_write_jealousy": {
+      "id": "short14_write_jealousy",
+      "igMediaId": "18028836134889694",
+      "permalink": "https://www.instagram.com/reel/DdjxHESCiGo/",
+      "shortcode": "DdjxHESCiGo",
+      "containerId": "18108277285998010",
+      "publishedAt": "2026-09-21T18:08:13.254Z",
+      "title": "Make Jealousy Visible (Without Saying \"Jealous\")"
+    },
+    "short15_make_this_hurt": {
+      "id": "short15_make_this_hurt",
+      "igMediaId": "18437675494180555",
+      "permalink": "https://www.instagram.com/reel/DdnV40cCni5/",
+      "shortcode": "DdnV40cCni5",
+      "containerId": "18108732103998010",
+      "publishedAt": "2026-09-23T03:27:22.478Z",
+      "title": "Writing Hack #15: Make This Hurt"
+    },
+    "short17_make_guilt_visible": {
+      "id": "short17_make_guilt_visible",
+      "igMediaId": "18142231048588195",
+      "permalink": "https://www.instagram.com/reel/Ddp0M2-Du3a/",
+      "shortcode": "Ddp0M2-Du3a",
+      "containerId": "18109068403998010",
+      "publishedAt": "2026-09-24T02:30:50.953Z",
+      "title": "Writing Hack #17: Make Guilt Visible"
+    },
+    "short17_make_guilt_visible_story": {
+      "id": "short17_make_guilt_visible_story",
+      "igMediaId": "18409533112089008",
+      "containerId": "18109068715998010",
+      "publishedAt": "2026-09-24T02:31:35.803Z",
+      "title": "Writing Hack #17 (Story)"
     }
   },
   "linkedin": {
@@ -1112,6 +1146,32 @@
       "videoUrn": "urn:li:video:D4D10AQH1K0Y98X4HCw",
       "publishedAt": "2026-09-20T05:07:35.671Z",
       "title": "Writing Craft: Stop Writing 'She Realized'"
+    },
+    "short14_write_jealousy": {
+      "id": "short14_write_jealousy",
+      "platform": "linkedin",
+      "postUrn": "urn:li:ugcPost:7507863519418277890",
+      "liveUrl": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7507863519418277890",
+      "videoUrn": "urn:li:video:D4D10AQGHb9A96mqlzA",
+      "publishedAt": "2026-09-21T18:09:13.107Z",
+      "title": "Writing Craft: Make Jealousy Visible"
+    },
+    "short15_make_this_hurt": {
+      "id": "short15_make_this_hurt",
+      "platform": "linkedin",
+      "postUrn": "urn:li:ugcPost:7508366608344547328",
+      "liveUrl": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7508366608344547328",
+      "videoUrn": "urn:li:video:D4D10AQEhGEznGCWYYw",
+      "publishedAt": "2026-09-23T03:28:18.681Z",
+      "title": "Writing Craft: Make This Hurt"
+    },
+    "dispatch_20260925_1300_linkedin": {
+      "id": "dispatch_20260925_1300_linkedin",
+      "platform": "linkedin",
+      "postUrn": "urn:li:share:7509139706367033344",
+      "liveUrl": "https://www.linkedin.com/feed/update/urn:li:share:7509139706367033344",
+      "publishedAt": "2026-09-25T06:40:20.018Z",
+      "title": "AI Verification Bottlenecks and Human Judgment"
     }
   },
   "stories": {
@@ -1121,6 +1181,20 @@
       "containerId": "18107762200998010",
       "publishedAt": "2026-09-20T05:46:13.880Z",
       "title": "Stop Writing \"She Realized\" (Story)"
+    },
+    "short14_write_jealousy_story": {
+      "id": "short14_write_jealousy_story",
+      "igMediaId": "17969016924160176",
+      "containerId": "18108277570998010",
+      "publishedAt": "2026-09-21T18:08:55.151Z",
+      "title": "Writing Hack #14: Make Jealousy Visible"
+    },
+    "short15_make_this_hurt_story": {
+      "id": "short15_make_this_hurt_story",
+      "igMediaId": "18620449699055846",
+      "containerId": "18108732370998010",
+      "publishedAt": "2026-09-23T03:28:08.364Z",
+      "title": "Writing Hack #15 (Story)"
     }
   }
 }

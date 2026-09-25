@@ -62,8 +62,8 @@ android {
         minSdk 23
         targetSdk 36
         // Each Google Play upload needs a unique, monotonically increasing code.
-        versionCode 172
-        versionName '2.0.73'
+        versionCode 177
+        versionName '2.0.78'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         vectorDrawables.useSupportLibrary = true
 
@@ -194,10 +194,12 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.9.1'
     implementation 'androidx.navigation:navigation-compose:2.8.7'
     implementation 'androidx.navigation:navigation-runtime-ktx:2.8.7'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.7'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7'
     implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.8.7'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.7'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.7'
+    implementation 'androidx.savedstate:savedstate-ktx:1.2.1'
     // Legacy XML screens still reference AppCompat and Material XML themes.
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'

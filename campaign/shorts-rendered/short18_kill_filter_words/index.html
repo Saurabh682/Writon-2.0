@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>WritOn — Writing Hack #18: Kill Filter Words</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background-color: #3b2014;
+        font-family: 'Playfair Display', Georgia, serif;
+        color: #0E0C0A;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+      }
+
+      /* Background Desk */
+      .desk-photo {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+        background-image: url('assets/desk_coffee_card_nobox_4k.jpg');
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+      }
+
+      .warm-ambient {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, rgba(255, 230, 190, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* Left Margin Red Rule */
+      .card-left-rule {
+        position: absolute;
+        left: 122px;
+        top: 172px;
+        height: 1488px;
+        width: 3px;
+        background-color: #821D1A;
+        z-index: 5;
+        border-radius: 2px;
+      }
+
+      /* Header Row */
+      .card-header {
+        position: absolute;
+        top: 172px;
+        left: 155px;
+        width: 770px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 5;
+      }
+
+      .inversion-pill {
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        padding: 7px 18px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .brand-mark {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 46px;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -0.5px;
+      }
+      .brand-mark em {
+        font-style: italic;
+        color: #7D1B17;
+      }
+
+      /* =========================================
+         STAGE 1 & 2: HOOK & FLAWED SENTENCE
+         Exact Safe Zone: top: 480px, left: 155px
+         ========================================= */
+      .hook-layer {
+        position: absolute;
+        top: 480px;
+        left: 155px;
+        width: 770px;
+        z-index: 10;
+      }
+
+      .hook-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 64px;
+        line-height: 1.05;
+        font-weight: 900;
+        letter-spacing: -1.5px;
+        color: #0E0C0A;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      .hook-subtitle {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 34px;
+        font-style: italic;
+        font-weight: 700;
+        color: #7D1B17;
+        margin-bottom: 34px;
+      }
+
+      .broken-sentence-layer {
+        position: absolute;
+        top: 660px;
+        left: 155px;
+        width: 770px;
+        z-index: 10;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      .broken-line-1 {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 44px;
+        line-height: 1.35;
+        font-weight: 700;
+        color: #1A1613;
+        display: block;
+        margin-bottom: 28px;
+      }
+
+      .highlight-word {
+        position: relative;
+        display: inline-block;
+        padding: 0 6px;
+        font-weight: 800;
+        color: #0E0C0A;
+      }
+
+      .highlight-bg {
+        position: absolute;
+        inset: 4px -2px 2px -2px;
+        background-color: #FEE75C;
+        border-radius: 4px;
+        z-index: -1;
+        transform: scaleX(0);
+        transform-origin: left center;
+      }
+
+      .delete-directive {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background-color: #F8D7DA;
+        border: 2px solid #7D1B17;
+        color: #7D1B17;
+        padding: 10px 22px;
+        border-radius: 30px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      /* =========================================
+         STAGE 3: REWRITE & CRAFT PRINCIPLE
+         Exact Safe Zone: top: 480px, left: 155px
+         ========================================= */
+      .card-content {
+        position: absolute;
+        top: 480px;
+        left: 155px;
+        width: 770px;
+        z-index: 12;
+      }
+
+      .rewrite-label-row {
+        margin-bottom: 24px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      .keep-pill {
+        background-color: #2D5A27;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        padding: 7px 18px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .main-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 50px;
+        line-height: 1.25;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -0.5px;
+        margin-bottom: 34px;
+      }
+
+      .title-row {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      .italic-crimson {
+        font-style: italic;
+        color: #7D1B17;
+      }
+
+      .red-divider {
+        width: 140px;
+        height: 3px;
+        background-color: #7D1B17;
+        margin-bottom: 32px;
+        border-radius: 2px;
+        transform: scaleX(0);
+        transform-origin: left center;
+      }
+
+      .payoff-flow {
+        font-family: 'Playfair Display', Georgia, serif;
+        color: #1A1613;
+      }
+
+      .payoff-lead {
+        font-size: 38px;
+        line-height: 1.30;
+        font-weight: 700;
+        color: #26211C;
+        margin-bottom: 8px;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      .payoff-punch {
+        font-size: 36px;
+        line-height: 1.32;
+        font-weight: 800;
+        font-style: italic;
+        color: #7D1B17;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      /* Footer Row */
+      .card-footer {
+        position: absolute;
+        bottom: 270px;
+        left: 155px;
+        width: 770px;
+        z-index: 5;
+      }
+
+      .footer-line {
+        width: 100%;
+        height: 1px;
+        background-color: rgba(14, 12, 10, 0.15);
+        margin-bottom: 22px;
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .footer-handle {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 21px;
+        font-weight: 700;
+        color: #554D44;
+        letter-spacing: 0.5px;
+      }
+
+      .footer-dots {
+        display: flex;
+        gap: 8px;
+      }
+
+      .footer-dot-sand {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #D4AF37;
+      }
+
+      .footer-dot-crimson {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #7D1B17;
+      }
+
+      .footer-url {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #7D1B17;
+        letter-spacing: 0.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="desk-photo"></div>
+      <div class="warm-ambient"></div>
+      <div class="card-left-rule"></div>
+
+      <!-- Header Row -->
+      <div class="card-header">
+        <div class="inversion-pill">Writing Hack #18</div>
+        <div class="brand-mark">Writ<em>On</em></div>
+      </div>
+
+      <!-- STAGE 1: 0.0s - 1.66s STATIC GIANT HOOK -->
+      <div class="hook-layer" id="hookLayer">
+        <div class="hook-title">KILL FILTER WORDS.</div>
+        <div class="hook-subtitle" id="hookSub">cut the glass wall</div>
+      </div>
+
+      <!-- STAGE 2: 1.66s - 6.40s FLAWED SENTENCE REVEAL -->
+      <div class="broken-sentence-layer" id="brokenLayer">
+        <span class="broken-line-1">
+          <span class="highlight-word" id="wordFilter">
+            She heard
+            <span class="highlight-bg" id="hlBg"></span>
+          </span>
+          the floorboards creak beneath his boots.
+        </span>
+        <div class="delete-directive" id="deleteDirective">
+          <span>Cut the filter.</span>
+        </div>
+      </div>
+
+      <!-- STAGE 3: 6.81s - 20.0s SURGICAL REWRITE -->
+      <div class="card-content" id="cardContent">
+        <div class="rewrite-label-row" id="rwLabel">
+          <span class="keep-pill">The Direct Event</span>
+        </div>
+
+        <div class="main-title" id="mainTitle">
+          <div class="title-row" id="tl1">The floorboards creaked</div>
+          <div class="title-row" id="tl2"><span class="italic-crimson">beneath his boots.</span></div>
+        </div>
+
+        <div class="red-divider" id="redDivider"></div>
+
+        <div class="payoff-flow" id="payoffFlow">
+          <div class="payoff-lead" id="pl1">Keep the event. Remove the filter.</div>
+          <div class="payoff-punch" id="pl2">Let the reader hear it directly.</div>
+        </div>
+      </div>
+
+      <!-- Footer Row -->
+      <div class="card-footer">
+        <div class="footer-line"></div>
+        <div class="footer-content">
+          <div class="footer-handle">@writon_app</div>
+          <div class="footer-dots">
+            <div class="footer-dot-sand"></div>
+            <div class="footer-dot-crimson"></div>
+          </div>
+          <div class="footer-url">writon.cc ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial state
+      gsap.set("#cardContent", { opacity: 0 });
+      gsap.set("#hookSub", { opacity: 0, y: 15 });
+
+      // 0.0s: Tactile click hits; "KILL FILTER WORDS." is statically present from frame 0
+
+      // 1.10s: Subtitle drops in
+      tl.to("#hookSub", { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 1.10);
+
+      // 1.66s: Nicole begins: "She heard the floorboards creak beneath his boots."
+      tl.to("#brokenLayer", { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 1.66);
+
+      // 3.20s: Yellow highlighter snaps across "She heard"
+      tl.to("#hlBg", { scaleX: 1, duration: 0.30, ease: "power2.out" }, 3.20);
+
+      // 5.31s: Nicole: "Cut the filter." -> Directive badge pops
+      tl.to("#deleteDirective", { opacity: 1, y: 0, duration: 0.30, ease: "back.out(1.4)" }, 5.31);
+
+      // 6.20s: Strike / fade out "She heard"
+      tl.to("#wordFilter", { opacity: 0, scale: 0.85, duration: 0.25, ease: "power2.in" }, 6.20);
+
+      // 6.55s: Hook & Flawed layer exit smoothly
+      tl.to("#hookLayer", { opacity: 0, y: -15, duration: 0.25, ease: "power2.inOut" }, 6.55)
+        .to("#brokenLayer", { opacity: 0, y: -15, duration: 0.25, ease: "power2.inOut" }, 6.55);
+
+      // 6.81s: SECOND TACTILE CLICK!
+      // NO_EMPTY_TRANSITION_BEAT: Card content, "The Direct Event" pill, AND Line 1 appear TOGETHER!
+      tl.to("#cardContent", { opacity: 1, duration: 0.05 }, 6.81)
+        .to("#rwLabel", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 6.81)
+        .to("#tl1", { opacity: 1, y: 0, duration: 0.30, ease: "power3.out" }, 6.81);
+
+      // 7.80s: Nicole: "...beneath his boots."
+      tl.to("#tl2", { opacity: 1, y: 0, duration: 0.35, ease: "back.out(1.3)" }, 7.80);
+
+      // 9.50s: Red divider rule scales across
+      tl.to("#redDivider", { scaleX: 1, duration: 0.30, ease: "power2.out" }, 9.50);
+
+      // 9.99s - 12.45s: Nicole: "Keep the event. Remove the filter."
+      tl.to("#pl1", { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 9.99);
+
+      // 12.80s - 14.50s: Nicole: "Let the reader hear it directly."
+      tl.to("#pl2", { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.2)" }, 12.80);
+
+      // 14.50s - 20.0s: 5.5s clean hold breathing room before seamless loop!
+      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.015, duration: 20.0, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

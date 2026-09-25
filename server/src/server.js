@@ -1570,7 +1570,7 @@ function createSlug(title) {
 
 function calculateReadingTime(content) {
   const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(wordCount / 200));
+  return Math.max(1, Math.ceil(wordCount / 140)); // 140 WPM for literary prose
 }
 
 function parsePostId(request, reply) {

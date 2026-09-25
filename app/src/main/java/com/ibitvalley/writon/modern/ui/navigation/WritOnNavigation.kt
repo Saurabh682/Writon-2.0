@@ -306,7 +306,7 @@ fun WritOnNavigation(
             }
         }
     }
-    val startDestination = remember(initialNotificationRoute) {
+    val startDestination = remember {
         initialNavigationDestination(
             incomingRoute = resolveNotificationRoute(initialNotificationRoute),
             signedIn = FirebaseAuth.getInstance().currentUser != null,
@@ -579,6 +579,7 @@ fun WritOnNavigation(
                 var continuation by remember(continuationOwner) { mutableStateOf(userPreferences.readingContinuation(continuationOwner)) }
                 LaunchedEffect(continuationOwner) {
                     collectionsViewModel.loadFollowedWriterReturnEntry(continuationOwner)
+                    if (signedIn) collectionsViewModel.loadNotifications()
                 }
                 val homeLifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
                 DisposableEffect(homeLifecycle, continuationOwner) {
@@ -588,6 +589,7 @@ fun WritOnNavigation(
                             homePreferences = userPreferences.engagementPreferences(continuationOwner)
                             homeInterestCount = userPreferences.interestChoices(continuationOwner).size
                             collectionsViewModel.loadFollowedWriterReturnEntry(continuationOwner)
+                            if (signedIn) collectionsViewModel.loadNotifications()
                             preferencesPendingSync = continuationOwner?.let { uid ->
                                 userPreferences.hasPendingInterestSync(uid) || userPreferences.hasPendingEngagementSync(uid)
                             } == true
@@ -647,6 +649,7 @@ fun WritOnNavigation(
                             if (signedIn) WritOnRoute.Notifications.route else WritOnRoute.NotificationSettings.route
                         )
                     },
+                    hasUnreadNotifications = collectionsViewModel.hasUnreadNotifications,
                     onProfileClick = {
                         if (signedIn) {
                             navController.navigate(WritOnRoute.Profile.route) {
@@ -700,7 +703,13 @@ fun WritOnNavigation(
                         if (signedIn) navController.navigate(WritOnRoute.Notifications.route)
                         else requestAuthentication(WritOnRoute.Notifications.route, false)
                     },
+                    hasUnreadNotifications = collectionsViewModel.hasUnreadNotifications,
                     onAuthorClick = { authorId -> navController.navigate(WritOnRoute.AuthorProfile.createRoute(authorId)) },
+                    onLogoClick = {
+                        if (!navController.popBackStack(WritOnRoute.Home.route, false)) {
+                            navController.navigate(WritOnRoute.Home.route)
+                        }
+                    },
                 )
             }
             composable(WritOnRoute.Write.route) {
@@ -755,6 +764,11 @@ fun WritOnNavigation(
                         onSettingsClick = { navController.navigate(WritOnRoute.NotificationSettings.route) },
                         onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) },
                         onAuthorClick = { id -> navController.navigate(WritOnRoute.AuthorProfile.createRoute(id)) },
+                        onLogoClick = {
+                            if (!navController.popBackStack(WritOnRoute.Home.route, false)) {
+                                navController.navigate(WritOnRoute.Home.route)
+                            }
+                        },
                     )
                 } else LaunchedEffect(Unit) { requestAuthentication(WritOnRoute.Notifications.route, false) }
             }
@@ -955,13 +969,9 @@ fun WritOnNavigation(
     }
 }
 
-internal fun resolveNotificationRoute(route: String?): String? = when {
-    route == null -> null
-    route == WritOnRoute.Home.route -> route
-    route == WritOnRoute.Notifications.route -> route
-    route.startsWith("reader/") && route.removePrefix("reader/").isNotBlank() -> route
-    else -> WritOnRoute.Notifications.route
-}
+internal fun resolveNotificationRoute(route: String?): String? =
+    if (route == null) null else com.ibitvalley.writon.modern.normalizeNotificationRoute(route)
+        ?: WritOnRoute.Notifications.route
 
 internal fun initialNavigationDestination(
     incomingRoute: String?,
@@ -1055,7 +1065,14 @@ private fun WritOnBottomNavigation(
                 return@WritOnBottomBar
             }
 
-            if (currentRoute != targetRoute) {
+            if (targetRoute == WritOnRoute.Home.route) {
+                if (!navController.popBackStack(WritOnRoute.Home.route, inclusive = false)) {
+                    navController.navigate(WritOnRoute.Home.route) {
+                        popUpTo(WritOnRoute.Home.route) { inclusive = false }
+                        launchSingleTop = true
+                    }
+                }
+            } else if (currentRoute != targetRoute) {
                 navController.navigate(targetRoute) {
                     popUpTo(WritOnRoute.Home.route) {
                         saveState = true
@@ -1102,6 +1119,8 @@ fun WritOnBottomBar(
                         }
                         val selected = currentRoute == item.route ||
                             (currentRoute == WritOnRoute.Search.route && item.route == WritOnRoute.Explore.route) ||
+                            (currentRoute == WritOnRoute.Notifications.route && item.route == WritOnRoute.Home.route) ||
+                            (currentRoute == WritOnRoute.NotificationSettings.route && item.route == WritOnRoute.Home.route) ||
                             (currentRoute == WritOnRoute.ReadingHistory.route && item.route == WritOnRoute.Library.route) ||
                             (currentRoute == WritOnRoute.Settings.route && item.route == WritOnRoute.Profile.route) ||
                             (currentRoute == WritOnRoute.Applauds.route && item.route == WritOnRoute.Profile.route)

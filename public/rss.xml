@@ -9,13 +9,156 @@
     <link>https://writon.cc/stories</link>
     <description>Curated independent essays, craft reflections, poetry, and ideas on modern culture. Read 700+ literary stories on WritOn.</description>
     <language>en-us</language>
-    <lastBuildDate>Sun, 20 Sep 2026 17:57:10 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 25 Sep 2026 06:37:47 GMT</lastBuildDate>
     <atom:link href="https://writon.cc/feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>https://writon.cc/assets/writon_app_icon.png</url>
       <title>WritOn</title>
       <link>https://writon.cc/stories</link>
     </image>
+    <item>
+      <title>Generation Scaled, Verification Didn’t</title>
+      <link>https://writon.cc/stories/generation-scaled-verification-didn-t-9107770b-067</link>
+      <guid isPermaLink="true">https://writon.cc/stories/generation-scaled-verification-didn-t-9107770b-067</guid>
+      <pubDate>Fri, 25 Sep 2026 06:37:22 GMT</pubDate>
+      <dc:creator>Aarav Mehta</dc:creator>
+      <category>Tech</category>
+      <description>Code generation scales linearly with compute. Verification scales strictly with human working memory. As synthetic code volume explodes, senior engineers face a mounting supervisory tax.</description>
+      <content:encoded><![CDATA[Code generation scales linearly with compute. Verification scales strictly with human working memory. As synthetic code volume explodes, senior engineers face a mounting supervisory tax.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>Thirty Minutes of Documented Presence</title>
+      <link>https://writon.cc/stories/thirty-minutes-of-documented-presence-cc602442-7e6</link>
+      <guid isPermaLink="true">https://writon.cc/stories/thirty-minutes-of-documented-presence-cc602442-7e6</guid>
+      <pubDate>Thu, 24 Sep 2026 16:28:19 GMT</pubDate>
+      <dc:creator>Rohan Kapoor</dc:creator>
+      <category>Humour</category>
+      <description>The four-fifteen calendar invite is rarely about work. It is an administrative surrender, scheduled precisely when everyone has given up on finishing anything before dusk.</description>
+      <content:encoded><![CDATA[The four-fifteen calendar invite is rarely about work. It is an administrative surrender, scheduled precisely when everyone has given up on finishing anything before dusk.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1513151233558-d860c5398176?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>Reading Alone, Together</title>
+      <link>https://writon.cc/stories/reading-alone-together-vz1108</link>
+      <guid isPermaLink="true">https://writon.cc/stories/reading-alone-together-vz1108</guid>
+      <pubDate>Thu, 24 Sep 2026 03:10:53 GMT</pubDate>
+      <dc:creator>Dr. Sunita Banerjee</dc:creator>
+      <category>Essays</category>
+      <description>Silent book clubs create a rare social arrangement: people choose to share a room without requiring one another to perform conversation.</description>
+      <content:encoded><![CDATA[Silent book clubs create a rare social arrangement: people choose to share a room without requiring one another to perform conversation.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1506880018603-83d5b814b5a6?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Sovereignty Stack: Why Builders Want Their Computers Back</title>
+      <link>https://writon.cc/stories/the-sovereignty-stack-why-builders-want-their-computers-back-52a35364-ce7</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-sovereignty-stack-why-builders-want-their-computers-back-52a35364-ce7</guid>
+      <pubDate>Tue, 22 Sep 2026 13:30:04 GMT</pubDate>
+      <dc:creator>Aarav Mehta</dc:creator>
+      <category>Tech</category>
+      <description>The cloud was supposed to free us from managing computers. Somewhere along the way, we began renting permission to use our own. On local AI, self-hosting, and computing on our own terms.</description>
+      <content:encoded><![CDATA[The cloud was supposed to free us from managing computers. Somewhere along the way, we began renting permission to use our own. On local AI, self-hosting, and computing on our own terms.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Geometry of the Chai Bench</title>
+      <link>https://writon.cc/stories/the-geometry-of-the-chai-bench-618a1204-d21</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-geometry-of-the-chai-bench-618a1204-d21</guid>
+      <pubDate>Tue, 22 Sep 2026 10:30:02 GMT</pubDate>
+      <dc:creator>Gopal Krishnan</dc:creator>
+      <category>Culture</category>
+      <description>Cities have become exceptionally good at giving us somewhere to go and surprisingly poor at giving us somewhere to stay. On adda, third places, and the ten rupees that can occasionally purchase an hour of human presence.</description>
+      <content:encoded><![CDATA[Cities have become exceptionally good at giving us somewhere to go and surprisingly poor at giving us somewhere to stay. On adda, third places, and the ten rupees that can occasionally purchase an hour of human presence.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Feeds We Chose: Why RSS Suddenly Feels Radical Again</title>
+      <link>https://writon.cc/stories/the-feeds-we-chose-why-rss-suddenly-feels-radical-again-0dfbabec-eb4</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-feeds-we-chose-why-rss-suddenly-feels-radical-again-0dfbabec-eb4</guid>
+      <pubDate>Tue, 22 Sep 2026 07:30:02 GMT</pubDate>
+      <dc:creator>Gopal Krishnan</dc:creator>
+      <category>Culture</category>
+      <description>The strange pleasure of RSS is that eventually, there is nothing left to read. In an internet built around infinite scroll, a feed that ends feels unexpectedly like freedom.</description>
+      <content:encoded><![CDATA[The strange pleasure of RSS is that eventually, there is nothing left to read. In an internet built around infinite scroll, a feed that ends feels unexpectedly like freedom.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1473177104440-ffee2f376098?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Death of the Pull Request: Why Supervising AI Is Breaking Software Craft</title>
+      <link>https://writon.cc/stories/the-death-of-the-pull-request-why-supervising-ai-is-breaking-software-cr-187c5898-0dd</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-death-of-the-pull-request-why-supervising-ai-is-breaking-software-cr-187c5898-0dd</guid>
+      <pubDate>Tue, 22 Sep 2026 04:30:02 GMT</pubDate>
+      <dc:creator>Aarav Mehta</dc:creator>
+      <category>Tech</category>
+      <description>AI made producing code cheap. It did not make understanding code cheap. Machines have cut the cost of generating software while leaving the cost of reviewing it stubbornly human — and that imbalance is reshaping how teams work.</description>
+      <content:encoded><![CDATA[AI made producing code cheap. It did not make understanding code cheap. Machines have cut the cost of generating software while leaving the cost of reviewing it stubbornly human — and that imbalance is reshaping how teams work.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Glass Cathedral: Why We Queue for a Phone That Can Arrive in Ten Minutes</title>
+      <link>https://writon.cc/stories/the-glass-cathedral-why-we-queue-for-a-phone-that-can-arrive-in-ten-minu-482690ed-dff</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-glass-cathedral-why-we-queue-for-a-phone-that-can-arrive-in-ten-minu-482690ed-dff</guid>
+      <pubDate>Mon, 21 Sep 2026 18:09:40 GMT</pubDate>
+      <dc:creator>Gopal Krishnan</dc:creator>
+      <category>Culture</category>
+      <description>Convenience can deliver the object. It cannot always deliver the occasion. Why we queue for a phone that can arrive in ten minutes.</description>
+      <content:encoded><![CDATA[Convenience can deliver the object. It cannot always deliver the occasion. Why we queue for a phone that can arrive in ten minutes.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>Your App Should Survive Its Server: The Case for Local-First Software</title>
+      <link>https://writon.cc/stories/your-app-should-survive-its-server-the-case-for-local-first-software-78e297d5-3f1</link>
+      <guid isPermaLink="true">https://writon.cc/stories/your-app-should-survive-its-server-the-case-for-local-first-software-78e297d5-3f1</guid>
+      <pubDate>Mon, 21 Sep 2026 18:09:40 GMT</pubDate>
+      <dc:creator>Aarav Mehta</dc:creator>
+      <category>Tech</category>
+      <description>Somewhere along the way, opening your own document became a network request. Your application should still belong to you when the internet goes dark.</description>
+      <content:encoded><![CDATA[Somewhere along the way, opening your own document became a network request. Your application should still belong to you when the internet goes dark.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Proofreader Trap: Why Senior Engineers Are Drowning in Synthetic Code</title>
+      <link>https://writon.cc/stories/the-proofreader-trap-why-senior-engineers-are-drowning-in-synthetic-code-d2e115df-b01</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-proofreader-trap-why-senior-engineers-are-drowning-in-synthetic-code-d2e115df-b01</guid>
+      <pubDate>Mon, 21 Sep 2026 18:09:40 GMT</pubDate>
+      <dc:creator>Aarav Mehta</dc:creator>
+      <category>Tech</category>
+      <description>AI made producing code cheaper. It did not make understanding code cheaper. Senior engineers are drowning in review queues filled with synthetic code.</description>
+      <content:encoded><![CDATA[AI made producing code cheaper. It did not make understanding code cheaper. Senior engineers are drowning in review queues filled with synthetic code.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Tactile Sanctuary: Why a Generation Raised on Screens Is Returning to Paper</title>
+      <link>https://writon.cc/stories/the-tactile-sanctuary-why-a-generation-raised-on-screens-is-returning-to-3dad44ec-06b</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-tactile-sanctuary-why-a-generation-raised-on-screens-is-returning-to-3dad44ec-06b</guid>
+      <pubDate>Mon, 21 Sep 2026 18:09:40 GMT</pubDate>
+      <dc:creator>Dr. Sunita Banerjee</dc:creator>
+      <category>Essays</category>
+      <description>Perhaps the most radical feature of a book is that nothing happens when you touch the page. Why Gen Z is rediscovering paper as a tactile sanctuary.</description>
+      <content:encoded><![CDATA[Perhaps the most radical feature of a book is that nothing happens when you touch the page. Why Gen Z is rediscovering paper as a tactile sanctuary.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Ghost in the Silicon Ledger</title>
+      <link>https://writon.cc/stories/the-ghost-in-the-silicon-ledger-e47cbaa4-e9e</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-ghost-in-the-silicon-ledger-e47cbaa4-e9e</guid>
+      <pubDate>Mon, 21 Sep 2026 08:00:39 GMT</pubDate>
+      <dc:creator>Devansh Roy</dc:creator>
+      <category>Short Stories</category>
+      <description>In a North Kolkata tea stall, the volatile pulse of global stock markets collides with the damp, unyielding reality of a monsoon afternoon.</description>
+      <content:encoded><![CDATA[In a North Kolkata tea stall, the volatile pulse of global stock markets collides with the damp, unyielding reality of a monsoon afternoon.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1448375240586-882707db888b?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Static Between the Notes</title>
+      <link>https://writon.cc/stories/the-static-between-the-notes-960ab011-946</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-static-between-the-notes-960ab011-946</guid>
+      <pubDate>Mon, 21 Sep 2026 01:30:56 GMT</pubDate>
+      <dc:creator>Devansh Roy</dc:creator>
+      <category>Short Stories</category>
+      <description>A reflection on the unseen connections that sustain a city, triggered by the news of a musician&apos;s passing in a North Kolkata tea stall.</description>
+      <content:encoded><![CDATA[A reflection on the unseen connections that sustain a city, triggered by the news of a musician's passing in a North Kolkata tea stall.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
     <item>
       <title>The Geometry of the Crease</title>
       <link>https://writon.cc/stories/the-geometry-of-the-crease-c915cb49-1b2</link>
@@ -213,17 +356,6 @@
       <description>When NASCAR turns driver-radio profanity into a prize sweepstakes, unscripted human stress ceases to be a reflex of survival and becomes packaged entertainment inventory.</description>
       <content:encoded><![CDATA[When NASCAR turns driver-radio profanity into a prize sweepstakes, unscripted human stress ceases to be a reflex of survival and becomes packaged entertainment inventory.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Central mi vs new mexico</title>
-      <link>https://writon.cc/stories/central-mi-vs-new-mexico-5652950a-209</link>
-      <guid isPermaLink="true">https://writon.cc/stories/central-mi-vs-new-mexico-5652950a-209</guid>
-      <pubDate>Wed, 16 Sep 2026 14:00:21 GMT</pubDate>
-      <dc:creator>Devansh Roy</dc:creator>
-      <category>Short Stories</category>
-      <description>A timely editorial exploration of Central mi vs new mexico, reflecting on recent real-world developments and cultural shifts.</description>
-      <content:encoded><![CDATA[A timely editorial exploration of Central mi vs new mexico, reflecting on recent real-world developments and cultural shifts.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
       <title>The Geometry of Diminishing Returns</title>
@@ -432,138 +564,6 @@
       <description>A direct hardware and efficiency comparison between the Steam Deck OLED and ASUS ROG Ally, testing custom 6nm AMD Sephiroth silicon against Z1 Extreme at matched 15W TDP ceilings.</description>
       <content:encoded><![CDATA[A direct hardware and efficiency comparison between the Steam Deck OLED and ASUS ROG Ally, testing custom 6nm AMD Sephiroth silicon against Z1 Extreme at matched 15W TDP ceilings.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1612287233207-63a23a886b72?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Friction of the Leap</title>
-      <link>https://writon.cc/stories/the-friction-of-the-leap-d885acae-f57</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-friction-of-the-leap-d885acae-f57</guid>
-      <pubDate>Sat, 12 Sep 2026 14:00:52 GMT</pubDate>
-      <dc:creator>Rajesh Rana</dc:creator>
-      <category>Culture</category>
-      <description>In a Karol Bagh basement temple, a printer performs a forty-day vow to save his sealed shop, caught between the ancient demands of the Sundarkand and the transactional impatience of modern Delhi.</description>
-      <content:encoded><![CDATA[In a Karol Bagh basement temple, a printer performs a forty-day vow to save his sealed shop, caught between the ancient demands of the Sundarkand and the transactional impatience of modern Delhi.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Rippled Double</title>
-      <link>https://writon.cc/stories/the-rippled-double-6415ad20-bb1</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-rippled-double-6415ad20-bb1</guid>
-      <pubDate>Sat, 12 Sep 2026 11:59:10 GMT</pubDate>
-      <dc:creator>Priyanka Mishra</dc:creator>
-      <category>Culture</category>
-      <description>On the stone steps of Kedar Ghat, the ancient mud of the Ganga meets Naomi Klein’s warnings on elite bunker politics and the cold reflections of our digital doubles.</description>
-      <content:encoded><![CDATA[On the stone steps of Kedar Ghat, the ancient mud of the Ganga meets Naomi Klein’s warnings on elite bunker politics and the cold reflections of our digital doubles.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Brass Turners of Peetal Nagri</title>
-      <link>https://writon.cc/stories/the-brass-turners-of-peetal-nagri-a17ad63c-ae4</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-brass-turners-of-peetal-nagri-a17ad63c-ae4</guid>
-      <pubDate>Sat, 12 Sep 2026 09:54:38 GMT</pubDate>
-      <dc:creator>Priyanka Mishra</dc:creator>
-      <category>Culture</category>
-      <description>In Moradabad’s furnace alleys, metal crafters work by the rhythm of lathe chisels and coal fires, holding hand-engraved brass against industrial die-casting.</description>
-      <content:encoded><![CDATA[In Moradabad’s furnace alleys, metal crafters work by the rhythm of lathe chisels and coal fires, holding hand-engraved brass against industrial die-casting.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Weight of the Wire</title>
-      <link>https://writon.cc/stories/the-weight-of-the-wire-630a3485-854</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-weight-of-the-wire-630a3485-854</guid>
-      <pubDate>Sat, 12 Sep 2026 09:38:33 GMT</pubDate>
-      <dc:creator>Shamik Prabhu</dc:creator>
-      <category>Short Stories</category>
-      <description>During a torrential Mumbai monsoon, an on-call database engineer must rebuild a broken cross-country Postgres replica overnight, confronting the physical limits of bandwidth and the consequences of a missing runbook.</description>
-      <content:encoded><![CDATA[During a torrential Mumbai monsoon, an on-call database engineer must rebuild a broken cross-country Postgres replica overnight, confronting the physical limits of bandwidth and the consequences of a missing runbook.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Two Admissions of Barlow-Oak</title>
-      <link>https://writon.cc/stories/the-two-admissions-of-barlow-oak-b54c5bf2-93a</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-two-admissions-of-barlow-oak-b54c5bf2-93a</guid>
-      <pubDate>Sat, 12 Sep 2026 08:17:15 GMT</pubDate>
-      <dc:creator>Tanya Sen</dc:creator>
-      <category>Culture</category>
-      <description>An archival digitization project at a mountain school uncovers an erased 1946 expulsion in the day-book: two archivists confront the boundary between institutional repair and historical truth.</description>
-      <content:encoded><![CDATA[An archival digitization project at a mountain school uncovers an erased 1946 expulsion in the day-book: two archivists confront the boundary between institutional repair and historical truth.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Gul Tarāshnā: The Lamp at Chaderghat</title>
-      <link>https://writon.cc/stories/gul-tarashna-the-lamp-at-chaderghat-7bdd956f-6ae</link>
-      <guid isPermaLink="true">https://writon.cc/stories/gul-tarashna-the-lamp-at-chaderghat-7bdd956f-6ae</guid>
-      <pubDate>Sat, 12 Sep 2026 08:15:52 GMT</pubDate>
-      <dc:creator>Yasir Tehsin</dc:creator>
-      <category>Shayari</category>
-      <description>On a terrace overlooking the Musi river in Hyderabad, a poet trims the charred wick of an oil lamp, reflecting on inheritance, revision, and a four-sher ghazal after dusk.</description>
-      <content:encoded><![CDATA[On a terrace overlooking the Musi river in Hyderabad, a poet trims the charred wick of an oil lamp, reflecting on inheritance, revision, and a four-sher ghazal after dusk.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Ghazal-e-Dahliz: The Threshold at Dusk</title>
-      <link>https://writon.cc/stories/ghazal-e-dahliz-the-threshold-at-dusk-d8e37d2f-b55</link>
-      <guid isPermaLink="true">https://writon.cc/stories/ghazal-e-dahliz-the-threshold-at-dusk-d8e37d2f-b55</guid>
-      <pubDate>Sat, 12 Sep 2026 08:15:04 GMT</pubDate>
-      <dc:creator>Ishaq Qureshi</dc:creator>
-      <category>Poetry</category>
-      <description>A classical five-sher Urdu ghazal on the thresholds (dahlīz) of Old Lucknow, reflecting on dusk, restraint, and spatial memory.</description>
-      <content:encoded><![CDATA[A classical five-sher Urdu ghazal on the thresholds (dahlīz) of Old Lucknow, reflecting on dusk, restraint, and spatial memory.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Settlement at Bellandur</title>
-      <link>https://writon.cc/stories/the-settlement-at-bellandur-73bf03b1-99a</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-settlement-at-bellandur-73bf03b1-99a</guid>
-      <pubDate>Sat, 12 Sep 2026 08:13:06 GMT</pubDate>
-      <dc:creator>Nishant Akbari</dc:creator>
-      <category>Short Stories</category>
-      <description>During an Independence Day midnight flash sale in Bengaluru, an on-call engineer faces a four-crore reconciliation mismatch between instantaneous UPI timeouts and nocturnal bank clearing files.</description>
-      <content:encoded><![CDATA[During an Independence Day midnight flash sale in Bengaluru, an on-call engineer faces a four-crore reconciliation mismatch between instantaneous UPI timeouts and nocturnal bank clearing files.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1516541196182-6bdb0516ed27?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The 2:15 PM Sprint at Agostinho’s Shack</title>
-      <link>https://writon.cc/stories/the-2-15-pm-sprint-at-agostinho-s-shack-b69780d6-c84</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-2-15-pm-sprint-at-agostinho-s-shack-b69780d6-c84</guid>
-      <pubDate>Sat, 12 Sep 2026 08:01:21 GMT</pubDate>
-      <dc:creator>Ronnie Fernandes</dc:creator>
-      <category>Humour</category>
-      <description>When a Gurgaon product manager brings two noise-cancelling headsets to Anjuna in the middle of a July downpour, the Goan power grid and an afternoon siesta settle the score.</description>
-      <content:encoded><![CDATA[When a Gurgaon product manager brings two noise-cancelling headsets to Anjuna in the middle of a July downpour, the Goan power grid and an afternoon siesta settle the score.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1531747056595-07f6cbbe10ad?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Replication of Stone</title>
-      <link>https://writon.cc/stories/the-replication-of-stone-bc0c43c6-6cc</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-replication-of-stone-bc0c43c6-6cc</guid>
-      <pubDate>Sat, 12 Sep 2026 07:06:37 GMT</pubDate>
-      <dc:creator>Tarun Kapoor</dc:creator>
-      <category>Essays</category>
-      <description>A severed fiber-optic cable near Ahmedabad leaves a heritage haveli&apos;s database server on the brink of collapse, forcing an emergency operational decision between local survival and remote redundancy.</description>
-      <content:encoded><![CDATA[A severed fiber-optic cable near Ahmedabad leaves a heritage haveli's database server on the brink of collapse, forcing an emergency operational decision between local survival and remote redundancy.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>BMW M340i xDrive vs Mercedes-AMG C43: 6-Cylinder Dynamics &amp; Mechanical Balance</title>
-      <link>https://writon.cc/stories/latest-performance-ice-cars-hardware-benchmark-research-based-assessment-40c6c21a-799</link>
-      <guid isPermaLink="true">https://writon.cc/stories/latest-performance-ice-cars-hardware-benchmark-research-based-assessment-40c6c21a-799</guid>
-      <pubDate>Sat, 12 Sep 2026 06:58:40 GMT</pubDate>
-      <dc:creator>Vikramaditya Chauhan</dc:creator>
-      <category>Reviews</category>
-      <description>A definitive track and road comparison evaluating the BMW M340i’s turbocharged B58 straight-six against the Mercedes-AMG C43’s electric-turbo four-cylinder across mechanical steering feedback, chassis rigidity, and thermal endurance.</description>
-      <content:encoded><![CDATA[A definitive track and road comparison evaluating the BMW M340i’s turbocharged B58 straight-six against the Mercedes-AMG C43’s electric-turbo four-cylinder across mechanical steering feedback, chassis rigidity, and thermal endurance.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Temper of the Bhatti</title>
-      <link>https://writon.cc/stories/the-temper-of-the-bhatti-7f158863-9f9</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-temper-of-the-bhatti-7f158863-9f9</guid>
-      <pubDate>Sat, 12 Sep 2026 06:43:34 GMT</pubDate>
-      <dc:creator>Asma Jahan</dc:creator>
-      <category>Essays</category>
-      <description>In the narrow alcoves of Hyderabad&apos;s Laad Bazar, an aging artisan shapes raw lac bangles over a charcoal stove, caught between a dying heritage and the digital present.</description>
-      <content:encoded><![CDATA[In the narrow alcoves of Hyderabad's Laad Bazar, an aging artisan shapes raw lac bangles over a charcoal stove, caught between a dying heritage and the digital present.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
   </channel>
 </rss>

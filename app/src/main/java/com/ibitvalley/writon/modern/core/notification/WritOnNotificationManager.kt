@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -74,7 +75,8 @@ object WritOnNotificationManager {
         notificationId: Int = (System.currentTimeMillis() % 100000).toInt()
     ) {
         val intent = Intent(context, WritOnModernActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            data = Uri.parse("writon://notification/$notificationId")
             if (!targetRoute.isNullOrBlank()) {
                 putExtra("targetRoute", targetRoute)
                 if (!storyId.isNullOrBlank()) putExtra("storyId", storyId)
@@ -144,12 +146,14 @@ object WritOnNotificationManager {
         storySummary: String,
         storyId: String,
         authorName: String,
+        targetRoute: String? = null,
         notificationId: Int = 1001
     ) {
         val intent = Intent(context, WritOnModernActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            data = Uri.parse("writon://notification/$notificationId")
             putExtra("storyId", storyId)
-            putExtra("targetRoute", "reader/$storyId")
+            putExtra("targetRoute", targetRoute ?: "reader/$storyId")
         }
 
         val pendingIntent = PendingIntent.getActivity(

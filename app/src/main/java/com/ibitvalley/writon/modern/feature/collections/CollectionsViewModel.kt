@@ -66,6 +66,8 @@ class CollectionsViewModel(
         private set
     var notifications by mutableStateOf<List<NotificationDto>>(emptyList())
         private set
+    val hasUnreadNotifications: Boolean
+        get() = notifications.any { it.readAt == null }
     var followedWriterReturnEntry by mutableStateOf<FollowedWriterReturnEntry?>(null)
         private set
     var isLoading by mutableStateOf(false)

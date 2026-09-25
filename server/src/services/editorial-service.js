@@ -40,7 +40,7 @@ export const FORBIDDEN_EDITORIAL_PATTERNS = [
  */
 export function calculateReadingTime(text = '') {
   const words = String(text).trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 200));
+  return Math.max(1, Math.round(words / 140)); // 140 WPM for literary prose
 }
 
 /**

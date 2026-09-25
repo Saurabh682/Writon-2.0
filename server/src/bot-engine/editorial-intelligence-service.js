@@ -1969,11 +1969,409 @@ export function validateZeroAISlopEngineBlockers({
     }
   }
 
+  // 129. CHARACTER_KNOWLEDGE_LEDGER
+  // In any story whose central subject is the TIMING OF KNOWLEDGE (spoilers, delayed broadcasts,
+  // secrets, election results, medical diagnoses, etc.), knowledge itself must have continuity.
+  // A fact cannot arrive as a dramatic revelation if the character already possesses that fact
+  // through earlier dialogue or explicit scene narration.
+  // In spoiler-protection stories, all earlier spoiler attempts must be blocked before any
+  // result escapes; the climactic disclosure (e.g. TV crawl) must be the first successful breach.
+  if (category === 'Short Stories') {
+    const lc = content.toLowerCase();
+    const isKnowledgeTimingStory =
+      lc.includes('replay') || lc.includes('spoiler') || lc.includes('score') ||
+      lc.includes('result') || lc.includes('crawl') || lc.includes('ticker') ||
+      lc.includes('broadcast') || lc.includes("didn't want to know") ||
+      lc.includes("don't want to know") || lc.includes('uncertainty');
+
+    if (isKnowledgeTimingStory) {
+      // Detect: spoiler landed in dialogue before the climax
+      const earlySpoilerLanded =
+        /["""][A-Z][a-z]+ (won|lost|beat|defeated)[,."""']/.test(content) ||
+        /["""]?(She|He|[A-Z][a-z]+) (took|won) the (first|second|third|fourth|fifth) set/i.test(content);
+      const lateDiscovery =
+        /\b(now knew|suddenly knew|now he knew|now she knew|for the first time|realised|realized)\b/i.test(content) ||
+        /\b(arrived in the same frame|arrived together|arrived at once)\b/i.test(content);
+
+      if (earlySpoilerLanded && lateDiscovery) {
+        violations.push({
+          rule: 'CHARACTER_KNOWLEDGE_LEDGER',
+          severity: 'hard',
+          description:
+            'CHARACTER_KNOWLEDGE_LEDGER: A character is told the result explicitly in early dialogue, ' +
+            'then the prose presents the same fact as a dramatic discovery. ' +
+            'In a story about the timing of knowledge, a fact cannot arrive twice. ' +
+            'Fix: ensure all earlier spoiler attempts are BLOCKED before any result escapes; ' +
+            'reserve the complete result for the one intended climactic disclosure.'
+        });
+      }
+    }
+  }
+
+  // 130. DEVANSH_PROP_CLUSTER_HARD_FAIL
+  // Blocks the overused Devansh Kolkata atmospheric costume cluster.
+  // When 3 or more of these stereotypical props appear together, abort.
+  if ((penName.includes('devansh') || penName.includes('devansh_roy')) || category === 'Short Stories') {
+    const devanshProps = [
+      /\btea\s+stall\b/i,
+      /\bradio\s+static\b|\btransistor\b/i,
+      /\b(?:kolkata\s+)?tram(?:\s+tracks?|\s+lines?)?\b/i,
+      /\b(?:monsoon\s+)?rain\s+(?:drummed|fell|lashed|slanted)\b|\braindrop\s+on\s+glass\b/i,
+      /\bnotebook\s+(?:with\s+)?bleeding\s+ink\b|\bink\s+(?:blur(?:red)?|bleeding)\b/i,
+      /\bstray\s+dog\b|\bstreet\s+dog\b/i,
+      /\btea\s+(?:burns?\s+tongue|cooling|cold\s+tea|steaming\s+tea)\b/i,
+      /\b(?:old\s+)?(?:shopkeeper|proprietor|haren-?da|bhabani-?da|bimal)\s+(?:dispensing|whispered|said|nodded|poured|wiped)\b/i,
+      /\bcorrugated\s+tin\b|\brusted\s+tin\b|\bwet\s+jute\b|\btarpaulin\b/i,
+      /\bclay\s+cup(?:s)?\b|\bkulhad\b|\bchipped\s+glass\b/i,
+      /\b(?:damp|wet)\s+newspaper\b|\bsoaked\s+paper\b/i,
+      /\b(?:rag|cloth)\s+(?:wip(?:ed|ing)|swiped)\b/i,
+      /\b(?:dying|dimming|flickering|drained)\s+(?:phone\s+)?(?:screen|battery)\b|\bphone\s+battery\s+at\s+\d+%/i
+    ];
+    const matchedProps = devanshProps.filter(p => p.test(cleanContent));
+    if (matchedProps.length >= 3) {
+      violations.push({
+        rule: 'DEVANSH_PROP_CLUSTER_HARD_FAIL',
+        severity: 'hard',
+        description: `DEVANSH_PROP_CLUSTER_HARD_FAIL: Detected ${matchedProps.length} props from the retired Devansh costume cluster (tea stall, radio static, tram tracks, bleeding ink notebook, stray dog, tea as emotional punctuation, old shopkeeper wisdom, wet jute/rusted tin, clay cup, wet newspaper, wiping rag, dying battery/screen). If 3+ appear together, draft must be rejected at premise stage.`
+      });
+    }
+  }
+
+  // 131. REAL_PERSON_PRIVATE_MEMORY_FAIL
+  // For a real deceased person or biographical subject: do not invent unverified private memories,
+  // domestic intimacies, sensory gestures, or imagined final moments.
+  const mentionsRealDeceasedOrFigure =
+    /\b(?:jon\s+small|billy\s+joel|elizabeth\s+weber|attila|the\s+hassles)\b/i.test(cleanContent) ||
+    researchDossier?.topic?.toLowerCase().includes('death') ||
+    researchDossier?.topic?.toLowerCase().includes('obituary');
+
+  if (mentionsRealDeceasedOrFigure) {
+    const inventedPrivateScenes = [
+      /\bcigarette(?:s)?\s+shared\s+(?:at\s+3\s*am|in\s+a\s+studio)\b/i,
+      /\bhum\s+of\s+a\s+(?:bass\s+)?guitar\s+that\s+only\s+two\s+people\s+heard\b/i,
+      /\bfrustration\s+of\s+a\s+melody\s+that\s+refused\s+to\s+land\b/i,
+      /\bshared\s+(?:whisper|glance|silence)\s+(?:at\s+midnight|in\s+the\s+dark)\b/i,
+      /\bhe\s+thought\s+of\s+him\s+as\s+he\s+closed\s+his\s+eyes\b/i
+    ];
+    for (const inv of inventedPrivateScenes) {
+      if (inv.test(cleanContent)) {
+        violations.push({
+          rule: 'REAL_PERSON_PRIVATE_MEMORY_FAIL',
+          severity: 'hard',
+          description: 'REAL_PERSON_PRIVATE_MEMORY_FAIL: Story manufactures unsourced private memories, intimate studio moments, or private domestic gestures for a real biographical/deceased person. Use only documented events, attributed recollections, or clearly marked analytical inference.'
+        });
+        break;
+      }
+    }
+  }
+
+  // 132. DECORATIVE_SOURCE_FAIL
+  // If a current event or real person is used merely as an atmospheric mood cue or permission
+  // for generic grief/melancholy without structural necessity (e.g. "he didn't know who X was, but understood silence").
+  const genericBridgePattern =
+    /\b(?:he|she)\s+didn['’]t\s+know\s+who\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+was[,\s\w]*\bbut\s+(?:he|she)\s+understood\s+(?:the\s+silence|the\s+loss|grief|sadness)\b/i.test(cleanContent) ||
+    /\bthe\s+news\s+on\s+the\s+radio\s+spoke\s+of\s+[,\s\w]*\bbut\s+here\s+in\s+the\s+(?:city|room|alley)\b/i.test(cleanContent);
+  if (genericBridgePattern) {
+    violations.push({
+      rule: 'DECORATIVE_SOURCE_FAIL',
+      severity: 'hard',
+      description: 'DECORATIVE_SOURCE_FAIL: The real news/source is decorative rather than structural. A specific real person/event is used as a generic bridge to an unrelated fictional character ("didn\'t know who X was, but understood silence"). The source must create a concrete informational conflict or media provenance problem.'
+    });
+  }
+
+  // 133. THEMATIC_APHORISM_DIALOGUE_FAIL
+  // Dialogue that delivers an on-the-nose metaphorical summary of the piece, sounds like an AI quote card,
+  // or exists only to dispense thematic wisdom rather than genuine character desire/pressure.
+  const cannedThematicDialogue = [
+    /["""][^"”]*when\s+a\s+man\s+who\s+keeps\s+the\s+rhythm\s+goes[^"”]*["""]/i,
+    /["""][^"”]*the\s+drummer\s+feels\s+it\s+in\s+his\s+own\s+wrists[^"”]*["""]/i,
+    /["""][^"”]*we\s+are\s+all\s+just\s+(?:waiting|notes|shadows|clocks)[^"”]*["""]/i,
+    /["""][^"”]*some\s+stories\s+aren['’]t\s+meant\s+to\s+be\s+written[^"”]*["""]/i,
+    /["""][^"”]*you\s+worry\s+about\s+(?:the\s+)?[\w\s]+[.,;]\s*i\s+worry\s+about\s+(?:the\s+)?[\w\s]+[^"”]*["""]/i
+  ];
+  for (const dial of cannedThematicDialogue) {
+    if (dial.test(cleanContent)) {
+      violations.push({
+        rule: 'THEMATIC_APHORISM_DIALOGUE_FAIL',
+        severity: 'hard',
+        description: 'THEMATIC_APHORISM_DIALOGUE_FAIL: Dialogue contains a polished, thematically perfect aphorism that sounds like an AI quote card rather than authentic human speech under pressure. Dialogue must create character resistance, not deliver the author\'s essay thesis.'
+      });
+      break;
+    }
+  }
+
+  // 134. SHORT_STORY_ENGINE_GATE
+  // A Short Story requires desire, obstacle, decision, and changed state.
+  // Reject mood vignettes where the protagonist merely listens to news, ponders, drinks tea, and closes a notebook.
+  if (category === 'Short Stories') {
+    const isVignetteAutopilot =
+      /\b(?:closed?\s+(?:his|her|the)?\s*notebook|notebook\s+shut|closed\s+the\s+pages)\b/i.test(cleanContent) &&
+      !/\b(?:decid(?:ed|ing)|confront(?:ed)?|refus(?:ed|ing)|hid(?:den)?|confess(?:ed)?|chose|torn|deleted|signed|spoke\s+up|refused\s+to)\b/i.test(cleanContent);
+    const hasZeroFictionalConflict =
+      /\bhear(?:d|ing)?\s+(?:the\s+)?news\b/i.test(cleanContent) &&
+      /\bthought\s+of\b/i.test(cleanContent) &&
+      /\btea\b/i.test(cleanContent) &&
+      /\bclosed?\s+the\s+notebook\b/i.test(cleanContent) &&
+      !/\b(?:because\s+he|she\s+could\s+not|he\s+refused|argument|consequence|choice)\b/i.test(cleanContent);
+
+    if (isVignetteAutopilot || hasZeroFictionalConflict) {
+      violations.push({
+        rule: 'SHORT_STORY_ENGINE_GATE',
+        severity: 'hard',
+        description: 'SHORT_STORY_ENGINE_GATE: Draft lacks minimum short story architecture (desire, obstacle, decision, changed state). A character hearing news, drinking tea, reflecting, and closing a notebook is a mood vignette, not a story. Ground the story in a character decision with actual friction.'
+      });
+    }
+  }
+
+  // 135. AMBIENT_MELANCHOLY_ENDING_FAIL
+  // Flags endings composed of auto-pilot sensory decay props (tea cooling, rain on glass, notebook closing, solitary droplet).
+  const endingSlice = cleanContent.slice(-450);
+  const endingSensoryProps = [
+    /\b(?:tea|coffee|cup|chai)\b/i,
+    /\b(?:rain|drop|droplet|mist|water|drizzle)\b/i,
+    /\b(?:notebook|pen|ink|paper|cap)\b/i,
+    /\b(?:glass|window|pane|mirror)\b/i,
+    /\b(?:street|road|traffic|alley|lane)\b/i,
+    /\b(?:quietly|silence|observing|watched|looked\s+out)\b/i,
+    /\b(?:blur(?:red)?|smudge|faded)\b/i
+  ];
+  const matchedEndingProps = endingSensoryProps.filter(p => p.test(endingSlice));
+  if (matchedEndingProps.length >= 4) {
+    violations.push({
+      rule: 'AMBIENT_MELANCHOLY_ENDING_FAIL',
+      severity: 'hard',
+      description: `AMBIENT_MELANCHOLY_ENDING_FAIL: Ending contains ${matchedEndingProps.length} ambient melancholy props in the closing lines (beverage, rain/droplet, notebook/ink, windowpane, street observation, blurring/fading). The system is drafting ending-shaped atmosphere instead of an ending. Regenerate ending from narrative consequence.`
+    });
+  }
+
+  // 136. DEVANSH_SOURCE_MECHANIC_REQUIREMENT
+  // When Devansh Roy engages with a source or obituary, it must turn on an INFORMATION PROBLEM
+  // (relationship compression, conflicting records, omission, delayed disclosure), NOT generic mood or grief.
+  if (penName.includes('devansh') || (category === 'Essays' && cleanTitle.toLowerCase().includes('obituary'))) {
+    const addressesInformationMechanic =
+      /\b(?:compress(?:es|ed|ion)?|label|omitt?ed|omission|prov(?:enance)?|record|transmission|archiv(?:e|al)|headline|euphemism|safe\s+noun|contradiction|conflict)\b/i.test(cleanContent);
+    const hasGenericGriefMood =
+      /\b(?:silence\s+that\s+followed|grief\s+of\s+a\s+city|mourning\s+a\s+friend|unseen\s+person\s+behind\s+the\s+star)\b/i.test(cleanContent);
+    if (!addressesInformationMechanic && hasGenericGriefMood) {
+      violations.push({
+        rule: 'DEVANSH_SOURCE_MECHANIC_REQUIREMENT',
+        severity: 'hard',
+        description: 'DEVANSH_SOURCE_MECHANIC_REQUIREMENT: Devansh source engagement must interrogate an information/provenance problem (how an obituary headline or label compresses, omits, or re-engineers a complex history). It cannot rely on generic grief mood or distant mourning.'
+      });
+    }
+  }
+
+  // 137. REPRESENTATION_VS_RECORD_GATE
+  // When a piece centers on visual media, an AI-generated image, viral screenshot, or trading screen claim,
+  // it must contrast the representation directly against primary filings/records (SEC 8-K, formal agreement, statutory disclosure).
+  const hasRepresentationSubject =
+    /\b(?:ai[- ]generated\s+image|synthetic\s+image|trading\s+screen|viral\s+screenshot|viral\s+claim|social\s+media\s+post)\b/i.test(cleanContent) &&
+    /\b(?:stock|trade|intel|\$\d+|\d+\s+billion|shares?)\b/i.test(cleanContent);
+  if (hasRepresentationSubject) {
+    const examinesPrimaryRecord =
+      /\b(?:sec|8-k|filing|statutory|primary\s+record|contract|agreement|regulatory|disclosure|formal\s+documentation|cost\s+basis|appropriation|warrants?)\b/i.test(cleanContent);
+    if (!examinesPrimaryRecord) {
+      violations.push({
+        rule: 'REPRESENTATION_VS_RECORD_GATE',
+        severity: 'hard',
+        description: 'REPRESENTATION_VS_RECORD_GATE: Story centers on an image, screenshot, or viral claim but fails to examine or contrast it against the primary underlying record (e.g. SEC filing, formal agreement, statutory record, regulatory disclosure). Devansh media analysis requires interrogating the gap between representation and record.'
+      });
+    }
+  }
+
+  // 138. TITLE_CONCEPT_CONTRACT
+  // If title promises a "Ledger", "Balance Sheet", "Audit", or statutory accounting construct,
+  // the text must materially engage with ledger/accounting mechanics, reconciliation, or transaction structures.
+  const promisesLedgerConcept = /\b(?:ledger|balance\s+sheet|audit|double-entry|statutory\s+books)\b/i.test(cleanTitle);
+  if (promisesLedgerConcept) {
+    const engagesLedgerMechanics =
+      /\b(?:shares?|equity|warrants?|dilution|filing|cost\s+basis|valuation|sec|accounting|balance\s+sheet|amortiz(?:ed|ation)|capital|ledger|transaction|appropriation|debit|credit|discrepancy|reconcil(?:e|iation))\b/i.test(cleanContent);
+    if (!engagesLedgerMechanics) {
+      violations.push({
+        rule: 'TITLE_CONCEPT_CONTRACT',
+        severity: 'hard',
+        description: 'TITLE_CONCEPT_CONTRACT: Title promises a "Ledger" or accounting record, but text contains no material ledger, financial reconciliation, or statutory accounting concepts, reducing the title concept to decorative metaphor.'
+      });
+    }
+  }
+
+  // 139. CURRENT_EVENT_STORY_GATE
+  // Short story anchored to a current event must establish: SOURCE_EVENT, PROTAGONIST_WANTS, OBSTACLE, DECISION, and CHANGE.
+  // Rejects stories where a passive character merely witnesses breaking news/posts without stakes or active choice.
+  if (category === 'Short Stories') {
+    const anchorsToNewsEvent =
+      /\b(?:breaking\s+news|viral\s+post|president(?:'s)?\s+(?:post|claim|image)|trading\s+screen|press\s+conference|ticker|stock\s+trade)\b/i.test(cleanContent);
+    const hasProtagonistAgency =
+      /\b(?:decid(?:ed|ing)|confront(?:ed)?|refus(?:ed|ing)|hid(?:den)?|confess(?:ed)?|chose|torn|deleted|signed|spoke\s+up|refused\s+to|drafted|filed|flagged|marked|submitt(?:ed|ing)|typed|wrote\s+down|corrected|queried|logged)\b/i.test(cleanContent);
+    if (anchorsToNewsEvent && !hasProtagonistAgency) {
+      violations.push({
+        rule: 'CURRENT_EVENT_STORY_GATE',
+        severity: 'hard',
+        description: 'CURRENT_EVENT_STORY_GATE: Short story anchored to a current event lacks protagonist agency (wants, obstacle, decision, change). A character passively watching news or a social post without an active decision or consequence fails the story engine gate.'
+      });
+    }
+  }
+
+  // 140. MARKET_CAUSALITY_DISCIPLINE
+  // Prevents simplistic monocausal explanations attributing complex stock market moves solely to a single post or meme.
+  const hasMarketMoveClaim =
+    /\b(?:stock|share\s+price|market\s+cap|valuation)\s+(?:surged|jumped|climbed|rose|fell|crashed)\b/i.test(cleanContent) &&
+    /(?:\$|\bpercent\b|%)/i.test(cleanContent);
+  if (hasMarketMoveClaim) {
+    const monocausalPostAttribution =
+      /\b(?:solely\s+because|single-handedly\s+caused|the\s+post\s+(?:made|drove)\s+the\s+stock\s+to|because\s+he\s+posted,\s+the\s+stock\s+surged)\b/i.test(cleanContent);
+    const acknowledgesBroaderCatalysts =
+      /\b(?:catalyst|analyst|foundry|upgrade|macro|earnings|guidance|speculative|sentiment|volume|fundamentals|chips\s+act|multi-factor|broader\s+market)\b/i.test(cleanContent);
+    if (monocausalPostAttribution && !acknowledgesBroaderCatalysts) {
+      violations.push({
+        rule: 'MARKET_CAUSALITY_DISCIPLINE',
+        severity: 'hard',
+        description: 'MARKET_CAUSALITY_DISCIPLINE: Piece reduces multi-factor market movement to an ungrounded monocausal narrative (e.g. attributing a stock surge solely to a social media image without noting other catalysts like analyst upgrades, foundry developments, or market sentiment).'
+      });
+    }
+  }
+
+  // 141. NARRATIVE_CONSEQUENCE_TEST (Short Stories)
+  // Identifies inciting change, choice/action, cost of choice, and observable consequence.
+  // Rejects mood vignettes where a character merely looks at a screen/catalog/object, reflects or discusses philosophically,
+  // and closes the tab/page with deferred action ("not yet", "waiting for the right kind of road").
+  if (category === 'Short Stories') {
+    const hasScreenBrowsingPremise =
+      /\b(?:browser\s+tab|on\s+(?:his|her)\s+phone|looking\s+at\s+the\s+screen|configurator|catalog|online\s+listing|scrolling|clicked\s+through)\b/i.test(cleanContent);
+    const hasDeferredEnding =
+      /\b(?:not\s+yet|some\s+stories\s+aren['’]t\s+meant\s+to\s+be\s+started\s+yet|keep\s+in\s+our\s+pockets|waiting\s+for\s+the\s+right\s+kind\s+of\s+road|closed?\s+the\s+(?:tab|page|screen|browser))\b/i.test(cleanContent);
+    const hasPhysicalConsequence =
+      /\b(?:bought|ordered|signed|wrote\s+(?:down|on)|tighten(?:ed|ing)|invoice|cheque|cash|down\s+payment|roof|workshop|repaired|replaced|sold|handed\s+over|refused|deposit|lathe)\b/i.test(cleanContent);
+
+    if (hasScreenBrowsingPremise && hasDeferredEnding && !hasPhysicalConsequence) {
+      violations.push({
+        rule: 'NARRATIVE_CONSEQUENCE_TEST',
+        severity: 'hard',
+        description: 'NARRATIVE_CONSEQUENCE_TEST: Short story lacks narrative consequence (inciting change, choice/action, cost of choice, observable consequence). A character browsing a product on a screen, reflecting with a friend, and closing the tab with a deferred non-action ("not yet") is a mood vignette wearing fictional overalls. Anchor the story in a consequential choice with physical stakes.'
+      });
+    }
+  }
+
+  // 142. METAPHOR_DEPENDENCY_FAIL
+  // Rejects when a real subject (product, launch, sporting match) primarily exists as a decorative vehicle
+  // for generic life conditions (ambition, freedom, grief, hesitation, escape, "moving forward")
+  // without its concrete mechanical or transactional properties driving the conflict.
+  // Replacement test: If replacing the subject with a camera, laptop, or tennis match leaves the piece intact, fail.
+  const genericMetaphorVehicle =
+    /\b(?:machine\s+isn['’]t\s+just|motorcycle\s+isn['’]t\s+just|vehicle\s+isn['’]t\s+just|product\s+isn['’]t\s+just)\s+an?\s+(?:entry\s+in\s+a\s+catalog|machine|motorcycle|device)[^.,;]*[.,;]\s*it['’]s\s+a\s+(?:marker|metaphor|symbol|testament|reminder)\s+of\s+(?:a\s+specific\s+kind\s+of\s+arrival|our\s+collective|freedom|restless|ambition)/i.test(cleanContent) ||
+    /\b(?:the\s+machine\s+is\s+only\s+as\s+fast\s+as\s+the\s+story\s+you\s+are\s+trying\s+to\s+outrun|we\s+don['’]t\s+buy\s+the\s+vehicle,\s+we\s+buy\s+the\s+next\s+mile)\b/i.test(cleanContent);
+  if (genericMetaphorVehicle) {
+    violations.push({
+      rule: 'METAPHOR_DEPENDENCY_FAIL',
+      severity: 'hard',
+      description: 'METAPHOR_DEPENDENCY_FAIL: Subject exists primarily to symbolize a generic life condition (ambition, freedom, hesitation, escape). Fails the subject-dependency replacement test: if replacing the motorcycle with a camera, laptop, or train preserves the essay, the premise is insufficiently bound to the subject\'s factual reality.'
+    });
+  }
+
+  // 143. SUPPORTING_CHARACTER_AS_THESIS_MOUTHPIECE_FAIL
+  // Flags supporting characters who deliver artificial aphorisms summarizing the author's philosophical thesis
+  // instead of authentic, grounded speech under interpersonal pressure.
+  const supportingCharacterAphorism = [
+    /\bThe machine is only as fast as the story you are trying to outrun\b/i,
+    /\bSome stories aren['’]t meant to be started yet\b/i,
+    /\bWe are not buying the metal[,\s]+we are buying\b/i,
+    /\bA motorcycle is just a clock that moves forward\b/i
+  ];
+  const narratorVentriloquism =
+    /\bnot\s+with\s+the\s+hunger\s+of\s+a\s+consumer[,\s]+but\s+with\s+the\s+(?:quiet\s+)?appraisal\s+of\s+a\s+novelist\b/i.test(cleanContent);
+
+  for (const pat of supportingCharacterAphorism) {
+    if (pat.test(cleanContent) || narratorVentriloquism) {
+      violations.push({
+        rule: 'SUPPORTING_CHARACTER_AS_THESIS_MOUTHPIECE_FAIL',
+        severity: 'hard',
+        description: 'SUPPORTING_CHARACTER_AS_THESIS_MOUTHPIECE_FAIL: Supporting character delivers a polished quote-card aphorism or narrator attributes novelist sensibilities to a mundane character. Dialogue must sound like authentic human speech under pressure (e.g. "Two-ten on road; they never put that number in the headline"), not the author\'s essay thesis.'
+      });
+      break;
+    }
+  }
+
+
+  // 144. CODE_POLICY_STRICT_ENFORCEMENT (WRITER_RULE_VIOLATION: CODE_INSERTED_WHEN_FORBIDDEN)
+  // Hard critic gate: detects pseudocode interfaces, decision functions, or algorithmic metaphors
+  // inserted into non-software premises (e.g. motorcycle buying, sports, grief).
+  if (category !== 'Tech') {
+    const codeBlock = cleanContent.match(/(?:```|~~~)[a-zA-Z0-9_-]*\r?\n([\s\S]*?)\r?\n(?:```|~~~)/);
+    if (codeBlock) {
+      violations.push({
+        rule: 'WRITER_RULE_VIOLATION_CODE_FORBIDDEN',
+        severity: 'hard',
+        description: `WRITER_RULE_VIOLATION: CODE_INSERTED_WHEN_FORBIDDEN: Code block detected in ${category} piece. Pseudo-code interfaces (e.g. interface Aspirations, decidePurchase, return false) masquerading as emotional or narrative logic violate editorial code policy. Code is strictly forbidden outside genuine software technical tutorials.`
+      });
+    }
+  }
+
+  // 145. ARSHDEEP_TITLE_COOLDOWN & Lexical Title Recurrence
+  // Prevents repetitive title tokens for Arshdeep Singh / Gurpreet Sandhu (geometry, dust, static, baseline, underdog, choosing).
+  if (penName.includes('arsh') || penName.includes('gurpreet')) {
+    const overusedTitleTokens = /\b(?:geometry|dust|static|baseline|lines|underdog|choosing)\b/i;
+    if (overusedTitleTokens.test(cleanTitle)) {
+      violations.push({
+        rule: 'ARSHDEEP_TITLE_COOLDOWN',
+        severity: 'hard',
+        description: `ARSHDEEP_TITLE_COOLDOWN: Title "${cleanTitle}" contains exhausted title token (${cleanTitle.match(overusedTitleTokens)[0]}). Following "The Geometry of the Underdog", title motifs including geometry, dust, static, baseline, lines, and choosing are on mandatory cooldown for Arshdeep/Gurpreet. Use domain-concrete titles.`
+      });
+    }
+  }
+
+  // 146. HOUSE_STYLE_PROP_DENSITY
+  // Detects the synthetic WritOn atmospheric perfume cluster:
+  // (rain/monsoon humidity + garage dust/grease + phone glow/screen tab + dark room + deferred decision/not yet).
+  // When 3+ high-frequency motifs appear together without subject necessity, require domain-specific substitutions.
+  const houseStyleProps = [
+    /\b(?:rain|monsoon|humidity|rainy-season)\b/i,
+    /\b(?:garage\s+dust|workbench\s+grease|scent\s+of\s+old\s+grease)\b/i,
+    /\b(?:phone\s+(?:glow|tab\s+flickered)|screen\s+glow|flickering\s+tab)\b/i,
+    /\b(?:dark(?:ened)?\s+room|shadows\s+in\s+the\s+garage)\b/i,
+    /\b(?:tea|chai|kettle)\b/i,
+    /\b(?:not\s+yet|logic\s+of\s+the\s+['’]not\s+yet['’]|waiting\s+for\s+the\s+right\s+road)\b/i
+  ];
+  const matchedHouseProps = houseStyleProps.filter(p => p.test(cleanContent));
+  if (matchedHouseProps.length >= 3) {
+    violations.push({
+      rule: 'HOUSE_STYLE_PROP_DENSITY',
+      severity: 'hard',
+      description: `HOUSE_STYLE_PROP_DENSITY: Detected ${matchedHouseProps.length} high-frequency WritOn costume props (rain, garage dust/grease, phone glow, dark room, tea, deferred "not yet" ending). Replace synthetic mood props with domain-specific objects (e.g. dealer quotation, chain lube, torque wrench, workshop invoice, leaking roof, lathe).`
+    });
+  }
+
+  // 147. NUMERICAL_PRECISION_AND_LOCAL_REALITY
+  // For product launches, enforce factual reporting precision and regional cost reality.
+  // E.g. Jawa 42 All Stars is ₹1.85 lakh ex-showroom (₹1.90 lakh for Black), not a floating "1.80 to 1.85 lakh",
+  // and real on-road pricing in Punjab/Jalandhar is ~₹2.10 lakh.
+  // Also flags ungrounded cross-story contamination (e.g. Boston attic / Lindsay Clancy leaks in a Punjab story).
+  if (/\bjawa\s+42\b/i.test(cleanContent)) {
+    const vaguePricing = /\b1\.80\s*(?:and|to|-)\s*1\.85\s*lakh\b/i.test(cleanContent);
+    if (vaguePricing) {
+      violations.push({
+        rule: 'NUMERICAL_PRECISION_AND_LOCAL_REALITY',
+        severity: 'hard',
+        description: 'NUMERICAL_PRECISION_AND_LOCAL_REALITY: Inaccurate pricing statement. Jawa 42 All Stars launched at ₹1.85 lakh ex-showroom (₹1.90 lakh for Black), not a floating "1.80 to 1.85 lakh". Ground the friction in actual on-road dealer pricing (e.g. ~₹2.10 lakh in Jalandhar).'
+      });
+    }
+  }
+
+  const crossStoryContamination = /\b(?:student\s+in\s+a\s+drafty\s+boston\s+attic|lindsay\s+clancy)\b/i.test(cleanContent) &&
+    /\b(?:jawa|punjab|kabir|workshop)\b/i.test(cleanContent);
+  if (crossStoryContamination) {
+    violations.push({
+      rule: 'CROSS_STORY_CONTAMINATION_FAIL',
+      severity: 'hard',
+      description: 'CROSS_STORY_CONTAMINATION_FAIL: Unrelated narrative artifact leaked across stories (Boston attic / Clancy reference inside Punjab motorcycle piece). Enforce strict narrative isolation.'
+    });
+  }
+
   return {
     isValid: violations.length === 0,
     violations,
     reasons: violations.map(v => `${v.rule}: ${v.description}`)
   };
+
 }
 
 export function validateGeneratedArticleIntegrity({

@@ -1,0 +1,184 @@
+{
+  "scheduleVersion": "1.0",
+  "timezone": "Asia/Kolkata",
+  "createdAt": "2026-09-24T22:45:00+05:30",
+  "dispatches": [
+    {
+      "id": "dispatch_20260925_1030_story",
+      "targetBot": "Autobots - Story Bot",
+      "platform": "WritOn",
+      "scheduledTimeIST": "2026-09-25T10:30:00+05:30",
+      "title": "Generation Scaled, Verification Didn’t",
+      "personaHint": "Aarav Mehta (@aarav_tech)",
+      "category": "Tech / Essays",
+      "type": "story",
+      "status": "published",
+      "publishedPostId": "5b798862-7147-4208-a073-6b96f1544e93",
+      "slug": "generation-scaled-verification-didn-t-9107770b-067",
+      "liveUrl": "https://writon.cc/post/generation-scaled-verification-didn-t-9107770b-067",
+      "bundle": "bundle_ai_verification_20260925",
+      "content": {
+        "title": "Generation Scaled, Verification Didn’t",
+        "tags": ["AI", "Software Engineering", "Code Review", "Agentic AI", "Future of Work", "Developer Experience"]
+      }
+    },
+    {
+      "id": "dispatch_20260925_1300_linkedin",
+      "targetBot": "Alpha - LinkedIn Bot",
+      "platform": "LinkedIn",
+      "scheduledTimeIST": "2026-09-25T13:00:00+05:30",
+      "type": "post",
+      "status": "published",
+      "postUrn": "urn:li:share:7509139706367033344",
+      "liveUrl": "https://www.linkedin.com/feed/update/urn:li:share:7509139706367033344",
+      "bundle": "bundle_ai_verification_20260925",
+      "content": {
+        "title": "AI verification bottlenecks and human judgment",
+        "hashtags": ["#artificialintelligence", "#softwareengineering", "#codereview"]
+      }
+    },
+    {
+      "id": "dispatch_20260925_1830_x",
+      "targetBot": "Alpha - X Bot",
+      "platform": "X",
+      "scheduledTimeIST": "2026-09-25T18:30:00+05:30",
+      "type": "tweet",
+      "status": "pending_schedule",
+      "bundle": "bundle_ai_verification_20260925",
+      "content": {
+        "text": "AI solved one software bottleneck and quietly created another.\n\nCode generation scales with compute.\n\nVerification scales with human attention.\n\nMachines can produce indefinitely.\n\nSenior engineers cannot review indefinitely.\n\nThe scarce resource was never typing.\n\nIt was judgment.\n\n#writingcommunity #writingtips"
+      }
+    },
+    {
+      "id": "dispatch_20260925_2015_insta",
+      "targetBot": "Alpha - Instagram Bot",
+      "platform": "Instagram",
+      "scheduledTimeIST": "2026-09-25T20:15:00+05:30",
+      "type": "reel",
+      "status": "pending_schedule",
+      "bundle": "bundle_ai_verification_20260925",
+      "content": {
+        "title": "Maybe Silence Is Social Too",
+        "format": "text_on_screen_reel",
+        "hashtags": ["#SilentBookClub", "#SlowReading", "#BookCommunity", "#ReadersOfInstagram", "#WritOn"]
+      }
+    },
+    {
+      "id": "dispatch_20260926_1100_story",
+      "targetBot": "Autobots - Story Bot",
+      "platform": "WritOn",
+      "scheduledTimeIST": "2026-09-26T11:00:00+05:30",
+      "title": "The Quiet Fellowship",
+      "personaHint": "Dr. Sunita Banerjee (@sunita_banerjee)",
+      "category": "Essays / Culture",
+      "type": "story",
+      "status": "pending_schedule",
+      "bundle": "bundle_silent_reading_20260926",
+      "content": {
+        "title": "The Quiet Fellowship",
+        "tags": ["Books", "Reading", "Silent Book Club", "Community", "Attention", "Digital Culture", "WritOn"]
+      }
+    },
+    {
+      "id": "dispatch_20260926_1930_yt",
+      "targetBot": "Alpha - YT Bot",
+      "platform": "YouTube",
+      "scheduledTimeIST": "2026-09-26T19:30:00+05:30",
+      "type": "short",
+      "status": "pending_schedule",
+      "bundle": "bundle_silent_reading_20260926",
+      "content": {
+        "title": "POV: You Buy a Second-Hand Book and Find a Letter Inside #shorts",
+        "durationTargetSec": 30,
+        "hashtags": ["#shorts", "#microfiction", "#writon"]
+      }
+    },
+    {
+      "id": "dispatch_20260927_1945_insta",
+      "targetBot": "Alpha - Instagram Bot",
+      "platform": "Instagram",
+      "scheduledTimeIST": "2026-09-27T19:45:00+05:30",
+      "type": "carousel",
+      "status": "pending_schedule",
+      "bundle": "bundle_writing_process_20260927",
+      "content": {
+        "title": "A Story’s Camera Roll",
+        "slideCount": 8,
+        "hashtags": ["#WritingProcess", "#WritersLife", "#WritOn", "#PhotoDump", "#CreativeProcess"]
+      }
+    },
+    {
+      "id": "dispatch_20260928_1030_story",
+      "targetBot": "Autobots - Story Bot",
+      "platform": "WritOn",
+      "scheduledTimeIST": "2026-09-28T10:30:00+05:30",
+      "title": "The Geometry of the Chai Bench",
+      "personaHint": "Devansh Roy (@devansh_roy)",
+      "category": "Culture / Essays",
+      "type": "story",
+      "status": "pending_schedule",
+      "bundle": "bundle_chai_bench_20260928",
+      "content": {
+        "title": "The Geometry of the Chai Bench",
+        "tags": ["India", "Adda", "Chai", "Urban Life", "Third Spaces", "Loneliness", "Culture", "WritOn"]
+      }
+    },
+    {
+      "id": "dispatch_20260928_2000_insta",
+      "targetBot": "Alpha - Instagram Bot",
+      "platform": "Instagram",
+      "scheduledTimeIST": "2026-09-28T20:00:00+05:30",
+      "type": "carousel",
+      "status": "pending_schedule",
+      "bundle": "bundle_chai_bench_20260928",
+      "content": {
+        "title": "The Cheapest Social Network in India May Still Be a Chai Bench",
+        "slideCount": 9,
+        "hashtags": ["#Adda", "#ChaiStories", "#IndianCulture", "#ThirdSpaces", "#UrbanLife", "#WritOn"]
+      }
+    },
+    {
+      "id": "dispatch_20260929_1230_linkedin",
+      "targetBot": "Alpha - LinkedIn Bot",
+      "platform": "LinkedIn",
+      "scheduledTimeIST": "2026-09-29T12:30:00+05:30",
+      "type": "post",
+      "status": "pending_schedule",
+      "bundle": "bundle_human_skills_20260929",
+      "content": {
+        "title": "Maybe “Soft Skills” Were Badly Named",
+        "hashtags": ["#futureofwork", "#humanskills", "#leadership"]
+      }
+    },
+    {
+      "id": "dispatch_20260930_1030_story",
+      "targetBot": "Autobots - Story Bot",
+      "platform": "WritOn",
+      "scheduledTimeIST": "2026-09-30T10:30:00+05:30",
+      "title": "Your App Should Survive Its Server",
+      "personaHint": "Aarav Mehta (@aarav_tech)",
+      "category": "Tech / Essays",
+      "type": "story",
+      "status": "pending_schedule",
+      "bundle": "bundle_local_first_20260930",
+      "content": {
+        "title": "Your App Should Survive Its Server",
+        "tags": ["Local-First", "Software Architecture", "Offline-First", "CRDT", "Web Development", "Privacy", "Calm Technology"]
+      }
+    },
+    {
+      "id": "dispatch_20260930_1930_yt",
+      "targetBot": "Alpha - YT Bot",
+      "platform": "YouTube",
+      "scheduledTimeIST": "2026-09-30T19:30:00+05:30",
+      "type": "short",
+      "status": "pending_schedule",
+      "bundle": "bundle_local_first_20260930",
+      "content": {
+        "title": "The Last Summer Before the Internet Entered Your Childhood #shorts",
+        "durationTargetSec": 40,
+        "hashtags": ["#shorts", "#nostalgia", "#writon"]
+      }
+    }
+  ]
+}

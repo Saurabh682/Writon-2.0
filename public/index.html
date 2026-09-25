@@ -294,6 +294,16 @@
         </div>
 
         <div class="story-grid reveal" id="live-story-grid">
+          <a class="story-card" href="/stories/generation-scaled-verification-didn-t-9107770b-067" data-category="Tech" title="Generation Scaled, Verification Didn’t — WritOn">
+            <img class="story-art-img" src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&auto=format&fit=crop&q=80" alt="Generation Scaled, Verification Didn’t" loading="lazy" decoding="async" width="360" height="190" />
+            <div class="story-card-body">
+              <div class="story-meta">TECH · 4 MIN READ</div>
+              <h3>Generation Scaled, Verification Didn’t</h3>
+              <p>Code generation scales linearly with compute. Verification scales strictly with human working memory. As synthetic code volume explodes, senior engineers face a mounting supervisory tax.</p>
+              <footer><span>Aarav Mehta</span><button aria-label="Bookmark story" onclick="event.preventDefault()">♡</button></footer>
+            </div>
+          </a>
+
           <a class="story-card" href="/stories/the-rear-gate-of-eighth-cross-b5df236f-dc3" data-category="Essays" title="The Rear Gate of Eighth Cross — WritOn">
             <img class="story-art-img" src="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=800&auto=format&fit=crop&q=80" alt="The Rear Gate of Eighth Cross" loading="lazy" decoding="async" width="360" height="190" />
             <div class="story-card-body">
@@ -335,12 +345,10 @@
           </a>
         </div>
 
-        <div id="stories-spinner" style="display: none; text-align: center; padding: 32px 0;">
-          <div style="display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(181,68,42,0.2); border-radius: 50%; border-top-color: var(--primary); animation: spin 0.8s linear infinite;"></div>
-        </div>
-        <div style="text-align: center; margin-top: 36px;">
-          <button id="load-more-stories-btn" class="button button-ghost" style="display: none;" type="button">Load More Stories</button>
-          <div id="end-of-stories-msg" style="display: none; color: var(--muted); font-size: 14px; margin-top: 16px;">You have explored all the latest stories.</div>
+        <div style="text-align: center; margin-top: 40px;">
+          <a href="/explore" class="button button-primary button-lg" style="box-shadow: var(--shadow-md);">
+            <span>More Stories &rarr;</span>
+          </a>
         </div>
       </div>
     </section>
@@ -482,6 +490,7 @@
       </div>
       <div>
         <h3>WritOn Publishing</h3>
+        <a href="/explore">Explore Stories</a>
         <a href="/journal">The Journal</a>
         <a href="/updates">Product Updates</a>
         <a href="/about">About WritOn</a>
@@ -501,6 +510,6 @@
     <div class="container footer-bottom">© 2026 WritOn (writon.cc). All rights reserved.</div>
   </footer>
 
-  <script src="/app.v6.js" defer></script>
+  <script src="/app.v7.js" defer></script>
 </body>
 </html>

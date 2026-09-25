@@ -34,6 +34,7 @@ import com.ibitvalley.writon.modern.core.auth.BiometricAuthManager
 import com.ibitvalley.writon.modern.core.database.WritOnDatabase
 import com.ibitvalley.writon.modern.core.designsystem.components.WritOnBrandMark
 import com.ibitvalley.writon.modern.core.designsystem.theme.BrandRed
+import com.ibitvalley.writon.modern.feature.launch.startActivitySafely
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
@@ -479,13 +480,20 @@ fun SettingsScreen(
                     icon = R.drawable.ic_heart_orange,
                     onClick = {
                         val pkg = context.packageName
-                        val playIntent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$pkg")).apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_DOCUMENT or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
+                        val marketUri = Uri.parse("market://details?id=$pkg")
+                        val webUri = Uri.parse("https://play.google.com/store/apps/details?id=$pkg")
+                        val playIntent = Intent(Intent.ACTION_VIEW, marketUri).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_MULTIPLE_TASK)
                         }
                         try {
-                            context.startActivity(playIntent)
-                        } catch (_: ActivityNotFoundException) {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$pkg")))
+                            context.startActivitySafely(playIntent)
+                        } catch (_: Exception) {
+                            try {
+                                val webIntent = Intent(Intent.ACTION_VIEW, webUri)
+                                context.startActivitySafely(webIntent)
+                            } catch (_: Exception) {
+                                android.widget.Toast.makeText(context, "Visit: play.google.com/store/apps/details?id=$pkg", android.widget.Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 )

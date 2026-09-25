@@ -21,6 +21,7 @@
         <activity
             android:name=".modern.WritOnModernActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.Material3.DayNight.NoActionBar">
             <intent-filter>
@@ -105,6 +106,16 @@
         <meta-data
             android:name="firebase_performance_collection_enabled"
             android:value="true" />
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />

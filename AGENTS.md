@@ -1,15 +1,14 @@
-## graphify
+## graphify (Default Codebase Knowledge Graph)
 
-This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+This project has an active knowledge graph at `graphify-out/` with 9,500+ nodes, god nodes, community structure, and cross-file relationships.
 
-When the user types `/graphify`, use the installed graphify skill or instructions before doing anything else.
+Rules (Mandatory by Default):
+- **Default for all codebase tasks**: For ANY question or investigation into how code works, architecture, where functions/classes live, caller/callee graphs, or blast radius, query the graph FIRST via the `graphify` MCP tool (`query_graph`) or CLI `graphify query "<question>"`.
+- **Relationship & concept paths**: Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts to return scoped subgraphs rather than loading full files.
+- **Dirty graph tolerance**: Dirty `graphify-out/` files after hooks or incremental updates are expected; never skip graphify because of uncommitted graph files.
+- **Broad navigation**: If `graphify-out/wiki/index.md` exists, use it for broad orientation instead of raw source browsing.
+- **Sync on edits**: After adding or modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
 
-Rules:
-- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
-- Dirty graphify-out/ files are expected after hooks or incremental updates; dirty graph files are not a reason to skip graphify. Only skip graphify if the task is about stale or incorrect graph output, or the user explicitly says not to use it.
-- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
-- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
-- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
 
 ## Documentation & Changelog Maintenance
 - Always update `CHANGELOG.md` with any new features, bug fixes, UI/UX refinements, security updates, or architectural changes made during any task.
@@ -19,6 +18,7 @@ Rules:
   - ready-to-paste Google Play release notes for every currently supported store locale (`en-US`, `en-IN`, `hi-IN`, `mr-IN`, and the configured Bengali locale);
   - notes based only on changes actually present and verified in that bundle, avoiding unmeasured claims such as “ultra-fast” or “instant”;
   - correct Google Play locale tags and the `<locale>...</locale>` format;
+  - **Strict character limit constraint**: Google Play Console enforces a **hard maximum limit of 500 characters** per `<locale>...</locale>` block. Every locale's release notes text must strictly stay well below 500 characters (target: ~300–400 characters);
   - no generic rating/review solicitation in release notes; rely on the app's native, eligibility-controlled review flow instead.
 - Ensure all branches (`Till_29Aug`, `production`, and `main`) are kept synchronized with the latest `CHANGELOG.md` and release builds.
 
@@ -37,6 +37,13 @@ Rules:
   - Devices that have downloaded the app but remain unregistered (guest readers) automatically subscribe to the `daily_digest` topic.
   - Never emit push dispatches solely to `device_push_tokens` direct recipients without the accompanying `daily_digest` topic broadcast.
   - Ensure notification payloads intended for unregistered readers contain appropriate visual presentation: `channelId: 'writon_editorial_channel'`, `icon: 'ic_stat_writon'`, `color: '#E75A2A'`, `priority: 'high'`, and an actionable `targetRoute`.
+- **Official Test Phone / Test ID Designation**:
+  - Whenever the operator/user refers to "test phone" or "test id", this refers strictly to:
+    - **Profile ID**: `FMpu4Aqe25R07h8Mz0TrHzRliVp1`
+    - **User**: Usha Srivastava (`ushasrivastava532@gmail.com`)
+    - **Device**: Redmi test phone (Android 15)
+    - **Target Token**: Active token in `public.device_push_tokens` where `profile_id = 'FMpu4Aqe25R07h8Mz0TrHzRliVp1'` and `revoked_at IS NULL`.
+  - **Quick CLI Test Dispatcher**: Run `node server/src/scripts/send-test-push.mjs` (optionally `--story=<storyId>`) to immediately deliver a test push notification to this test phone.
 
 ## Production Email & Writer Engagement Subsystem
 - Full architecture, component registry, data contracts, and AI operations are documented in [`EMAIL_SYSTEM.md`](file:///d:/VibeCode/WritOn-PowerUp/EMAIL_SYSTEM.md).
@@ -114,16 +121,61 @@ Rules:
 - **Zero Decorative Code Blocks in Literary Write-Ups (Mandatory Anti-Code Standard)**:
   - **Never inject synthetic, decorative, or pseudo-code blocks into essays, memoirs, cultural commentaries, or short fiction**. Fictionalized interfaces, mock TypeScript algorithms, or fake physics/probability formulas (`interface PointResult`, `calculateUpsetProbability`, etc.) break immersion, violate technical fidelity, and read as artificial contrivances.
   - Express technical or data-mediated observations strictly through natural, precise literary prose (e.g. contrast scoreboard metrics, telemetry latency, or dashboard analytics directly in sentences). Reserve actual code snippets exclusively for genuine technical documentation, software engineering tutorials, or developer tools.
+- **Think Brain Rules 130–140: Devansh Regression Prevention, Representation vs. Record & Market Discipline**:
+  - **Rule 130 (`DEVANSH_PROP_CLUSTER_HARD_FAIL`)**: The Kolkata atmospheric stage set is permanently retired (tea stall, radio static, tram tracks, monsoon rain, notebook with bleeding ink, stray dog, tea as emotional punctuation, old shopkeeper dispensing wisdom, wet jute / rusted tin, clay cups, wet newspaper, wiping rag, tarpaulin, dying battery/screen, named shopkeepers like Bhabani-da/Haren-da/Bimal). If 3+ appear together in a draft: **ABORT BEFORE DRAFTING**.
+  - **Rule 131 (`REAL_PERSON_PRIVATE_MEMORY_FAIL`)**: For any real deceased or biographical figure, NEVER invent private conversations, studio habits, cigarettes shared at 3 AM, unverified gestures, or imagined final moments. Use strictly documented historical facts, attributed quotes, or explicit critical analysis.
+  - **Rule 132 (`DECORATIVE_SOURCE_FAIL`)**: Source substitution invariant: if a real current event or person can be swapped for any generic figure with <20% change in the text (e.g. *"didn't know who X was, but understood silence"*), the source is decorative. The source must create a concrete informational problem or transmission conflict.
+  - **Rule 133 (`THEMATIC_APHORISM_DIALOGUE_FAIL`)**: Secondary characters must never deliver polished, quote-card aphorisms (*"When a man who keeps the rhythm goes..."*, *"You worry about the silicon. I worry about the tea."*) to summarize the piece's thesis. Dialogue must create interpersonal resistance and pressure under real stakes.
+  - **Rule 134 (`SHORT_STORY_ENGINE_GATE`)**: A Short Story requires `PROTAGONIST_WANTS + OBSTACLE + DECISION + CHANGED STATE`. Hearing news, pondering mortality, drinking tea, and closing a notebook is a mood vignette, not a story.
+  - **Rule 135 (`AMBIENT_MELANCHOLY_ENDING_FAIL`)**: Flags endings constructed of autopilot sensory decay props (tea cooling, rain falling on glass, notebook closing, solitary droplet, silent street observation). End on a behavioral consequence or decision that alters a relationship or state.
+  - **Rule 136 (`DEVANSH_SOURCE_MECHANIC_REQUIREMENT`)**: Devansh Roy engages with sources, obituaries, and cultural records strictly through **Relationship Compression & Media Provenance** (`PUBLIC LABEL → documented history → what label preserves → what label erases → why media needs compression → what compression costs`). Generic grief and melancholy are prohibited.
+  - **Rule 137 (`REPRESENTATION_VS_RECORD_GATE`)**: For sources featuring AI images, trading screens, or viral claims, contrast the visual representation directly against the primary record or regulatory filing (SEC Form 8-K, formal agreements, statutory disclosures, raw ledger balance). Interrogate how the representation distorts, simplifies, or dramatizes the legal/accounting transaction.
+  - **Rule 138 (`TITLE_CONCEPT_CONTRACT`)**: Titles referencing a "Ledger", "Balance Sheet", or "Audit" must materially engage with ledger mechanics, accounting entries, equity dilution, or reconciliation, never using "ledger" as an abstract or decorative metaphor.
+  - **Rule 139 (`CURRENT_EVENT_STORY_GATE`)**: Current event narratives must give the protagonist active agency (`SOURCE_EVENT + PROTAGONIST_WANTS + OBSTACLE + DECISION + CHANGED STATE`). Rejects passive observers watching viral posts or news tickers without friction or a consequential decision.
+  - **Rule 140 (`MARKET_CAUSALITY_DISCIPLINE`)**: Market moves require multi-factor grounding (analyst upgrades, foundry developments, statutory appropriations, macro sentiment), never simplistic monocausal attribution to a single social media post.
+- **Think Brain Rules 141–147: Narrative Consequence, Metaphor Dependency, Arshdeep Cooldown & Local Price Discipline**:
+  - **Rule 141 (`NARRATIVE_CONSEQUENCE_TEST`)**: For Short Stories, enforce concrete narrative architecture (`INCITING_CHANGE + CHOICE/ACTION + COST_OF_CHOICE + OBSERVABLE_CONSEQUENCE`). Rejects mood vignettes where a character merely opens a screen/catalog, reflects with a friend, and closes the tab with a deferred non-action ("not yet", "some stories aren't meant to be started yet"). A scene is not automatically a story.
+  - **Rule 142 (`METAPHOR_DEPENDENCY_FAIL`)**: Rejects premises where a real product or event primarily exists to symbolize a generic life condition (ambition, freedom, grief, hesitation, escape, "moving forward") without its specific mechanical, commercial, or physical properties driving the conflict. Replacement invariant: if replacing the subject with a camera, laptop, train, or watch preserves 70%+ of the piece, the premise is insufficiently bound to the subject.
+  - **Rule 143 (`SUPPORTING_CHARACTER_AS_THESIS_MOUTHPIECE_FAIL`)**: Supporting characters must never serve as convenient mouthpieces delivering the author's philosophical thesis (*"The machine is only as fast as the story you are trying to outrun"*, *"not with the hunger of a consumer, but with the quiet appraisal of a novelist..."*). Dialogue must create authentic human friction under real-world stakes (*"Two-ten on road," he said. "They never put that number in the headline."*).
+  - **Rule 144 (`CODE_POLICY_STRICT_ENFORCEMENT`)**: Code blocks (`interface`, `function`, `type`, `const`) in Short Stories, Essays, Culture, and non-software premises trigger automatic hard critic failure (`WRITER_RULE_VIOLATION: CODE_INSERTED_WHEN_FORBIDDEN`). Pseudocode interfaces disguising human emotions or desires as algorithms (`interface Aspirations`, `return false; // The logic of the 'not yet'`) are completely banned.
+  - **Rule 145 (`ARSHDEEP_TITLE_COOLDOWN`)**: Enforces lexical title token cooldowns per persona. For Arshdeep Singh / Gurpreet Sandhu, heavily penalize repeated tokens (`geometry`, `dust`, `static`, `baseline`, `lines`, `underdog`, `choosing`) for at least 8–10 pieces following *The Geometry of the Underdog*.
+  - **Rule 146 (`HOUSE_STYLE_PROP_DENSITY`)**: Detects and purges synthetic WritOn perfume clusters (rain + garage dust/grease + phone screen glow + dark room + deferred "not yet" ending). If 3+ appear together without subject necessity, require domain-specific substitutions (dealer quotation, chain lube, torque wrench, leaking workshop roof, lathe, invoice).
+  - **Rule 147 (`NUMERICAL_PRECISION_AND_LOCAL_REALITY`)**: Enforce factual numerical precision and regional reality for product launches (e.g. Jawa 42 All Stars starts at ₹1.85 lakh ex-showroom / ₹1.90 lakh Black; Jalandhar on-road pricing is ₹2.10 lakh, 294.72cc, 27.32 PS, 26.84 Nm). Ground conflict in the gap between headline price and actual local on-road cost versus competing household/workshop obligations. Strictly eliminate cross-story contamination (e.g. Boston attic / Clancy leaks in Punjab garage stories).
+- **Think Brain Rules 148–150: Grounded Observation, Persona Cognitive Affinity & Summary Evidence Binding**:
+  - **Rule 148 (`ABSTRACT_ESSAY_WITHOUT_WORLD_FAIL`) & (`GRAND_TERM_EVIDENCE_CHECK`)**: An essay cannot operate purely on unanchored sociological or economic vocabulary (*"performative noise"*, *"civic utility"*, *"financialized"*, *"transactional pressure"*, *"digital friction"*). If an essay contains 3+ such high-altitude abstractions without anchoring them in concrete human behavior (people turning pages, arriving late, ordering tea, quiet awkwardness), a specific physical setting, and an argumentative complication/counter-evidence, **the draft must be rejected**. Conceptual vocabulary is not evidence.
+  - **Rule 149 (`PERSONA_COGNITIVE_AFFINITY_ROUTING`)**: `authorPenName="auto"` must resolve to the author whose established worldview and beat naturally fit the intellectual territory of the piece, never merely the author with an expired cooldown. Civic, literary, and reading-culture essays belong to essayist personas (e.g. Dr. Sunita Banerjee, Devansh Roy), not domestic romance or family fiction writers unless specifically approached through personal domestic intimacy.
+- **Think Brain Rules 151–155: Detail Provenance, False Specificity, Claim Magnitude & Geographic Grounding**:
+  - **Rule 151 (`CONCRETE_DETAIL_PROVENANCE_FAIL`)**: In non-fiction Essays, every high-granularity real-world fact (exact seat counts, specific timestamps, transit schedules, exact currency figures, verbatim overheard dialogue) must have a documented provenance: (A) firsthand persona memory, (B) verified citation/source, or (C) empirical field data. Never invent pseudo-reportage to cure abstraction.
+  - **Rule 152 (`FALSE_SPECIFICITY_FAIL`)**: Rejects counterfeit authority where precise numbers (*"thirty-two chairs"*, *"twenty-six occupied"*, *"eight-fifteen metro"*) are synthetically hallucinated to make unobserved scenes feel witnessed. Specificity without provenance is high-grade AI slop. When actual counts/times are unobserved, generalize honestly (*"a crowded corner"*, *"most tables filled"*, *"the evening train"*) or clearly frame the scene analytically rather than as counterfeit reportage.
+  - **Rule 153 (`CLAIM_MAGNITUDE_DISCIPLINE`)**: Rejects inflated sociological conclusions. If evidence demonstrates one localized social arrangement (e.g. silent reading in a café), do not conclude that *"it proves society has changed"* or *"restores lost civic Eden"*. Enforce proportional, modest verbs: *demonstrates, permits, suggests, creates a small opening for*.
+  - **Rule 154 (`PERSONA_GEOGRAPHIC_INTEGRITY`)**: Do not silently relocate personas without contextual justification. Dr. Sunita Banerjee is based in Delhi (Mayur Vihar / Shantiniketan). If an essay engages a setting in another city (e.g. Connaught Place, Khan Market, or Kolkata), it must ground the geography through documented reporting, an acknowledged visit, or an analytical non-eyewitness framework.
+- **Think Brain Rules 156–159: Example Scope Binding, Variant Separation, Unsourced Discourse & Persona Cognition Lock**:
+  - **Rule 156 (`EXAMPLE_SCOPE_BINDING`)**: If evidence describes one subtype or venue (e.g. café-based Silent Book Club chapters), do not silently generalize to the entire movement or category. Use explicit scope bounds (*"at café-based gatherings"*, *"in such café meetings"*).
+  - **Rule 157 (`FORMAT_CORE_VS_VARIANT`)**: Distinguish an organization's core invariant mechanics (e.g. no assigned reading, shared silent reading, bring your own book) from variable local implementations (café, park, library, bar, online; purchasing food/drink; timing; discussion length). Generalize the core, qualify the variant.
+  - **Rule 158 (`UNSOURCED_DISCOURSE_FAIL`)**: Flag synthetic consensus discourse (*"people often believe..."*, *"critics tend to say..."*, *"the phenomenon is usually seen as..."*) unless substantiated by external citation. Own the essayist's interpretative move honestly using epistemic attribution (*"it is tempting to interpret..."*, *"one possible reading is..."*).
+  - **Rule 159 (`PERSONA_COGNITION_LOCK`)**: When an author persona is already distinct and recognizable through the structure and cadence of their analytical thinking, **DO NOT ADD** regional props, nostalgic artifacts (fountain pens, brass inkstands, tea stalls, rain), or food rituals merely to amplify voice distinctiveness. Intellectual method is the voice.
+- **Think Brain Rules 160–164: Comedy Density, Observational Grounding, Narrator POV & Rohan Kapoor Engine**:
+  - **Rule 160 (`COMEDY_QUOTABLE_DENSITY`)**: Prevent "every line auditioning for a quote card" fatigue. If 3+ consecutive paragraphs contain an aphorism, punchline, or metaphorical flourish (*"People speak in full verbs"*, *"the faint dignity of intention"*), force at least one plain, unadorned narrative action paragraph. Comedy requires dead space and breathing room to let the situation carry the weight.
+  - **Rule 161 (`HUMOUR_BEHAVIOR_FIRST`)**: Prioritize concrete, observed behavioral friction (repeatedly adjusting a working HDMI cable, nodding gravely at an automated OTP notification, hoping the missing attendee stays absent to delay starting, ceremonial "giving two minutes back") over abstract cultural commentary, grand rhetorical metaphors, or generic satire slogans. Let the administrative system behave absurdly on its own without the narrator over-explaining every beat.
+  - **Rule 162 (`COMIC_OMNISCIENCE_CHECK`)**: In first-person observational humor, the narrator must not mind-read other characters (*"Nikhil felt the cold creep of four o'clock"*, *"Nikhil was paralyzed by fear"*). Reframe internal emotional states as observable inference (*"Judging by the blank slide deck on his second monitor, Nikhil had reached the stage of the afternoon where a meeting could still be mistaken for progress"*).
+  - **Rule 163 (`ROHAN_KAPOOR_ENGINE_LOCK`)**: Rohan Kapoor's core cognitive lens is: **Bureaucratic systems that convert delay, uncertainty, and non-action into respectable, documented process.** Strong subjects: meeting choreography, calendar holds, performance reviews, OKRs, attendance tracking, compliance modules, expense approvals, and escalation hierarchies. Prohibitions: Never reduce him to fixed prop clusters (office samosas, Gurgaon traffic, Outlook UI) or generic "corporate life sucks" tropes.
+  - **Rule 164 (`SYSTEMIC_COMEDY_INVARIANT`)**: Humour gets stronger when the institution's procedural mechanics produce the absurdity organically. The narrator is an observer inside the machine, not an essayist trying to out-clever the scene with ornamental figures of speech. Delete "gilding the samosa" metaphors when the behavioral beat has already landed.
+
 - **HyperFrames Video Rendering Pipeline**:
   - Use HyperFrames (`npx hyperframes render` / skills under `.agents/skills`) to generate animated 9:16 vertical video Reels/Stories (`.mp4`) for high-impact social releases, craft prompts, or product teasers.
-- **Hashtags Standard — Comprehensive Discovery & Strictly Lowercase (Never Omit Subject Tags)**:
-  - **Always Include Rich Topical & Discovery Hashtags Alongside `#writon`**: Never publish social media posts (X, Threads, Instagram, LinkedIn, YouTube Shorts), stories, or external dispatches with only `#writon` or a single lonely tag. Every post must carry a full set of relevant topical tags reflecting the story's subject, location, craft, and domain:
-    * *Tech & Engineering*: `#writon #tech #hardware #apple #repairability #delhi #engineering #smartphones`
-    * *Essays & Environment*: `#writon #essays #delhi #airquality #pollution #environment #urbanlife #culture`
-    * *Literature & Craft*: `#writon #writingcommunity #amwriting #storytelling #books #reading #slowreading`
-    * *Poetry & Shayari*: `#writon #poetry #ghazal #urdupoetry #writingcraft #poetics`
-  - **Target Density**: Minimum 3–5 relevant hashtags on X (budgeted within the 280-char window) and 5–8 hashtags on Threads, Instagram, LinkedIn, and YouTube Shorts.
-  - **Strictly Lowercase**: Always use small letters (all lowercase) for all hashtags across all platforms and slots. Never use PascalCase or uppercase letters in hashtags.
+- **Hashtags Standard — Targeted, Spaced & Strictly Lowercase (Platform-Specific Density)**:
+  - **X (Twitter) — Maximum 1–2 Targeted Hashtags (Never 3 or More)**:
+    * Stuffing tags hurts reach on X; hashtags serve only as a minor supporting signal, not primary discovery.
+    * Use `#writingcommunity`, and add `#writingtips` as a second tag on posts that have character room. Never use 3 or more tags on X.
+    * On long posts (mirror / "As you know" styles), drop tags before trimming the example.
+    * Pick 1 or 2 tags maximum (e.g. `#essays` plus one topical tag). Always ensure proper spacing between tags (never concatenate like `#tag1#tag2`).
+    * Understand that early engagement/replies are the real lever at low follower counts, not tagging.
+  - **Instagram**: 3 to 5 targeted tags per post (e.g. `#writon #writingcommunity #storytelling #books`).
+  - **LinkedIn**: Around 3 relevant craft/domain tags at the end of the post (e.g. `#writing #storytelling #craft`).
+  - **YouTube Shorts**: `#shorts` plus 2 topical tags (3 tags total, e.g. `#shorts #writingcommunity #writon`).
+  - **Threads**: Exactly 1 relevant topic tag (e.g. `#writingcommunity` or story topic).
+  - **Reddit**: **Strictly 0 hashtags** (hashtags are auto-stripped to avoid spam flags).
+  - **Strictly Lowercase & Spaced**: Always use small letters (all lowercase) and space tags cleanly. Never run tags together.
 - **Mandatory All-RSS Feed Synchronization**:
   - Whenever stories, reviews, or essays are created, modified, republished, or regenerated in the database, **ALL public RSS feeds must be regenerated and updated immediately**:
     1. **Primary SEO & Discover Feed**: `node server/src/scripts/generate-seo-feeds.mjs` (`public/feed.xml`, `public/sitemap.xml`, `public/news-sitemap.xml`)
@@ -227,6 +279,18 @@ Rules:
        * *Prefer*: `MAKE HER TERRIFYING.`, `MAKE THIS LINE HURT.`, `MAKE THE ROOM FEEL EMPTY.`, `MAKE US DISTRUST HIM.`
        * *Avoid*: `How to write anger`, `Stop telling emotions`, `Writing Tip: Show Don't Tell`, `Use physical actions instead of adjectives`.
        * Teach the rule only after curiosity has been created.
+     - **HOOK_AS_CHALLENGE**:
+       * Opening copy must create a transformation problem or urgent challenge, not merely name the lesson.
+       * *Weak*: `WRITE JEALOUSY`, `WRITE ANGER`, `WRITE BETTER DIALOGUE`.
+       * *Strong*: `MAKE JEALOUSY VISIBLE.`, `MAKE HER TERRIFYING.`, `MAKE THIS LINE HURT.`, `STOP WRITING "SHE REALIZED."`.
+     - **NO_EMPTY_TRANSITION_BEAT**:
+       * After identifying and removing the weak element, the replacement text must begin within ~0.5–0.8 seconds.
+       * Never show a category label (`THE BEHAVIOR`, `THE EVIDENCE`) alone on an empty screen for a full second. Stagger the category pill and the first line of the rewrite together immediately after the directive beat.
+     - **Static Hook & Auto-Caption Safe Zone Invariants**:
+       * Big bold hook words (e.g. `Plus Jakarta Sans 900`) must be statically rendered from frame 0.0s (`opacity: 1`, no initial fade or scale animation) so the page is never blank and thumbnail previews are instantly legible.
+       * Content layers must sit at `top: 480px` (optical center) with a ~250px clearance below the header badge to prevent collision with YouTube/Instagram auto-caption stickers (CC overlay at y ≈ 280–380px).
+     - **Ending Maxim Cooldown**:
+       * Keep aphorisms grounded in specific behavior. Do not make every ending purely poetic; reserve high-aphorism endings for when the behavioral contrast explicitly earns it, and rotate with direct instructional conclusions.
      - **Target-Highlight Rule (Surgical Mistake Isolation)**:
        * When identifying the weak element, highlight ONLY the exact word or phrase being diagnosed and removed.
        * Never highlight surrounding neutral language (e.g. highlight only `furious` when the directive is `DELETE THE EMOTION`, not `furious at him`).

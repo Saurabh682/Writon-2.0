@@ -9,6 +9,7 @@
  */
 
 import { ingestTrendReport } from '../services/trend-intelligence-service.js';
+import { generateExperimentReport, updateEventAdjudication, ADJUDICATED_RESULTS } from '../services/jev/jev-service.js';
 
 export async function trendRoutes(fastify, { config, database }) {
   const secret = config.trendIngestSecret || config.adminSecretKey;
@@ -40,7 +41,7 @@ export async function trendRoutes(fastify, { config, database }) {
 
   const handleIngest = async (request, reply) => {
     try {
-      const result = await ingestTrendReport(database, request.body);
+      const result = await ingestTrendReport(database, request.body, { config });
       const code = result.status || 200;
       delete result.status;
       if (code === 202) {
@@ -109,5 +110,50 @@ export async function trendRoutes(fastify, { config, database }) {
     `, [limit]);
 
     return { count: res.rows.length, reports: res.rows };
+  });
+
+  // 5. Query Jev Decision-Layer Experiment Report (Phase 1B: Filter & Disagreement Views)
+  fastify.get('/api/v1/trends/jev/report', { preHandler: requireTrendSecret }, async (request, reply) => {
+    const filter = request.query?.filter || null; // e.g. 'disagreement'
+    const report = await generateExperimentReport(database, { filter });
+    return {
+      status: 'ok',
+      experiment: 'jev-system-one-v1',
+      filter: filter || 'all',
+      report
+    };
+  });
+
+  // 6. Manual Editorial Adjudication Endpoint
+  fastify.patch('/api/v1/trends/jev/adjudicate', { preHandler: requireTrendSecret }, async (request, reply) => {
+    const { eventId, adjudicatedResult, adjudicationNotes } = request.body || {};
+    if (!eventId || !adjudicatedResult) {
+      return reply.code(400).send({ error: 'eventId and adjudicatedResult are required.' });
+    }
+
+    if (!Object.values(ADJUDICATED_RESULTS).includes(adjudicatedResult)) {
+      return reply.code(400).send({
+        error: `Invalid adjudicatedResult. Must be one of: ${Object.values(ADJUDICATED_RESULTS).join(', ')}`
+      });
+    }
+
+    const reviewerId = request.headers['x-reviewer-id'] || request.user?.id || 'editorial_reviewer';
+
+    try {
+      const updated = await updateEventAdjudication(database, eventId, {
+        adjudicatedResult,
+        adjudicationNotes,
+        reviewerId
+      });
+
+      return {
+        status: 'ok',
+        message: 'Adjudication updated successfully',
+        event: updated
+      };
+    } catch (err) {
+      const code = err.statusCode || 500;
+      return reply.code(code).send({ error: err.message });
+    }
   });
 }

@@ -23,6 +23,7 @@ import { queryInsights } from '../services/editorial-brain.js';
 import { ensureContextualComment, resolvePublicationCategory, resolveEngagementCategory } from './content-relevance-service.js';
 import { validateGeneratedArticleIntegrity } from './editorial-intelligence-service.js';
 import { reviewDraftWithLmStudio } from '../services/lm-studio-critic.js';
+import { JevDecisionService } from '../services/jev/jev-service.js';
 import {
   getRecentFingerprints,
   getActiveCooldowns,
@@ -50,7 +51,7 @@ function createSlug(title) {
 function calculateReadingTime(content) {
   const text = (content || '').trim();
   const wordCount = text.split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.ceil(wordCount / 200));
+  return Math.max(1, Math.ceil(wordCount / 140)); // 140 WPM for literary prose
 }
 
 async function createNotification(client, { recipientId, actorId, postId = null, commentId = null, kind, message }) {
@@ -723,6 +724,27 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     throw new Error(`Publication rejected by LM Studio: ${rejectionReason}`);
   } else {
     console.log(`[Spark Runner] Pre-publication LM Studio gate APPROVED for "${articleData.title}" (Score: ${lmReview.score ?? 'N/A'}/100)`);
+  }
+
+  // Jev Decision Layer (Stage 2: Post-Generation Article QA in Shadow Mode)
+  // Evaluates craft quality, persona fit, and generic phrasing side-by-side.
+  // In shadow mode, this never blocks publication or alters production state.
+  try {
+    const jevService = new JevDecisionService({ pool });
+    if (jevService.isOperational()) {
+      jevService.qaArticle({
+        title: articleData.title,
+        summary: articleData.summary,
+        content: articleData.content,
+        category: targetCategory,
+        author: bot.fullName || bot.penName,
+        recentTitles: existingTitles
+      }).catch(err => {
+        console.warn('[Jev Shadow QA] Non-blocking evaluation error:', err.message);
+      });
+    }
+  } catch (err) {
+    console.warn('[Jev Shadow QA] Setup error:', err.message);
   }
 
   const coverImage = getCoverImageForCategory(targetCategory);

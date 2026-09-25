@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * human_voice_linter.mjs
  * 

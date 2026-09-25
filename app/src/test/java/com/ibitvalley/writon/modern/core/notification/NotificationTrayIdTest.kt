@@ -32,4 +32,17 @@ class NotificationTrayIdTest {
             notificationTrayId(null, null, fallback = 42L),
         )
     }
+
+    @Test
+    fun `FCM route aliases retain their linked story in foreground messages`() {
+        assertEquals(
+            "reader/story-42",
+            notificationTargetRoute(mapOf("target_route" to "/reader/story-42")),
+        )
+        assertEquals(
+            "story-42",
+            notificationStoryId(mapOf("url" to "https://writon.cc/stories/story-42")),
+        )
+        assertEquals("story-42", notificationStoryId(mapOf("post_id" to "story-42")))
+    }
 }

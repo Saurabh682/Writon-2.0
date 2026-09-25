@@ -3,6 +3,7 @@ package com.ibitvalley.writon.modern.core.notification
 import android.util.Log
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.ibitvalley.writon.modern.normalizeNotificationRoute
 import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
 
 class WritOnFirebaseMessagingService : FirebaseMessagingService() {
@@ -27,10 +28,10 @@ class WritOnFirebaseMessagingService : FirebaseMessagingService() {
             ?: notification?.body
             ?: "Someone interacted with your story."
 
-        val storyId = data["storyId"] ?: data["postId"]
+        val storyId = notificationStoryId(data)
         val actorName = data["actorName"] ?: data["authorName"]
         val kind = data["kind"] ?: data["type"] ?: "interaction"
-        val targetRoute = data["targetRoute"]
+        val targetRoute = notificationTargetRoute(data)
 
         WritOnTelemetry.pushReceived(applicationContext, kind, !storyId.isNullOrBlank())
 
@@ -41,7 +42,8 @@ class WritOnFirebaseMessagingService : FirebaseMessagingService() {
                 storySummary = data["storySummary"] ?: body,
                 storyId = storyId ?: "",
                 authorName = data["authorName"] ?: actorName ?: "WritOn",
-                notificationId = 2001
+                targetRoute = targetRoute,
+                notificationId = notificationTrayId(data["notificationId"], remoteMessage.messageId)
             )
         } else {
             WritOnNotificationManager.showInteractionNotification(
@@ -56,6 +58,18 @@ class WritOnFirebaseMessagingService : FirebaseMessagingService() {
         }
     }
 }
+
+internal fun notificationTargetRoute(data: Map<String, String>): String? =
+    listOf("targetRoute", "target_route", "route", "url", "link")
+        .firstNotNullOfOrNull(data::get)
+        ?.let { normalizeNotificationRoute(it) ?: it }
+
+internal fun notificationStoryId(data: Map<String, String>): String? =
+    listOf("storyId", "story_id", "postId", "post_id")
+        .firstNotNullOfOrNull(data::get)
+        ?: normalizeNotificationRoute(notificationTargetRoute(data))
+            ?.takeIf { it.startsWith("reader/") }
+            ?.removePrefix("reader/")
 
 internal fun notificationTrayId(
     logicalNotificationId: String?,

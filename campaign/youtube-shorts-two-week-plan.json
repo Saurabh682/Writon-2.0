@@ -54,14 +54,14 @@
       "scheduledToBecomePublic": true
     },
     {
-      "title": "How to Write Jealousy Without Saying \"Jealous\" #shorts",
+      "title": "Make Jealousy Visible (Without Saying \"Jealous\") #shorts",
       "language": "en",
       "pattern": "how_to_without",
       "flawed": "She felt jealous when she saw Mira's promotion post.",
       "fix": "She liked Mira's post, unliked it, then liked it again.",
       "rule": "Jealousy is attention you never meant to pay.",
       "playlist": "Write Feelings Without Naming Them",
-      "thumbnail_text": "WRITE JEALOUSY\nWITHOUT “JEALOUS”",
+      "thumbnail_text": "MAKE JEALOUSY\nVISIBLE.",
       "id": "short_02",
       "sequence": 2,
       "publish_date_local": "2026-09-21",
@@ -79,7 +79,7 @@
       ],
       "description": "Jealousy is attention you never meant to pay.\n\nMore craft on WritOn: https://writon.cc\n\n#shorts #writingcommunity #writingtips #writon",
       "script": {
-        "hook": "How to Write Jealousy Without Saying \"Jealous\"",
+        "hook": "Make Jealousy Visible",
         "flawed_label": "DON'T",
         "flawed": "She felt jealous when she saw Mira's promotion post.",
         "strike_transition": true,

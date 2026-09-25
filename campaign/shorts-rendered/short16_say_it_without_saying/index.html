@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>WritOn — Writing Hack #16: Say It Without Saying It</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background-color: #3b2014;
+        font-family: 'Playfair Display', Georgia, serif;
+        color: #0E0C0A;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+      }
+
+      /* Background Desk */
+      .desk-photo {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+        background-image: url('assets/desk_coffee_card_nobox_4k.jpg');
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+      }
+
+      .warm-ambient {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, rgba(255, 230, 190, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* Left Margin Red Rule */
+      .card-left-rule {
+        position: absolute;
+        left: 122px;
+        top: 172px;
+        height: 1488px;
+        width: 3px;
+        background-color: #821D1A;
+        z-index: 5;
+        border-radius: 2px;
+      }
+
+      /* Header Row */
+      .card-header {
+        position: absolute;
+        top: 172px;
+        left: 155px;
+        width: 770px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 5;
+      }
+
+      .inversion-pill {
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        padding: 7px 18px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .brand-mark {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 46px;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -0.5px;
+      }
+      .brand-mark em {
+        font-style: italic;
+        font-weight: 700;
+      }
+      .brand-mark span {
+        color: #821D1A;
+      }
+
+      /* STAGE 1: HOOK_AS_CHALLENGE */
+      .challenge-hook-layer {
+        position: absolute;
+        top: 480px;
+        left: 155px;
+        width: 770px;
+        z-index: 12;
+      }
+
+      .challenge-hook-headline {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 124px;
+        line-height: 0.88;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -3.5px;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+      }
+
+      .hook-word {
+        display: block;
+      }
+
+      .challenge-hook-sub {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 48px;
+        font-style: italic;
+        color: #821D1A;
+        font-weight: 700;
+      }
+
+      /* STAGE 2: FLAWED SENTENCE */
+      .broken-sentence-layer {
+        position: absolute;
+        top: 860px;
+        left: 155px;
+        width: 770px;
+        z-index: 11;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      .broken-line-1 {
+        display: block;
+        font-size: 44px;
+        font-weight: 700;
+        color: #1A140E;
+        line-height: 1.25;
+        letter-spacing: -0.5px;
+      }
+
+      /* Yellow Marker Highlight */
+      .highlight-word {
+        position: relative;
+        display: inline-block;
+        font-style: italic;
+        font-weight: 800;
+        color: #1A140E;
+        transition: color 0.3s ease;
+      }
+      .highlight-bg {
+        position: absolute;
+        left: -4px;
+        right: -4px;
+        bottom: 4px;
+        top: 12px;
+        background-color: #F8E285;
+        z-index: -1;
+        border-radius: 4px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      /* Directive badge */
+      .delete-directive {
+        margin-top: 26px;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background-color: #F8EBEA;
+        border: 2px solid #D66D67;
+        color: #821D1A;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 24px;
+        font-weight: 900;
+        padding: 9px 22px;
+        border-radius: 8px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      /* STAGE 3: HEALED REWRITE & PAYOFF */
+      .card-content {
+        position: absolute;
+        top: 480px;
+        left: 155px;
+        width: 770px;
+        z-index: 6;
+        opacity: 0;
+      }
+
+      .rewrite-label-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+      .keep-pill {
+        background-color: #E8F4EC;
+        border: 1.5px solid #48A168;
+        color: #1A6934;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        padding: 5px 18px;
+        border-radius: 6px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+
+      /* Main Rewrite Title */
+      .main-title {
+        font-size: 52px;
+        line-height: 1.25;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 35px;
+      }
+      .title-row {
+        display: block;
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      .main-title .italic-crimson {
+        font-style: italic;
+        font-weight: 800;
+        color: #821D1A;
+      }
+
+      /* Horizontal Rule */
+      .red-divider {
+        width: 90px;
+        height: 4px;
+        background-color: #821D1A;
+        border-radius: 2px;
+        margin-bottom: 35px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      /* Payoff Flow */
+      .payoff-flow {
+        width: 770px;
+      }
+
+      .payoff-lead {
+        font-size: 46px;
+        font-weight: 900;
+        line-height: 1.18;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 14px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      .payoff-punch {
+        font-size: 46px;
+        font-weight: 900;
+        line-height: 1.18;
+        color: #821D1A;
+        font-style: italic;
+        letter-spacing: -1px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      /* Footer Row */
+      .card-footer {
+        position: absolute;
+        bottom: 180px;
+        left: 155px;
+        width: 770px;
+        z-index: 5;
+      }
+
+      .footer-line {
+        width: 100%;
+        height: 1px;
+        background-color: rgba(14, 12, 10, 0.12);
+        margin-bottom: 25px;
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .footer-handle {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #8A766A;
+        letter-spacing: 1px;
+      }
+
+      .footer-dots {
+        display: flex;
+        gap: 8px;
+      }
+      .footer-dot-sand {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #D66D67;
+      }
+      .footer-dot-crimson {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #821D1A;
+      }
+
+      .footer-url {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        color: #821D1A;
+        letter-spacing: 1.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="13.5"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Background Photo -->
+      <div class="desk-photo"></div>
+      <div class="warm-ambient"></div>
+
+      <!-- Audio Track: Voice + Tactile Clicks + Piano -->
+      <audio id="voiceTrack" src="assets/voiceover_compressed_mixed.mp3" data-start="0" data-duration="13.5"></audio>
+
+      <!-- Left Red Margin -->
+      <div class="card-left-rule"></div>
+
+      <!-- Header Row -->
+      <div class="card-header">
+        <div class="inversion-pill">WRITING HACK #16</div>
+        <div class="brand-mark">Writ<em>On</em><span>.</span></div>
+      </div>
+
+      <!-- STAGE 1: 0.0s - 2.80s HOOK_AS_CHALLENGE -->
+      <div class="challenge-hook-layer" id="hookLayer">
+        <div class="challenge-hook-headline" id="hookHeadline">
+          <div class="hook-word">SAY IT.</div>
+        </div>
+        <div class="challenge-hook-sub" id="hookSub">
+          without saying it
+        </div>
+      </div>
+
+      <!-- STAGE 2: 1.20s - 3.05s FLAWED SENTENCE REVEAL -->
+      <div class="broken-sentence-layer" id="brokenLayer">
+        <span class="broken-line-1">
+          <span class="highlight-word" id="wordBreak">
+            “I don't love you anymore,”
+            <span class="highlight-bg" id="hlBg"></span>
+          </span>
+          she said.
+        </span>
+        <div class="delete-directive" id="deleteDirective">
+          <span>Delete the confession.</span>
+        </div>
+      </div>
+
+      <!-- STAGE 3: 3.21s - 13.5s NO_EMPTY_TRANSITION_BEAT -->
+      <div class="card-content" id="cardContent">
+        <div class="rewrite-label-row" id="rwLabel">
+          <span class="keep-pill">The Subtext</span>
+        </div>
+
+        <div class="main-title" id="mainTitle">
+          <div class="title-row" id="tl1">He let go of her hand.</div>
+          <div class="title-row" id="tl2"><span class="italic-crimson">She didn't reach back.</span></div>
+        </div>
+
+        <div class="red-divider" id="redDivider"></div>
+
+        <div class="payoff-flow" id="payoffFlow">
+          <div class="payoff-lead" id="pl1">Don't announce the ending.</div>
+          <div class="payoff-punch" id="pl2">Show the reflex that stops.</div>
+        </div>
+      </div>
+
+      <!-- Footer Row -->
+      <div class="card-footer">
+        <div class="footer-line"></div>
+        <div class="footer-content">
+          <div class="footer-handle">@writon_app</div>
+          <div class="footer-dots">
+            <div class="footer-dot-sand"></div>
+            <div class="footer-dot-crimson"></div>
+          </div>
+          <div class="footer-url">writon.cc ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial state
+      gsap.set("#cardContent", { opacity: 0 });
+      gsap.set("#hookSub", { opacity: 0, y: 15 });
+
+      // 0.0s: Tactile click hits; "SAY IT." is statically present from frame 0
+
+      // 0.70s: Nicole speaks "without saying it" -> red italic line drops in
+      tl.to("#hookSub", { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.70);
+
+      // 1.15s: Flawed sentence slides in
+      tl.to("#brokenLayer", { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 1.15);
+
+      // 1.55s: Yellow highlighter snaps across "I don't love you anymore"
+      tl.to("#hlBg", { scaleX: 1, duration: 0.30, ease: "power2.out" }, 1.55);
+
+      // 1.70s: Nicole: "Delete the confession." -> Badge pops in
+      tl.to("#deleteDirective", { opacity: 1, y: 0, duration: 0.30, ease: "back.out(1.4)" }, 1.70);
+
+      // 2.70s: Strip "I don't love you anymore" out
+      tl.to("#wordBreak", { opacity: 0, scale: 0.85, duration: 0.25, ease: "power2.in" }, 2.70);
+
+      // 2.95s: Hook & Flawed layer exit smoothly
+      tl.to("#hookLayer", { opacity: 0, y: -15, duration: 0.25, ease: "power2.inOut" }, 2.95)
+        .to("#brokenLayer", { opacity: 0, y: -15, duration: 0.25, ease: "power2.inOut" }, 2.95);
+
+      // 3.21s: SECOND TACTILE CLICK!
+      // NO_EMPTY_TRANSITION_BEAT: Card content, "The Subtext" pill, AND Line 1 appear TOGETHER!
+      tl.to("#cardContent", { opacity: 1, duration: 0.05 }, 3.21)
+        .to("#rwLabel", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 3.21)
+        .to("#tl1", { opacity: 1, y: 0, duration: 0.30, ease: "power3.out" }, 3.21);
+
+      // 4.92s - 6.18s: Nicole: "She didn't reach back."
+      tl.to("#tl2", { opacity: 1, y: 0, duration: 0.40, ease: "back.out(1.3)" }, 4.92);
+
+      // 6.35s: Red divider rule scales across
+      tl.to("#redDivider", { scaleX: 1, duration: 0.30, ease: "power2.out" }, 6.35);
+
+      // 6.58s - 7.93s: Nicole: "Don't announce the ending."
+      tl.to("#pl1", { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 6.58);
+
+      // 8.18s - 9.88s: Nicole: "Show the reflex that stops."
+      tl.to("#pl2", { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.2)" }, 8.18);
+
+      // 9.90s - 13.5s: 3.6s clean hold breathing room before loop!
+      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.015, duration: 13.5, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

@@ -108,7 +108,7 @@ describe('R3 shadow quality normalization', () => {
   });
 
   it('keeps v1 evidence intact while excluding non-human readers from private R3 evidence', () => {
-    const service = readFileSync(new URL('../src/services/feed-service.js', import.meta.url), 'utf8');
+    const service = readFileSync(new URL('../src/services/feed-service.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
     expect(service).toContain('inner join public.profiles reader on reader.id = history.user_id\n         inner join eligible');
     expect(service).toContain('inner join public.profiles reader on reader.id = bookmark.user_id\n         inner join eligible');
     const r3QualityReaderJoins = service.match(/reader\.id = (?:history\.user_id|bookmark\.user_id) and reader\.account_type = 'human'/g) ?? [];

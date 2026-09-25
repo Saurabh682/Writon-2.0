@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>WritOn — One Strange Idea #01: The Bottleneck Moved</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background-color: #3b2014;
+        font-family: 'Playfair Display', Georgia, serif;
+        color: #0E0C0A;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+      }
+
+      /* Background Desk */
+      .desk-photo {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+        background-image: url('assets/desk_coffee_card_nobox_4k.jpg');
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+      }
+
+      .warm-ambient {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, rgba(255, 230, 190, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* Left Margin Red Rule */
+      .card-left-rule {
+        position: absolute;
+        left: 122px;
+        top: 172px;
+        height: 1488px;
+        width: 3px;
+        background-color: #821D1A;
+        z-index: 5;
+        border-radius: 2px;
+      }
+
+      /* Header Row */
+      .card-header {
+        position: absolute;
+        top: 172px;
+        left: 155px;
+        width: 770px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 5;
+      }
+
+      .inversion-pill {
+        background-color: #821D1A;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        padding: 7px 18px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .brand-mark {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 46px;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -0.5px;
+      }
+      .brand-mark em {
+        font-style: italic;
+        font-weight: 700;
+      }
+      .brand-mark span {
+        color: #821D1A;
+      }
+
+      /* Shared Beat Stage Container (top: 480px) */
+      .beat-stage {
+        position: absolute;
+        top: 480px;
+        left: 155px;
+        width: 770px;
+        z-index: 10;
+      }
+
+      /* BEAT 1: HOOK_AS_CHALLENGE (0.0s - 7.4s) */
+      #beat1 {
+        opacity: 1;
+      }
+
+      .hook-headline {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 114px;
+        line-height: 0.90;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -3.5px;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+      }
+
+      .hook-word {
+        display: block;
+      }
+
+      .hook-sub {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 48px;
+        font-style: italic;
+        color: #821D1A;
+        font-weight: 700;
+        line-height: 1.25;
+      }
+
+      .hook-counter {
+        margin-top: 36px;
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 44px;
+        font-weight: 700;
+        color: #1A140E;
+        line-height: 1.25;
+        letter-spacing: -0.5px;
+        opacity: 0;
+        transform: translateY(15px);
+      }
+
+      /* BEAT 2: CONTRADICTION & THE TAX (7.6s - 17.8s) */
+      #beat2 {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .stage-pill-row {
+        margin-bottom: 24px;
+      }
+
+      .sub-pill {
+        background-color: #F8EBEA;
+        border: 1.5px solid #D66D67;
+        color: #821D1A;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        padding: 5px 18px;
+        border-radius: 6px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .beat-text-primary {
+        font-size: 48px;
+        line-height: 1.25;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 28px;
+      }
+
+      .beat-text-primary em {
+        font-style: italic;
+        color: #821D1A;
+      }
+
+      .highlight-container {
+        display: inline-block;
+        position: relative;
+      }
+      .hl-bar {
+        position: absolute;
+        left: -4px;
+        right: -4px;
+        bottom: 4px;
+        top: 14px;
+        background-color: #F8E285;
+        z-index: -1;
+        border-radius: 4px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      .red-divider {
+        width: 90px;
+        height: 4px;
+        background-color: #821D1A;
+        border-radius: 2px;
+        margin-bottom: 28px;
+        transform-origin: left center;
+        transform: scaleX(0);
+      }
+
+      .beat-punch-block {
+        font-size: 44px;
+        line-height: 1.25;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -0.5px;
+      }
+
+      .punch-crimson {
+        color: #821D1A;
+        font-style: italic;
+        display: block;
+        margin-top: 6px;
+      }
+
+      /* BEAT 3: THE REFRAME / INSIGHT (18.0s - 25.5s) */
+      #beat3 {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .reframe-pill {
+        background-color: #E8F4EC;
+        border: 1.5px solid #48A168;
+        color: #1A6934;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        padding: 5px 18px;
+        border-radius: 6px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .final-statement-1 {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 64px;
+        line-height: 1.05;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -2px;
+        text-transform: uppercase;
+        margin-bottom: 28px;
+      }
+
+      .final-statement-2 {
+        font-size: 48px;
+        line-height: 1.25;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 24px;
+      }
+
+      .final-punchline {
+        font-size: 48px;
+        line-height: 1.25;
+        font-weight: 900;
+        color: #821D1A;
+        font-style: italic;
+        letter-spacing: -1px;
+      }
+
+      /* Footer Row */
+      .card-footer {
+        position: absolute;
+        bottom: 180px;
+        left: 155px;
+        width: 770px;
+        z-index: 5;
+      }
+
+      .footer-line {
+        width: 100%;
+        height: 1px;
+        background-color: rgba(14, 12, 10, 0.12);
+        margin-bottom: 25px;
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .footer-handle {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #8A766A;
+        letter-spacing: 1px;
+      }
+
+      .footer-dots {
+        display: flex;
+        gap: 8px;
+      }
+      .footer-dot-sand {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #D66D67;
+      }
+      .footer-dot-crimson {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: #821D1A;
+      }
+
+      .footer-url {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        color: #821D1A;
+        letter-spacing: 1.5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="25.5"
+      data-width="1080"
+      data-height="1920"
+    >
+      <!-- Background Photo -->
+      <div class="desk-photo"></div>
+      <div class="warm-ambient"></div>
+
+      <!-- Audio Track: Voice + Tactile Clicks + Ambient Piano -->
+      <audio id="voiceTrack" src="assets/voiceover_compressed_mixed.mp3" data-start="0" data-duration="25.5"></audio>
+
+      <!-- Left Red Margin -->
+      <div class="card-left-rule"></div>
+
+      <!-- Header Row -->
+      <div class="card-header">
+        <div class="inversion-pill">ONE STRANGE IDEA #01</div>
+        <div class="brand-mark">Writ<em>On</em><span>.</span></div>
+      </div>
+
+      <!-- BEAT 1: HOOK_AS_CHALLENGE (0.0s - 7.5s) -->
+      <div class="beat-stage" id="beat1">
+        <div class="hook-headline" id="hookHeadline">
+          <div class="hook-word">AI CAN WRITE</div>
+          <div class="hook-word">THE CODE.</div>
+        </div>
+        <div class="hook-sub" id="hookSub">
+          Who reads it?
+        </div>
+        <div class="hook-counter" id="hookCounter">
+          Writing code has never been cheaper.
+        </div>
+      </div>
+
+      <!-- BEAT 2: THE VERIFICATION TAX (7.6s - 17.8s) -->
+      <div class="beat-stage" id="beat2">
+        <div class="stage-pill-row">
+          <span class="sub-pill">The Contrast</span>
+        </div>
+        <div class="beat-text-primary" id="b2p1">
+          Reviewing code still takes context, edge-case paranoia, and owning the bug.
+        </div>
+        <div class="red-divider" id="b2divider"></div>
+        <div class="beat-punch-block" id="b2p2">
+          When generation is free,
+          <span class="punch-crimson">
+            <span class="highlight-container">
+              verification becomes the tax.
+              <span class="hl-bar" id="b2hl"></span>
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <!-- BEAT 3: THE REFRAME / INSIGHT (18.0s - 25.5s) -->
+      <div class="beat-stage" id="beat3">
+        <div class="stage-pill-row">
+          <span class="reframe-pill">The Reframe</span>
+        </div>
+        <div class="final-statement-1" id="b3lead">
+          The Bottleneck Moved.
+        </div>
+        <div class="final-statement-2" id="b3mid">
+          It didn't disappear.
+        </div>
+        <div class="final-punchline" id="b3punch">
+          It moved from writing code to trusting it.
+        </div>
+      </div>
+
+      <!-- Footer Row -->
+      <div class="card-footer">
+        <div class="footer-line"></div>
+        <div class="footer-content">
+          <div class="footer-handle">@writon_app</div>
+          <div class="footer-dots">
+            <div class="footer-dot-sand"></div>
+            <div class="footer-dot-crimson"></div>
+          </div>
+          <div class="footer-url">writon.cc ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Initial state
+      gsap.set("#beat2", { opacity: 0, y: 20 });
+      gsap.set("#beat3", { opacity: 0, y: 20 });
+      gsap.set("#b2hl", { scaleX: 0 });
+      gsap.set("#b2divider", { scaleX: 0 });
+
+      // 0.0s: Tactile click hits; Hook is statically present at frame 0.0s!
+      // 0.0s - 5.10s: Nicole: "An AI can write five pull requests before your coffee gets cold."
+
+      // 5.28s - 7.48s: Nicole: "Writing code has never been cheaper." -> Counter line enters
+      tl.to("#hookCounter", { opacity: 1, y: 0, duration: 0.40, ease: "power2.out" }, 5.28);
+
+      // 7.40s: Beat 1 exits smoothly
+      tl.to("#beat1", { opacity: 0, y: -15, duration: 0.25, ease: "power2.inOut" }, 7.40);
+
+      // 7.68s: SECOND TACTILE CLICK! Beat 2 appears
+      // Nicole: "Reviewing code still takes context, edge-case paranoia, and owning the bug."
+      tl.to("#beat2", { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 7.68);
+
+      // 13.87s: Nicole: "When generation is free, verification becomes the tax."
+      tl.to("#b2divider", { scaleX: 1, duration: 0.30, ease: "power2.out" }, 13.87);
+      tl.to("#b2hl", { scaleX: 1, duration: 0.40, ease: "power2.out" }, 15.30);
+
+      // 17.65s: Beat 2 exits cleanly
+      tl.to("#beat2", { opacity: 0, y: -15, duration: 0.25, ease: "power2.inOut" }, 17.65);
+
+      // 18.19s: Beat 3 enters
+      // Nicole: "The bottleneck didn't disappear. It moved from writing code to trusting it."
+      tl.to("#beat3", { opacity: 1, y: 0, duration: 0.35, ease: "back.out(1.2)" }, 18.19);
+      tl.fromTo("#b3punch", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.40, ease: "power3.out" }, 19.80);
+
+      // 23.68s - 25.5s: Clean hold before loop
+      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.02 }, { duration: 25.5, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

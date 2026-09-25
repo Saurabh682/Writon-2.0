@@ -324,6 +324,29 @@ describe('Fastify API contract', () => {
     expect(enabled.reviewPromptWriterEnabled).toBe(true);
   });
 
+  it('keeps Jev decision-layer experiment disabled and in shadow mode by default', () => {
+    const baseEnvironment = { DATABASE_URL: runtimeConfig.databaseUrl };
+    const defaults = loadRuntimeConfig(baseEnvironment);
+    expect(defaults.jev.enabled).toBe(false);
+    expect(defaults.jev.shadowMode).toBe(true);
+    expect(defaults.jev.triageEnabled).toBe(true);
+    expect(defaults.jev.qaEnabled).toBe(true);
+    expect(defaults.jev.model).toBe('jev-1.13.0');
+    expect(defaults.jev.thresholds.minRelevance).toBe(0.55);
+
+    const custom = loadRuntimeConfig({
+      ...baseEnvironment,
+      JEV_EXPERIMENT_ENABLED: 'true',
+      JEV_API_KEY: 'test-jev-key-12345',
+      JEV_SHADOW_MODE: 'false',
+      JEV_MIN_RELEVANCE: '0.65',
+    });
+    expect(custom.jev.enabled).toBe(true);
+    expect(custom.jev.apiKey).toBe('test-jev-key-12345');
+    expect(custom.jev.shadowMode).toBe(false);
+    expect(custom.jev.thresholds.minRelevance).toBe(0.65);
+  });
+
   it('renders a WritOn story preview with escaped metadata and the author photo', async () => {
     const app = await createApp();
 

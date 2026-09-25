@@ -48,6 +48,9 @@
 - Database trigger `trg_freeze_approved_candidate_version` strictly locks candidate text, format, and assets once `approved_at IS NOT NULL`.
 - No updates or deletions are permitted on frozen candidate versions or attached assets.
 
+### 3.3 Hashtags Standard
+- Exactly **around 3 relevant lowercase tags placed at the end** of the post commentary (e.g. `#writing #storytelling #craft` or `#tech #engineering #software`). Never stuff excessive hashtags.
+
 ---
 
 ## 4. Multi-Surface Analytics & Scopes
