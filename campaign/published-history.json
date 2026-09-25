@@ -1056,6 +1056,14 @@
       "url": "https://www.youtube.com/shorts/1Tp-3CjUe_M",
       "privacyStatus": "public",
       "publishedAt": "2026-09-19T06:42:36.539Z"
+    },
+    "short18_kill_filter_words": {
+      "title": "Kill Filter Words (Cut the Glass Wall) #shorts",
+      "duration": 20,
+      "videoId": "4yUpzRd3Gtc",
+      "url": "https://www.youtube.com/shorts/4yUpzRd3Gtc",
+      "privacyStatus": "public",
+      "publishedAt": "2026-09-25T15:15:49.319Z"
     }
   },
   "brainDispatches": {
@@ -1135,6 +1143,15 @@
       "containerId": "18109068715998010",
       "publishedAt": "2026-09-24T02:31:35.803Z",
       "title": "Writing Hack #17 (Story)"
+    },
+    "short18_kill_filter_words": {
+      "id": "short18_kill_filter_words",
+      "igMediaId": "17887042824476643",
+      "permalink": "https://www.instagram.com/reel/DdtwoZaCcf4/",
+      "shortcode": "DdtwoZaCcf4",
+      "containerId": "18109660438998010",
+      "publishedAt": "2026-09-25T15:16:24.826Z",
+      "title": "Writing Hack #18: Kill Filter Words"
     }
   },
   "linkedin": {
@@ -1172,6 +1189,15 @@
       "liveUrl": "https://www.linkedin.com/feed/update/urn:li:share:7509139706367033344",
       "publishedAt": "2026-09-25T06:40:20.018Z",
       "title": "AI Verification Bottlenecks and Human Judgment"
+    },
+    "short18_kill_filter_words": {
+      "id": "short18_kill_filter_words",
+      "platform": "linkedin",
+      "postUrn": "urn:li:ugcPost:7509269790331666433",
+      "liveUrl": "https://www.linkedin.com/feed/update/urn:li:ugcPost:7509269790331666433",
+      "videoUrn": "urn:li:video:D4D10AQGPJECiKeIbCg",
+      "publishedAt": "2026-09-25T15:17:14.119Z",
+      "title": "Writing Craft: Kill Filter Words"
     }
   },
   "stories": {
@@ -1195,6 +1221,13 @@
       "containerId": "18108732370998010",
       "publishedAt": "2026-09-23T03:28:08.364Z",
       "title": "Writing Hack #15 (Story)"
+    },
+    "short18_kill_filter_words_story": {
+      "id": "short18_kill_filter_words_story",
+      "igMediaId": "17952661023037193",
+      "containerId": "18109660891998010",
+      "publishedAt": "2026-09-25T15:16:58.352Z",
+      "title": "Writing Hack #18 (Story)"
     }
   }
 }

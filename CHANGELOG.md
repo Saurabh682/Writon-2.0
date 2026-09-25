@@ -1,5 +1,16 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.1.151 — Social Video Dispatch: Short #18 "Kill Filter Words" Released — 2026-09-25
+
+- **Short #18 Multi-Platform Video Release**:
+  - Published Short #18 (*Kill Filter Words (Cut the Glass Wall)*) live across YouTube Shorts, Instagram Reels & Stories, and LinkedIn Video Post.
+  - Video asset: `campaign/shorts-rendered/short18_kill_filter_words/short18_kill_filter_words.mp4` (20.0s, 1080×1920 @ 30fps).
+  - YouTube Shorts: Published public Short at `https://www.youtube.com/shorts/4yUpzRd3Gtc` (ID: `4yUpzRd3Gtc`).
+  - Instagram Reels: Published Reel at `https://www.instagram.com/reel/DdtwoZaCcf4/` (Media ID: `17887042824476643`, Shortcode: `DdtwoZaCcf4`).
+  - Instagram Story: Published companion 24h Story (Media ID: `17952661023037193`).
+  - LinkedIn Video Post: Published high-dwell craft video post at `https://www.linkedin.com/feed/update/urn:li:ugcPost:7509269790331666433` (URN: `urn:li:ugcPost:7509269790331666433`, Video URN: `urn:li:video:D4D10AQGPJECiKeIbCg`).
+  - Recorded ledger updates to `campaign/published-history.json` and unified dispatcher script at `scripts/publish_short18_all.mjs`.
+
 ## 2.1.150 — Web Routing & Homepage Showcase: "Generation Scaled, Verification Didn't" — 2026-09-25
 
 - **Autobots Story Web Availability & Canonical Routing (`firebase.json` & `public/stories/index.html`)**:
