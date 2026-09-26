@@ -87,6 +87,13 @@ Rules (Mandatory by Default):
 - Operational standards, quotas (10,000 units/day ceiling, 1600 units/upload), and rate limit policies are documented in [`rules_youtube.md`](file:///d:/VibeCode/WritOn-PowerUp/rules_youtube.md).
 - Complete YouTube Data API v3 and resumable media upload endpoint directory is in [`youtube_api_reference.md`](file:///d:/VibeCode/WritOn-PowerUp/youtube_api_reference.md).
 - Any AI agent modifying or extending YouTube bot functionality must consult [`YOUTUBE_BOTS.md`](file:///d:/VibeCode/WritOn-PowerUp/YOUTUBE_BOTS.md) first, preserve zero-dependency `fetch` design, and run `npx vitest run test/youtube-client.test.js`.
+- **Mandatory Channel Subscription CTA Protocol (All Future Shorts & Videos)**:
+  - Every future video and Short must incorporate a clear Call-to-Action (CTA) for channel subscription across 3 coordinated touchpoints:
+    1. **On-Screen End-Card / Badge**: During the final 4–6 second hold, display a warm-parchment styled subscription prompt: `SUBSCRIBE FOR DAILY CRAFT FIXES` with `@writon_socialapp`.
+    2. **Video Description**: Include the explicit subscription link with confirmation hook:
+       `🔔 Subscribe for daily slow-writing craft truths & storytelling fixes: https://writon.cc/youtube?sub_confirmation=1`
+    3. **Pinned First Comment**: Pin a discussion question paired with `Subscribe to @writon_socialapp for one quiet craft truth every day.`
+
 
 ## LinkedIn Autonomous Bot Suite
 - Architecture, component registry, and AI upgrade instructions are documented in [`LINKEDIN_BOTS.md`](file:///d:/VibeCode/WritOn-PowerUp/LINKEDIN_BOTS.md).
@@ -160,6 +167,13 @@ Rules (Mandatory by Default):
   - **Rule 162 (`COMIC_OMNISCIENCE_CHECK`)**: In first-person observational humor, the narrator must not mind-read other characters (*"Nikhil felt the cold creep of four o'clock"*, *"Nikhil was paralyzed by fear"*). Reframe internal emotional states as observable inference (*"Judging by the blank slide deck on his second monitor, Nikhil had reached the stage of the afternoon where a meeting could still be mistaken for progress"*).
   - **Rule 163 (`ROHAN_KAPOOR_ENGINE_LOCK`)**: Rohan Kapoor's core cognitive lens is: **Bureaucratic systems that convert delay, uncertainty, and non-action into respectable, documented process.** Strong subjects: meeting choreography, calendar holds, performance reviews, OKRs, attendance tracking, compliance modules, expense approvals, and escalation hierarchies. Prohibitions: Never reduce him to fixed prop clusters (office samosas, Gurgaon traffic, Outlook UI) or generic "corporate life sucks" tropes.
   - **Rule 164 (`SYSTEMIC_COMEDY_INVARIANT`)**: Humour gets stronger when the institution's procedural mechanics produce the absurdity organically. The narrator is an observer inside the machine, not an essayist trying to out-clever the scene with ornamental figures of speech. Delete "gilding the samosa" metaphors when the behavioral beat has already landed.
+- **Think Brain Rule 165: Factual Airlock Gate & Post-Approval Immutability**:
+  - **Rule 165 (`FACTUAL_AIRLOCK_GATE`)**:
+    * **Strict Evidence-to-Sentence Provenance**: Every concrete technical, legal, geographic, or spatial claim in non-fiction and cultural essays must directly trace back to verifiable primary reporting in the research dossier.
+    * **No Cinematic Gap-Filling**: AI writers must NEVER invent technical details (e.g. fictional mutation counts, cgroup traps, specific database architectures, ungrounded statutes), fabricated scene elements (invented terminal numbers, furniture upholstery, speaker volume decibels, removed announcement hardware), or ungrounded statistics ("hundreds of writers", specific print runs) to make a scene vivid or dramatic.
+    * **Subjective Argument vs. Empirical Assertion**: Cultural observations and craft critiques must be framed as arguments and observed tensions, never asserted as measured industry-wide statistical facts unless substantiated by external telemetry.
+    * **Post-Approval Immutability**: Once a draft passes `FACTUAL_AIRLOCK_GATE`, downstream publishing agents and tools (such as Story Bot, social posters, or auto-formatters) may format, tag, route, or truncate it, but **MAY NOT** introduce new factual claims, numbers, named locations, quotations, technical mechanisms, legal assertions, or scene details. Any substantive addition forces the draft back through the factual airlock.
+    * **Hard Gate Before Insertion**: If a candidate draft fails the factual airlock, it must be halted for provenance repair before automatic database insertion.
 
 - **HyperFrames Video Rendering Pipeline**:
   - Use HyperFrames (`npx hyperframes render` / skills under `.agents/skills`) to generate animated 9:16 vertical video Reels/Stories (`.mp4`) for high-impact social releases, craft prompts, or product teasers.
@@ -361,6 +375,10 @@ Rules:
   3. **Tier 3 — Master Editorial Brain & Persona Registries**:
      - **Editorial Brain Reservoir**: Record the proven proposition, 0:00 cut hook, and anti-pattern warnings in [`campaign/EDITORIAL_BRAIN.json`](file:///d:/VibeCode/WritOn-PowerUp/campaign/EDITORIAL_BRAIN.json) so cross-platform social dispatchers and shorts generators leverage the insight.
      - **Persona Cognitive Prompts**: Synchronize the writer persona prompt in [`server/src/bot-engine/legacy-writer-personas.js`](file:///d:/VibeCode/WritOn-PowerUp/server/src/bot-engine/legacy-writer-personas.js) and voice archetypes in `server/src/services/human-voice-prompt.js`.
+
+## External Agent & Skills Catalog Reference
+- Indexed and curated from [`wshobson/agents`](https://github.com/wshobson/agents) (94 plugins, 202 agents, 183 skills, 105 commands) in [`campaign/AGENTIC_SKILLS_CATALOG.md`](file:///d:/VibeCode/WritOn-PowerUp/campaign/AGENTIC_SKILLS_CATALOG.md).
+- Follow the selective on-demand retrieval policy: pull individual domain skills via `npx skills add wshobson/agents --skill <name>` only when specifically required; never bulk install.
 
 <!-- graft:start -->
 ## Graft — repo context graph

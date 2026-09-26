@@ -97,3 +97,27 @@ Derived from WritOn's official morning/midnight craft visual gallery:
   - **Tags (Minimal Modern Role)**:
     - YouTube Studio helper text explicitly states that tags play a minimal role in video discovery. Do not agonize over filling the 500-character tag box.
     - Use tags strictly for common misspellings (e.g. `writon`, `writeon`, `writ on`), abbreviations, or alternate phrasing.
+
+### 3.6 Mandatory Channel Subscription CTA Protocol
+- **Core Directive**: From Short #19 onward and across all future YouTube Shorts and long-form releases, every video MUST incorporate a deliberate, elegant Call-to-Action (CTA) inviting viewers to subscribe to the channel.
+- **Three-Tier CTA Surface Architecture**:
+  1. **On-Screen Visual End-Card / Badge (The Dwell Beat)**:
+     - During the final 4–6 second hold/loop phase, render a dedicated, branded subscription prompt in the parchment aesthetic (`#FAF5EE` card with terracotta `#821D1A` accent):
+       * Primary Copy: `SUBSCRIBE FOR DAILY CRAFT FIXES` or `SUBSCRIBE • SLOW WRITING CRAFT`
+       * Subtext / Handle: `youtube.com/@writon_socialapp` or `@writon_socialapp`
+       * Minimal bell / subscribe indicator icon styled without loud neon colors.
+  2. **Description Box Subscription Beat (Canonical Vanity URL)**:
+     - Every YouTube video description must include an explicit subscription line right above or within the ecosystem section:
+       ```text
+       🔔 Subscribe for daily slow-writing craft truths & storytelling fixes:
+       👉 https://writon.cc/youtube?sub_confirmation=1
+       ```
+     - Always use WritOn's official canonical vanity shortcut `https://writon.cc/youtube` (or `https://writon.cc/yt`) with the subscription confirmation parameter.
+  3. **Pinned First Comment**:
+     - Whenever automated or manual first-comment publishing is enabled, pin the craft discussion prompt paired with:
+       ```text
+       Subscribe to @writon_socialapp for one quiet craft truth every day. Which writing rule do you break the most?
+       ```
+- **Voiceover Rule**:
+  - Keep voiceover focused on the craft truth itself without begging or speaking long generic outro pitches; let the on-screen kinetic card, description link, and pinned comment carry the subscription conversion cleanly.
+

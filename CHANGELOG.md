@@ -1,5 +1,41 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.1.153 — YouTube Channel Subscription CTA Protocol — 2026-09-26
+
+- **Channel Growth & Subscriber Conversion Standard (`rules_youtube.md`, `AGENTS.md`, `scripts/youtube_publisher.mjs`)**:
+  - Codified mandatory Channel Subscription CTA protocol across all future YouTube Shorts and video releases.
+  - Three-tier surface implementation:
+    1. **On-Screen Dwell Beat**: Render dedicated, parchment-styled subscription badge (`SUBSCRIBE FOR DAILY CRAFT FIXES • @writon_socialapp`) during the 4–6s hold.
+    2. **Video Description**: Embed subscription line with confirmation hook (`🔔 Subscribe for daily slow-writing craft truths & storytelling fixes: https://writon.cc/youtube?sub_confirmation=1`).
+    3. **Pinned First Comment**: Pair conversational craft discussion question with a subscription CTA prompt.
+  - Updated default descriptions in `scripts/youtube_publisher.mjs` with the official canonical vanity link.
+
+## 2.1.152 — Think Brain Rule 165: Factual Airlock Gate & Post-Approval Immutability — 2026-09-26
+
+- **Editorial Sentinel Hardening (`AGENTS.md` & Publishing Pipeline)**:
+  - Codified **Rule 165 (`FACTUAL_AIRLOCK_GATE`)**: Mandates strict evidence-to-sentence provenance against primary research dossiers. Explicitly prohibits AI agents from filling evidentiary gaps with plausible cinematic or technical inventions (no fabricated mutation counts, cgroup traps, specific ungrounded statutes, invented terminal numbers, furniture upholstery, speaker volume decibels, or removed hardware).
+  - Enforced **Subjective Argument vs. Empirical Assertion**: Cultural and craft observations must be framed as arguments and observed tensions, never asserted as measured industry-wide statistical facts unless substantiated by external telemetry.
+- **Staggered Publishing Slate (Sept 26, 2026 IST Rollout)**:
+  - **Slot 1 (Live Now)**: *The Accountability Void: Who Is Liable When Autonomous Agents Escape the Sandbox?* by Aarav Mehta (`@aarav_tech`). Published live (`status = 'published'`, `is_public = true`) and featured in the top discovery showcase on [`public/index.html`](file:///d:/VibeCode/WritOn-PowerUp/public/index.html). Sitemaps and RSS feed regenerated.
+  - **Slot 2 (Scheduled for 3:00 PM IST / 09:30 UTC)**: *The Serialized Rebellion: Reclaiming Fiction Craft from the Content Marketing Treadmill* by Devansh Roy (`@devansh_roy`). Staged cleanly in database (`status = 'draft'`, `is_public = false`, `published_at = '2026-09-26 15:00:00+05:30'`) ready for release trigger.
+  - **Slot 3 (Scheduled for 6:00 PM IST / 12:30 UTC)**: *Quiet Infrastructure: How Public Silence Is Expanding Beyond Parks Into Transit Hubs* by Dr. Sunita Banerjee (`@sunita_banerjee`). Staged cleanly in database (`status = 'draft'`, `is_public = false`, `published_at = '2026-09-26 18:00:00+05:30'`) ready for release trigger.
+- **LinkedIn Executive Dispatch (Live)**:
+  - Dispatched *The Accountability Void: Who Owns the Failure When an AI Agent Acts on Its Own?* via `LinkedInPublisherService` to the live LinkedIn feed:
+    - Post URN: `urn:li:share:7509472454239563777`
+    - Live URL: `https://www.linkedin.com/feed/update/urn:li:share:7509472454239563777`
+    - Evaluated through all 20 LinkedIn Quality Gates (`LI01`–`LI20`) with 100% pass rate.
+    - Publication record immutably stored in PostgreSQL (`linkedin_publications`, ID `50aeacc1-167f-47fe-8f4e-318e16c6105d`).
+
+## 2.0.80 — Consistent Notifications & Reader Appearance — 2026-09-26
+
+- Notification cards, dividers, avatars, filters, and secondary text now follow the selected app color theme with readable dark-mode contrast.
+- The reading pane now follows the app's Appearance setting by default; choosing a reader color remains an independent override until changed.
+
+## 2.0.79 — Story Quote Cards — 2026-09-26
+
+- Refined story quote cards with a compact orange WritOn mark in the header, a quote area sized to the selected format, and a readable title, author, and site footer.
+- Reduced export typography and constrained excerpts so longer passages do not push the card attribution off the canvas.
+
 ## 2.1.151 — Social Video Dispatch: Short #18 "Kill Filter Words" Released — 2026-09-25
 
 - **Short #18 Multi-Platform Video Release**:

@@ -96,7 +96,7 @@ async function main() {
       if (!title) title = `${payload.theme}: ${payload.hook}`;
       if (!description) {
         const enCaption = payload.captions?.en || payload.hook;
-        description = `${enCaption}\n\nJoin the quiet writing community on WritOn: ${payload.shortlink}\n\n#shorts #writingcommunity #writon`;
+        description = `${enCaption}\n\n🔔 Subscribe for daily slow-writing craft truths & storytelling fixes:\n👉 https://writon.cc/youtube?sub_confirmation=1\n\nJoin the quiet writing community on WritOn: ${payload.shortlink}\n\n#shorts #writingcommunity #writon`;
       }
     } catch (err) {
       console.warn(`Could not load campaign payload for Day ${options.day}: ${err.message}`);
@@ -107,7 +107,7 @@ async function main() {
     title = 'WritOn Writing Prompt #shorts';
   }
   if (!description) {
-    description = 'Notice the small gesture before the speech begins. Download WritOn: https://writon.cc\n\n#shorts #writingcommunity #writon';
+    description = `Notice the small gesture before the speech begins.\n\n🔔 Subscribe for daily slow-writing craft truths & storytelling fixes:\n👉 https://writon.cc/youtube?sub_confirmation=1\n\nDownload WritOn: https://writon.cc\n\n#shorts #writingcommunity #writon`;
   }
 
   console.log('📌 Title:', title);
