@@ -1,5 +1,154 @@
 # Changelog & Update History — WritOn 2.0
 
+## Unreleased — YouTube Shorts Retention Telemetry & Pacing Protocol — 2026-09-27
+
+- **Empirical YouTube Shorts Telemetry Optimization (`rules_youtube.md`, `AGENTS.md`)**:
+  - Integrated real-world retention telemetry from Short #18 (*Kill Filter Words (Cut the Glass Wall)*: 113 views, 25.93% stayed-to-watch vs 13.8%–18.1% benchmark, >100% 0–4.5s retention).
+  - Codified two critical architectural pacing requirements for all subsequent Shorts:
+    1. **Rapid Second Example (Beat 5s–9s Drop-off)**: Prevents the 100% → 46% retention collapse when the first solution lands by immediately presenting a second high-contrast before/after pair (e.g., *“She felt the cold wind” → “The icy wind bit her skin”*).
+    2. **Tightened Micro-Short Duration (10–14s Target)**: Eliminates prolonged outro explanations and trailing summaries (which tapered viewership to 7.7%), ending directly on the second punchline followed by a 2–3s subscription CTA badge to stimulate high-retention looping.
+    3. **Preserved Frame-Zero Concrete Hook**: Maintained bold, high-contrast text and flawed sentence at 0:00 to lock in >100% opening retention.
+
+## Unreleased — AI Peer Bridge MCP (Bidirectional Cross-Model & Dynamic Chat Selection) — 2026-09-27
+
+- Built zero-dependency MCP server (`scripts/mcp-ai-peer-bridge/index.mjs`) enabling cross-model collaboration between Antigravity, Claude, ChatGPT, and Codex.
+- **Dynamic Chat Picker**: Exposes `list_conversations` and `select_conversation` tools (and `/conversations` / `/select-conversation` HTTP endpoints) so external callers or users can choose which Antigravity chat session to connect.
+- **Inbound Query & Processing Loop**: External agents (Codex/ChatGPT) can invoke `ask_antigravity` (or `POST /process`) to execute queries against Antigravity with full workspace context and chat history, returning the processed response directly back to the caller.
+- **Outbound Review Loop**: Antigravity agents can invoke `review_with_claude` or `ask_chatgpt` to run peer critiques and verify drafts.
+
+## Unreleased — Think Brain Rules 176–182 (Truth Boundary Model, Form Analysis & Cultural Insight) — 2026-09-27
+
+- **Think Brain Editorial Governance Expansion (`AGENTS.md`)**:
+  - **Rule 176 (`TRUTH_BOUNDARY_MODEL`) & (`CREATIVE_INTERPRETATION_PROTECTION`)**:
+    - Codified the core doctrine: *"Accuracy is the floor, not the style. Facts must be trustworthy; imagination must remain free. The reader should always be able to tell which is which."*
+    - Separated verification into 6 explicit categories: Hard Facts (strictly verified), Interpretation (maximum freedom), Literary Craft (maximum freedom), Fiction (maximum freedom for invented characters/dialogue while respecting external baseline events), Reported Observation (requires provenance), and Trend Claims (requires empirical population evidence).
+    - Added explicit creative protection: bans demanding citations for metaphor, analogy, philosophical interpretation, rhetorical inference, humor, structural comparisons, or speculative questions. Intervenes only when creative language masquerades as empirical fact.
+  - **Rule 177 (`DO_NOT_REPORTIFY_INVARIANT`)**:
+    - Mandates asking after fact validation: *"Did editing make this safer but less alive?"*
+    - Restores voice, metaphor, narrative tension, and authored thought if editing sterilized the piece. Rejects safe-but-dead drafts.
+  - **Rule 178 (`ARGUMENT_NOT_TREND_REPAIR`)**:
+    - Converts unsupported population claims (*"engineers are increasingly doing X"*) into sharp authored argument (*"I have begun to think senior engineers need X"*, *"there is a case for X"*), preserving idea teeth without faking demographic consensus.
+  - **Rule 179 (`PSEUDOSCIENCE_BOUNDARY`)**:
+    - Authorizes systems craft metaphors (*"mental trace"*, *"cognitive loan"*, *"internal simulation"*, *"typing is the brake"*), while prohibiting pseudo-scientific assertions (*"neural scaffolding"*, *"cognitive atrophy"*, *"brain rewiring"*) that borrow scientific vocabulary to lend unearned authority to essayistic claims.
+  - **Rule 180 (`AARAV_MEHTA_CREATIVE_LICENSE`)**:
+    - Explicitly frees bold engineering metaphors, systems analogies, failure scenarios, and operational thought experiments while restricting only fake trends, fake benchmarks, fake practitioner consensus, or broken systems mechanics.
+  - **Rule 181 (`MECHANISM_VS_MANIFESTATION_CHANNEL`)**:
+    - Codifies that a source may support the underlying mechanism without supporting the exact manifestation channel. Prohibits transplanting evidence across distinct channels (e.g. cURL security bug-bounty slop vs. GitHub pull requests) where the author explicitly noted absence, and mandates institutional policy precision (e.g. Linux kernel DCO accountability over generic bans).
+  - **Rule 182 (`FORM_ANALYSIS_NOT_POPULATION_DISPLACEMENT`)**:
+    - When demographic trend evidence is weak, preserves the cultural insight by pivoting from population displacement ("X is replacing Y") to formal analysis ("A familiar contemporary form begins with..."). Avoids tidy false historical binaries, frames date stamps as epistemic authority limits, and bans arbitrary social timetables.
+
+## Unreleased — Graft & Graphify Context Graph Protocol — 2026-09-27
+
+## Unreleased — Graft & Graphify Context Graph Protocol — 2026-09-27
+
+- Codified the mandatory dual-protocol rule for codebase investigation and navigation in [`AGENTS.md`](file:///d:/VibeCode/WritOn-PowerUp/AGENTS.md):
+  - Mandates querying `graft` (`graft ask "<query>" --source`, `graft callers`, `graft skeleton`, `graft map`, `graft grep`) or `graphify` (`query_graph`, `graphify path`, `graphify explain`) FIRST before grepping or opening raw source files.
+  - Standardizes post-modification synchronization protocols (`graphify update .` and `graft build`).
+
+## Unreleased — Notification Bell Clarity — 2026-09-26
+
+- Added a distinct orange unread dot with a background-colored ring to the Home notification bell, so unread activity is visible without relying on icon tint alone.
+- Updated the bell's accessibility label to announce when notifications are unread.
+
+## 2.0.84 — Google Search Console Page Indexing & Clean Canonical Routing — 2026-09-26
+
+- **Resolved GSC "Redirect error" and "Page with redirect" (4 pages)**:
+  - Added clean extensionless rewrite routes in `firebase.json` for `/terms`, `/child-safety`, and `/delete-account`, resolving HTTP 404s when requested without `.html`.
+  - Added edge 301 redirects in `firebase.json` mapping legacy `.html` requests (`/terms.html`, `/child-safety.html`, `/delete-account.html`, `/privacy-policy.html`) to their canonical extensionless endpoints.
+  - Added edge 301 redirect for `/stories` -> `/explore`, eliminating client-side JavaScript redirect loops.
+  - Added robots.txt Disallow rules for internal redirect utility endpoints (`/play`, `/app`, `/android`, `/whatsapp`, `/wa`, `/dashboard`) to prevent search engine crawlers from consuming crawl budget on external redirect wrappers.
+  - Standardized all internal links across `public/index.html`, `public/about/index.html`, `public/explore/index.html`, `public/journal/`, `public/updates/`, and regional landing pages (`/hi`, `/mr`, `/bn`) to canonical extensionless paths.
+- **Resolved GSC "Crawled - currently not indexed" (3 pages)**:
+  - Removed misleading static `<link id="canonical-link" rel="canonical" href="https://writon.cc/stories" />` fallback in `public/stories/index.html` that incorrectly identified individual story articles as duplicates of `/stories`.
+  - Implemented synchronous `<head>` script in `public/stories/index.html` ensuring search engine crawlers immediately see self-referential canonical tags (`https://writon.cc/stories/${slug}`) on first-pass HTML parsing.
+  - Purged 13 obsolete category query URLs (`https://writon.cc/stories?category=...`) from `sitemap.xml` and `sitemap-main.xml`.
+  - Updated sitemaps to list `https://writon.cc/explore` and canonical extensionless legal endpoints (`/privacy-policy`, `/terms`, `/child-safety`, `/delete-account`).
+  - Removed `X-Robots-Tag: noindex, follow` from `sitemap.xml` and `news-sitemap.xml` in `firebase.json`.
+  - Deployed changes live to Firebase Hosting (`writon-prod`) and verified 200 OK and 301 responses on production.
+
+## Infrastructure — Remove retired Render dependencies — 2026-09-26
+
+- Removed the Render keep-awake workflow and replaced stale API/deletion links with the Google Cloud API domain and Firebase-hosted deletion page.
+- Updated the OpenAPI manifest, server configuration, benchmark target, and story-page template plus generated story pages to use `api.writon.cc`.
+- Removed the Render-specific runtime switch; `SPARK_AUTOMATION_ENABLED` remains the direct control for Spark automation.
+- Replaced active Render deployment/rollback instructions with the current Cloud Run and Cloud Scheduler operating model. Historical migration snapshots remain as records.
+
+## 2.0.83 — Digital Asset Links Google Credential Manager Integration — 2026-09-26
+
+- Updated Digital Asset Links declaration (`public/.well-known/assetlinks.json`) to declare `delegate_permission/common.get_login_creds` alongside `delegate_permission/common.handle_all_urls` for package `com.ibitvalley.writon` (`2F:C5:3D:AE:26:8C:D2:BE:11:20:00:C1:9E:9A:08:BD:EA:18:A0:D1:6F:0D:CC:CE:F1:C6:0F:86:F8:84:45:7D`).
+- Configured Firebase Hosting header rules in `firebase.json` for `/.well-known/assetlinks.json` with strict `application/json; charset=utf-8`, CORS `*`, and public caching.
+- Deployed live to Firebase Hosting and verified live response at `https://writon.cc/.well-known/assetlinks.json`.
+
+## 2.0.82 — Verified Story Links — 2026-09-26
+
+- Removed the retired Render host from Android App Links, story-link parsing, and trusted avatar hosts. Active WritOn and Google Cloud story links remain supported.
+- Added regression coverage confirming retired Render story/avatar URLs are not treated as active links or media sources.
+
+## 2.1.157 — Think Brain Rules 171–175 & Tactile Sanctuary Micro-Edits (95/100 Gold Standard) — 2026-09-26
+
+- **Think Brain Editorial Governance Expansion (`AGENTS.md`)**:
+  - **Rule 171 (`EVIDENCE_SCOPE_PROPAGATION`)**: Introductory transitions, paragraph openers, and lead sentences must strictly match the geographic and demographic boundaries of primary evidence (*"Among U.S. Gen Z readers, something interesting is happening..."*). Prevents unintentional population drift from regional samples into generic global descriptors.
+  - **Rule 172 (`SECONDARY_ARGUMENT_DRIFT`)**: When an analytical subsection diverges into a distinct secondary subject that could function as its own essay (e.g. music licensing, film streaming catalogs, and software subscriptions), compress the secondary thesis by 25–30%, anchoring strictly to the primary material contrast (*"A physical book usually gives the reader a simpler form of possession than platform-bound digital access. It remains where you left it."*).
+  - **Rule 173 (`APHORISM_SPACING_DISCIPLINE`)**: Eliminates consecutive aphoristic subsection conclusions; ensures at least half of section endings terminate on concrete physical details, natural observational boundaries, or unadorned structural reality.
+  - **Rule 174 (`REDUNDANT_THESIS_PHRASE_PURGE`)**: Prohibits following an authentic analytical sentence (*"Nobody is required to produce an interpretation"*) with a redundant, thesis-ready paraphrase (*"Nobody needs to perform intelligence"*). Prunes the secondary phrase.
+  - **Rule 175 (`DR_SUNITA_BANERJEE_GOLD_PERSONA_LOCK`)**: Codifies the gold-standard Sunita essay model: `material property → behavioral consequence → primary research → social expression of same phenomenon → complication / limitation → modest cultural conclusion`. Strictly avoids old-object worship, automatic anti-tech arguments, fountain-pen nostalgia, and sentimental assumptions that *"slowness is inherently superior"*.
+- **Post-Approval Micro-Edits: Dr. Sunita Banerjee's Essay ("The Tactile Sanctuary")**:
+  - **Micro-edit 1 (Population Precision)**: Replaced *"Something interesting is happening among younger readers. The cohort most thoroughly surrounded by digital media..."* with *"Among U.S. Gen Z readers, something interesting is happening. The cohort most thoroughly surrounded by digital media..."* to align cleanly with the Cambridge study scope.
+  - **Micro-edit 2 (Aphorism Cleanliness)**: Deleted the redundant thesis-ready line *"Nobody needs to perform intelligence."* following *"Nobody is required to produce an interpretation."*
+  - **Micro-edit 3 (Ownership Compression)**: Compressed the ownership section by ~30%, removing the extraneous catalog listing of music licensing, film migration, and software subscriptions. Kept the direct material comparison: *"A physical book usually gives the reader a simpler form of possession than platform-bound digital access. It remains where you left it."*
+  - Regenerated all production SEO sitemaps, news sitemaps, and RSS 2.0 feeds.
+
+## 2.1.156 — WhatsApp Autonomous Bot Genesis & Media Template Engine — 2026-09-26
+
+- **Autonomous WhatsApp Bot Suite (`rules_whatsapp.md`, `whatsapp_api_reference.md`, `WHATSAPP_BOTS.md`)**:
+  - Implemented Phase 1 through Phase 5 of the **Bot Genesis Protocol** for Meta WhatsApp Business Platform (Cloud API & Marketing Messages API).
+  - Codified compliance rules, Tier 250 scaling criteria, rate-limit backoff rules, error code directory, and 24h customer care window handling.
+  - Documented OpenAPI schema specifications for WABA details, message template delivery, and media upload endpoints.
+- **Zero-Dependency Ponytail Client (`server/src/services/whatsapp-client.js`)**:
+  - Engineered zero-dependency Node.js client using native `fetch` (Ponytail Principle).
+  - Built-in exponential backoff for HTTP 429 and transient Meta 500 errors.
+  - Added support for account verification inspection (`getWabaDetails`), freeform service text messaging (`sendTextMessage`), and rich media template dispatches (`sendTemplateMessage`).
+  - Added native Meta webhook challenge handshake verification (`verifyWebhook`).
+  - 100% passing Vitest test suite (`server/test/whatsapp-client.test.js` - 7 tests).
+- **Standalone CLI Publisher & Custom WhatsApp Story Card (`scripts/whatsapp_publisher.mjs`)**:
+  - Created standalone dispatcher CLI with mandatory `--dry-run` simulation mode to prevent unauthorized online test posts.
+  - Generated dedicated, uncropped 1200×630 landscape card (`public/cards/whatsapp_tactile_sanctuary.png`) optimized specifically for WhatsApp chat preview bubble aspect ratios.
+  - Bound all app install CTAs canonically to `https://writon.cc/play`.
+- **WritOn Reading Club Community & Vanity Redirects (`server/src/routes/vanity-redirects.js`, `firebase.json`)**:
+  - Registered canonical vanity links `https://writon.cc/whatsapp` and `https://writon.cc/wa` redirecting to the official WhatsApp Reading Club community invite (`https://chat.whatsapp.com/G94rXIgROzA0mxSK8O1XBQ`).
+  - Added edge redirects in `firebase.json` for global CDN sub-millisecond resolution.
+  - Integrated community invite badges into website footers across `public/index.html` and `public/explore/index.html`.
+  - All vanity redirect tests passing (4/4 in `server/test/vanity-redirects.test.js`).
+
+## 2.1.155 — Think Brain Rules 166–170 & Tactile Sanctuary Scope Tightening — 2026-09-26
+
+
+- **Think Brain Editorial Governance Expansion (`AGENTS.md`)**:
+  - **Rule 166 (`DEMOGRAPHIC_SCOPE_BINDING`)**: For every survey claim, store and enforce the exact population boundary (`POPULATION: US Gen Z | SAMPLE: 2025 n=2,000 | SOURCE: Cambridge study`). Prohibits expanding localized or single-country survey pools into ungrounded civilizational generalizations (*"a generation"*).
+  - **Rule 167 (`SOURCE_TIER_DISCIPLINE`)**: Enforces explicit three-tier source hierarchy: Tier 1 (primary academic / statutory), Tier 2 (reputable journalistic reporting), Tier 3 (commercially sponsored consumer surveys). Mandates disclosing commercial sponsors (e.g. ThriftBooks / Talker Research) and forbids equating them with academic studies.
+  - **Rule 168 (`TREND_DIRECTION_CHECK`)**: Restricts directional vocabulary (*"returning to"*, *"moving back"*, *"resurgence"*, *"revival"*) to trends backed by empirical evidence of a two-stage arc (`prior decline + subsequent increase`). Stated format preference or snapshot adoption alone does not prove a historical return.
+  - **Rule 169 (`DIGITAL_OWNERSHIP_SCOPE`)**: Distinguishes legal and technical ownership models: platform-bound DRM access (e.g. Kindle app/device restriction) vs. downloadable DRM-free files (EPUB/PDF retaining permanence once downloaded) vs. subscription streams.
+  - **Rule 170 (`SUNITA_ESSAY_PATTERN_AND_MAXIM_RESTRAINT`)**: Preserves Dr. Sunita Banerjee's analytical engine (`material feature → behavioral consequence → evidence → social form → complication → restrained cultural claim`). Enforces maxim restraint, pruning quote-card epigrams so supporting paragraphs conclude on clean observational realism.
+- **Editorial Revision: Dr. Sunita Banerjee's Essay ("The Tactile Sanctuary")**:
+  - Title tightened from *"The Tactile Sanctuary: Why a Generation Raised on Screens Is Returning to Paper"* to ***"The Tactile Sanctuary: Why Print Feels New Again to Gen Z"***.
+  - Bound Cambridge University Press survey data directly to primary researchers Kathi Inman Berens & Rachel Noorda with exact sample scope (2025 nationally representative U.S. survey, n=2,000, 66% readers, up 14 percentage points from 2022).
+  - Explicitly identified the Talker Research disconnected-habits survey as commissioned by ThriftBooks (Tier 3).
+  - Qualified Silent Book Club social dynamic (*"specifically to spend part of the time not talking"*), device interface friction (*"a device on which switching is nearly frictionless"*), and digital ownership nuance (*"A physical book usually gives the reader a simpler form of possession than platform-bound digital access"*).
+  - Pruned synthetic maxim clutter (*"Sometimes the better interface is cellulose"*, *"It is wonderfully difficult to optimize"*).
+  - Regenerated sitemaps, RSS 2.0 feed, and news sitemap.
+
+## 2.1.154 — Google Play Store Canonical Vanity Shortlinks — 2026-09-26
+
+- **Branded Google Play Shortlinks (`writon.cc/play`, `writon.cc/app`, `writon.cc/android`)**:
+  - Registered `play`, `app`, and `android` as built-in vanity redirect routes in [`server/src/routes/vanity-redirects.js`](file:///d:/VibeCode/WritOn-PowerUp/server/src/routes/vanity-redirects.js), redirecting directly to `https://play.google.com/store/apps/details?id=com.ibitvalley.writon`.
+  - Added edge redirects in [`firebase.json`](file:///d:/VibeCode/WritOn-PowerUp/firebase.json) for sub-millisecond edge resolution across CDN nodes.
+  - Updated test suite in [`server/test/vanity-redirects.test.js`](file:///d:/VibeCode/WritOn-PowerUp/server/test/vanity-redirects.test.js) and synchronized canonical registries across [`AGENTS.md`](file:///d:/VibeCode/WritOn-PowerUp/AGENTS.md) and [`campaign/SOCIAL_STRATEGY.md`](file:///d:/VibeCode/WritOn-PowerUp/campaign/SOCIAL_STRATEGY.md).
+
+## 2.0.81 — Story Cards Available in Reader — 2026-09-26
+
+- Fixed boolean Remote Config handling so an unset/static value uses the feature's declared in-app fallback. Story Cards are now available in the Reader by default, while explicit remote disable values remain respected.
+- Added a regression test covering static fallback and explicit default/remote values.
+
 ## 2.1.153 — YouTube Channel Subscription CTA Protocol — 2026-09-26
 
 - **Channel Growth & Subscriber Conversion Standard (`rules_youtube.md`, `AGENTS.md`, `scripts/youtube_publisher.mjs`)**:

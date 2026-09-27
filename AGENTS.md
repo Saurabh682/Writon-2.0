@@ -1,13 +1,25 @@
-## graphify (Default Codebase Knowledge Graph)
+## graft & graphify (Mandatory Codebase Knowledge & Context Graphs)
 
-This project has an active knowledge graph at `graphify-out/` with 9,500+ nodes, god nodes, community structure, and cross-file relationships.
+This repository is dual-indexed with **graft** (`graft/`) and **graphify** (`graphify-out/` with 9,500+ nodes, god nodes, and cross-file community structures).
 
-Rules (Mandatory by Default):
-- **Default for all codebase tasks**: For ANY question or investigation into how code works, architecture, where functions/classes live, caller/callee graphs, or blast radius, query the graph FIRST via the `graphify` MCP tool (`query_graph`) or CLI `graphify query "<question>"`.
-- **Relationship & concept paths**: Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts to return scoped subgraphs rather than loading full files.
-- **Dirty graph tolerance**: Dirty `graphify-out/` files after hooks or incremental updates are expected; never skip graphify because of uncommitted graph files.
-- **Broad navigation**: If `graphify-out/wiki/index.md` exists, use it for broad orientation instead of raw source browsing.
-- **Sync on edits**: After adding or modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+### Mandatory Rules for Codebase Investigation & Navigation:
+1. **Mandatory First-Pass via Graphs**:
+   - For ANY question or investigation into how code works, architecture, where functions/classes live, caller/callee graphs, or blast radius across this repository, **ALWAYS query `graft` or `graphify` FIRST** before grepping or opening raw source files.
+   - Never bypass graph tools for codebase navigation.
+2. **Graft CLI Commands**:
+   - `graft ask "<query>" --source`: Ranked nodes with exact file:line spans and inlined crux definitions.
+   - `graft map`: Token-budgeted orientation of directory clusters, hubs, and hotspots.
+   - `graft callers <symbol>`: Precomputed, exact caller edges (use `--direction out` for callees, `--depth N` for blast radius).
+   - `graft skeleton <file>`: Fast definition signatures and spans (~10x cheaper than loading files).
+   - `graft grep "<literal>"`: Exhaustive search over indexed symbols.
+3. **Graphify MCP & CLI**:
+   - Query the knowledge graph via the `graphify` MCP tool (`query_graph`) or `graphify query "<question>"`.
+   - Use `graphify path "<A>" "<B>"` for tracing relationship paths across disparate files.
+   - Use `graphify explain "<concept>"` for scoped subgraphs and domain explanations.
+   - If `graphify-out/wiki/index.md` exists, consult it for broad architectural orientation.
+4. **Sync & Edits Protocol**:
+   - After adding or modifying code, run `graphify update .` (AST-only, $0 cost) and refresh `graft` with `graft build` when significant structural changes occur.
+   - Dirty `graphify-out/` or `graft/` index files after updates are expected; never skip graph usage because of uncommitted graph files.
 
 
 ## Documentation & Changelog Maintenance
@@ -93,6 +105,11 @@ Rules (Mandatory by Default):
     2. **Video Description**: Include the explicit subscription link with confirmation hook:
        `🔔 Subscribe for daily slow-writing craft truths & storytelling fixes: https://writon.cc/youtube?sub_confirmation=1`
     3. **Pinned First Comment**: Pin a discussion question paired with `Subscribe to @writon_socialapp for one quiet craft truth every day.`
+- **Shorts Retention & Pacing Engine (Derived from Short #18 Telemetry: 25.9% Stayed, >100% 0–4.5s Retention)**:
+  - **Combat 5s–9s Solution Drop-off**: Never linger on a single solved example for more than 3 seconds. Provide a **rapid second 'before & after' example** to sustain curiosity.
+  - **Tight 10–14s Target for Single Rules**: Avoid dragging outro explanations past 14 seconds. Eliminate trailing conversational summaries and snap cleanly into the subscription end-card to maximize repeat loops.
+  - **Preserve Frame-Zero Concrete Hook**: Always display bold contrast typography and the flawed sentence immediately at 0:00 to defend the >100% opening retention.
+
 
 
 ## LinkedIn Autonomous Bot Suite
@@ -101,6 +118,16 @@ Rules (Mandatory by Default):
 - Complete LinkedIn Marketing Posts API and media endpoint directory is in [`linkedin_api_reference.md`](file:///d:/VibeCode/WritOn-PowerUp/linkedin_api_reference.md).
 - **Dedicated Studio**: Backed by `server/src/routes/admin-linkedin.js` and rendered at `public/linkedin.html` (`/linkedin-studio`).
 - **Strict Invariant**: **NEVER POST TEST THINGS ONLINE**. All testing, validation, and calibration must specify `--dry-run`. Run `node scripts/linkedin_publisher.mjs --brain --dry-run` or `node scripts/linkedin_scout.mjs --dry-run`.
+
+## WhatsApp Autonomous Bot Suite
+- Architecture, component registry, and AI upgrade instructions are documented in [`WHATSAPP_BOTS.md`](file:///d:/VibeCode/WritOn-PowerUp/WHATSAPP_BOTS.md).
+- Operational standards, tier limits (Tier 250 rolling 24h), and 24h customer care policies are documented in [`rules_whatsapp.md`](file:///d:/VibeCode/WritOn-PowerUp/rules_whatsapp.md).
+- Complete WhatsApp Business Cloud API & Marketing Messages API endpoint directory is in [`whatsapp_api_reference.md`](file:///d:/VibeCode/WritOn-PowerUp/whatsapp_api_reference.md).
+- Any AI agent modifying or extending WhatsApp bot functionality must consult [`WHATSAPP_BOTS.md`](file:///d:/VibeCode/WritOn-PowerUp/WHATSAPP_BOTS.md) first, preserve zero-dependency `fetch` design, and run `npx vitest run test/whatsapp-client.test.js`.
+- **Pre-Approved Story Card Template (`writon_craft_story`)**:
+  - Uses uncropped 1200×630 landscape card (`public/cards/whatsapp_tactile_sanctuary.png`).
+  - Single primary CTA button bound canonically to `https://writon.cc/play` for direct Google Play app installs.
+- **Strict Invariant**: **NEVER POST TEST THINGS ONLINE**. All testing, validation, and calibration must specify `--dry-run`. Run `node scripts/whatsapp_publisher.mjs --dry-run`.
 
 ## Social Media Publishing Rules
 - **Weekly Language Directive (Active: Sept 13–20, 2026)**:
@@ -174,6 +201,62 @@ Rules (Mandatory by Default):
     * **Subjective Argument vs. Empirical Assertion**: Cultural observations and craft critiques must be framed as arguments and observed tensions, never asserted as measured industry-wide statistical facts unless substantiated by external telemetry.
     * **Post-Approval Immutability**: Once a draft passes `FACTUAL_AIRLOCK_GATE`, downstream publishing agents and tools (such as Story Bot, social posters, or auto-formatters) may format, tag, route, or truncate it, but **MAY NOT** introduce new factual claims, numbers, named locations, quotations, technical mechanisms, legal assertions, or scene details. Any substantive addition forces the draft back through the factual airlock.
     * **Hard Gate Before Insertion**: If a candidate draft fails the factual airlock, it must be halted for provenance repair before automatic database insertion.
+- **Think Brain Rules 166–170: Demographic Scope Binding, Source Tiering, Trend Direction & Digital Ownership Nuance**:
+  - **Rule 166 (`DEMOGRAPHIC_SCOPE_BINDING`)**: For every survey claim, store and enforce the exact population boundary: `POPULATION: US Gen Z | SAMPLE: 2025 n=2,000 | SOURCE: Cambridge study`. Never expand: `US Gen Z → Gen Z globally → "a generation"` unless explicitly supported by multi-country representative data.
+  - **Rule 167 (`SOURCE_TIER_DISCIPLINE`)**: Enforce explicit three-tier source hierarchy:
+    * *Tier 1*: Primary academic studies and official statutory filings (e.g. Cambridge University Press / Inman Berens & Noorda).
+    * *Tier 2*: Reputable journalistic reporting summarizing primary sources (e.g. RELEVANT summary).
+    * *Tier 3*: Commercially commissioned consumer surveys (e.g. Talker Research on behalf of ThriftBooks).
+    * When combining tiers, never present them as equivalent evidence. Always disclose commercial sponsors where relevant (*"A separate consumer survey commissioned by ThriftBooks found..."*).
+  - **Rule 168 (`TREND_DIRECTION_CHECK`)**: Directional vocabulary (*"returning to"*, *"moving back"*, *"resurgence"*, *"revival"*) strictly requires empirical evidence of a two-stage arc: `prior decline + subsequent increase`. Stated format preference or snapshot adoption alone does not prove a historical return. Avoid framing younger adopters as "returning" to technologies they never previously abandoned.
+  - **Rule 169 (`DIGITAL_OWNERSHIP_SCOPE`)**: Distinguish legal and technical ownership models: platform-bound DRM access (e.g. Kindle app/device restriction) vs. downloadable DRM-free files (EPUB/PDF retaining permanence once downloaded) vs. subscription streams. Do not treat all digital media as single revocable access tokens.
+  - **Rule 170 (`SUNITA_ESSAY_PATTERN_AND_MAXIM_RESTRAINT`)**: Preserve Dr. Sunita Banerjee's analytical engine: `material feature → behavioral consequence → evidence → social form → complication → restrained cultural claim`. Limit quote-card maxims to 1–2 governing insights per essay; let supporting paragraphs resolve on clean observational statements rather than ending every section on an authored epigram.
+- **Think Brain Rules 171–175: Evidence Scope Propagation, Secondary Drift & Sunita Gold Persona Invariant**:
+  - **Rule 171 (`EVIDENCE_SCOPE_PROPAGATION`)**: When primary research is scoped to a specific demographic (e.g. U.S. Gen Z), nearby transitional sentences, paragraph leads, and introductory statements must inherit that exact scope (*"Among U.S. Gen Z readers, something interesting is happening..."*). Do not open an evidentiary beat with broad population phrases (*"young people"*, *"a generation"*, *"younger readers everywhere"*) unless separately supported.
+  - **Rule 172 (`SECONDARY_ARGUMENT_DRIFT`)**: If a subsection can be detached into a standalone essay without damaging the central thesis (e.g. expanding from tactile reading into music licensing, film migration, and software subscriptions), aggressively compress the secondary thesis by 25–30%. Retain only the direct material comparison (*"A physical book usually gives the reader a simpler form of possession than platform-bound digital access. It remains where you left it."*) and cut collateral industry catalogs.
+  - **Rule 173 (`APHORISM_SPACING_DISCIPLINE`)**: Strictly prohibit consecutive subsection endings that terminate on quotable maxims. Space memorable insights across paragraphs; ensure at least 50% of section endings conclude on a physical detail, a concrete boundary, or a plain operational fact.
+  - **Rule 174 (`REDUNDANT_THESIS_PHRASE_PURGE`)**: When an essay establishes an analytical distinction with a clean sentence (*"Nobody is required to produce an interpretation"*), do not append an authored, thesis-ready paraphrase immediately behind it (*"Nobody needs to perform intelligence"*). Prune the second clause.
+  - **Rule 175 (`DR_SUNITA_BANERJEE_GOLD_PERSONA_LOCK`)**:
+    * **Core**: How material, urban, and institutional structures shape attention, human behavior, interpretation, and civic coexistence.
+    * **Voice**: Skeptical of moral panic and easy binaries; comfortable with comparative literary analysis; grounds claims in material constraints and primary empirical research.
+    * **Strict Prohibitions**: Never indulge in old-object worship, automatic anti-technology screeds, fountain-pen/brass-lamp nostalgia, or sentimental claims that *"slowness is inherently superior"*. The strongest cultural essays do not argue that old things are better; they identify what a medium does differently and analyze why that difference matters now.
+- **Think Brain Rules 176–177: Truth Boundary Model & Creative Freedom Protection**:
+  - **Rule 176 (`TRUTH_BOUNDARY_MODEL`) & (`CREATIVE_INTERPRETATION_PROTECTION`)**:
+    * **Governing Mandate**: **Accuracy is the floor, not the style.** Facts must be trustworthy; imagination must remain free. The reader should always be able to tell which is which.
+    * **The 6 Truth Boundaries**:
+      1. *Hard Facts*: Names, dates, scores, prices, laws, quotations, research findings, real-world events. **Verify these strictly.**
+      2. *Interpretation*: What those facts mean, what they reveal, what contradiction the writer sees. **Maximum freedom.**
+      3. *Literary Craft*: Metaphor, imagery, rhythm, analogy, structure, humor, philosophical leaps, juxtaposition. **Maximum freedom.**
+      4. *Fiction*: Invented characters (e.g. Devansh's Bimal), shops, motives, dialogue, objects, incidents. **Maximum freedom** when the genre/category makes the invention clear. External facts (e.g. real match date, actual score) must remain true.
+      5. *Reported Observation*: *"I saw..."*, exact real-world scenes, supposedly witnessed dialogue, private thoughts of real living/historical figures. **These require documented provenance.**
+      6. *Trend Claims*: *"Engineers are increasingly..."*, *"Gen Z is returning..."*, *"People are abandoning..."* **Require empirical evidence** because they claim to describe a population rather than express an authored thought.
+    * **Creative Protection Filter**: Do NOT demand citations or sourcing for: metaphor, analogy, philosophical interpretation, rhetorical inference, humor, emotional reading, structural comparison, speculative questions, or fictional invention in clearly fictional work. Only intervene when creative language masquerades as externally verifiable fact.
+  - **Rule 177 (`DO_NOT_REPORTIFY_INVARIANT`)**:
+    * After fact-checking and airlock validation, always run the vital vitality test: *"Did editing make this safer but less alive?"*
+    * If YES: Restore voice, metaphor, narrative tension, sensory texture, argument, surprise, and persona-specific authored thought.
+    * Reject both extremes: eliminate false evidence, but vigorously defend authored boldness. A piece that is 100% factually safe but aesthetically dead must be rejected.
+- **Think Brain Rules 178–180: Argument-Not-Trend Repair, Pseudoscience Boundary & Aarav Creative License**:
+  - **Rule 178 (`ARGUMENT_NOT_TREND_REPAIR`)**:
+    * If a writer has a strong, provocative proposition but weak population evidence: **DO NOT WEAKEN OR REMOVE THE PROPOSITION**.
+    * Convert counterfeit sociological assertion: *"Engineers are increasingly doing X..."* $\to$ Into bold authored argument: *"There is a case for engineers to do X..."*, *"I have begun to think senior engineers need X..."*, or *"Try X on one difficult module..."*
+    * Preserve the teeth of the idea without faking a demographic consensus.
+  - **Rule 179 (`PSEUDOSCIENCE_BOUNDARY`)**:
+    * **Metaphor Allowed**: *"Mental trace"*, *"cognitive loan"*, *"internal simulation"*, *"typing is the brake"*, *"unindexed join"*. (Protected as systems craft).
+    * **Evidence Required**: *"Neural scaffolding"*, *"cognitive atrophy"*, *"brain rewiring"*, *"restores neural pathways"*. (Banned as counterfeit neuroscience unless backed by peer-reviewed clinical neuroscience). Do not borrow scientific terminology to lend unearned authority to an essayistic intuition.
+  - **Rule 180 (`AARAV_MEHTA_CREATIVE_LICENSE`)**:
+    * **Encourage**: Bold engineering metaphors, systems analogies, failure scenarios, operational thought experiments, mechanical trade-offs, and strong first-person technical judgment.
+    * **Restrict Only**: Fake trend claims, fake benchmark numbers, fake practitioner consensus, and incorrect systems mechanics.
+- **Think Brain Rule 181: Mechanism vs. Manifestation Channel Discipline**:
+  - **Rule 181 (`MECHANISM_VS_MANIFESTATION_CHANNEL`)**:
+    * **Invariant**: *A source may support the underlying mechanism without supporting the exact manifestation channel.*
+    * **Channel Fidelity**: When a primary figure or project documents an operational crisis (e.g. Daniel Stenberg documenting synthetic AI-slop overwhelming cURL’s bug-bounty/security triage channels), **DO NOT** silently transplant that evidence to a different repository channel (such as GitHub pull requests) where the author has explicitly stated the problem has not yet manifested.
+    * **Institutional Policy Precision**: When citing institutional governance (e.g. the Linux kernel’s generated-content and coding-assistant policies), do not flatten nuanced transparency and certification rules (e.g. requiring human DCO `Signed-off-by` certification and full comprehension of tool-generated code) into a generic, adversarial "machines forbidden" soundbite. Institutional reality is richer than sloganizing.
+- **Think Brain Rule 182: Cultural Form Analysis vs. Demographic Trend Assertion**:
+  - **Rule 182 (`FORM_ANALYSIS_NOT_POPULATION_DISPLACEMENT`)**:
+    * **Invariant**: *When evidence for an industry-wide demographic shift is weak, never abandon the cultural insight. Shift the framing from demographic displacement ("X is replacing Y", "people are abandoning Y") to structural formal analysis ("A familiar contemporary form begins with...", "X is a compelling structure because it admits...")*.
+    * **False Chronological Inevitability**: Do not invent tidy historical binaries (*"For generations, advice was vertical; now it is horizontal"*). Human reflection (letters, diaries, memoirs) has always contained uncertainty. Contrast forms directly rather than manufacturing neat epochal shifts.
+    * **Date Stamp as Authority Limit**: Frame chronological bounds as an epistemic constraint (*"its date stamp places a limit on its authority"*, *"it admits what I knew then rather than claiming universal truth"*), never as an absolute shield against performative vanity.
+    * **Prohibit Arbitrary Timetables**: Do not hallucinate external social schedules (e.g. *"society decrees age 28 is for consolidation"*). Ground the contrast in general institutional benchmarks (promotions, financial metrics, mortgages) and private emotional reality.
 
 - **HyperFrames Video Rendering Pipeline**:
   - Use HyperFrames (`npx hyperframes render` / skills under `.agents/skills`) to generate animated 9:16 vertical video Reels/Stories (`.mp4`) for high-impact social releases, craft prompts, or product teasers.
@@ -205,6 +288,7 @@ Rules (Mandatory by Default):
     - LinkedIn: `https://writon.cc/linkedin`
     - Reddit: `https://writon.cc/reddit`
     - Medium: `https://writon.cc/medium`
+    - Google Play: `https://writon.cc/play` (aliases: `https://writon.cc/app`, `https://writon.cc/android`)
   - **New Link Rule**: Whenever any new official profile, publication, or campaign destination is introduced, it must be registered as a `writon.cc/:slug` vanity redirect in `server/src/routes/vanity-redirects.js` and `firebase.json` rather than exposing raw external URLs.
 - **Social Media Strategy & Cross-Agent Sync Document**:
   - Full operating procedures, slot timings, hashtag rules, and synchronization contracts are maintained in [`campaign/SOCIAL_STRATEGY.md`](file:///d:/VibeCode/WritOn-PowerUp/campaign/SOCIAL_STRATEGY.md). All AI agents must consult this doc to maintain 100% synchronization across conversations.

@@ -121,3 +121,21 @@ Derived from WritOn's official morning/midnight craft visual gallery:
 - **Voiceover Rule**:
   - Keep voiceover focused on the craft truth itself without begging or speaking long generic outro pitches; let the on-screen kinetic card, description link, and pinned comment carry the subscription conversion cleanly.
 
+### 3.7 Retention Telemetry & Pacing Protocol (Derived from Short #18 Performance)
+- **Empirical Baseline (Short #18 "Kill Filter Words")**:
+  - Views: 113 (vs 30–80 typical).
+  - Stayed to Watch: **25.93%** (vs 13.8%–18.1% typical).
+  - 0:00–4.5s Retention: **> 100%** (strong initial hook & re-reading of concrete flawed example).
+  - 5.0–9.0s Drop-off: Dropped from 100% to ~46% when single rewrite was unveiled.
+  - 14.0–20.0s Tail Drop-off: Tapered to 7.7% during prolonged abstract rule explanation.
+- **Mandatory Production Directives for Next Shorts**:
+  1. **Dual-Beat / Rapid 2nd Example (Combat 5s–9s Drop-Off)**:
+     - Never spend 6+ seconds lingering on a single simple solution. Once the first contrast lands, immediately trigger a second rapid 'before & after' example (e.g., *“She felt the cold wind” → “The icy wind bit her skin”*).
+     - Multiple rapid micro-comparisons maintain active engagement and curiosity rather than letting the reader feel they have already extracted the lesson.
+  2. **Tightened Micro-Short Duration (10–14s Target for Single Rules)**:
+     - For standalone micro-tips, trim spoken and visual duration to 10–14 seconds rather than stretching to 20+ seconds.
+     - Cut trailing abstract summaries (*"Let the reader hear it directly"*). End immediately on the punchy craft contrast and a crisp 2–3s subscription hold to force automatic, high-retention looping.
+  3. **Preserve Frame-Zero Concrete Hook**:
+     - Retain the bold, high-contrast hook text + concrete example right at 0:00 (which drove the >100% 4.5s retention and 25.9% watch rate).
+
+
