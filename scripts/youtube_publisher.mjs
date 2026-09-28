@@ -32,6 +32,7 @@ function parseArgs() {
     dryRun: false,
     privacyStatus: 'public',
     publishAt: null,
+    comment: null,
   };
 
   for (const arg of args) {
@@ -42,6 +43,7 @@ function parseArgs() {
     else if (arg.startsWith('--desc=')) options.description = arg.split('=')[1];
     else if (arg.startsWith('--privacy=')) options.privacyStatus = arg.split('=')[1];
     else if (arg.startsWith('--publish-at=')) options.publishAt = arg.split('=')[1];
+    else if (arg.startsWith('--comment=')) options.comment = arg.split('=').slice(1).join('=');
   }
   return options;
 }
@@ -142,6 +144,19 @@ async function main() {
   console.log('✅ Video published successfully!');
   console.log('🔗 URL:', result.url);
   console.log('🆔 Video ID:', result.videoId);
+
+  if (options.comment) {
+    console.log('💬 Posting discussion comment...');
+    const commentRes = await client.addComment({
+      videoId: result.videoId,
+      text: options.comment,
+    });
+    if (commentRes.success) {
+      console.log('📌 Comment posted successfully:', commentRes.commentId);
+    } else {
+      console.warn('⚠️ Could not post first comment:', commentRes.error);
+    }
+  }
 
   await recordHistory(result.videoId, title, options.day);
 }

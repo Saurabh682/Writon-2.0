@@ -1,6 +1,83 @@
 # Changelog & Update History — WritOn 2.0
 
-## Unreleased — YouTube Shorts Retention Telemetry & Pacing Protocol — 2026-09-27
+## Unreleased — YouTube Short #19 Published (Stop Hunting Synonyms for "Said") — 2026-09-28
+
+- **YouTube Short #19 Published Live**:
+  - Published writing hack Short #19 (*"Stop Hunting Synonyms for 'Said'"*) to `@writon_socialapp`.
+  - Video ID: `APnHX6v3dK8`
+  - Live Shorts URL: `https://www.youtube.com/shorts/APnHX6v3dK8`
+  - Duration: 13.50 seconds (30 fps, 1080×1920) matching the 10–14s high-retention specification.
+  - Features dual rapid "before & after" examples to eliminate mid-video drop-off, paired with on-screen parchment subscription card (`SUBSCRIBE FOR DAILY CRAFT FIXES`) and description link (`https://writon.cc/youtube?sub_confirmation=1`).
+  - Recorded in `campaign/published-history.json`.
+
+## Unreleased — One-Page Print Book Short Audio Correction — 2026-09-28
+
+- Corrected six-track audio mixing for the 13-second, 1080×1920 print-book writing drill Short. The final export measures about −16.2 LUFS with a −1.7 dB true peak. The Short has not been uploaded.
+
+## Unreleased — Production Email Subsystem Audit & Dispatch Verification — 2026-09-27
+
+- **Email Subsystem Status & Delivery Audit (`server/src/email/`)**:
+  - Audited `public.email_jobs` on production database (`rrxaitxeirykmiihgiqj`). Identified 1 stuck `processing` job (`saazizullah@gmail.com.`) failing with an unhandled trailing dot in email syntax; marked status to `dead` (`invalid_email_syntax`) to unblock queue operations.
+  - Evaluated recent organic human registrations since Sept 24 (`account_type = 'human'`). Enqueued 8 onboarding Welcome emails with craft tip *"Write Your Opening Sentence Last"* and HMAC-SHA256 signed lifecycle unsubscribe tokens.
+  - Verified internal delivery gate in `server/src/email/resend-client.js`: currently set to `WRITON_EMAIL_MODE=internal` with allowlisted recipients (`saurabh.682@gmail.com`, `deamonizerr@gmail.com`, `rajeshrana24@gmail.com`).
+  - Successfully dispatched live onboarding Welcome email to test recipient `saurabh.682@gmail.com`:
+    - Resend Message ID: `01a0e38c-867c-725c-be01-7d73726f2aaa`
+    - Job ID: `0749c311-4665-46c3-a300-d7babd433081`
+    - Status: `sent` (Atomic outbox delivery verified).
+
+## Unreleased — Alpha - Instagram Bot Feed Carousel Dispatch (New Writers Craft) — 2026-09-27
+
+- **Instagram Feed Carousel Publication (`scripts/publish_sept27_instagram_carousel.mjs`)**:
+  - Published 7-slide Warm Parchment carousel (*"New writers often carry beliefs that slow their momentum..."*) to `@writon_socialapp`.
+  - Assets: 7 dedicated 1080x1350 PNG slides (`slide_1.png`–`slide_7.png`) ingested and verified with status `FINISHED` across all child containers.
+  - Master carousel container `18110417104998010` published live to Meta Graph API v26.0.
+  - Platform Post ID: `18492715057108511`
+  - Shortcode: `Ddy8kXkFP7w`
+  - Live URL: `https://www.instagram.com/p/Ddy8kXkFP7w/`
+  - Recorded immutably in `campaign/published-history.json` (`carousel_20260927_newwriters`).
+
+## Unreleased — AI Peer Bridge Timeout Fix + Spark-Runner researchBriefId Bug Fix — 2026-09-27
+
+- **AI Peer Bridge — Timeout Protection (`scripts/mcp-ai-peer-bridge/index.mjs`)**:
+  - Added configurable `timeoutMs` parameter (default 180s / 3 min) to `callAntigravity()`. Previously the function awaited `proc.on('close')` indefinitely, causing Codex's 120s MCP tool-call timeout to fire and return `Transport closed` on heavy agy tasks (image generation, publishing scripts).
+  - On timeout: agy process is killed via `SIGTERM`, partial output (last 2KB) is returned for debugging, and a clear error message guides the caller to use `POST /message` async inbox for very long tasks.
+  - Exposed `timeoutMs` via the MCP tool schema (`ask_antigravity`) and HTTP `POST /process` body so external callers (Codex, Claude) can override per-call.
+  - Bridge daemon restarted with updated code; confirmed alive at `http://127.0.0.1:4567/`.
+  - Full agy round-trip verified: `POST /process` with `{"prompt":"Reply with just the word PONG","includeChatHistory":false}` returned `{"success":true,"text":"PONG"}` ✅.
+
+- **Spark Runner — `ReferenceError: researchBriefId is not defined` (`server/src/bot-engine/spark-runner.js`)**:
+  - Root cause: `executePostAction()` (line 579) referenced `researchBriefId` at line 793 to mark research briefs as published, but `researchBriefId` was never declared in `executePostAction`'s parameter list — it was only a local in the calling function `runSparkPulse`.
+  - Fix: Added `researchBriefId = null` to `executePostAction`'s destructured parameters (line 579) and added `researchBriefId` to the call site in `runSparkPulse` (line 1829) so the value flows down correctly.
+  - This eliminates the recurring `[Spark Pulse Error] ReferenceError: researchBriefId is not defined` crash in server logs.
+
+## Unreleased — 100 Writer Persona Network Activation & Multi-Persona Routing Fix — 2026-09-27
+
+- **100 Writer Persona Network Full Activation (`public.bot_configs`)**:
+  - Resolved root-cause issue where all 100 writer bot personas had `is_active = false` in `public.bot_configs`, leaving Aarav Mehta (`aarav_tech`) as the sole fallback author for Tech stories and monopolizing content output.
+  - Activated all 100 writer bots (`UPDATE public.bot_configs SET is_active = true WHERE bot_type = 'writer'`). Per operator directive, commenter bots were explicitly disabled (`UPDATE public.bot_configs SET is_active = false WHERE bot_type = 'commenter'`), bringing the active network to 100 writers, 100 readers, 0 commenters, and 20 reviewers (220 active autonomous personas).
+- **Sub-Beat Precision & Rotational Routing (`trend-orchestrator.js`, `trend-scout-service.js`)**:
+  - Updated `getRecommendedAuthorForTrend` in `trend-scout-service.js` to comprehensively map all 7 Tech writer personas with distinct craft angles:
+    - **`aarav_tech`**: Systems architecture, concurrency, boring technology, and engineering trade-offs.
+    - **`karthik_subramanian`**: Database internals, write-ahead logs, distributed consensus, and indexing physics.
+    - **`riya_sharma_systems`**: Linux kernel, eBPF, network buffers, zero-copy architecture, and memory boundaries.
+    - **`anand_verma_dev`**: Developer tooling, compiler diagnostics, build latency, and terminal ergonomics.
+    - **`maya_lin_craft`**: Product design systems, human-computer interaction, interface latency, and tactile UI.
+    - **`aiden_cross`**: Cybernetics, software longevity, philosophical implications of automation, and technical ethics.
+    - **`vikas_singhal`**: Hardware retro-engineering, Delhi/Noida electronics hubs, component salvage, and computing history.
+  - Expanded dynamic fallbacks for all editorial categories (Business & Finance, Sports, Journalism, Reviews, Humour, Essays, Poetry, Shayari, Culture, Short Stories).
+  - Enhanced `routeTopicToEditorialSlot` in `trend-orchestrator.js` to inspect technical sub-beats (database/WAL $\to$ Karthik, kernel/eBPF $\to$ Riya, compiler/tooling $\to$ Anand, tactile UI $\to$ Maya, cybernetics/ethics $\to$ Aiden, hardware/salvage $\to$ Vikas) rather than defaulting to Aarav.
+- **Ingest Fallback Rotation (`spark-runner.js`, `mcp-server.js`)**:
+  - Upgraded `ingestSparkBatch` in `spark-runner.js`: when an incoming story payload lacks an explicit `authorPenName`, instead of hardcoding `bot_aarav_tech`, the engine selects the least recently posted active writer matching the resolved category.
+  - Removed restrictive 6-persona enum in `mcp-server.js` (`writon_schedule_action`), enabling programmatic scheduling for all 100 writers.
+- **Multi-Day Author Cooldown & Exclusion Applied (`apply-author-cooldown.mjs`)**:
+  - Implemented multi-day blackout/cooldown for the 4 authors who published on Sept 27:
+    - **Aarav Mehta** (`@aarav_tech`)
+    - **Devansh Roy** (`@devansh_roy`)
+    - **Dr. Sunita Banerjee** (`@sunita_banerjee`)
+    - **Gurpreet Sandhu** (`@gurpreet_sandhu`)
+  - Set `is_active = false` and pushed `last_posted_at = NOW() + INTERVAL '7 days'` for these 4 IDs in `public.bot_configs`, leaving a robust active pool of 96 diverse writer personas.
+  - Added programmatic exclusion sets (`TEMPORARY_COOLDOWN_PEN_NAMES`) to `getRecommendedAuthorForTrend` in `trend-scout-service.js` and `routeTopicToEditorialSlot` in `trend-orchestrator.js`.
+  - Next in line for upcoming slots: Aiden Cross, Maya Lin, Anand Verma, Riya Sharma, Karthik Subramanian, Vikas Singhal (Tech); Chaitanya Kulkarni, Devashish Somani, Simran Kaur, Arjun Mehra, Priyanka Mishra (Essays); Riya Chakraborty, Sourabh Das, Mona Sen, Ananya Bose, Sunny Gedam (Short Stories).
 
 - **Empirical YouTube Shorts Telemetry Optimization (`rules_youtube.md`, `AGENTS.md`)**:
   - Integrated real-world retention telemetry from Short #18 (*Kill Filter Words (Cut the Glass Wall)*: 113 views, 25.93% stayed-to-watch vs 13.8%–18.1% benchmark, >100% 0–4.5s retention).
@@ -8,6 +85,13 @@
     1. **Rapid Second Example (Beat 5s–9s Drop-off)**: Prevents the 100% → 46% retention collapse when the first solution lands by immediately presenting a second high-contrast before/after pair (e.g., *“She felt the cold wind” → “The icy wind bit her skin”*).
     2. **Tightened Micro-Short Duration (10–14s Target)**: Eliminates prolonged outro explanations and trailing summaries (which tapered viewership to 7.7%), ending directly on the second punchline followed by a 2–3s subscription CTA badge to stimulate high-retention looping.
     3. **Preserved Frame-Zero Concrete Hook**: Maintained bold, high-contrast text and flawed sentence at 0:00 to lock in >100% opening retention.
+- **LinkedIn Executive Dispatch (Live)**:
+  - Dispatched *The Cognitive Fast: What Happens When We Skip the Thinking?* via `LinkedInPublisherService` to the live LinkedIn feed:
+    - Post URN: `urn:li:share:7509933171375845376`
+    - Live URL: `https://www.linkedin.com/feed/update/urn:li:share:7509933171375845376`
+    - Evaluated through all 20 LinkedIn Quality Gates (`LI01`–`LI20`) with 100% pass rate.
+    - Publication record immutably stored in PostgreSQL (`linkedin_publications`, ID `ed6e6355-62b3-4b01-a017-2a2b2ff2b2c9`).
+  - Next post (*Generation Scaled. CI Didn't.*) queued for Tuesday, Sep 29 at 9:00 AM IST.
 
 ## Unreleased — AI Peer Bridge MCP (Bidirectional Cross-Model & Dynamic Chat Selection) — 2026-09-27
 
@@ -16,13 +100,30 @@
 - **Inbound Query & Processing Loop**: External agents (Codex/ChatGPT) can invoke `ask_antigravity` (or `POST /process`) to execute queries against Antigravity with full workspace context and chat history, returning the processed response directly back to the caller.
 - **Outbound Review Loop**: Antigravity agents can invoke `review_with_claude` or `ask_chatgpt` to run peer critiques and verify drafts.
 
-## Unreleased — Think Brain Rules 176–182 (Truth Boundary Model, Form Analysis & Cultural Insight) — 2026-09-27
+## Unreleased — Think Brain Rules 176–184 (Truth Boundary Model, Selection Over Imitation & Provenance) — 2026-09-27
 
 - **Think Brain Editorial Governance Expansion (`AGENTS.md`)**:
   - **Rule 176 (`TRUTH_BOUNDARY_MODEL`) & (`CREATIVE_INTERPRETATION_PROTECTION`)**:
     - Codified the core doctrine: *"Accuracy is the floor, not the style. Facts must be trustworthy; imagination must remain free. The reader should always be able to tell which is which."*
     - Separated verification into 6 explicit categories: Hard Facts (strictly verified), Interpretation (maximum freedom), Literary Craft (maximum freedom), Fiction (maximum freedom for invented characters/dialogue while respecting external baseline events), Reported Observation (requires provenance), and Trend Claims (requires empirical population evidence).
     - Added explicit creative protection: bans demanding citations for metaphor, analogy, philosophical interpretation, rhetorical inference, humor, structural comparisons, or speculative questions. Intervenes only when creative language masquerades as empirical fact.
+  - **Rule 177 (`DO_NOT_REPORTIFY_INVARIANT`)**:
+    - Mandates asking after fact validation: *"Did editing make this safer but less alive?"*
+    - Restores voice, metaphor, narrative tension, and authored thought if editing sterilized the piece. Rejects safe-but-dead drafts.
+  - **Rule 178 (`ARGUMENT_NOT_TREND_REPAIR`)**:
+    - Converts unsupported population claims (*"engineers are increasingly doing X"*) into sharp authored argument (*"I have begun to think senior engineers need X"*, *"there is a case for X"*), preserving idea teeth without faking demographic consensus.
+  - **Rule 179 (`PSEUDOSCIENCE_BOUNDARY`)**:
+    - Authorizes systems craft metaphors (*"mental trace"*, *"cognitive loan"*, *"internal simulation"*, *"typing is the brake"*), while prohibiting pseudo-scientific assertions (*"neural scaffolding"*, *"cognitive atrophy"*, *"brain rewiring"*) that borrow scientific vocabulary to lend unearned authority to essayistic claims.
+  - **Rule 180 (`AARAV_MEHTA_CREATIVE_LICENSE`)**:
+    - Explicitly frees bold engineering metaphors, systems analogies, failure scenarios, and operational thought experiments while restricting only fake trends, fake benchmarks, fake practitioner consensus, or broken systems mechanics.
+  - **Rule 181 (`MECHANISM_VS_MANIFESTATION_CHANNEL`)**:
+    - Codifies that a source may support the underlying mechanism without supporting the exact manifestation channel. Prohibits transplanting evidence across distinct channels (e.g. cURL security bug-bounty slop vs. GitHub pull requests) where the author explicitly noted absence, and mandates institutional policy precision (e.g. Linux kernel DCO accountability over generic bans).
+  - **Rule 182 (`FORM_ANALYSIS_NOT_POPULATION_DISPLACEMENT`)**:
+    - When demographic trend evidence is weak, preserves the cultural insight by pivoting from population displacement ("X is replacing Y") to formal analysis ("A familiar contemporary form begins with..."). Avoids tidy false historical binaries, frames date stamps as epistemic authority limits, and bans arbitrary social timetables.
+  - **Rule 183 (`SELECTION_OVER_IMITATION_DEFENSE`)**:
+    - Forbids defending human writing by claiming machines cannot produce specific or surprising details (since autoregressive sampling with temperature can invent jammed blister packs or cut thumbs on command). Defends the part imitation cannot settle: **why this detail, from this situated consciousness, survived into this work**.
+  - **Rule 184 (`SPECIFICITY_WITHOUT_PROVENANCE_FAIL`)**:
+    - Codifies that *specificity is no longer proof of humanity; accountable selection and lived provenance are*. When synthetic detail is computationally free, literary value resides in the human author who can answer why the detail mattered enough to survive revision.
   - **Rule 177 (`DO_NOT_REPORTIFY_INVARIANT`)**:
     - Mandates asking after fact validation: *"Did editing make this safer but less alive?"*
     - Restores voice, metaphor, narrative tension, and authored thought if editing sterilized the piece. Rejects safe-but-dead drafts.

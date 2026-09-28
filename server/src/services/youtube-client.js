@@ -451,6 +451,45 @@ export class YouTubeClient {
       averageViewPercentage: row[3] || 0,
     };
   }
+
+  /**
+   * Adds a top-level comment to a video.
+   * @param {Object} params
+   * @param {string} params.videoId
+   * @param {string} params.text
+   */
+  async addComment({ videoId, text }) {
+    if (!videoId || !text) throw new Error('videoId and text are required for addComment');
+    const cleanId = videoId.replace(/^.*[=/]/, '');
+
+    const res = await this.request('/commentThreads?part=snippet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        snippet: {
+          videoId: cleanId,
+          topLevelComment: {
+            snippet: {
+              textOriginal: text,
+            },
+          },
+        },
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      this.log?.warn?.(`[YouTubeClient] Failed to post comment (${res.status}): ${err}`);
+      return { success: false, error: err };
+    }
+
+    const data = await res.json();
+    return {
+      success: true,
+      commentId: data.id,
+      text: data.snippet?.topLevelComment?.snippet?.textOriginal,
+    };
+  }
 }
 
 

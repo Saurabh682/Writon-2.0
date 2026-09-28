@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>WritOn — Writing Hack #19: Stop Hunting Synonyms for "Said"</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background-color: #3b2014;
+        font-family: 'Playfair Display', Georgia, serif;
+        color: #0E0C0A;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+      }
+
+      /* Background Desk Texture */
+      .desk-photo {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+        background-image: url('assets/desk_coffee_card_nobox_4k.jpg');
+        background-size: cover;
+        background-position: center;
+        z-index: 1;
+      }
+
+      .warm-ambient {
+        position: absolute;
+        top: -50px;
+        right: -50px;
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, rgba(255, 230, 190, 0.12) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      /* Left Margin Red Rule */
+      .card-left-rule {
+        position: absolute;
+        left: 122px;
+        top: 172px;
+        height: 1488px;
+        width: 3px;
+        background-color: #821D1A;
+        z-index: 5;
+        border-radius: 2px;
+      }
+
+      /* Header Row */
+      .card-header {
+        position: absolute;
+        top: 172px;
+        left: 155px;
+        width: 770px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 5;
+      }
+
+      .inversion-pill {
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        padding: 7px 18px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .brand-mark {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 46px;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -0.5px;
+      }
+      .brand-mark em {
+        font-style: italic;
+        color: #7D1B17;
+      }
+
+      /* =========================================
+         STAGE 1: FRAME-0 HOOK
+         ========================================= */
+      .hook-layer {
+        position: absolute;
+        top: 480px;
+        left: 155px;
+        width: 770px;
+        z-index: 10;
+      }
+
+      .hook-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 58px;
+        line-height: 1.1;
+        font-weight: 900;
+        letter-spacing: -1.2px;
+        color: #0E0C0A;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      .hook-subtitle {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 34px;
+        font-style: italic;
+        font-weight: 700;
+        color: #7D1B17;
+      }
+
+      /* =========================================
+         STAGE 2: EXAMPLE 1 (2.20s - 6.60s)
+         ========================================= */
+      .example1-layer {
+        position: absolute;
+        top: 460px;
+        left: 155px;
+        width: 770px;
+        z-index: 12;
+        opacity: 0;
+      }
+
+      .example2-layer {
+        position: absolute;
+        top: 460px;
+        left: 155px;
+        width: 770px;
+        z-index: 12;
+        opacity: 0;
+      }
+
+      .pill-row {
+        margin-bottom: 24px;
+      }
+
+      .bad-pill {
+        background-color: #7D1B17;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        padding: 6px 16px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .good-pill {
+        background-color: #2D5A27;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        padding: 6px 16px;
+        border-radius: 8px;
+        text-transform: uppercase;
+        display: inline-block;
+      }
+
+      .sentence-block {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 44px;
+        line-height: 1.35;
+        font-weight: 700;
+        color: #1A1613;
+        margin-bottom: 30px;
+      }
+
+      .flawed-text {
+        position: relative;
+        display: inline-block;
+        padding: 0 4px;
+      }
+
+      .hl-bad {
+        position: absolute;
+        inset: 4px -2px 2px -2px;
+        background-color: #F8D7DA;
+        border-radius: 4px;
+        transform: scaleX(0);
+        transform-origin: left center;
+        z-index: 1;
+      }
+
+      .hl-bad-text {
+        position: relative;
+        z-index: 2;
+        color: #7D1B17;
+        font-weight: 800;
+      }
+
+      .action-beat-text {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 46px;
+        line-height: 1.3;
+        font-weight: 800;
+        color: #0E0C0A;
+      }
+      .action-beat-text em {
+        font-style: italic;
+        color: #2D5A27;
+      }
+
+      .red-divider {
+        width: 140px;
+        height: 3px;
+        background-color: #7D1B17;
+        margin-bottom: 28px;
+        border-radius: 2px;
+        transform: scaleX(0);
+        transform-origin: left center;
+      }
+
+      .action-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        color: #7D1B17;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+      }
+
+      /* =========================================
+         STAGE 4: RULE & SUBSCRIPTION END-CARD (11.20s - 13.5s)
+         ========================================= */
+      .endcard-layer {
+        position: absolute;
+        top: 450px;
+        left: 155px;
+        width: 770px;
+        z-index: 15;
+        opacity: 0;
+      }
+
+      .rule-box {
+        margin-bottom: 44px;
+      }
+
+      .rule-headline {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 54px;
+        line-height: 1.15;
+        font-weight: 900;
+        color: #0E0C0A;
+        letter-spacing: -1px;
+        margin-bottom: 12px;
+      }
+
+      .rule-sub {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 36px;
+        font-style: italic;
+        font-weight: 700;
+        color: #7D1B17;
+      }
+
+      /* Dedicated Channel Subscription End-Card Badge */
+      .sub-card {
+        background: rgba(250, 245, 238, 0.96);
+        border: 2px solid #821D1A;
+        box-shadow: 0 16px 36px rgba(60, 30, 15, 0.15);
+        border-radius: 16px;
+        padding: 34px 30px;
+        text-align: center;
+      }
+
+      .sub-bell-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background-color: #821D1A;
+        color: #FFFFFF;
+        font-size: 26px;
+        margin-bottom: 16px;
+      }
+
+      .sub-title {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 24px;
+        font-weight: 900;
+        letter-spacing: 2.5px;
+        color: #821D1A;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      .sub-channel {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 32px;
+        font-weight: 800;
+        color: #0E0C0A;
+        letter-spacing: -0.5px;
+        margin-bottom: 16px;
+      }
+
+      .sub-badge {
+        display: inline-block;
+        background-color: #0E0C0A;
+        color: #FAF5EE;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        padding: 10px 24px;
+        border-radius: 30px;
+        text-transform: uppercase;
+      }
+
+      /* Footer Row */
+      .card-footer {
+        position: absolute;
+        bottom: 172px;
+        left: 155px;
+        width: 770px;
+        z-index: 5;
+      }
+
+      .footer-line {
+        height: 1px;
+        background-color: rgba(130, 29, 26, 0.25);
+        margin-bottom: 22px;
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        color: #7D1B17;
+      }
+
+      .footer-dots {
+        display: flex;
+        gap: 8px;
+      }
+
+      .footer-dot-sand {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #CBB99D;
+      }
+
+      .footer-dot-crimson {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #821D1A;
+      }
+
+      .footer-url {
+        letter-spacing: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      class="clip"
+      data-fps="30"
+      data-duration="13.5"
+      data-width="1080"
+      data-height="1920"
+    >
+      <div class="desk-photo"></div>
+      <div class="warm-ambient"></div>
+      <div class="card-left-rule"></div>
+
+      <!-- Header Row -->
+      <div class="card-header">
+        <div class="inversion-pill">Writing Hack #19</div>
+        <div class="brand-mark">Writ<em>On</em></div>
+      </div>
+
+      <!-- STAGE 1: 0.00s - 2.15s FRAME-ZERO CONCRETE HOOK -->
+      <div class="hook-layer" id="hookLayer">
+        <div class="hook-title">STOP HUNTING SYNONYMS FOR “SAID”.</div>
+        <div class="hook-subtitle" id="hookSub">replace tags with action</div>
+      </div>
+
+      <!-- STAGE 2: 2.20s - 6.60s EXAMPLE 1 (EXCLAIMED DEFENSIVELY) -->
+      <div class="example1-layer" id="ex1Layer">
+        <div class="pill-row" id="ex1BadPill">
+          <span class="bad-pill">Decorative Tag</span>
+        </div>
+        <div class="sentence-block" id="ex1BadSentence">
+          “I’m fine,”
+          <span class="flawed-text">
+            <span class="hl-bad" id="ex1HlBad"></span>
+            <span class="hl-bad-text">she exclaimed defensively.</span>
+          </span>
+        </div>
+
+        <div class="pill-row" id="ex1GoodPill" style="opacity: 0;">
+          <span class="good-pill">The Action Beat</span>
+        </div>
+        <div class="action-beat-text" id="ex1GoodSentence" style="opacity: 0;">
+          “I’m fine.” <em>She wiped the counter again.</em>
+        </div>
+      </div>
+
+      <!-- STAGE 3: 6.75s - 11.00s EXAMPLE 2 (WHISPERED NERVOUSLY) -->
+      <div class="example2-layer" id="ex2Layer">
+        <div class="pill-row" id="ex2BadPill">
+          <span class="bad-pill">Adverb Crutch</span>
+        </div>
+        <div class="sentence-block" id="ex2BadSentence">
+          “Wait,”
+          <span class="flawed-text">
+            <span class="hl-bad" id="ex2HlBad"></span>
+            <span class="hl-bad-text">he whispered nervously.</span>
+          </span>
+        </div>
+
+        <div class="pill-row" id="ex2GoodPill" style="opacity: 0;">
+          <span class="good-pill">The Physical Beat</span>
+        </div>
+        <div class="action-beat-text" id="ex2GoodSentence" style="opacity: 0;">
+          “Wait.” <em>His hand gripped the keys in his pocket.</em>
+        </div>
+      </div>
+
+      <!-- STAGE 4: 11.15s - 13.50s CRAFT RULE + SUBSCRIPTION END-CARD -->
+      <div class="endcard-layer" id="endCardLayer">
+        <div class="rule-box">
+          <div class="rule-headline">“SAID” DISAPPEARS.</div>
+          <div class="rule-sub">A beat of action stays.</div>
+        </div>
+
+        <div class="sub-card">
+          <div class="sub-bell-icon">🔔</div>
+          <div class="sub-title">Subscribe For Daily Craft Fixes</div>
+          <div class="sub-channel">@writon_socialapp</div>
+          <div class="sub-badge">Subscribe ↗</div>
+        </div>
+      </div>
+
+      <!-- Footer Row -->
+      <div class="card-footer">
+        <div class="footer-line"></div>
+        <div class="footer-content">
+          <div class="footer-handle">@writon_app</div>
+          <div class="footer-dots">
+            <div class="footer-dot-sand"></div>
+            <div class="footer-dot-crimson"></div>
+          </div>
+          <div class="footer-url">writon.cc ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Frame 0 setup
+      gsap.set("#hookSub", { opacity: 0, y: 15 });
+
+      // 0.80s: Subtitle drops in under frame-zero hook
+      tl.to("#hookSub", { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.80);
+
+      // 2.10s: Hook fades out cleanly
+      tl.to("#hookLayer", { opacity: 0, y: -15, duration: 0.20, ease: "power2.inOut" }, 2.10);
+
+      // 2.20s: CLICK! EXAMPLE 1 ENTERS (Nicole: "I'm fine, she exclaimed defensively.")
+      tl.to("#ex1Layer", { opacity: 1, duration: 0.05 }, 2.20)
+        .to("#ex1BadPill", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 2.20)
+        .to("#ex1BadSentence", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 2.20);
+
+      // 3.10s: Highlight flashes over "she exclaimed defensively"
+      tl.to("#ex1HlBad", { scaleX: 1, duration: 0.25, ease: "power2.out" }, 3.10);
+
+      // 4.35s: CLICK! Rewrite 1 snaps into view (Nicole: "I'm fine. She wiped the counter again.")
+      tl.fromTo("#ex1GoodPill", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.25, ease: "back.out(1.3)" }, 4.35)
+        .fromTo("#ex1GoodSentence", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.30, ease: "power3.out" }, 4.35);
+
+      // 6.60s: Example 1 fades out
+      tl.to("#ex1Layer", { opacity: 0, y: -15, duration: 0.20, ease: "power2.inOut" }, 6.60);
+
+      // 6.75s: CLICK! EXAMPLE 2 ENTERS (Nicole: "Wait, he whispered nervously.")
+      tl.to("#ex2Layer", { opacity: 1, duration: 0.05 }, 6.75)
+        .to("#ex2BadPill", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 6.75)
+        .to("#ex2BadSentence", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 6.75);
+
+      // 7.45s: Highlight flashes over "he whispered nervously"
+      tl.to("#ex2HlBad", { scaleX: 1, duration: 0.25, ease: "power2.out" }, 7.45);
+
+      // 8.65s: CLICK! Rewrite 2 snaps into view (Nicole: "Wait. His hand gripped the keys in his pocket.")
+      tl.fromTo("#ex2GoodPill", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.25, ease: "back.out(1.3)" }, 8.65)
+        .fromTo("#ex2GoodSentence", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.30, ease: "power3.out" }, 8.65);
+
+      // 10.95s: Example 2 fades out
+      tl.to("#ex2Layer", { opacity: 0, y: -15, duration: 0.20, ease: "power2.inOut" }, 10.95);
+
+      // 11.15s: CLICK! STAGE 4 CRAFT RULE + END-CARD BADGE POP
+      // Nicole: "Said disappears. Action stays."
+      tl.to("#endCardLayer", { opacity: 1, duration: 0.05 }, 11.15)
+        .fromTo("#endCardLayer .rule-headline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.30, ease: "power3.out" }, 11.15)
+        .fromTo("#endCardLayer .rule-sub", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.30, ease: "power3.out" }, 11.35)
+        .fromTo("#endCardLayer .sub-card", { opacity: 0, scale: 0.92, y: 20 }, { opacity: 1, scale: 1.0, y: 0, duration: 0.40, ease: "back.out(1.4)" }, 11.55);
+
+      // 13.50s: Seamless breathing camera scale
+      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.015, duration: 13.5, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

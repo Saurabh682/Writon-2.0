@@ -1229,5 +1229,28 @@
       "publishedAt": "2026-09-25T15:16:58.352Z",
       "title": "Writing Hack #18 (Story)"
     }
+  },
+  "carousels": {
+    "carousel_20260927_newwriters": {
+      "id": "carousel_20260927_newwriters",
+      "platform": "instagram",
+      "surface": "feed_carousel",
+      "igMediaId": "18492715057108511",
+      "shortcode": "Ddy8kXkFP7w",
+      "permalink": "https://www.instagram.com/p/Ddy8kXkFP7w/",
+      "carouselContainerId": "18110417104998010",
+      "childContainerIds": [
+        "18110416750998010",
+        "18110416795998010",
+        "18110416888998010",
+        "18110416927998010",
+        "18110416954998010",
+        "18110417005998010",
+        "18110417035998010"
+      ],
+      "slideCount": 7,
+      "publishedAt": "2026-09-27T15:36:37.962Z",
+      "title": "New Writers: 5 Beliefs to Outgrow"
+    }
   }
 }

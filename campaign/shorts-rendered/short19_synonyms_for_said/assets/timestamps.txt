@@ -1,0 +1,6 @@
+0.15|2.01|Stop hunting synonyms for said.
+2.20|4.74|I'm fine, she exclaimed defensively.
+4.40|7.24|I'm fine. She wiped the counter again.
+6.80|8.66|Wait, he whispered nervously.
+8.70|11.58|Wait. His hand gripped the keys in his pocket.
+11.20|13.40|Said disappears. Action stays.
