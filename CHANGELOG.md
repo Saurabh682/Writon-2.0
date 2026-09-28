@@ -1,6 +1,6 @@
 # Changelog & Update History — WritOn 2.0
 
-## Unreleased — YouTube Short #19 Published (Stop Hunting Synonyms for "Said") — 2026-09-28
+## Unreleased — Social Media Publications: Short #19 on YouTube & Instagram — 2026-09-28
 
 - **YouTube Short #19 Published Live**:
   - Published writing hack Short #19 (*"Stop Hunting Synonyms for 'Said'"*) to `@writon_socialapp`.
@@ -9,6 +9,18 @@
   - Duration: 13.50 seconds (30 fps, 1080×1920) matching the 10–14s high-retention specification.
   - Features dual rapid "before & after" examples to eliminate mid-video drop-off, paired with on-screen parchment subscription card (`SUBSCRIBE FOR DAILY CRAFT FIXES`) and description link (`https://writon.cc/youtube?sub_confirmation=1`).
   - Recorded in `campaign/published-history.json`.
+
+- **Instagram Reel & Story Published Live (`scripts/publish_short19_instagram.mjs`)**:
+  - Published writing hack Short #19 as both a permanent **Reel** and an active **Story** to `@writon_socialapp`.
+  - **Instagram Reel**:
+    - Media ID: `18129224308785765`
+    - Shortcode: `Dd0ODVGleEd`
+    - Live URL: `https://www.instagram.com/reel/Dd0ODVGleEd/`
+    - Caption: Includes full craft rationale and dialogue before-and-after examples.
+  - **Instagram Story**:
+    - Media ID: `18107594021526770`
+    - Live URL: `https://www.instagram.com/stories/writon_socialapp/3995880979126495156`
+  - Both dispatches recorded in `campaign/published-history.json`.
 
 ## Unreleased — One-Page Print Book Short Audio Correction — 2026-09-28
 
