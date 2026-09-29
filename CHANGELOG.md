@@ -1,5 +1,19 @@
 # Changelog & Update History — WritOn 2.0
 
+## Unreleased — YouTube Short #20: Stop Writing "Suddenly" (Unlisted Upload) — 2026-09-29
+
+- **YouTube Short #20 Uploaded (Unlisted)**:
+  - Video ID: `_TS44Btw_n0`
+  - URL: `https://www.youtube.com/shorts/_TS44Btw_n0`
+  - Privacy Status: `unlisted`
+  - Topic: Writing Hack #20 — Stop Writing "Suddenly" (Surprise lives in placement; put the event last).
+  - Duration: 13.50 seconds (30 fps, 1080×1920).
+  - Features dual rapid "before & after" examples:
+    - *Example 1*: `Suddenly, the phone rang.` → `She reached for the tap when the phone rang.`
+    - *Example 2*: `Suddenly, the glass shattered.` → `The shelf tilted. The glass hit the floor.`
+  - Includes mandatory on-screen parchment subscription card (`SUBSCRIBE FOR DAILY CRAFT FIXES • @writon_socialapp`) and description subscription confirmation hook (`https://writon.cc/youtube?sub_confirmation=1`).
+  - Recorded in `campaign/published-history.json`.
+
 ## Unreleased — Instagram Reel & Story: The One-Page Print Book Drill — 2026-09-29
 
 - **Instagram Reel & Story Published Live (`scripts/publish_print_drill_instagram.mjs`)**:

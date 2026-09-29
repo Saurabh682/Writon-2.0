@@ -1,0 +1,6 @@
+0.15|1.43|Stop writing suddenly.
+2.10|3.61|Suddenly, the phone rang.
+4.25|6.66|She reached for the tap when the phone rang.
+6.70|8.53|Suddenly, the glass shattered.
+8.65|11.30|The shelf tilted. The glass hit the floor.
+11.20|12.39|Put the event last.
