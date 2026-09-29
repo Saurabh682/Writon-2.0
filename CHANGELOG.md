@@ -1,5 +1,19 @@
 # Changelog & Update History — WritOn 2.0
 
+## Unreleased — Instagram Reel & Story: The One-Page Print Book Drill — 2026-09-29
+
+- **Instagram Reel & Story Published Live (`scripts/publish_print_drill_instagram.mjs`)**:
+  - Published "The One-Page Print Book Drill for Better Verbs" (`youtube_short_one_page_print_drill.mp4`) as both a permanent **Reel** and an active **Story** to `@writon_socialapp`.
+  - **Instagram Reel**:
+    - Media ID: `17929983204167598`
+    - Shortcode: `Dd2xUaoFO4V`
+    - Live URL: `https://www.instagram.com/reel/Dd2xUaoFO4V/`
+    - Caption: Tactile slow-writing print habit drill with before-and-after verb sharpening examples.
+  - **Instagram Story**:
+    - Media ID: `18033362582667717`
+    - Live URL: `https://www.instagram.com/stories/writon_socialapp/3996599177978923539`
+  - Recorded in `campaign/published-history.json` (`reel_one_page_print_drill_20260929` & `story_one_page_print_drill_20260929`).
+
 ## Unreleased — Social Media Publications: Short #19 on YouTube & Instagram — 2026-09-28
 
 - **YouTube Short #19 Published Live**:
@@ -22,9 +36,20 @@
     - Live URL: `https://www.instagram.com/stories/writon_socialapp/3995880979126495156`
   - Both dispatches recorded in `campaign/published-history.json`.
 
+## Unreleased — One-Page Print Book Short YouTube Upload (Unlisted) — 2026-09-29
+
+- **Uploaded One-Page Print Book Drill to YouTube as Unlisted**:
+  - File: `campaign/youtube-genz-printbooks-20260927/youtube_short_one_page_print_drill.mp4`
+  - Video ID: `DP9-T9FJ0mM`
+  - Live Short URL: `https://www.youtube.com/shorts/DP9-T9FJ0mM`
+  - Title: `The One-Page Print Book Drill for Better Verbs #shorts`
+  - Privacy Status: `unlisted` (verified live on YouTube)
+  - Features 13-second tactical drill, before-and-after verb sharpening examples, on-screen subscription card, and channel subscription confirmation hook.
+  - Recorded in `campaign/published-history.json`.
+
 ## Unreleased — One-Page Print Book Short Audio Correction — 2026-09-28
 
-- Corrected six-track audio mixing for the 13-second, 1080×1920 print-book writing drill Short. The final export measures about −16.2 LUFS with a −1.7 dB true peak. The Short has not been uploaded.
+- Corrected six-track audio mixing for the 13-second, 1080×1920 print-book writing drill Short. The final export measures about −16.2 LUFS with a −1.7 dB true peak.
 
 ## Unreleased — Production Email Subsystem Audit & Dispatch Verification — 2026-09-27
 
