@@ -1,20 +1,68 @@
 # Changelog & Update History — WritOn 2.0
 
+## Unreleased — Hashtag Semantic Gate, Think Brain Cultural Gates & Story Remediations — 2026-10-04
+
+- **Hashtag Semantic Gate & Internal Vocabulary Blocklist (`watermark-service.js`)**:
+  - Implemented `INTERNAL_VOCABULARY_BLOCKLIST` to strictly prevent internal diagnostic terminology (`#modelmisalignment`, `#syntheticcliches`, `#reportingframework`, `#truthboundary`, `#aislop`, `#promptlanguage`, `#qualitygate`, `#newsletterfatigue`, etc.) from ever leaking into published story hashtags or syndication metadata.
+  - Added `isHashtagSemanticallyRelevant(tag, category, topic, themeKeyword)` with curated per-category domain keyword dictionaries (`CATEGORY_DOMAIN_SIGNALS`) across all 14 categories.
+  - Blocked cross-category trend signal leakage (e.g., stale Substack/newsletter creator fatigue signals injecting into unrelated Culture or Fiction stories).
+  - Wired blocklist sanitation into both `generateCategoryHashtags()` and `sanitizeHashtags()`.
+  - Added comprehensive test coverage in `server/test/watermark-service.test.js` (10/10 tests passing).
+
+- **Think Brain Cultural Quality Gates & Craft Validation (`gemini-spark-client.js`)**:
+  - `validateCulturalEthnographyGate` (`CULTURAL_ETHNOGRAPHY_GATE`): Detects and rejects counterfeit ethnography where invented familial lineage, gendered ritual rules, or bureaucratic interventions are presented as lived autobiographical history without documentation. Mandates reclassification under Short Stories / Cultural Fiction or verified provenance.
+  - `validateCulturalCausalityGate` (`CULTURAL_CAUSALITY_CHECK`): Flags and blocks simplistic "tradition healthy → modern intervention/phones → tradition dies" single-cause narratives. Requires competing pressures, younger agency, and domestic friction.
+  - `validateSymbolicSideAssignment` (`SYMBOLIC_SIDE_ASSIGNMENT_CHECK`): Enforces material conflict over cartoonish moral arithmetic. Requires legitimate practical trade-offs on both sides rather than assigning 100% virtue to tradition and 100% cynicism to modernity.
+  - `validateCraftTechnicalIntegrityGate` (`CRAFT_FICTION_TRUTH_BOUNDARY` & `TECHNICAL_METAPHOR_CHECK`): Enforces metallurgical and physical fidelity when referencing living artisan traditions. Detects alloy confusion (kansa copper-tin vs pitol/brass copper-zinc), inaccurate molten metal coloration (molten copper alloys glow glaring yellow-white/orange-white, not "green fire"), and geographic watershed errors (Bangshi river for Dhamrai, not Dhaleshwari).
+  - `validateCraftConflictEngine` (`CRAFT_CONFLICT_ENGINE`): Enforces bilateral craft stakes over cartoonish handmade vs machine tropes. Requires examining what each process preserves, what each erases, and what each makes economically possible.
+  - Integrated all craft and cultural gates into `generateSparkArticle()` validation loop and `hasFatalDefect` retry trigger.
+
+- **Hashtag Semantic Gate & Internal Vocabulary Blocklist (`watermark-service.js`)**:
+  - Extended `INTERNAL_VOCABULARY_BLOCKLIST` with social-aesthetic campaign keywords (`#microscenes`, `#bookaestheticreels`, `#fallreadinglist`, `#booktok`, etc.) alongside editorial diagnostic terms.
+  - Enriched `CATEGORY_DOMAIN_SIGNALS` for `Short Stories` and `Culture` with artisan, metallurgy, and craft signals (`#metalcraft`, `#lostwax`, `#dhamrai`, `#bangladesh`, `#craftsmanship`).
+  - Added unit test in `server/test/watermark-service.test.js` validating rejection of social aesthetic tags from craft stories (11/11 tests passing).
+
+- **Live Database Story Remediation & Reclassification (`public.posts`)**:
+  - **"The Skin of the Brass"** (`507f765c-625c-4776-9cb1-e20f1f59d4fd`):
+    - Corrected alloy metallurgy: Haripada and Sujit discuss copper vs zinc margins in brass (*pitol*), eliminating the kansa/zinc alloy conflation.
+    - Corrected geographic watershed: replaced Dhaleshwari with the authentic Bangshi riverbanks outside Dhamrai.
+    - Corrected molten metal physics: replaced supernatural "green fire" with glaring yellow-white crucible liquid.
+    - Deepened bilateral character nuance: Sujit appreciates the lip taper and balance that sand casting's draft angle cannot achieve; Haripada respects Sujit's digital scale when logging Old Dhaka scrap billet weights.
+    - Restrained ending to focus cleanly on thumb entering clay and radio static.
+    - Purged leaked tags (`#microscenes #bookaestheticreels #fallreadinglist`) and attached clean craft tags (`#dhamrai #metalcraft #lostwax #bangladesh #craftsmanship #skin`).
+    - Audited at **100/100 Human Voice Score** with zero stylometric issues.
+  - **"The Twelve-Foot Plaster Compromise"** (`92fc9ac9-38cd-4937-9039-ffc70eedc8df`):
+    - Reclassified from `Essays` to `Short Stories` to resolve Truth Boundary compliance.
+    - Deepened moral conflict by giving the plaster choice legitimate material justification (Nana's backlog and arthritis in Pen, sinking fund deficit after pump replacement,Paud Road potholes snapping idol parts, building maintenance vs 10 days worship).
+    - Established clear character agency and Pallavi's domestic hesitation; removed repetitive tea-skin tropes; added cold physical ending: *"On the open brochure, the twelve-foot Ganpati smiled beneath a printed ring of LED lights."*
+    - Purged contaminated hashtags (`#modelmisalignment`, `#reportingframework`, `#syntheticcliches`) and attached clean fiction tags (`#twelvefoot #plastercompromise #punecraft #shortstories #urbanfiction #storytelling`).
+  - **"Sanjhi on the Highway"** (`a4134022-3dbc-487b-8815-ceb9fccc0480`):
+    - Reclassified from `Culture` to `Short Stories` (Cultural Fiction).
+    - Restored agency to Preeti (nursing entrance preparation, courtyard tiled with vitrified tiles preventing raw clay wash, confronting the male elders' sudden aesthetic nostalgia).
+    - Nuanced state cultural officers through audited project mechanics (Rural Folk Documentation Scheme requiring 5-year durability windows for school drinking-water grant disbursement).
+    - Anchored on core paradox: *"The clay disappeared every year and therefore had to be remade. The mural survived, and therefore nobody needed to make it again."*
+    - Purged contaminated newsletter tags and attached clean tags (`#sanjhi #highwayclay #art #shortstories #urbanfiction #storytelling`).
+  - All three rewritten stories audited at **100/100 Human Voice Score** with zero stylometric issues.
+
+## Unreleased — Scene Short Keyframes — 2026-10-04
+
+- Add six separate 1080 × 1920 parchment-style keyframes for the dialogue/action scene concept, with corrected hand poses in frames 02 and 04 and an Antigravity timing guide. Assets only; no video render or publishing performed in this delivery.
+
 ## Unreleased — YouTube Short #21: Let the Action Contradict the Dialogue (Unlisted) — 2026-10-04
 
-- **Editorial Direction & High-Retention Micro-Short**:
-  - Authored, animated, synthesized, and published YouTube Short #21 (*“Let the action contradict the dialogue”*).
-  - Tightly structured 14.00-second lesson contrasting physical movement against spoken words:
-    - `0–2s`: Hand wipes an already-clean counter → *“Would you believe her?”*
-    - `2–4s`: The hand pauses, then wipes again → *“‘I’m fine,’ she said.”*
-    - `4–7s`: Tight crop on repeated movement → *“‘I’m fine.’ She wiped the counter again.”*
-    - `7–10s`: Second illustrated example (checking a watch while saying *“Take your time”*) → *“The action can disagree.”*
-    - `10–14s`: Hold final frame with on-screen subscription badge (`SUBSCRIBE FOR DAILY CRAFT FIXES` @writon_socialapp).
-  - Enforced brand-compliant Warm Parchment (`#FAF5EE`) canvas, classical editorial serif typography, terracotta watercolor blooms, and gentle tactile transitions.
-  - Multi-touchpoint Channel Subscription CTA embedded across end-card and video description (`https://writon.cc/youtube?sub_confirmation=1`).
+- **Editorial Direction & High-Retention Micro-Short (6-Frame Visual Edition)**:
+  - Authored, animated, synthesized, and published YouTube Short #21 (*“Let the action contradict the dialogue”*) using the exact 6 generated visual frames (`01a071cf-e3dd-7fe3-9e47-822366ecc632`).
+  - Calibrated 14.00-second voiceover timing using conversational Sarah voice with authentic vocal contrast:
+    - `0–2s` (Frame 1): *“Do you believe her?”*
+    - `2–4.25s` (Frame 2): *“‘I’m fine,’ she exclaimed defensively.”* (vocal tension)
+    - `4.25–6.25s` (Frame 3): *“‘I’m fine.’ She wiped again.”* (calm restraint)
+    - `6.25–8.25s` (Frame 4): *“Let actions contradict words.”*
+    - `8.25–10s` (Frame 5): *“‘Take your time.’”*
+    - `10–14s` (Frame 6): *“He checked his watch again. Subscribe for daily craft fixes.”*
+  - Zero blank frames or abrupt gaps; subscription badge on Frame 6 kept cleanly visible across the entire final 4 seconds.
   - Successfully uploaded as **unlisted** to YouTube:
-    - **URL**: `https://www.youtube.com/shorts/yW6zAjAdSKo`
-    - **Video ID**: `yW6zAjAdSKo`
+    - **URL**: `https://www.youtube.com/shorts/cnZv9xn0Mrg`
+    - **Video ID**: `cnZv9xn0Mrg`
     - **Privacy**: `unlisted`
 
 ## 2.0.84 (183) — Community Home & Editorial — 2026-10-02

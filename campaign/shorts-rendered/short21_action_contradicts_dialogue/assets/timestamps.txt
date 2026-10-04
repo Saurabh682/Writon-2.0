@@ -1,5 +1,7 @@
-0.15|1.15|Would you believe her?
-2.20|3.44|I'm fine, she said.
-4.30|7.14|I'm fine. She wiped the counter again.
-7.20|8.59|The action can disagree.
-10.60|12.73|Subscribe for daily craft fixes.
+0.20|1.14|Do you believe her?
+2.05|4.48|"I'm fine!" she exclaimed defensively.
+4.30|6.05|"I'm fine." She wiped again.
+6.25|8.15|Let actions contradict words.
+8.35|9.20|"Take your time."
+10.15|11.45|He checked his watch again.
+11.75|13.80|Subscribe for daily craft fixes.

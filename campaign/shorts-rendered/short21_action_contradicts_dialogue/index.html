@@ -4,9 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=1080, height=1920" />
     <title>WritOn — Let the action contradict the dialogue</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700;1,800;1,900&family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
     <style>
       * {
@@ -18,9 +15,7 @@
         width: 1080px;
         height: 1920px;
         overflow: hidden;
-        background-color: #3b2014;
-        font-family: 'Playfair Display', Georgia, serif;
-        color: #0E0C0A;
+        background-color: #FAF5EE;
         -webkit-font-smoothing: antialiased;
       }
       #root {
@@ -28,376 +23,45 @@
         width: 1080px;
         height: 1920px;
         overflow: hidden;
+        background-color: #FAF5EE;
       }
 
-      /* Background Desk Texture */
-      .desk-photo {
+      /* Each frame layer occupies full 1080x1920 with high visual sharpness */
+      .frame-layer {
         position: absolute;
         inset: 0;
         width: 1080px;
         height: 1920px;
-        background-image: url('assets/desk_coffee_card_nobox_4k.jpg');
         background-size: cover;
         background-position: center;
-        z-index: 1;
+        background-repeat: no-repeat;
+        visibility: hidden;
       }
 
-      .warm-ambient {
-        position: absolute;
-        top: -50px;
-        right: -50px;
-        width: 700px;
-        height: 700px;
-        background: radial-gradient(circle, rgba(255, 230, 190, 0.12) 0%, transparent 70%);
-        pointer-events: none;
-        z-index: 2;
-      }
-
-      /* Left Margin Red Rule */
-      .card-left-rule {
-        position: absolute;
-        left: 122px;
-        top: 172px;
-        height: 1488px;
-        width: 3px;
-        background-color: #821D1A;
-        z-index: 5;
-        border-radius: 2px;
-      }
-
-      /* Header Row */
-      .card-header {
-        position: absolute;
-        top: 172px;
-        left: 155px;
-        width: 770px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        z-index: 5;
-      }
-
-      .inversion-pill {
-        background-color: #7D1B17;
-        color: #FFFFFF;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 19px;
-        font-weight: 800;
-        letter-spacing: 3px;
-        padding: 7px 18px;
-        border-radius: 8px;
-        text-transform: uppercase;
-        display: inline-block;
-      }
-
-      .brand-mark {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 46px;
-        font-weight: 800;
-        color: #0E0C0A;
-        letter-spacing: -0.5px;
-      }
-      .brand-mark em {
-        font-style: italic;
-        color: #7D1B17;
-      }
-
-      /* =========================================
-         STAGE 1: 0–2s THE PARTICIPATORY HOOK
-         ========================================= */
-      .hook-layer {
-        position: absolute;
-        top: 480px;
-        left: 155px;
-        width: 770px;
+      #frame1 {
+        background-image: url('assets/1.png');
+        visibility: visible;
         z-index: 10;
       }
-
-      .scene-card {
-        background: rgba(255, 252, 247, 0.96);
-        border: 2px solid #821D1A;
-        border-radius: 18px;
-        padding: 40px 36px;
-        box-shadow: 0 16px 40px rgba(60, 30, 15, 0.12);
-        margin-bottom: 28px;
+      #frame2 {
+        background-image: url('assets/2.png');
+        z-index: 20;
       }
-
-      .scene-tag {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 19px;
-        font-weight: 800;
-        letter-spacing: 2px;
-        color: #7D1B17;
-        text-transform: uppercase;
-        margin-bottom: 16px;
+      #frame3 {
+        background-image: url('assets/3.png');
+        z-index: 30;
       }
-
-      .scene-action-text {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 44px;
-        line-height: 1.35;
-        font-weight: 800;
-        color: #0E0C0A;
+      #frame4 {
+        background-image: url('assets/4.png');
+        z-index: 40;
       }
-      .scene-action-text em {
-        font-style: italic;
-        color: #7D1B17;
+      #frame5 {
+        background-image: url('assets/5.png');
+        z-index: 50;
       }
-
-      .hook-question {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 56px;
-        line-height: 1.15;
-        font-weight: 900;
-        letter-spacing: -1px;
-        color: #0E0C0A;
-      }
-
-      /* =========================================
-         STAGE 2 & 3: 2–7s DIALOGUE vs CONTRADICTION
-         ========================================= */
-      .stage2-layer {
-        position: absolute;
-        top: 460px;
-        left: 155px;
-        width: 770px;
-        z-index: 12;
-        opacity: 0;
-      }
-
-      .compare-box {
-        margin-bottom: 30px;
-      }
-
-      .pill-row {
-        margin-bottom: 16px;
-      }
-
-      .neutral-pill {
-        background-color: #554D44;
-        color: #FFFFFF;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 18px;
-        font-weight: 800;
-        letter-spacing: 2px;
-        padding: 6px 16px;
-        border-radius: 8px;
-        text-transform: uppercase;
-        display: inline-block;
-      }
-
-      .contradict-pill {
-        background-color: #2D5A27;
-        color: #FFFFFF;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 18px;
-        font-weight: 800;
-        letter-spacing: 2px;
-        padding: 6px 16px;
-        border-radius: 8px;
-        text-transform: uppercase;
-        display: inline-block;
-      }
-
-      .dialogue-text {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 46px;
-        line-height: 1.3;
-        font-weight: 700;
-        color: #1A1613;
-      }
-
-      .contradiction-text {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 46px;
-        line-height: 1.3;
-        font-weight: 800;
-        color: #0E0C0A;
-      }
-      .contradiction-text em {
-        font-style: italic;
-        color: #2D5A27;
-      }
-
-      /* =========================================
-         STAGE 4: 7–10s SECOND ILLUSTRATED EXAMPLE
-         ========================================= */
-      .stage3-layer {
-        position: absolute;
-        top: 450px;
-        left: 155px;
-        width: 770px;
-        z-index: 13;
-        opacity: 0;
-      }
-
-      .second-example-box {
-        background: rgba(255, 252, 247, 0.96);
-        border: 2px solid #821D1A;
-        border-radius: 18px;
-        padding: 36px 32px;
-        box-shadow: 0 16px 36px rgba(60, 30, 15, 0.12);
-        margin-bottom: 28px;
-      }
-
-      .second-quote {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 44px;
-        line-height: 1.25;
-        font-weight: 800;
-        color: #0E0C0A;
-        margin-bottom: 12px;
-      }
-
-      .second-action {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 38px;
-        line-height: 1.3;
-        font-style: italic;
-        color: #7D1B17;
-        font-weight: 700;
-      }
-
-      .stage3-rule-banner {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 54px;
-        line-height: 1.15;
-        font-weight: 900;
-        color: #0E0C0A;
-        letter-spacing: -1px;
-      }
-
-      /* =========================================
-         STAGE 5: 10–14s HOLD & SUBSCRIPTION END-CARD
-         ========================================= */
-      .endcard-layer {
-        position: absolute;
-        top: 450px;
-        left: 155px;
-        width: 770px;
-        z-index: 15;
-        opacity: 0;
-      }
-
-      .rule-headline {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 50px;
-        line-height: 1.15;
-        font-weight: 900;
-        color: #0E0C0A;
-        letter-spacing: -1px;
-        margin-bottom: 10px;
-      }
-
-      .rule-sub {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 34px;
-        font-style: italic;
-        font-weight: 700;
-        color: #7D1B17;
-        margin-bottom: 34px;
-      }
-
-      .sub-card {
-        background: rgba(250, 245, 238, 0.96);
-        border: 2px solid #821D1A;
-        box-shadow: 0 16px 36px rgba(60, 30, 15, 0.15);
-        border-radius: 16px;
-        padding: 34px 30px;
-        text-align: center;
-      }
-
-      .sub-bell-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 58px;
-        height: 58px;
-        border-radius: 50%;
-        background-color: #821D1A;
-        color: #FFFFFF;
-        font-size: 26px;
-        margin-bottom: 16px;
-      }
-
-      .sub-title {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 24px;
-        font-weight: 900;
-        letter-spacing: 2.5px;
-        color: #821D1A;
-        text-transform: uppercase;
-        margin-bottom: 8px;
-      }
-
-      .sub-channel {
-        font-family: 'Playfair Display', Georgia, serif;
-        font-size: 32px;
-        font-weight: 800;
-        color: #0E0C0A;
-        letter-spacing: -0.5px;
-        margin-bottom: 16px;
-      }
-
-      .sub-badge {
-        display: inline-block;
-        background-color: #0E0C0A;
-        color: #FAF5EE;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 18px;
-        font-weight: 800;
-        letter-spacing: 1.5px;
-        padding: 10px 24px;
-        border-radius: 30px;
-        text-transform: uppercase;
-      }
-
-      /* Footer Row */
-      .card-footer {
-        position: absolute;
-        bottom: 172px;
-        left: 155px;
-        width: 770px;
-        z-index: 5;
-      }
-
-      .footer-line {
-        height: 1px;
-        background-color: rgba(130, 29, 26, 0.25);
-        margin-bottom: 22px;
-      }
-
-      .footer-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 20px;
-        font-weight: 800;
-        color: #7D1B17;
-      }
-
-      .footer-dots {
-        display: flex;
-        gap: 8px;
-      }
-
-      .footer-dot-sand {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background-color: #CBB99D;
-      }
-
-      .footer-dot-crimson {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background-color: #821D1A;
-      }
-
-      .footer-url {
-        letter-spacing: 1px;
+      #frame6 {
+        background-image: url('assets/6.png');
+        z-index: 60;
       }
     </style>
   </head>
@@ -405,141 +69,54 @@
     <div
       id="root"
       data-composition-id="main"
-      class="clip"
       data-fps="30"
       data-duration="14.0"
       data-width="1080"
       data-height="1920"
     >
-      <div class="desk-photo"></div>
-      <div class="warm-ambient"></div>
-      <div class="card-left-rule"></div>
-
-      <!-- Header Row -->
-      <div class="card-header">
-        <div class="inversion-pill">Dialogue Craft</div>
-        <div class="brand-mark">Writ<em>On</em></div>
-      </div>
-
-      <!-- STAGE 1: 0.00s - 2.10s PARTICIPATORY HOOK -->
-      <div class="hook-layer" id="hookLayer">
-        <div class="scene-card">
-          <div class="scene-tag">The Scene</div>
-          <div class="scene-action-text">
-            Her hand wipes an <em>already-clean counter</em>.
-          </div>
-        </div>
-        <div class="hook-question" id="hookQ">
-          Would you believe her?
-        </div>
-      </div>
-
-      <!-- STAGE 2: 2.15s - 7.00s DIALOGUE vs ACTION CONTRADICTION -->
-      <div class="stage2-layer" id="stage2Layer">
-        <div class="compare-box" id="s2Box1">
-          <div class="pill-row">
-            <span class="neutral-pill">Spoken Words</span>
-          </div>
-          <div class="dialogue-text">
-            “I’m fine,” she said.
-          </div>
-        </div>
-
-        <div class="compare-box" id="s2Box2" style="opacity: 0;">
-          <div class="pill-row">
-            <span class="contradict-pill">Contradicting Action</span>
-          </div>
-          <div class="contradiction-text">
-            “I’m fine.” <em>She wiped the counter again.</em>
-          </div>
-        </div>
-      </div>
-
-      <!-- STAGE 3: 7.15s - 10.45s SECOND ILLUSTRATED EXAMPLE -->
-      <div class="stage3-layer" id="stage3Layer">
-        <div class="second-example-box" id="s3Box">
-          <div class="pill-row">
-            <span class="contradict-pill">Subtext in Action</span>
-          </div>
-          <div class="second-quote">
-            “Take your time,” he said—
-          </div>
-          <div class="second-action">
-            checking his watch for the third time.
-          </div>
-        </div>
-        <div class="stage3-rule-banner" id="s3Banner">
-          THE ACTION CAN DISAGREE.
-        </div>
-      </div>
-
-      <!-- STAGE 4: 10.55s - 14.00s HOLD WITH SUBSCRIPTION END-CARD -->
-      <div class="endcard-layer" id="endCardLayer">
-        <div class="rule-headline">LET ACTION DISAGREE.</div>
-        <div class="rule-sub">Characters lie. Movement confesses.</div>
-
-        <div class="sub-card">
-          <div class="sub-bell-icon">🔔</div>
-          <div class="sub-title">Subscribe For Daily Craft Fixes</div>
-          <div class="sub-channel">@writon_socialapp</div>
-          <div class="sub-badge">Subscribe ↗</div>
-        </div>
-      </div>
-
-      <!-- Footer Row -->
-      <div class="card-footer">
-        <div class="footer-line"></div>
-        <div class="footer-content">
-          <div class="footer-handle">@writon_app</div>
-          <div class="footer-dots">
-            <div class="footer-dot-sand"></div>
-            <div class="footer-dot-crimson"></div>
-          </div>
-          <div class="footer-url">writon.cc ↗</div>
-        </div>
-      </div>
+      <div id="frame1" class="frame-layer"></div>
+      <div id="frame2" class="frame-layer"></div>
+      <div id="frame3" class="frame-layer"></div>
+      <div id="frame4" class="frame-layer"></div>
+      <div id="frame5" class="frame-layer"></div>
+      <div id="frame6" class="frame-layer"></div>
     </div>
 
     <script>
+      // Exact frame cuts without blank transitions:
+      // Frame 1: 0.00s - 2.00s ("Do you believe her?")
+      // Frame 2: 2.00s - 4.25s ("'I'm fine,' she exclaimed defensively.")
+      // Frame 3: 4.25s - 6.25s ("'I'm fine.' She wiped again.")
+      // Frame 4: 6.25s - 8.25s ("Let actions contradict words.")
+      // Frame 5: 8.25s - 10.00s ("'Take your time.'")
+      // Frame 6: 10.00s - 14.00s ("He checked his watch again. Subscribe for daily craft fixes.")
+      // Subscription badge on Frame 6 is held visible for the final 4 seconds (10s - 14s).
+
       window.__timelines = window.__timelines || {};
       const tl = gsap.timeline({ paused: true });
 
-      // Frame 0 setup
-      gsap.set("#hookQ", { opacity: 0, y: 15 });
+      // Frame 1 (0.00s -> 2.00s)
+      tl.set("#frame1", { visibility: "visible" }, 0);
 
-      // 0.15s: Nicole asks "Would you believe her?"
-      tl.to("#hookQ", { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.15);
+      // Frame 2 Cut (2.00s)
+      tl.set("#frame1", { visibility: "hidden" }, 2.00)
+        .set("#frame2", { visibility: "visible" }, 2.00);
 
-      // 2.05s: Hook exits smoothly
-      tl.to("#hookLayer", { opacity: 0, y: -15, duration: 0.20, ease: "power2.inOut" }, 2.05);
+      // Frame 3 Cut (4.25s)
+      tl.set("#frame2", { visibility: "hidden" }, 4.25)
+        .set("#frame3", { visibility: "visible" }, 4.25);
 
-      // 2.15s: CLICK! Stage 2 enters (Nicole: "'I'm fine,' she said.")
-      tl.to("#stage2Layer", { opacity: 1, duration: 0.05 }, 2.15)
-        .fromTo("#s2Box1", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.30, ease: "power3.out" }, 2.15);
+      // Frame 4 Cut (6.25s)
+      tl.set("#frame3", { visibility: "hidden" }, 6.25)
+        .set("#frame4", { visibility: "visible" }, 6.25);
 
-      // 4.25s: CLICK! Hand wipes again (Nicole: "'I'm fine.' She wiped the counter again.")
-      tl.fromTo("#s2Box2", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "back.out(1.3)" }, 4.25);
+      // Frame 5 Cut (8.25s)
+      tl.set("#frame4", { visibility: "hidden" }, 8.25)
+        .set("#frame5", { visibility: "visible" }, 8.25);
 
-      // 7.00s: Stage 2 exits
-      tl.to("#stage2Layer", { opacity: 0, y: -15, duration: 0.20, ease: "power2.inOut" }, 7.00);
-
-      // 7.15s: CLICK! Stage 3 enters (Nicole: "The action can disagree.")
-      tl.to("#stage3Layer", { opacity: 1, duration: 0.05 }, 7.15)
-        .fromTo("#s3Box", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.30, ease: "power3.out" }, 7.15)
-        .fromTo("#s3Banner", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.30, ease: "power2.out" }, 7.35);
-
-      // 10.40s: Stage 3 exits
-      tl.to("#stage3Layer", { opacity: 0, y: -15, duration: 0.20, ease: "power2.inOut" }, 10.40);
-
-      // 10.55s: CLICK! Stage 4 Hold with Subscription End-Card
-      // Nicole: "Subscribe for daily craft fixes."
-      tl.to("#endCardLayer", { opacity: 1, duration: 0.05 }, 10.55)
-        .fromTo("#endCardLayer .rule-headline", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.30, ease: "power3.out" }, 10.55)
-        .fromTo("#endCardLayer .rule-sub", { opacity: 0, y: 15 }, { opacity: 1, y: 0, duration: 0.30, ease: "power3.out" }, 10.75)
-        .fromTo("#endCardLayer .sub-card", { opacity: 0, scale: 0.92, y: 20 }, { opacity: 1, scale: 1.0, y: 0, duration: 0.40, ease: "back.out(1.4)" }, 10.95);
-
-      // 14.00s: Subtle breathing zoom
-      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.015, duration: 14.0, ease: "sine.inOut" }, 0);
+      // Frame 6 Cut (10.00s -> 14.00s)
+      tl.set("#frame5", { visibility: "hidden" }, 10.00)
+        .set("#frame6", { visibility: "visible" }, 10.00);
 
       window.__timelines["main"] = tl;
     </script>
