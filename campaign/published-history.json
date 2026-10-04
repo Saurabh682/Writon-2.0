@@ -53,7 +53,7 @@
         }
       },
       "campaignB_hindi": {
-        "theme": "साहित्यिक कोना • बल्लीमारान की शाम",
+        "theme": "\u0938\u093e\u0939\u093f\u0924\u094d\u092f\u093f\u0915 \u0915\u094b\u0928\u093e \u2022 \u092c\u0932\u094d\u0932\u0940\u092e\u093e\u0930\u093e\u0928 \u0915\u0940 \u0936\u093e\u092e",
         "instagram": {
           "success": true,
           "postId": "18363226426246089",
@@ -1074,13 +1074,14 @@
       "publishedAt": "2026-09-29T03:07:56.000Z"
     },
     "short21_action_contradicts_dialogue": {
-      "title": "Let the action contradict the dialogue #shorts #writingtips",
+      "title": "Let the action contradict the dialogue #shorts",
       "duration": 14,
-      "videoId": "cnZv9xn0Mrg",
-      "url": "https://www.youtube.com/shorts/cnZv9xn0Mrg",
+      "videoId": "o4J4Uep0xwM",
+      "url": "https://www.youtube.com/shorts/o4J4Uep0xwM",
       "privacyStatus": "unlisted",
       "framesSource": "01a071cf-e3dd-7fe3-9e47-822366ecc632",
-      "publishedAt": "2026-10-04T15:31:31.185Z"
+      "publishedAt": "2026-10-04T16:23:02.000Z",
+      "status": "verified_animated_zero_overlap"
     }
   },
   "brainDispatches": {

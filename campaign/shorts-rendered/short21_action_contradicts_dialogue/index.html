@@ -26,42 +26,103 @@
         background-color: #FAF5EE;
       }
 
-      /* Each frame layer occupies full 1080x1920 with high visual sharpness */
-      .frame-layer {
+      /* ----------------------------------------------------
+         TEXT HEADER LAYER (Stationary headline across transitions)
+         ---------------------------------------------------- */
+      .text-container {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1080px;
+        height: 640px;
+        z-index: 50;
+        pointer-events: none;
+      }
+      .text-layer {
         position: absolute;
         inset: 0;
-        width: 1080px;
-        height: 1920px;
         background-size: cover;
-        background-position: center;
+        background-position: top center;
         background-repeat: no-repeat;
         visibility: hidden;
       }
+      #text1 { background-image: url('assets/text_1.png'); visibility: visible; }
+      #text2 { background-image: url('assets/text_2.png'); }
+      #text3 { background-image: url('assets/text_3.png'); }
+      #text4 { background-image: url('assets/text_4.png'); }
+      #text5 { background-image: url('assets/text_5.png'); }
+      #text6 { background-image: url('assets/text_6.png'); }
 
-      #frame1 {
-        background-image: url('assets/1.png');
-        visibility: visible;
+      /* ----------------------------------------------------
+         SCENE / ACTION LAYER (Where actual movement happens)
+         ---------------------------------------------------- */
+      .scene-viewport {
+        position: absolute;
+        top: 640px;
+        left: 0;
+        width: 1080px;
+        height: 1280px;
+        overflow: hidden;
         z-index: 10;
       }
-      #frame2 {
-        background-image: url('assets/2.png');
-        z-index: 20;
+
+      /* Base hand container that moves to physically animate wiping */
+      .hand-motion-rig {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1080px;
+        height: 1280px;
+        transform-origin: 75% 15%; /* shoulder/elbow pivot */
+        will-change: transform;
       }
-      #frame3 {
-        background-image: url('assets/3.png');
-        z-index: 30;
+
+      .scene-layer {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: top center;
+        background-repeat: no-repeat;
+        visibility: hidden;
       }
-      #frame4 {
-        background-image: url('assets/4.png');
-        z-index: 40;
+      #scene1 { background-image: url('assets/scene_1.png'); visibility: visible; }
+      #scene2 { background-image: url('assets/scene_2.png'); }
+      #scene3 { background-image: url('assets/scene_3.png'); }
+      #scene4 { background-image: url('assets/scene_3.png'); } /* Frame 4: tight crop on active wipe */
+      #scene5 { background-image: url('assets/scene_5.png'); }
+      #scene6 { background-image: url('assets/scene_5.png'); }
+
+      /* Watch scene motion rig */
+      .watch-motion-rig {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1080px;
+        height: 1280px;
+        transform-origin: 15% 45%; /* forearm rotation pivot */
+        will-change: transform;
       }
-      #frame5 {
-        background-image: url('assets/5.png');
-        z-index: 50;
+
+      /* ----------------------------------------------------
+         REPOSITIONED & ENLARGED SUBSCRIPTION BADGE
+         Moved up out of platform control danger zone (y=1220 instead of y=1500)
+         Enlarged by 1.25x for instant mobile readability
+         ---------------------------------------------------- */
+      .subscription-badge-wrapper {
+        position: absolute;
+        top: 1220px;
+        left: 50%;
+        transform: translateX(-50%) scale(1.22);
+        z-index: 80;
+        pointer-events: none;
+        opacity: 0;
+        filter: drop-shadow(0 6px 16px rgba(50, 20, 10, 0.16));
+        will-change: opacity, transform;
       }
-      #frame6 {
-        background-image: url('assets/6.png');
-        z-index: 60;
+      .subscription-badge-img {
+        display: block;
+        width: 600px;
+        height: auto;
       }
     </style>
   </head>
@@ -74,49 +135,222 @@
       data-width="1080"
       data-height="1920"
     >
-      <div id="frame1" class="frame-layer"></div>
-      <div id="frame2" class="frame-layer"></div>
-      <div id="frame3" class="frame-layer"></div>
-      <div id="frame4" class="frame-layer"></div>
-      <div id="frame5" class="frame-layer"></div>
-      <div id="frame6" class="frame-layer"></div>
+      <!-- Stationary Text Headers (0 - 640px) -->
+      <div class="text-container">
+        <div id="text1" class="text-layer"></div>
+        <div id="text2" class="text-layer"></div>
+        <div id="text3" class="text-layer"></div>
+        <div id="text4" class="text-layer"></div>
+        <div id="text5" class="text-layer"></div>
+        <div id="text6" class="text-layer"></div>
+      </div>
+
+      <!-- Moving Action Scenes (640px - 1920px) -->
+      <div class="scene-viewport">
+        <!-- Rig 1: Hand on Counter (Frames 1-4) -->
+        <div id="handRig" class="hand-motion-rig">
+          <div id="scene1" class="scene-layer"></div>
+          <div id="scene2" class="scene-layer"></div>
+          <div id="scene3" class="scene-layer"></div>
+          <div id="scene4" class="scene-layer"></div>
+        </div>
+
+        <!-- Rig 2: Wristwatch Scene (Frames 5-6) -->
+        <div id="watchRig" class="watch-motion-rig" style="visibility: hidden;">
+          <div id="scene5" class="scene-layer"></div>
+          <div id="scene6" class="scene-layer"></div>
+        </div>
+      </div>
+
+      <!-- Upward-Shifted, Enlarged Subscription Badge -->
+      <div id="subBadge" class="subscription-badge-wrapper">
+        <img class="subscription-badge-img" src="assets/badge_transparent.png" alt="Subscribe for daily craft fixes @writon_socialapp" />
+      </div>
     </div>
 
     <script>
-      // Exact frame cuts without blank transitions:
-      // Frame 1: 0.00s - 2.00s ("Do you believe her?")
-      // Frame 2: 2.00s - 4.25s ("'I'm fine,' she exclaimed defensively.")
-      // Frame 3: 4.25s - 6.25s ("'I'm fine.' She wiped again.")
-      // Frame 4: 6.25s - 8.25s ("Let actions contradict words.")
-      // Frame 5: 8.25s - 10.00s ("'Take your time.'")
-      // Frame 6: 10.00s - 14.00s ("He checked his watch again. Subscribe for daily craft fixes.")
-      // Subscription badge on Frame 6 is held visible for the final 4 seconds (10s - 14s).
+      // =========================================================================
+      // TIMELINE ARCHITECTURE (14.00s, 30 FPS)
+      // Voiceover Timestamps (Zero Overlap):
+      // Line 1 (0.20s - 1.14s): "Do you believe her?"
+      // Line 2 (2.00s - 4.22s): "'I'm fine,' she exclaimed defensively." (tension)
+      // Line 3 (4.45s - 6.16s): "'I'm fine.' She wiped again." (restraint)
+      // Line 4 (6.30s - 8.20s): "Let actions contradict words."
+      // Line 5 (8.35s - 9.20s): "'Take your time.'"
+      // Line 6 (10.05s - 11.35s): "He checked his watch again."
+      // Line 7 (11.65s - 13.70s): "Subscribe for daily craft fixes."
+      // =========================================================================
 
       window.__timelines = window.__timelines || {};
       const tl = gsap.timeline({ paused: true });
 
-      // Frame 1 (0.00s -> 2.00s)
-      tl.set("#frame1", { visibility: "visible" }, 0);
+      // -----------------------------------------------------------------------
+      // 1. TEXT CUTS (Stationary at top, zero blank frames)
+      // -----------------------------------------------------------------------
+      tl.set("#text1", { visibility: "visible" }, 0);
 
-      // Frame 2 Cut (2.00s)
-      tl.set("#frame1", { visibility: "hidden" }, 2.00)
-        .set("#frame2", { visibility: "visible" }, 2.00);
+      // Cut to Frame 2 Text (1.95s)
+      tl.set("#text1", { visibility: "hidden" }, 1.95)
+        .set("#text2", { visibility: "visible" }, 1.95);
 
-      // Frame 3 Cut (4.25s)
-      tl.set("#frame2", { visibility: "hidden" }, 4.25)
-        .set("#frame3", { visibility: "visible" }, 4.25);
+      // Cut to Frame 3 Text (4.35s)
+      tl.set("#text2", { visibility: "hidden" }, 4.35)
+        .set("#text3", { visibility: "visible" }, 4.35);
 
-      // Frame 4 Cut (6.25s)
-      tl.set("#frame3", { visibility: "hidden" }, 6.25)
-        .set("#frame4", { visibility: "visible" }, 6.25);
+      // Cut to Frame 4 Text (6.25s)
+      tl.set("#text3", { visibility: "hidden" }, 6.25)
+        .set("#text4", { visibility: "visible" }, 6.25);
 
-      // Frame 5 Cut (8.25s)
-      tl.set("#frame4", { visibility: "hidden" }, 8.25)
-        .set("#frame5", { visibility: "visible" }, 8.25);
+      // Cut to Frame 5 Text (8.25s)
+      tl.set("#text4", { visibility: "hidden" }, 8.25)
+        .set("#text5", { visibility: "visible" }, 8.25);
 
-      // Frame 6 Cut (10.00s -> 14.00s)
-      tl.set("#frame5", { visibility: "hidden" }, 10.00)
-        .set("#frame6", { visibility: "visible" }, 10.00);
+      // Cut to Frame 6 Text (9.90s)
+      tl.set("#text5", { visibility: "hidden" }, 9.90)
+        .set("#text6", { visibility: "visible" }, 9.90);
+
+      // -----------------------------------------------------------------------
+      // 2. SCENE VISIBILITY & CAMERA STAGING
+      // -----------------------------------------------------------------------
+      tl.set("#handRig", { visibility: "visible" }, 0)
+        .set("#scene1", { visibility: "visible" }, 0);
+
+      // Frame 2 Scene Cut (1.95s) - pauses then tense wipe
+      tl.set("#scene1", { visibility: "hidden" }, 1.95)
+        .set("#scene2", { visibility: "visible" }, 1.95);
+
+      // Frame 3 Scene Cut (4.35s) - mechanical wipe with speed arcs
+      tl.set("#scene2", { visibility: "hidden" }, 4.35)
+        .set("#scene3", { visibility: "visible" }, 4.35);
+
+      // Frame 4 Scene Cut (6.25s) - visibly tighter crop on active wipe
+      // Solves Priority Medium: Frame 4 is a punchy 1.24x crop on the repeated wiping action
+      tl.set("#scene3", { visibility: "hidden" }, 6.25)
+        .set("#scene4", {
+          visibility: "visible",
+          scale: 1.24,
+          x: -40,
+          y: -25,
+          transformOrigin: "45% 35%"
+        }, 6.25);
+
+      // Transition from Hand to Watch Scene (8.25s)
+      tl.set("#handRig", { visibility: "hidden" }, 8.25)
+        .set("#watchRig", { visibility: "visible" }, 8.25)
+        .set("#scene5", { visibility: "visible" }, 8.25);
+
+      // Frame 6 Scene (9.90s -> 14.00s)
+      // Solves Priority Medium: Watch scene continues living/moving rather than freezing
+      tl.set("#scene5", { visibility: "hidden" }, 9.90)
+        .set("#scene6", { visibility: "visible" }, 9.90);
+
+      // -----------------------------------------------------------------------
+      // 3. PHYSICAL ACTION 1: VISIBLE WIPING PASS (Frames 0 - 6.25s)
+      // Solves Priority High: Hand visibly sweeps across counter while text is stationary
+      // -----------------------------------------------------------------------
+      // Frame 1 Opening wipe (0.10s -> 1.80s):
+      // Hand starts, wipes smoothly to the left along marble counter, pauses at 1.80s
+      tl.to("#handRig", {
+        x: -48,
+        y: 18,
+        rotation: -2.8,
+        duration: 1.70,
+        ease: "power1.inOut"
+      }, 0.10);
+
+      // Frame 2 Tense re-wipe (2.20s -> 4.10s):
+      // The hand pulls back and wipes again with defensive tension
+      tl.to("#handRig", {
+        x: 10,
+        y: -5,
+        rotation: 0.8,
+        duration: 0.85,
+        ease: "power2.out"
+      }, 2.05)
+      .to("#handRig", {
+        x: -55,
+        y: 22,
+        rotation: -3.2,
+        duration: 1.15,
+        ease: "power1.inOut"
+      }, 2.95);
+
+      // Frame 3 Repeated mechanical wipe (4.40s -> 6.10s):
+      // Vigorous repetitive wiping pass that confirms the subtext
+      tl.to("#handRig", {
+        x: -12,
+        y: 2,
+        rotation: -0.5,
+        duration: 0.70,
+        ease: "power2.inOut"
+      }, 4.40)
+      .to("#handRig", {
+        x: -62,
+        y: 25,
+        rotation: -3.6,
+        duration: 0.95,
+        ease: "power1.inOut"
+      }, 5.15);
+
+      // Frame 4 (6.25s -> 8.25s):
+      // Tight crop micro-pulse to reinforce "Let actions contradict words"
+      tl.to("#scene4", {
+        scale: 1.28,
+        duration: 1.95,
+        ease: "none"
+      }, 6.25);
+
+      // -----------------------------------------------------------------------
+      // 4. PHYSICAL ACTION 2: WRIST TURNING & WATCH CHECKING (8.25s -> 14.00s)
+      // Solves Priority High: Wrist turns into sight, checking time repeatedly
+      // -----------------------------------------------------------------------
+      // Frame 5 (8.25s -> 9.90s):
+      // Wrist enters, angles slightly upward to check time ("Take your time")
+      tl.fromTo("#watchRig", {
+        x: -25,
+        y: 35,
+        rotation: -3.5
+      }, {
+        x: 0,
+        y: 0,
+        rotation: 0,
+        duration: 1.45,
+        ease: "power2.out"
+      }, 8.25);
+
+      // Frame 6 (9.90s -> 14.00s):
+      // Character checks watch *again* as Nicole/Sarah says "He checked his watch again."
+      // Wrist turns towards viewer (+2.5 deg rotation, subtle lift) at 10.05s - 11.40s
+      tl.to("#watchRig", {
+        x: 18,
+        y: -15,
+        rotation: 2.2,
+        duration: 1.10,
+        ease: "power1.inOut"
+      }, 10.05)
+      .to("#watchRig", {
+        x: 5,
+        y: 8,
+        rotation: -0.8,
+        duration: 1.80,
+        ease: "sine.inOut"
+      }, 11.45);
+
+      // -----------------------------------------------------------------------
+      // 5. SUBSCRIPTION BADGE (Held across final 4 seconds: 10.00s -> 14.00s)
+      // Solves Priority Medium: Positioned safely above UI controls, enlarged, pops cleanly
+      // -----------------------------------------------------------------------
+      tl.fromTo("#subBadge", {
+        opacity: 0,
+        y: 25,
+        scale: 1.10
+      }, {
+        opacity: 1,
+        y: 0,
+        scale: 1.22,
+        duration: 0.40,
+        ease: "back.out(1.4)"
+      }, 10.00);
 
       window.__timelines["main"] = tl;
     </script>

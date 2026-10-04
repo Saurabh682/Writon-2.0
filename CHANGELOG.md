@@ -1,6 +1,17 @@
 # Changelog & Update History — WritOn 2.0
 
-## Unreleased — Hashtag Semantic Gate, Think Brain Cultural Gates & Story Remediations — 2026-10-04
+## Unreleased — YouTube Short #21 Calibrated & Published (Unlisted), Hashtag Semantic Gate & Story Remediations — 2026-10-04
+
+- **YouTube Craft Short #21 ("Let the action contradict the dialogue") Produced & Published (Unlisted)**:
+  - **Video ID & URL**: [`o4J4Uep0xwM`](https://www.youtube.com/shorts/o4J4Uep0xwM) (14.0s, 1080×1920, 30fps).
+  - **Core Craft Thesis**: Contrasting dialogue (*"I'm fine"* / *"Take your time"*) against contradictory physical actions (anxious repetitive counter wiping and repeated watch-checking).
+  - **Pacing & Timing Calibration**:
+    - Completely resolved the 0.18s voiceover overlap between lines 2 and 3; re-synthesized Sarah voiceover at crisp rates (spd 1.20 tension for line 2, spd 1.08 restraint for line 3) with a clean 0.23s breathing silence between examples.
+    - Stationed headline text at the upper 0–640px layer while physically animating the scene layer (0.10s–1.80s sweeping pass, 2.05s–4.10s tense re-wipe, 4.40s–6.10s mechanical wipe, 8.25s wrist entry, 10.05s–11.45s second watch check).
+    - Made Frame 4 a punchy 1.24x crop focusing on the physical contradiction.
+    - Repositioned the transparent Warm Parchment channel subscription badge (`@writon_socialapp`) higher (`top: 1220px`), enlarged by 1.22x out of the YouTube Shorts mobile UI control zone, holding steadily from 10.00s through 14.00s while the watch scene continues living.
+  - **Audio Fidelity**: Calibrated at **−16.1 LUFS** integrated loudness and **−2.1 dBTP** true peak with gentle ambient piano bed.
+  - **Ledger & Audit**: Recorded entry in `campaign/published-history.json`.
 
 - **Hashtag Semantic Gate & Internal Vocabulary Blocklist (`watermark-service.js`)**:
   - Implemented `INTERNAL_VOCABULARY_BLOCKLIST` to strictly prevent internal diagnostic terminology (`#modelmisalignment`, `#syntheticcliches`, `#reportingframework`, `#truthboundary`, `#aislop`, `#promptlanguage`, `#qualitygate`, `#newsletterfatigue`, etc.) from ever leaking into published story hashtags or syndication metadata.
@@ -15,14 +26,30 @@
   - `validateSymbolicSideAssignment` (`SYMBOLIC_SIDE_ASSIGNMENT_CHECK`): Enforces material conflict over cartoonish moral arithmetic. Requires legitimate practical trade-offs on both sides rather than assigning 100% virtue to tradition and 100% cynicism to modernity.
   - `validateCraftTechnicalIntegrityGate` (`CRAFT_FICTION_TRUTH_BOUNDARY` & `TECHNICAL_METAPHOR_CHECK`): Enforces metallurgical and physical fidelity when referencing living artisan traditions. Detects alloy confusion (kansa copper-tin vs pitol/brass copper-zinc), inaccurate molten metal coloration (molten copper alloys glow glaring yellow-white/orange-white, not "green fire"), and geographic watershed errors (Bangshi river for Dhamrai, not Dhaleshwari).
   - `validateCraftConflictEngine` (`CRAFT_CONFLICT_ENGINE`): Enforces bilateral craft stakes over cartoonish handmade vs machine tropes. Requires examining what each process preserves, what each erases, and what each makes economically possible.
-  - Integrated all craft and cultural gates into `generateSparkArticle()` validation loop and `hasFatalDefect` retry trigger.
+  - `validateMaterialFactGate` (`MATERIAL_FIRST_ESSAY` & `PSEUDO_TECHNICAL_AUTHORITY_GATE`): Enforces a rigorous verification floor for physical claims in essays arguing against decorative abstraction. Flags speculative microbiology ("feeds bacteria that digest dead skin") or invented artillery mechanics ("lead shims absorb lateral shock of iron cannon shot").
+  - `validateUnsourcedPrecisionGate` (`UNSOURCED_PRECISION_GATE`): Detects clustered serial inventories of exact numbers ("seven bags, four tins, two sacks, fifty liters") used as synthetic realism camouflage in essay openings.
+  - `validateMicroPoemRestraintGate` (`MICRO_POEM_RESTRAINT`): Prevents totalizing declarations of urban silence in micro-poetry ("the city has no noise"), steering verse toward local acoustic precision that preserves near-field texture.
+  - `validateSharedPropFatigueGate` (`SHARED_PROP_FATIGUE`): Flags recurring sensory props (especially ubiquitous ginger tea / tea mugs) across the bot writer collective, redirecting toward neutral tactile objects ("holding a steel tumbler warm between both hands") to prevent cross-persona sensory homogenization.
+  - `validateOldVsNewFalseBinaryGate` (`OLD_VS_NEW_FALSE_BINARY`): Rejects simplistic binary conflicts where analog records/craft equal pure sacred memory and digital tools equal amnesia or alienation. Demands real advantages (traceability, deduplication, cross-garden aggregation) and real tacit human friction on both sides without debate-card aphorisms.
+  - `validateInformationLossGate` (`INFORMATION_LOSS_TEST`): Evaluates analog vs digital systems by interrogating what information each system decided was worth recording; eliminates exhausted "cloud was just mist" puns and focuses on schema design boundaries.
+  - `validateDomainTermRelevanceGate` (`DOMAIN_TERM_RELEVANCE`): Enforces material plot integration for specialist trade vocabulary (`FTGFOP`, first flush, lot number, auction grade) and detects title-to-body terminology mismatches (e.g. titling a story "Oolong" while body focuses on whole-leaf black tea without developing oolong processing).
+  - Integrated all craft, cultural, and material fact gates into `generateSparkArticle()` validation loop and `hasFatalDefect` retry trigger.
 
 - **Hashtag Semantic Gate & Internal Vocabulary Blocklist (`watermark-service.js`)**:
   - Extended `INTERNAL_VOCABULARY_BLOCKLIST` with social-aesthetic campaign keywords (`#microscenes`, `#bookaestheticreels`, `#fallreadinglist`, `#booktok`, etc.) alongside editorial diagnostic terms.
-  - Enriched `CATEGORY_DOMAIN_SIGNALS` for `Short Stories` and `Culture` with artisan, metallurgy, and craft signals (`#metalcraft`, `#lostwax`, `#dhamrai`, `#bangladesh`, `#craftsmanship`).
+  - Enriched `CATEGORY_DOMAIN_SIGNALS` across `Essays`, `Short Stories` and `Culture` with wrestling, martial, metallurgical, and craft signals (`#kushti`, `#kolhapur`, `#motibagtalim`, `#wrestling`, `#materialculture`, `#metalcraft`, `#lostwax`).
   - Added unit test in `server/test/watermark-service.test.js` validating rejection of social aesthetic tags from craft stories (11/11 tests passing).
 
 - **Live Database Story Remediation & Reclassification (`public.posts`)**:
+  - **"Before the Speech"** (`716ef510-9f19-44fe-8de4-761b167b87ed`):
+    - Retained under `Essays` category; performed surgical factual correction.
+    - Loosened opening inventory numbers ("Bags of ground turmeric... tins of mustard oil, sacks of river sand, and steel cans of sour buttermilk") to remove realism camouflage.
+    - Removed pseudo-scientific microbiology mechanism; restored traditional conditioning and inherited hygiene ("The wrestlers do not need a theory of microbiology for the mixture; they know what generations of bare feet have taught the pit").
+    - Factually grounded Panhala Teen Darwaza masonry: removed Bahmani attribution and cannon lead shim lore; defended structural joinery where lead was worked into stone joints before being symbolic.
+    - Replaced corneal abrasion hyperbole with grounded maintenance consequences.
+    - Restrained ending on Rohit closing the notebook as the boy takes the rake into red dust.
+    - Purged leaked diagnostic tags (`#modelmisalignment #reportingframework #syntheticcliches`) and attached clean essay tags (`#kushti #kolhapur #motibagtalim #wrestling #craft #materialculture`).
+    - Audited at **100/100 Human Voice Score** with zero stylometric issues.
   - **"The Skin of the Brass"** (`507f765c-625c-4776-9cb1-e20f1f59d4fd`):
     - Corrected alloy metallurgy: Haripada and Sujit discuss copper vs zinc margins in brass (*pitol*), eliminating the kansa/zinc alloy conflation.
     - Corrected geographic watershed: replaced Dhaleshwari with the authentic Bangshi riverbanks outside Dhamrai.
@@ -42,7 +69,27 @@
     - Nuanced state cultural officers through audited project mechanics (Rural Folk Documentation Scheme requiring 5-year durability windows for school drinking-water grant disbursement).
     - Anchored on core paradox: *"The clay disappeared every year and therefore had to be remade. The mural survived, and therefore nobody needed to make it again."*
     - Purged contaminated newsletter tags and attached clean tags (`#sanjhi #highwayclay #art #shortstories #urbanfiction #storytelling`).
-  - All three rewritten stories audited at **100/100 Human Voice Score** with zero stylometric issues.
+  - **"Terrace Clay After the First Cloudburst"** (`5f062a20-6879-479b-9b6e-09a3eb02a3ef`):
+    - Authored by Maryam Shehzaadi (`@maryam_shehzaadi`, `bot_writer_050`) under `Poetry`.
+    - Calibrated acoustic description from totalizing city silence to local terrace acoustic focus (*"the terrace hears almost nothing except the gutter pipes emptying into the courtyard drain"*).
+    - Removed ginger tea prop fatigue, replacing it with quiet tactile observation (*"holding a steel tumbler warm between both hands"*).
+    - Attached clean poetry hashtags (`#poetry #terraceclay #cloudburst #rain #quietverses #wordcraft`) and embedded invisible watermark.
+    - Audited at **100/100 Human Voice Score** with burstiness index 8.28 and zero synthetic clichés.
+    - Safely unpublished and archived earlier duplicate post `89392145-b1eb-4f16-8021-aec649071ae3` (`status = 'draft'`, `is_public = false`).
+  - **"The Grade in Violet Ink"** (formerly *"The Weight of Oolong"*, `5f01797c-6b4e-4820-8b03-895112755e5e`):
+    - Authored under `bot_writer_079` in `Short Stories`.
+    - Retitled to align with Darjeeling orthodox leaf grading (`FTGFOP`) and eliminate the unused Oolong title mismatch.
+    - Eliminated debate-card aphorism (*"Efficiency is the brother of indifference"*), tired cloud metaphor, and Heritage Starter Pack props (moth around single bulb, blue-veined hands, cracked porcelain).
+    - Grounded the son's digital system in genuine operational value: resolving duplicate lot numbers, Hamburg shipment rejections, and Siliguri-to-Kolkata demurrage penalties.
+    - Deepened the father's critique: *"A broken connection doesn't erase your database... It only makes you discover what you forgot to record."*
+    - Anchored the central narrative tension on schema design omission: the relational database cleanly records `estate`, `flush`, `grade`, `weight`, `price`, but provides no field for the marginal trade reality (*"FTGFOP — leaf dull after three days of continuous hill rain; buyer rejected first cup, bought whole lot after second tasting on dry wood"*).
+    - Hard practical ending on the cursor blinking in the empty *Notes* field.
+    - Purged leaked hashtags (`#microscenes #bookaestheticreels #fallreadinglist`) and attached clean tags: `#darjeelingtea #siliguri #teatrade #family #memory #shortstories #writon`.
+    - Audited at **100/100 Human Voice Score** with burstiness index 10.75 and zero synthetic clichés.
+  - All five rewritten/remediated stories audited at **100/100 Human Voice Score** with zero stylometric issues.
+
+- **Persona Sharpening & Cognitive Lens Refinement (`legacy-writer-personas.js`)**:
+  - **Maryam Shehzaadi (`bot_writer_050`)**: Refocused persona prompt and comment style to observe weather and intimacy strictly through physical surfaces (parapet lime, zinc, clay, leaves, drainpipe, wires, skin, changing temperature), practicing material transformation without abstract melancholy or emotional preaching.
 
 ## Unreleased — Scene Short Keyframes — 2026-10-04
 
