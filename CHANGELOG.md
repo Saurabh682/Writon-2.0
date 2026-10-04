@@ -1,5 +1,144 @@
 # Changelog & Update History — WritOn 2.0
 
+## Unreleased — YouTube Short #21: Let the Action Contradict the Dialogue (Unlisted) — 2026-10-04
+
+- **Editorial Direction & High-Retention Micro-Short**:
+  - Authored, animated, synthesized, and published YouTube Short #21 (*“Let the action contradict the dialogue”*).
+  - Tightly structured 14.00-second lesson contrasting physical movement against spoken words:
+    - `0–2s`: Hand wipes an already-clean counter → *“Would you believe her?”*
+    - `2–4s`: The hand pauses, then wipes again → *“‘I’m fine,’ she said.”*
+    - `4–7s`: Tight crop on repeated movement → *“‘I’m fine.’ She wiped the counter again.”*
+    - `7–10s`: Second illustrated example (checking a watch while saying *“Take your time”*) → *“The action can disagree.”*
+    - `10–14s`: Hold final frame with on-screen subscription badge (`SUBSCRIBE FOR DAILY CRAFT FIXES` @writon_socialapp).
+  - Enforced brand-compliant Warm Parchment (`#FAF5EE`) canvas, classical editorial serif typography, terracotta watercolor blooms, and gentle tactile transitions.
+  - Multi-touchpoint Channel Subscription CTA embedded across end-card and video description (`https://writon.cc/youtube?sub_confirmation=1`).
+  - Successfully uploaded as **unlisted** to YouTube:
+    - **URL**: `https://www.youtube.com/shorts/yW6zAjAdSKo`
+    - **Video ID**: `yW6zAjAdSKo`
+    - **Privacy**: `unlisted`
+
+## 2.0.84 (183) — Community Home & Editorial — 2026-10-02
+
+- Prepare a signed testing bundle of the source-separated Home/Editorial, retained Explore drawer, persistent incoming-story inbox, reader recovery and Credential Manager sign-in UX already present locally. No additional feature or backend deployment in this packaging task.
+- Increment both Android release identifiers and replace store notes for en-US, en-IN, hi-IN, mr-IN and bn-BD. Signed `WritOn-2.0.84-183.aab` validates with bundletool and the expected upload certificate; 249 debug and 249 release unit tests pass, release lint has zero errors (872 warnings), and the Gradle rerun exits successfully after an initial Windows cache-lock cleanup error. The previous Redmi evidence applies to debug 2.0.83 (182), not this signed bundle.
+- Upload the 27,649,263-byte AAB to the connected Google Drive and email its download link to the connected account, summaries.wp@gmail.com. SHA-256: `9400fad221ca7adbec07b2aa33fbc74e1598ae203f077816508c7c3678949b3c`. Live source-feed verification passes after an earlier transient health HTTP 500; no backend deployment or Google Play upload was performed.
+
+## Unreleased — Google Cloud Email Delivery & Cloud Scheduler Configuration — 2026-10-02
+
+- **Admin Credential Rotation & Secret Hardening (`writon-app-2020`)**:
+  - Implemented immediate rotation of `writon-admin-secret-key-production` in Google Cloud Secret Manager (version `3` added, older versions `1` and `2` permanently destroyed).
+  - Securely synchronized rotated key across all dependent workloads: Cloud Scheduler jobs (`writon-notification-outbox-drain`, `writon-email-outbox-process`) and `server/.env` without exposing credentials in logs.
+- **Fail-Closed Unsubscribe Enforcement (`weekly-digest-scheduler.js`)**:
+  - Removed insecure `'preview_token'` string fallback. When signing keys are missing or invalid, unsubscribe token generation now strictly fails closed (`throws Error`), preventing unsigned or invalid links from being issued.
+- **Authenticated Cloud Scheduler Outbox Delivery (`asia-south1`)**:
+  - Configured Cloud Scheduler job `writon-email-outbox-process` running every 5 minutes (`*/5 * * * *`, Asia/Kolkata) targeting `https://writon-app-api-802112841589.asia-south1.run.app/api/v1/internal/jobs/process-emails`.
+  - Architecture note on internal job protection: The Cloud Run service enforces defense-in-depth via `verifyAdminKey` (`x-admin-key` header matching rotated secret). The OIDC identity `writon-scheduler-invoker@writon-app-2020.iam.gserviceaccount.com` is configured at the Cloud Scheduler layer; endpoint authorization relies on `x-admin-key` validation.
+- **Rigorous Catch-Up Audit & Eligibility Reconciliation (`scripts/rigorous-catchup-audit.mjs`)**:
+  - Audited 4,266 profiles with strict multi-layer filtering (excluding 271 bots, 616 anonymous/dummy accounts, 3,360 unverified emails, 0 suppressions, and 669 previously sent campaigns).
+  - Enforced legal consent & cadence requirements: `public.user_email_preferences` defaults to `false` for privacy compliance. Zero unconsented users can receive discretionary emails.
+  - Net strictly eligible human users for bulk sending right now: **0**. Bulk sending remains fully disabled.
+
+## Unreleased — Batch Story Publication (October 2 Slate) — 2026-10-02
+
+- **Batch Persona Publication & Zero-Repetition Rotation (`publish-oct2-slate-immediate.mjs`)**:
+  - Immediately published all 4 curated pieces to the live WritOn platform, rotating across diverse active personas from the 96-writer pool in strict adherence to the multi-day exclusion policy (excluding Aarav, Devansh, Sunita, and Gurpreet):
+    1. **The Disposable Code Dilemma: The Hidden Cost of Ephemeral Scripts** by **Karthik Subramanian** (`@karthik_subramanian`, Tech) — URL: `https://writon.cc/stories/the-disposable-code-dilemma-the-hidden-cost-of-ephemeral-scripts-f7ba1f8d-9e8`
+    2. **The 100-Word Discipline: How Extreme Brevity Restores Precision to Fiction** by **Ananya Bose** (`@ananya_bose`, Short Stories) — URL: `https://writon.cc/stories/the-100-word-discipline-how-extreme-brevity-restores-precision-to-fictio-7247bc6a-920`
+    3. **Canopy and Solitude: Why Gardens Are Becoming Literary Commons** by **Radhika Gowda** (`@radhika_gowda`, Culture) — URL: `https://writon.cc/stories/canopy-and-solitude-why-gardens-are-becoming-literary-commons-e00e74ac-45b`
+    4. **Escaping the Walled Garden: When Open-Source Software Depends on Proprietary Gates** by **Riya Sharma** (`@riya_sharma_systems`, Tech) — URL: `https://writon.cc/stories/escaping-the-walled-garden-when-open-source-software-depends-on-propriet-0ed673fe-d4d`
+  - All stories ingested with `status = 'published'`, `is_public = true`, and updated `last_posted_at` timestamps for fair rotational balance.
+  - Automatically regenerated all SEO assets via `generate-seo-feeds.mjs`:
+    - Full sitemap updated with 827 total URLs (`public/sitemap.xml`, `public/sitemap-main.xml`, `public/sitemap_index.xml`).
+    - RSS 2.0 feeds regenerated (`public/feed.xml` and `public/rss.xml` with 805 unique published stories).
+    - Google News sitemap updated (`public/news-sitemap.xml`).
+
+## Unreleased — Website Remediation Follow-up (V01–V10 Resolution & Hardening) — 2026-10-02
+
+- **Explore Script Execution & Syntax Fix (V01, W11)**:
+  - Corrected syntax parse error in `public/js/explore.js` caused by an unmatched closing brace after `loadTopStoriesForCarousel`.
+  - Verified syntax with `node --check public/js/explore.js` (clean exit 0). Category switching, pagination, and mobile drawer interaction now parse and initialize reliably.
+- **Production Web Bundle Compilation & Type Safety (V02, W05)**:
+  - Resolved TS6133 unused declarations (`useRef`, `setClientDraftId`) and TS7006 implicit `any` parameter in dictation callback (`prev: string`) in `web/src/components/StoryEditor.tsx`.
+  - Re-executed full `npm run build` in `web/` (`tsc && vite build`), generating a production bundle in 4.74s with zero compilation or type warnings.
+- **Truthful Email Preferences Contract & Routing (V03, W02, W15)**:
+  - Synchronized `public/email/unsubscribe.html` with server preferences contract schema (`reading`, `activity`, `writerTips`, `lifecycle`).
+  - Added dedicated `pref-lifecycle` UI control ("Account & Onboarding Guides").
+  - Fixed API routing by binding to `https://api.writon.cc` (fallback for local dev) and added `/api/**` rewrite in `firebase.json` routing directly to Cloud Run `writon-app-api`.
+  - Updated `unsubscribeAll()` to explicitly set all 4 boolean flags to `false`. Added contract integration test in `server/test/email-engagement-routes.test.js` validating both `GET` and `PATCH`.
+- **DOM Boundary Sanitization & Fail-Closed Fallback (V04, W01, W18)**:
+  - Updated `public/stories/index.html` to construct author avatar and story cover images safely via DOM node properties (`document.createElement('img')`, `.src`, `.alt`, `loading='lazy'`), eliminating raw attribute string interpolations.
+  - Made `formatMarkdownToHtml` fail closed: if DOMPurify fails to load, it safely returns escaped text rather than executing unvalidated raw HTML.
+- **Security Policy & CSP Coverage (V05, W03, W09, W20)**:
+  - Updated CSP headers in `firebase.json` across `/`, `**/*.html`, and clean extensionless routes.
+  - Permitted required external origins: `https://www.gstatic.com`, `https://www.googletagmanager.com`, Firebase Auth (`https://identitytoolkit.googleapis.com`, `https://securetoken.googleapis.com`, `https://*.firebaseio.com`), and Google Analytics (`https://*.google-analytics.com`).
+  - Removed disruptive `Clear-Site-Data: "cache"` header.
+- **Mobile Language Selector Layout (V06, W10)**:
+  - Updated `.lang-selector-wrap` and `.nav-wrap` responsive styles in `public/explore/index.html`.
+  - On viewports $\le 480\text{px}$ and down to $320\text{px}$, language selector dynamically shrinks (`max-width: 78px`/`68px`) with compact padding, preventing header element clipping and document overflow.
+- **Account-Isolated Draft Persistence (V07, W05, W06)**:
+  - Scoped active draft ID and draft contents by authenticated user profile (`user_{id}_writon_active_draft_id` and `user_{id}_draft_{id}`) with guest fallback (`guest_...`).
+  - Wrapped all storage interactions in error-safe try/catch blocks to gracefully handle quota exhaustion or private browsing restrictions.
+- **Privacy Cache Header Tightening (V09, W04)**:
+  - Tightened `/stories/:slug` response caching in `server/src/server.js` from `public, max-age=300, stale-while-revalidate=3600` to `public, max-age=60, must-revalidate` so story unpublishing, privacy updates, or deletions take effect quickly on CDNs.
+- **Test Suite & Security Verification (V10, W24)**:
+  - Added JSON-LD script tag escaping test in `server/test/story-sanitizer.test.js` verifying that `<` characters are encoded as `\u003c`, preserving parseable JSON while blocking script breakout vectors.
+  - Added preferences contract tests in `server/test/email-engagement-routes.test.js`.
+  - Full suite verified: 91 backend tests in `server` pass; all 6 tests in `web` pass; web production build succeeds; all public JavaScript files pass node syntax check.
+
+## Unreleased — Separate Community Home, Editorial and Explore — 2026-10-02
+
+- Add separate community/editorial feed endpoints; preserve the mixed compatibility endpoint and every existing API. Community excludes synthetic content, editorial-bot accounts and registered bot authors, including personas previously marked human.
+- Home and Editorial use independent server-approved membership lists, including bounded offline membership. Shared reader/search cache writes cannot add stories to either deck. Unclassified responses fail closed without mixed-feed fallback.
+- Editorial replaces Explore in the bottom bar. Preserve Explore in a native left-to-right swipe drawer on Home/Editorial, with an explicit Explore button, close button and Back handling; preserve existing Explore routes.
+- Label both surfaces, localize the labels and offer Editorial when the community feed is genuinely empty. Let cover artwork use available card space to avoid squeezing the footer on smaller screens.
+- Keep the existing personalized/mixed fallback inactive for these surfaces until source-safe ranking is available. Bot generation/publishing and older APIs are unchanged. Deployed only the additive feed routes to Google Cloud production revision `writon-app-api-community-editorial-20261002`; installed debug 2.0.83 (182) on Redmi without clearing app data.
+- Fix drawer Back callback priority: register it when Explore opens so Back closes the drawer instead of popping the underlying Editorial page. Its live-feed device regression passes.
+- Verification: 249 Android unit checks, 75 Fastify contract checks and 13 Redmi instrumentation checks pass. Live API/database verification checks 120 source-classified cards with no overlap; catalog contains 614 community and 187 editorial stories. Existing engagement-preferences 500s also occur on the retained prior revision and remain a separate issue. See the rollout record for release boundaries and rollback.
+
+## Unreleased — LinkedIn Live Publication: AI Made Code Cheap — 2026-10-02
+
+- Published live LinkedIn post: *"AI Made Code Cheap. It Didn't Make Software Cheap."* ([URN: `urn:li:share:7511493264051601408`](https://www.linkedin.com/feed/update/urn:li:share:7511493264051601408)).
+- Passed all 20 LinkedIn editorial & anti-spam quality gates (`LI01`–`LI20`).
+- Strictly enforced lowercase hashtags at the post conclusion: `#softwareengineering #technicaldebt #developerexperience #softwarearchitecture #artificialintelligence`.
+- Approved and frozen Candidate `0b12be3a-3ae6-4315-a4a1-d6b6d619b851` (Version `0e257823-04c9-4260-973a-56221298c3d8`) and recorded publication `c632941f-f9a5-4e70-9f8c-eff326ec2686` in PostgreSQL database.
+
+## Unreleased — Welcome Delivery Repair & Firebase Founder IDs — 2026-10-01
+
+- Preserve existing lifecycle opt-outs/withdrawals when retrying welcome queueing; use the current email-address version and require signed unsubscribe links.
+- Require recorded consent before optional delivery. Validate real email verification and address version instead of inferring verification from an email's existence; temporarily defer recent welcomes awaiting verification.
+- Add an admin-guarded, bounded welcome-queue reconciliation endpoint, dry-run by default, for recent verified human profiles with recorded lifecycle consent. It neither sends email nor reactivates cancelled/ambiguous jobs.
+- Accept Firebase UIDs as well as legacy UUID profile identifiers for founder assignment; prepare a forward migration widening the immutable audit identifier to text without renumbering anyone.
+- Production remains unchanged in this batch. Resend read-only checks returned 401 for the configured key; Google Cloud email secrets, deployment/scheduling, webhook receipt verification and exact founder cohort confirmation remain gates.
+
+## Unreleased — Redmi Sign-In Layout Verification — 2026-10-01
+
+- Make Login scrollable with keyboard insets so Google sign-in and account creation remain reachable on smaller screens.
+- Correct device-test selectors for the actual email/username placeholder and combined account/legal text; verify lower controls after scrolling.
+- Redmi verification: the direct instrumentation batch passes all 12 checks; linked-reader checks also pass separately and on a further repeat. One preceding Gradle-managed cold-start run timed out, so keep this recorded as an intermittent result rather than claiming universal reliability.
+- All 245 Android unit checks pass. Real Google provider success, live FCM delivery, offline recovery and a user-data upgrade remain manual gates; migration tests use a seeded database fixture. Leave debug 2.0.82 (181) installed on the test phone.
+
+## Unreleased — Persistent Story-Link Inbox — 2026-10-01
+
+- Add an additive Room 6→7 migration for a device-local story-link inbox without deleting drafts, cached stories or pending mutations.
+- Retain incoming shared/push story links before navigation and data-message links before the FCM callback returns. System-handled background notification links are captured when tapped; no claim of interception before that tap.
+- Deduplicate slug/canonical aliases after story resolution. Opening marks a link read but retains it until explicit dismissal; failed loads can be reopened from the bell.
+- Give guests access to the bell inbox without authenticated activity requests. Keep account-specific links hidden from guests and other accounts; retain device-guest links after registration.
+- Use themed local cards with localized source, read state, open and dismiss actions; keep existing server activities and notification endpoints unchanged.
+- Correct Google chooser Activity selection when the app provides a localized Compose context.
+- Add unit checks for reconciliation and repeated delivery, plus device checks for migration preservation, database reopen persistence, account isolation and guest inbox controls.
+- Verification: all 245 Android unit tests pass with zero failures/errors/skips; device-test sources compile. Redmi is not yet visible to ADB, so migration, provider and on-device UI results are pending.
+
+## Unreleased — Linked Reader Recovery & Google Sign-In — 2026-10-01
+
+- Retain Reader and Comments ViewModels within their navigation entries; show loading, unavailable-story and retry states instead of a blank reader.
+- Preserve unconsumed incoming routes during Activity recreation without replaying a consumed launch intent.
+- Propagate cancelled detail requests without treating cancellation as a network failure or evicting cached content.
+- Migrate Login and Signup to the existing Credential Manager helper, including authorized-account fallback, cancellation handling and disabled duplicate requests.
+- Show localized Google chooser/authentication progress separately from email submission; fix the bell unread-marker layout import.
+- Add regression checks for request cancellation, linked-reader recreation and disabled Google progress controls. Device execution and authenticated provider verification remain release gates.
+- Verification: all 242 Android unit tests passed with zero failures/errors/skips; instrumentation sources compile. No USB device was available for device execution.
+- Record the approved independent delivery batches in `docs/plans/2026-10-01-reader-inbox-editorial.md`. No backend API or bot publishing behavior changed in this batch.
+
 ## Unreleased — YouTube Short #20: Stop Writing "Suddenly" (Unlisted Upload) — 2026-09-29
 
 - **YouTube Short #20 Uploaded (Unlisted)**:
@@ -13,6 +152,22 @@
     - *Example 2*: `Suddenly, the glass shattered.` → `The shelf tilted. The glass hit the floor.`
   - Includes mandatory on-screen parchment subscription card (`SUBSCRIBE FOR DAILY CRAFT FIXES • @writon_socialapp`) and description subscription confirmation hook (`https://writon.cc/youtube?sub_confirmation=1`).
   - Recorded in `campaign/published-history.json`.
+- **Think Brain Rule 185 & Hard Visual Containment Invariant (`server/src/services/visual-layout-engine.js`)**:
+  - Implemented **Rule 185 (`VISUAL_CONTAINMENT_INVARIANT`)**: Eliminates text spill, element clipping, and line collisions across all social cards and visual assets.
+  - Built `VisualLayoutEngine`:
+    - Provides `wrapTextToWidth()` with font-specific pixel ratio metrics (serif, sans, mono) to accurately wrap text within pixel boundaries rather than naive character counts.
+    - Added `validateVisualContainment()` to enforce hard bounds checks on both horizontal margin overflow and vertical container overflow before asset generation.
+    - Mandated dynamic container heights (`boxHeight = contentHeight + (paddingY * 2)`) and explicit vertical clearances (`lineHeight >= fontSize * 1.35` and `>= 32px` below headings).
+  - Upgraded Quality Gate `LI11_VISUAL_TEXT_CONTAINMENT` in `server/src/services/linkedin-validator-service.js` to fail closed if any visual spill is detected.
+  - Calibrated LinkedIn visual hook card (`writer_search_reader_hook.png`) with clean, verified line spacing and zero text spill.
+- **LinkedIn Media Dispatch (Live)**:
+  - Dispatched *A Search Result Isn't A Reader (Give Them a Reason to Return)* with the official warm watercolor book aesthetic card:
+    - Post URN: `urn:li:share:7510540069682954240`
+    - Live URL: `https://www.linkedin.com/feed/update/urn:li:share:7510540069682954240`
+    - Image uploaded via LinkedIn Images API (`image/jpeg`, 370.8 KB, SHA256 verified).
+    - Lowercase hashtags enforced: `#fictionwriting #indieauthors #writingcommunity`.
+    - Evaluated through all 20 Quality Gates (`LI01`–`LI20`) with 100% pass rate.
+    - Publication record immutably stored in PostgreSQL (`linkedin_publications`, ID `57b37acb-30fc-4312-917b-8cf31c11894d`).
 
 ## Unreleased — Instagram Reel & Story: The One-Page Print Book Drill — 2026-09-29
 

@@ -1072,6 +1072,14 @@
       "url": "https://www.youtube.com/shorts/DP9-T9FJ0mM",
       "privacyStatus": "unlisted",
       "publishedAt": "2026-09-29T03:07:56.000Z"
+    },
+    "short21_action_contradicts_dialogue": {
+      "title": "Let the action contradict the dialogue #shorts #writingtips",
+      "duration": 14,
+      "videoId": "yW6zAjAdSKo",
+      "url": "https://www.youtube.com/shorts/yW6zAjAdSKo",
+      "privacyStatus": "unlisted",
+      "publishedAt": "2026-10-04T14:42:52.994Z"
     }
   },
   "brainDispatches": {
@@ -1206,6 +1214,14 @@
       "videoUrn": "urn:li:video:D4D10AQGPJECiKeIbCg",
       "publishedAt": "2026-09-25T15:17:14.119Z",
       "title": "Writing Craft: Kill Filter Words"
+    },
+    "urn:li:share:7511493112280612864": {
+      "id": "urn:li:share:7511493112280612864",
+      "platform": "linkedin",
+      "postUrn": "urn:li:share:7511493112280612864",
+      "liveUrl": "https://www.linkedin.com/feed/update/urn:li:share:7511493112280612864",
+      "publishedAt": "2026-10-01T18:31:55.221Z",
+      "title": "AI Made Code Cheap. It Didn't Make Software Cheap."
     }
   },
   "stories": {
