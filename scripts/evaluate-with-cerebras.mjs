@@ -1,5 +1,8 @@
 async function runCerebrasEvaluation() {
-  const apiKey = 'csk-2thf28xejd38d5nhhv9y6ne923nnnyc42e5prmm5j28pr9nw';
+  const apiKey = process.env.CEREBRAS_API_KEY;
+  if (!apiKey) {
+    throw new Error('CEREBRAS_API_KEY is not set. Configure it in environment variables.');
+  }
   const draft = `CRITIQUE INSTRUCTION:
 You are an uncompromising literary editor evaluating a prospective essay draft against the WritOn Zero AI Slop Standard.
 

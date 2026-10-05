@@ -1,5 +1,8 @@
 async function evaluateWithMuse() {
-  const key = 'LLM|1580441866877952|S5xg8AQ-7BsAqmfgDgCsQqI-Qsw';
+  const key = process.env.MUSE_API_KEY;
+  if (!key) {
+    throw new Error('MUSE_API_KEY is not set. Configure it in environment variables.');
+  }
   const prompt = `CRITIQUE INSTRUCTION:
 You are an uncompromising literary editor evaluating a prospective essay draft against the WritOn Zero AI Slop Standard.
 

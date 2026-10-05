@@ -1,5 +1,18 @@
+import fs from 'fs';
+import path from 'path';
+
 async function evaluateWithUserKey() {
-  const key = 'AQ.Ab8RN6LRc9_WBlDANsf6HPOoWorOs4fcGFRdUPBjkNXhue3zzg';
+  const envPath = path.resolve('server/.env');
+  let key = process.env.GEMINI_API_KEY || '';
+  if (!key && fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf-8');
+    const match = envContent.match(/^GEMINI_API_KEY=(.*)$/m);
+    if (match) key = match[1].trim();
+  }
+
+  if (!key) {
+    throw new Error('GEMINI_API_KEY is not set. Configure it in server/.env or environment variables.');
+  }
 
   const prompt = `You are an uncompromising literary editor evaluating a prospective essay draft against the WritOn Zero AI Slop Standard.
 Zero AI Slop mandates:

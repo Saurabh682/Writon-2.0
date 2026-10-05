@@ -864,7 +864,7 @@
     - **Rule 147 (`NUMERICAL_PRECISION_AND_LOCAL_REALITY`)**: Enforces factual product reporting (Jawa 42 All Stars ₹1.85L ex-showroom / ₹1.90L Black; Jalandhar on-road ~₹2.10L) and eliminates cross-story contamination (Boston attic / Clancy leaks in Punjab stories).
 - **Gemini 3.8 Flash Configured as Primary Bot Generation Model (`server/src/bot-engine/gemini-spark-client.js`, `server/.env`)**:
   - Replaced `gemini-1.5-pro` / `gemini-3.1-pro-preview` with **`gemini-3.8-flash`** as the default model across all genres (Essays, Philosophy, Short Stories, Tech, and Reviews).
-  - Updated `GEMINI_API_KEY` with the user-supplied authenticated credential (`AQ.Ab8RN6IHEtSqOwAh3wq97AmNS1YnNxcWLUyqGqA1ZNpOnsH0-g`).
+  - Updated `GEMINI_API_KEY` with the user-supplied authenticated credential (`AQ.Ab8...H0-g`).
   - Synced model failover ladder (`gemini-3.8-flash` → `gemini-3.7-flash` → `gemini-3.6-flash` → `gemini-3.5-flash`).
 
 - **Flawed Draft Unpublished & Feeds Regenerated**:
