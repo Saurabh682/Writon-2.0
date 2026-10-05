@@ -62,12 +62,12 @@ async function run() {
   );
   console.log('Updated Bikes review author:', r2.rows[0]);
 
-  // Archive duplicate post af2d0e0d-fae9-4e7f-9425-5e61732929da
+  // Mark duplicate post af2d0e0d-fae9-4e7f-9425-5e61732929da as draft
   const r3 = await pool.query(
-    "update public.posts set is_public = false, status = 'archived' where id = $1 returning id, title, status, is_public",
+    "update public.posts set is_public = false, status = 'draft' where id = $1 returning id, title, status, is_public",
     ['af2d0e0d-fae9-4e7f-9425-5e61732929da']
   );
-  console.log('Archived duplicate post:', r3.rows[0]);
+  console.log('Set duplicate post to draft:', r3.rows[0]);
 
   await pool.end();
 }
