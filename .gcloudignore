@@ -1,39 +1,70 @@
 # Cloud Run source deployments use the root Dockerfile and the active server only.
-.git/
-.github/
-.gradle/
-.idea/
-.agents/
-.codex/
-.worktrees/
-app/
-campaign/
-docs/
+.*
+!.gcloudignore
 
-graphify-out/
+# Non-server root directories
+app/
+artifacts/
+build/
+campaign/
+data-exports/
+deliverables/
+docs/
+extensions/
+gradle/
 graft/
-play_store_assets/
-public/
-/scripts/
-web/
+graphify-out/
+models/
 node_modules/
 **/node_modules/
+play_store_assets/
+public/
+public-api/
+release/
+renders/
+scratch/
+scripts/
+snapshots/
+sounds/
+spark-skills/
+tools/
+web/
+
+# Server-internal ignores
 server/node_modules/
 server/cloudflared.exe
 server/backups/
 server/uploads/
 server/legacy_hono/
 server/writon.db*
-scratch/
-release/
-deliverables/
-data-exports/
+server/staging/*.png
+
+# Ensure server/src is fully preserved
+!server/src/**
+
+# Python virtual environments & bytecode
+**/.venv/
+**/venv/
+**/__pycache__/
+
+# Media files
+*.mp4
+*.mov
+*.webm
+*.avi
+*.png
+*.jpg
+*.jpeg
+*.svg
+*.gif
+*.wav
+*.mp3
+
+# Binaries & keystores
 *.apk
 *.aab
 *.exe
 *.dump
-server/staging/*.png
-**/build/
 **/.env
 **/.env.*
 !**/.env.example
@@ -41,6 +72,3 @@ server/staging/*.png
 **/*.keystore
 **/serviceAccountKey*.json
 **/google-services.json
-
-
-

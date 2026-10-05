@@ -1,8 +1,31 @@
 # Changelog & Update History — WritOn 2.0
 
-## Unreleased — Short #21 Thumbnail — 2026-10-05
+## Unreleased — Cloud Build Optimization, Review Personas & Cloud Run Production Rollout — 2026-10-05
 
-- Created a separate portrait thumbnail with the “I’M FINE” / “BUT HER ACTIONS SAY OTHERWISE” hook, matching the video's wiping scene and warm parchment styling. Saved the asset and generation prompt alongside the editable Short project.
+- **Cloud Build & Deployment Optimization**:
+  - Hardened `.gcloudignore` with directory-anchored exclusions for `tools/` (including Python `.venv`), `campaign/` media renders, `models/`, `build/`, and raw assets, shrinking the Cloud Build source upload payload from 23.3 GiB down to 6.9 MiB (99.97% reduction).
+  - Built immutable container image `asia-south1-docker.pkg.dev/writon-app-2020/writon/writon-api:bot-pipeline-20261005` in Cloud Build (`1a3422cb-dd1e-4d4d-86af-e0920588f340`).
+  - Successfully deployed to Cloud Run staging (`writon-app-api-staging`) at revision `writon-app-api-staging-00045-vib` with 100% traffic, and verified database connectivity.
+  - Linked missing secret references (`DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `ADMIN_SECRET_KEY`, `CORS_ORIGINS`, `RESEND_API_KEY`) and promoted to production `writon-app-api` at revision `writon-app-api-00032-sg2` (100% traffic).
+  - Verified live production connectivity on both `https://writon-app-api-rfusi3iwbq-el.a.run.app/health` and canonical `https://api.writon.cc/health`.
+
+- **Review Personas Cloud Database Seeding**:
+  - Seeded and activated all 20 specialized reviewer personas across Cars, Smartphones, Audio/Sound Systems, Cinema, Hardware, and Gaming in Cloud PostgreSQL (`rrxaitxeirykmiihgiqj`).
+
+## Unreleased — Marketing Attribution, GA4 Acquisition Reports & Reading Key-Event Audit — 2026-10-05
+
+- **Attribution & Parameter Forwarding**:
+  - Standardized all outbound link conventions to consistent lowercase values: `utm_source=<platform>`, `utm_medium=social`, `utm_campaign=writon_oct_2026`, `utm_content=<creative>`.
+  - Updated `server/src/routes/vanity-redirects.js` and `server/src/routes/campaign-redirect.js` to preserve and forward all incoming query parameters across 302 redirects to destination targets (Play Store install referrer and web story reader destinations).
+  - Eliminated internal website UTM link tags in `public/stories/index.html` (`loadNextRecommendation` candUrl), adhering strictly to Google Analytics standards to prevent internal navigation from wiping initial session acquisition attribution.
+  - Updated `server/src/services/campaign-registry.js` and `public/go/index.html` defaults to `writon_oct_2026` and `social`.
+- **Reading Telemetry & Key-Event Validation**:
+  - Implemented deduplicated `reader_first_story_completed` milestone key event in `public/stories/index.html` alongside `story_opened` and `story_completed`.
+  - Added user state detection (`signed_in` vs `guest`) in telemetry payloads.
+  - Ensured routine app launches and superficial views do not trigger activation; activation is strictly reserved for qualified story completion.
+- **Automated Verification**:
+  - Added test suite `server/test/reading-telemetry.test.js` and updated `server/test/campaign-redirect.test.js` and `server/test/vanity-redirects.test.js` (20/20 passing tests).
+
 
 ## 2.0.85 (184) — Clear Home & Explore — 2026-10-05
 
