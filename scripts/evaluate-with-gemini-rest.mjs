@@ -11,7 +11,11 @@ if (fs.existsSync(envPath)) {
 }
 
 if (!apiKey) {
-  apiKey = process.env.GEMINI_API_KEY || 'AQ.Ab8RN6JUemn5sx5S5hWSckq4jjfQbkmu2hjsqgS1YuKgY4lSTQ';
+  apiKey = process.env.GEMINI_API_KEY;
+}
+
+if (!apiKey) {
+  throw new Error('GEMINI_API_KEY is not set. Please configure it in server/.env or environment variables.');
 }
 
 async function evaluateDraft() {
