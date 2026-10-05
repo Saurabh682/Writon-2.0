@@ -1,5 +1,44 @@
 # Changelog & Update History — WritOn 2.0
 
+## 2.0.85 (184) — Clear Home & Explore — 2026-10-05
+
+- Package the Redmi-verified Explore drawer clipping fix and navigation regression checks in a new signed Android bundle; increment both Android release identifiers without reusing version code 183.
+- Update ready-to-paste Google Play notes for en-US, en-IN, hi-IN, mr-IN and bn-BD (251–279 characters per locale). Signed `WritOn-2.0.85-184.aab` is 27,650,326 bytes; bundletool validation, embedded version checks, signature and expected upload-certificate checks pass. All 249 release unit tests pass; release lint has zero errors (872 warnings). SHA-256: `75d32dbcc912c3f63c77e748f855e16d6ea593c69b939402d79793077ad70fc2`.
+- Release build succeeds. Drawer behavior was verified on Redmi using the preceding debug build; this exact AAB has not been installed through Google Play. No Drive upload, email dispatch, backend deployment or bot change in this packaging task.
+
+## Unreleased — Scheduled Bot Publishing Pipeline Decisions Connected — 2026-10-05
+
+- **End-to-End Pipeline Decision Integration**: Connected all missing decision points across the scheduled bot publishing pipeline (`master-scheduler.js`, `trend-orchestrator.js`, `spark-runner.js`, `editorial-ledger-service.js`, `content-relevance-service.js`, `trend-scout-service.js`):
+  - **Decision 1 (Research Verification Gate)**: Wired `verifyResearchDossier` into editorial slot scheduling. Candidacies with weak evidence (<3 sources, missing timestamps, or older than 48 hours) are cleanly skipped rather than drafted.
+  - **Decision 2 (Distinct Angle Evaluation Gate)**: Added `evaluateEditorialAngleDistinctiveness` in `trend-orchestrator.js`. Rejects topics with generic headline repeats or headline clones; requires craft depth, systems tension, or concrete trade-offs before proceeding.
+  - **Decision 3 (Category & Format Lock)**: Enforced hardware/tech reviews (phones, chips, GPUs, kernels, cameras, benchmarks) to strictly route to `Reviews` or `Tech`, preventing inadvertent misclassification into `Culture`.
+  - **Decision 4 (Quality Gate Failure Handling)**: Replaced unhandled thrown exceptions with structured first-class `{ skipped: true, decision: 'SKIP', gate, reason }` outcomes for Article Integrity (`ZERO_AI_SLOP_INTEGRITY`), Anti-Repetition (`ANTI_REPETITION`), and Critic Review (`LM_STUDIO_CRITIC`). Never forces a fallback publication or fake slot filler.
+  - **Decision 5 (Automatic Low-Risk Publishing)**: Preserved unattended zero-human-touch publication for eligible low-risk briefs (`automatic_low_risk`) while respecting gate rejections.
+  - **Decision 6 (Contextual Comments Enforced)**: Enforced comment relevance requiring grounding in real details or questions from the story content.
+  - **Decision 7 (Outcome Recording in Ledger)**: Recorded all skips and publications in `editorial_ledger_entries` with provenance, source counts, avoid reasons, and slot IDs; updated `runMasterSchedulerTick` to classify skipped slots cleanly in `outcome.skipped`.
+- **Test Coverage**: Added comprehensive test suite `server/test/scheduled-pipeline-decisions.test.js` validating all 7 decision gates end-to-end (12/12 passing) and updated scheduler resilience tests (12/12 passing).
+
+## Unreleased — Calmer Short #21 Reading Holds & YouTube Publication — 2026-10-05
+
+- Published Short #21 (`short21_nicole_lesson_sarah_cta.mp4`) to YouTube as **Unlisted**: [`tsSin53mm9I`](https://www.youtube.com/shorts/tsSin53mm9I).
+- Switched the local lesson narration to Kokoro Nicole and retained Sarah solely for the subscription CTA, following the approved voice sample and reversed assignment. Scheduled the full script from measured speech at speed 1.04 (19.23 seconds), preserving still reading holds.
+- Removed repeated wiping and watch oscillations from the local Kokoro Short after user review. Reduced motion to brief 24-pixel wiping gestures and one 1.5-degree watch adjustment, with still holds for reading and the closing CTA.
+- Retained the complete 16-second narration and replaced the continuous-motion assertion with a caption-visibility check to reflect the intended still holds.
+
+## Unreleased — Explore Drawer Clipping — 2026-10-05
+
+- Bound the shared Home/Editorial Explore drawer to Material's maximum width and clip its contents, replacing the forced 95%-screen sizing that could leave an overlapping strip on the feed.
+- Extend the existing device regression test to assert the drawer is completely off-screen on launch, activity recreation, explicit close and system Back, and visible after a deliberate header swipe or the Explore button. Fully clipped nodes may be omitted from Compose semantics; wait for the recreated feed and swipe outside clickable story cards to avoid false test failures.
+- Verify on the authorized Redmi test phone: updated debug app installed without clearing data; the live Home/Editorial drawer regression passes (1 test), and a Home screenshot shows no overlapping strip. All 249 Android unit tests pass. No new AAB, backend deployment or Play upload was performed.
+
+## Unreleased — Local Kokoro Scene Short Rebuild — 2026-10-04
+
+- Restored omitted opening/closing narration and the original “Let actions contradict words” rule after script review; expanded the revised local cut to 16 seconds so every phrase fits at Kokoro Sarah speed 1.04 without truncation.
+- Created a separate editable Short #21 rebuild in `campaign/shorts-rendered/short21_action_contradicts_dialogue_codex_v2`, preserving the previous version.
+- Animated isolated counter-wiping and watch-checking illustrations over a continuous warm parchment scene, with readable craft examples and a four-second subscription prompt.
+- Synthesized Kokoro Sarah narration and scheduled captions from measured speech durations, with assertions against clipped or overlapping phrases.
+- Verified the local 14-second MP4 at 1080×1920 and 30 fps. HyperFrames strict layout, contrast, and motion checks passed; the mastered audio measured −16.25 LUFS and −1.56 dBTP. No publishing action was performed.
+
 ## Unreleased — YouTube Short #21 Calibrated & Published (Unlisted), Hashtag Semantic Gate & Story Remediations — 2026-10-04
 
 - **YouTube Craft Short #21 ("Let the action contradict the dialogue") Produced & Published (Unlisted)**:

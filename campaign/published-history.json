@@ -1074,14 +1074,14 @@
       "publishedAt": "2026-09-29T03:07:56.000Z"
     },
     "short21_action_contradicts_dialogue": {
-      "title": "Let the action contradict the dialogue #shorts",
-      "duration": 14,
-      "videoId": "o4J4Uep0xwM",
-      "url": "https://www.youtube.com/shorts/o4J4Uep0xwM",
+      "title": "Let the Action Contradict the Dialogue #shorts",
+      "duration": 19,
+      "videoId": "tsSin53mm9I",
+      "url": "https://www.youtube.com/shorts/tsSin53mm9I",
       "privacyStatus": "unlisted",
-      "framesSource": "01a071cf-e3dd-7fe3-9e47-822366ecc632",
-      "publishedAt": "2026-10-04T16:23:02.000Z",
-      "status": "verified_animated_zero_overlap"
+      "asset": "campaign/shorts-rendered/short21_action_contradicts_dialogue_codex_v2/short21_nicole_lesson_sarah_cta.mp4",
+      "voice": "af_nicole_lesson_sarah_cta",
+      "publishedAt": "2026-10-05T02:52:05.000Z"
     }
   },
   "brainDispatches": {
