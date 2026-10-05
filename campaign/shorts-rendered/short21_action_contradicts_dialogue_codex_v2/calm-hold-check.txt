@@ -1,0 +1,45 @@
+Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'short21_calm_kokoro.mp4':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    encoder         : Lavf63.1.102
+  Duration: 00:00:16.00, start: 0.000000, bitrate: 2704 kb/s
+  Stream #0:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], 2502 kb/s, 30 fps, 30 tbr, 15360 tbn (default)
+    Metadata:
+      handler_name    : VideoHandler
+      encoder         : Lavc63.1.102 libx264
+  Stream #0:1[0x2](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 194 kb/s (default)
+    Metadata:
+      handler_name    : SoundHandler
+Input #1, mov,mp4,m4a,3gp,3g2,mj2, from 'short21_calm_kokoro.mp4':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    encoder         : Lavf63.1.102
+  Duration: 00:00:16.00, start: 0.000000, bitrate: 2704 kb/s
+  Stream #1:0[0x1](und): Video: h264 (High) (avc1 / 0x31637661), yuv420p(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], 2502 kb/s, 30 fps, 30 tbr, 15360 tbn (default)
+    Metadata:
+      handler_name    : VideoHandler
+      encoder         : Lavc63.1.102 libx264
+  Stream #1:1[0x2](und): Audio: aac (LC) (mp4a / 0x6134706D), 48000 Hz, stereo, fltp, 194 kb/s (default)
+    Metadata:
+      handler_name    : SoundHandler
+Stream mapping:
+  Stream #0:0 (h264) -> setpts:default
+  Stream #1:0 (h264) -> setpts:default
+  ssim:default -> Stream #0:0 (wrapped_avframe)
+Press [q] to stop, [?] for help
+Output #0, null, to 'NUL':
+  Metadata:
+    major_brand     : isom
+    minor_version   : 512
+    compatible_brands: isomiso2avc1mp41
+    encoder         : Lavf63.1.102
+  Stream #0:0: Video: wrapped_avframe, yuv420p(tv, bt709, progressive), 1080x1920 [SAR 1:1 DAR 9:16], q=2-31, 200 kb/s, 30 fps, 30 tbn
+    Metadata:
+      encoder         : Lavc63.1.102 wrapped_avframe
+[Parsed_ssim_2 @ 0000028c11473b80] SSIM Y:0.999985 (48.230620) U:0.999934 (41.835553) V:0.999940 (42.219287) All:0.999969 (45.094873)
+[out#0/null @ 0000028c0f183c80] video:0KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame=    1 fps=0.0 q=-0.0 Lsize=N/A time=00:00:00.03 bitrate=N/A speed=0.0983x elapsed=0:00:00.33    

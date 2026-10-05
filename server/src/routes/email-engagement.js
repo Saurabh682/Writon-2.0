@@ -4,6 +4,7 @@ import { verifySvixWebhook } from '../email/webhook-verify.js';
 import { persistResendEvent } from '../email/webhook-handler.js';
 import { recordShareAction } from '../engagement/events.js';
 import { runWeeklyDigestScheduler } from '../jobs/weekly-digest-scheduler.js';
+import { reconcileWelcomeEmails } from '../email/queue.js';
 
 export async function emailEngagementRoutes(fastify, options) {
   const { database, config, emailWorker, writonAdapter, requireUser, verifyAdminKey } = options;
@@ -225,7 +226,8 @@ export async function emailEngagementRoutes(fastify, options) {
     if (typeof verifyAdminKey === 'function') {
       return verifyAdminKey(request, reply);
     }
-    return true;
+    reply.code(403).send({ error: 'Email job authorization unconfigured' });
+    return false;
   };
 
   fastify.post('/api/v1/internal/jobs/process-emails', async (request, reply) => {
@@ -235,6 +237,15 @@ export async function emailEngagementRoutes(fastify, options) {
     }
     const outcome = await emailWorker.runOnce();
     return outcome;
+  });
+
+  fastify.post('/api/v1/internal/jobs/reconcile-welcome-emails', async (request, reply) => {
+    if (!adminGuard(request, reply)) return;
+    const { days = 7, limit = 25, dryRun = true } = request.body || {};
+    if (!Number.isInteger(days) || days < 1 || days > 30 || !Number.isInteger(limit) || limit < 1 || limit > 100 || typeof dryRun !== 'boolean') {
+      return reply.code(400).send({ error: 'Use days 1–30, limit 1–100 and a boolean dryRun.' });
+    }
+    return reconcileWelcomeEmails(database, config, { days, limit, dryRun });
   });
 
   fastify.post('/api/v1/internal/jobs/enqueue-weekly-digests', async (request, reply) => {

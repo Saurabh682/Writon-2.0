@@ -136,4 +136,50 @@ describe('email engagement routes', () => {
     expect(resAuthorized.statusCode).toBe(200);
     expect(mockWorker.runOnce).toHaveBeenCalled();
   });
+
+  it('welcome repair defaults to dry-run and rejects unbounded or unauthorized calls', async () => {
+    const denied = await app.inject({ method: 'POST', url: '/api/v1/internal/jobs/reconcile-welcome-emails' });
+    expect(denied.statusCode).toBe(403);
+    const invalid = await app.inject({ method: 'POST', url: '/api/v1/internal/jobs/reconcile-welcome-emails', headers: { 'x-admin-key': 'secret123' }, payload: { days: 31 } });
+    expect(invalid.statusCode).toBe(400);
+    const result = await app.inject({ method: 'POST', url: '/api/v1/internal/jobs/reconcile-welcome-emails', headers: { 'x-admin-key': 'secret123' } });
+    expect(result.statusCode).toBe(200);
+    expect(result.json()).toMatchObject({ dryRun: true, enqueued: 0 });
+    expect(mockWorker.runOnce).not.toHaveBeenCalled();
+  });
+
+  it('GET and PATCH /api/v1/me/email-preferences truthfully load and update boolean contract fields', async () => {
+    // Test GET returns structured preferences
+    const resGet = await app.inject({
+      method: 'GET',
+      url: '/api/v1/me/email-preferences',
+    });
+    expect(resGet.statusCode).toBe(200);
+    const bodyGet = resGet.json();
+    expect(bodyGet).toHaveProperty('reading');
+    expect(bodyGet).toHaveProperty('activity');
+
+    // Test PATCH with boolean contract fields
+    const resPatch = await app.inject({
+      method: 'PATCH',
+      url: '/api/v1/me/email-preferences',
+      payload: {
+        reading: false,
+        activity: false,
+        writerTips: false,
+        lifecycle: false
+      }
+    });
+    expect(resPatch.statusCode).toBe(200);
+
+    // Test PATCH rejects non-boolean values with 400
+    const resInvalid = await app.inject({
+      method: 'PATCH',
+      url: '/api/v1/me/email-preferences',
+      payload: {
+        reading: 'not-a-boolean'
+      }
+    });
+    expect(resInvalid.statusCode).toBe(400);
+  });
 });

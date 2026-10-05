@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
@@ -118,7 +119,9 @@ fun FeedScreen(
     onInAppUpdateClick: () -> Unit = {},
     showExistingUserPreferencesCard: Boolean = false,
     onChoosePreferences: () -> Unit = {},
-    onDismissPreferences: () -> Unit = {}
+    onDismissPreferences: () -> Unit = {},
+    onExploreClick: () -> Unit = {},
+    onEditorialClick: () -> Unit = {}
 ) {
     val posts by viewModel.posts.collectAsState()
     val isRefreshing by viewModel.isRefreshing.collectAsState()
@@ -167,6 +170,19 @@ fun FeedScreen(
             hasUnreadNotifications = hasUnreadNotifications,
             onProfileClick = onProfileClick
         )
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(if (viewModel.audience == com.ibitvalley.writon.modern.data.repository.FeedAudience.EDITORIAL)
+                    R.string.nav_editorial else R.string.feed_community_title),
+                    style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(if (viewModel.audience == com.ibitvalley.writon.modern.data.repository.FeedAudience.EDITORIAL)
+                    R.string.feed_editorial_description else R.string.feed_community_description),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            androidx.compose.material3.TextButton(onClick = onExploreClick) {
+                Text(stringResource(R.string.nav_explore))
+            }
+        }
         HomeUpdateIndicator(
             state = inAppUpdateUiState,
             onClick = onInAppUpdateClick
@@ -295,7 +311,10 @@ fun FeedScreen(
             EmptyDiscovery(
                 modifier = Modifier.weight(1f),
                 state = feedEmptyState(isRefreshing, refreshFailed),
-                onRefresh = viewModel::refreshFeed
+                onRefresh = viewModel::refreshFeed,
+                onBrowseEditorial = onEditorialClick.takeIf {
+                    viewModel.audience == com.ibitvalley.writon.modern.data.repository.FeedAudience.COMMUNITY
+                }
             )
         } else {
             Row(
@@ -582,12 +601,22 @@ private fun HomeHeader(
             )
         }
         IconButton(onClick = onNotificationsClick) {
-            Image(
-                painterResource(R.drawable.ic_notification),
-                contentDescription = "Open notifications",
-                modifier = Modifier.size(25.dp),
-                colorFilter = if (hasUnreadNotifications) ColorFilter.tint(BrandRed) else ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
-            )
+            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
+                Image(
+                    painterResource(R.drawable.ic_notification),
+                    contentDescription = if (hasUnreadNotifications) "Notifications, unread" else "Notifications",
+                    modifier = Modifier.size(25.dp),
+                    colorFilter = if (hasUnreadNotifications) ColorFilter.tint(BrandRed) else ColorFilter.tint(MaterialTheme.colorScheme.onBackground)
+                )
+                if (hasUnreadNotifications) {
+                    Surface(
+                        modifier = Modifier.align(Alignment.TopEnd).offset(x = (-8).dp, y = 7.dp).size(12.dp),
+                        shape = CircleShape,
+                        color = BrandRed,
+                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.background)
+                    ) {}
+                }
+            }
         }
         IconButton(onClick = onLibraryClick) {
             Image(
@@ -745,7 +774,7 @@ private fun DiscoveryStoryCard(
                     imageUrl = post.coverImage,
                     category = post.category,
                     contentDescription = "Cover image for ${post.title}",
-                    modifier = Modifier.fillMaxWidth().height(228.dp),
+                    modifier = Modifier.fillMaxWidth().weight(1f),
                     categoryFontSize = 38.sp
                 )
             }
@@ -813,7 +842,8 @@ private fun FeedStatusBanner(message: String, action: String, onAction: () -> Un
 private fun EmptyDiscovery(
     modifier: Modifier = Modifier,
     state: FeedEmptyState,
-    onRefresh: () -> Unit = {}
+    onRefresh: () -> Unit = {},
+    onBrowseEditorial: (() -> Unit)? = null
 ) {
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -843,12 +873,17 @@ private fun EmptyDiscovery(
                     when (state) {
                         FeedEmptyState.LOADING -> R.string.feed_loading_message
                         FeedEmptyState.FAILURE -> R.string.feed_error_message
-                        FeedEmptyState.EMPTY -> R.string.feed_discovery_empty_message
+                        FeedEmptyState.EMPTY -> if (onBrowseEditorial != null) R.string.feed_community_empty else R.string.feed_discovery_empty_message
                     }
                 ),
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             if (state != FeedEmptyState.LOADING) {
+                if (state == FeedEmptyState.EMPTY && onBrowseEditorial != null) {
+                    androidx.compose.material3.TextButton(onClick = onBrowseEditorial) {
+                        Text(stringResource(R.string.nav_editorial))
+                    }
+                }
                 Spacer(Modifier.height(16.dp))
                 androidx.compose.material3.Button(
                     onClick = onRefresh,

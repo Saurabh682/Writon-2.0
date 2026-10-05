@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
   Eye,
@@ -16,6 +16,7 @@ import {
 import { createStory, uploadMedia } from '../lib/api';
 import { ClientAIEngine, VoiceDictationEngine } from '../lib/ai-engine';
 import { Category, Story } from '../types';
+import { useAuth } from '../context/AuthContext';
 
 interface StoryEditorProps {
   onBack: () => void;
@@ -36,16 +37,77 @@ const CATEGORIES: Category[] = [
 ];
 
 export const StoryEditor: React.FC<StoryEditorProps> = ({ onBack, onStoryPublished }) => {
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState<Category>('Essays');
-  const [summary, setSummary] = useState('');
-  const [content, setContent] = useState('');
-  const [coverImage, setCoverImage] = useState('');
+  const { user } = useAuth();
+  const storagePrefix = user?.id ? `user_${user.id}_` : 'guest_';
+
+  const getActiveDraftId = (): string => {
+    try {
+      const existing = localStorage.getItem(`${storagePrefix}writon_active_draft_id`);
+      if (existing) return existing;
+      const newId = crypto.randomUUID();
+      localStorage.setItem(`${storagePrefix}writon_active_draft_id`, newId);
+      return newId;
+    } catch {
+      return crypto.randomUUID();
+    }
+  };
+
+  const [clientDraftId] = useState<string>(() => getActiveDraftId());
+
+  const getSavedField = (field: string, fallback: string = ''): string => {
+    try {
+      const activeId = localStorage.getItem(`${storagePrefix}writon_active_draft_id`) || clientDraftId;
+      if (activeId) {
+        const saved = localStorage.getItem(`${storagePrefix}draft_${activeId}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          return typeof parsed[field] === 'string' ? parsed[field] : fallback;
+        }
+      }
+    } catch {}
+    return fallback;
+  };
+
+  const [title, setTitle] = useState(() => getSavedField('title', ''));
+  const [category, setCategory] = useState<Category>(() => {
+    const saved = getSavedField('category', 'Essays');
+    return (CATEGORIES.includes(saved as Category) ? saved : 'Essays') as Category;
+  });
+  const [summary, setSummary] = useState(() => getSavedField('summary', ''));
+  const [content, setContent] = useState(() => getSavedField('content', ''));
+  const [coverImage, setCoverImage] = useState(() => getSavedField('coverImage', ''));
+
   const [showPreview, setShowPreview] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isDictating, setIsDictating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-save draft changes to localStorage scoped to user
+  useEffect(() => {
+    try {
+      localStorage.setItem(`${storagePrefix}writon_active_draft_id`, clientDraftId);
+      localStorage.setItem(`${storagePrefix}draft_${clientDraftId}`, JSON.stringify({
+        title,
+        category,
+        summary,
+        content,
+        coverImage,
+        updatedAt: Date.now()
+      }));
+    } catch (e) {
+      console.warn('Could not auto-save draft to localStorage:', e);
+    }
+  }, [storagePrefix, clientDraftId, title, category, summary, content, coverImage]);
+
+  // Clean up dictation when component unmounts
+  useEffect(() => {
+    return () => {
+      try {
+        VoiceDictationEngine.stopDictation();
+      } catch {}
+    };
+  }, []);
 
   // AI Copilot state
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
@@ -112,7 +174,7 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({ onBack, onStoryPublish
       const started = VoiceDictationEngine.startDictation({
         onResult: (text, isFinal) => {
           if (isFinal) {
-            setContent(prev => (prev ? `${prev} ${text}` : text));
+            setContent((prev: string) => (prev ? `${prev} ${text}` : text));
           }
         },
         onError: (err) => {
@@ -145,8 +207,17 @@ export const StoryEditor: React.FC<StoryEditorProps> = ({ onBack, onStoryPublish
         summary: summary.trim() || undefined,
         category,
         coverImage: coverImage.trim() || undefined,
-        isPublished: true
+        isPublished: true,
+        clientDraftId
       });
+
+      // Clear draft after successful publication (both scoped and legacy keys)
+      try {
+        localStorage.removeItem(`${storagePrefix}draft_${clientDraftId}`);
+        localStorage.removeItem(`${storagePrefix}writon_active_draft_id`);
+        localStorage.removeItem(`draft_${clientDraftId}`);
+        localStorage.removeItem('writon_active_draft_id');
+      } catch {}
 
       onStoryPublished(newStory);
     } catch (err: any) {

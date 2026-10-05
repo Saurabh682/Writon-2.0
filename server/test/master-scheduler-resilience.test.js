@@ -4,7 +4,7 @@ import { buildServer } from '../src/server.js';
 import { REVIEW_PERSONAS } from '../src/bot-engine/review-personas.js';
 
 describe('Master Scheduler Autonomous Guarantees & Topic Pivot', () => {
-  it('pivots topic and rewrites a new story in target category when trend brief fails or is unapproved', async () => {
+  it('skips slot cleanly without forcing fallback pulse when trend brief fails or is unapproved', async () => {
     const mockPool = {
       query: vi.fn().mockResolvedValue({ rows: [], rowCount: 0 })
     };
@@ -16,11 +16,7 @@ describe('Master Scheduler Autonomous Guarantees & Topic Pivot', () => {
       description: 'Morning Longform Essay'
     };
 
-    const mockRunPulse = vi.fn().mockResolvedValue({
-      postId: 'test-story-pivot-123',
-      title: 'The Resonance of Quiet Streets',
-      category: 'Essays'
-    });
+    const mockRunPulse = vi.fn();
 
     const result = await executeScheduledSlot(mockPool, slot, {
       getApprovedBrief: vi.fn().mockResolvedValue(null),
@@ -43,16 +39,11 @@ describe('Master Scheduler Autonomous Guarantees & Topic Pivot', () => {
       runPulse: mockRunPulse
     });
 
-    expect(result.action).toBe('published_story');
-    expect(result.fallback).toBe(true);
-    expect(result.topicPivoted).toBe(true);
+    expect(result.action).toBe('slot_skipped');
+    expect(result.decision).toBe('SKIP');
+    expect(result.skipped).toBe(true);
     expect(result.category).toBe('Essays');
-    expect(result.postId).toBe('test-story-pivot-123');
-    expect(mockRunPulse).toHaveBeenCalledWith(mockPool, expect.objectContaining({
-      category: 'Essays',
-      forcePublication: true,
-      automaticPublication: true
-    }));
+    expect(mockRunPulse).not.toHaveBeenCalled();
   });
 
   it('publishes scheduled reviews after automated checks without human approval', async () => {

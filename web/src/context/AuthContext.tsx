@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   createUserWithEmailAndPassword,
-  deleteUser,
   onIdTokenChanged,
   signInWithEmailAndPassword,
   signOut,
@@ -91,7 +90,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setToken(idToken);
       setUser(profile);
     } catch (error) {
-      await deleteUser(credential.user).catch(() => undefined);
+      // W07: Preserve the Firebase account identity rather than destructively deleting it.
+      // Allow the user to fix pen name validation errors or retry profile reconciliation.
       throw error;
     }
   };

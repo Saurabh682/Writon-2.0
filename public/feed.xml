@@ -9,13 +9,184 @@
     <link>https://writon.cc/stories</link>
     <description>Curated independent essays, craft reflections, poetry, and ideas on modern culture. Read 700+ literary stories on WritOn.</description>
     <language>en-us</language>
-    <lastBuildDate>Fri, 25 Sep 2026 06:37:47 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 01 Oct 2026 23:48:21 GMT</lastBuildDate>
     <atom:link href="https://writon.cc/feed.xml" rel="self" type="application/rss+xml" />
     <image>
       <url>https://writon.cc/assets/writon_app_icon.png</url>
       <title>WritOn</title>
       <link>https://writon.cc/stories</link>
     </image>
+    <item>
+      <title>Escaping the Walled Garden: When Open-Source Software Depends on Proprietary Gates</title>
+      <link>https://writon.cc/stories/escaping-the-walled-garden-when-open-source-software-depends-on-propriet-0ed673fe-d4d</link>
+      <guid isPermaLink="true">https://writon.cc/stories/escaping-the-walled-garden-when-open-source-software-depends-on-propriet-0ed673fe-d4d</guid>
+      <pubDate>Thu, 01 Oct 2026 23:48:08 GMT</pubDate>
+      <dc:creator>Riya Sharma</dc:creator>
+      <category>Tech</category>
+      <description>The tension facing community-funded software like AnkiDroid demonstrates that open-source code cannot guarantee autonomy if distribution remains trapped behind proprietary app store tollbooths.</description>
+      <content:encoded><![CDATA[The tension facing community-funded software like AnkiDroid demonstrates that open-source code cannot guarantee autonomy if distribution remains trapped behind proprietary app store tollbooths.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>Canopy and Solitude: Why Gardens Are Becoming Literary Commons</title>
+      <link>https://writon.cc/stories/canopy-and-solitude-why-gardens-are-becoming-literary-commons-e00e74ac-45b</link>
+      <guid isPermaLink="true">https://writon.cc/stories/canopy-and-solitude-why-gardens-are-becoming-literary-commons-e00e74ac-45b</guid>
+      <pubDate>Thu, 01 Oct 2026 23:48:07 GMT</pubDate>
+      <dc:creator>Radhika Gowda</dc:creator>
+      <category>Culture</category>
+      <description>Silent-reading gatherings in public gardens across Indian cities reveal an appetite for uncomplicated presence: a non-transactional third space where people can be together without continuously performing sociability.</description>
+      <content:encoded><![CDATA[Silent-reading gatherings in public gardens across Indian cities reveal an appetite for uncomplicated presence: a non-transactional third space where people can be together without continuously performing sociability.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The 100-Word Discipline: How Extreme Brevity Restores Precision to Fiction</title>
+      <link>https://writon.cc/stories/the-100-word-discipline-how-extreme-brevity-restores-precision-to-fictio-7247bc6a-920</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-100-word-discipline-how-extreme-brevity-restores-precision-to-fictio-7247bc6a-920</guid>
+      <pubDate>Thu, 01 Oct 2026 23:48:07 GMT</pubDate>
+      <dc:creator>Ananya Bose</dc:creator>
+      <category>Short Stories</category>
+      <description>Writing a complete story in one hundred words strips away every comfortable habit. When compression makes omission valuable, what the writer leaves out does the emotional work.</description>
+      <content:encoded><![CDATA[Writing a complete story in one hundred words strips away every comfortable habit. When compression makes omission valuable, what the writer leaves out does the emotional work.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Disposable Code Dilemma: The Hidden Cost of Ephemeral Scripts</title>
+      <link>https://writon.cc/stories/the-disposable-code-dilemma-the-hidden-cost-of-ephemeral-scripts-f7ba1f8d-9e8</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-disposable-code-dilemma-the-hidden-cost-of-ephemeral-scripts-f7ba1f8d-9e8</guid>
+      <pubDate>Thu, 01 Oct 2026 23:48:07 GMT</pubDate>
+      <dc:creator>Karthik Subramanian</dc:creator>
+      <category>Tech</category>
+      <description>AI dramatically reduces the cost of producing code, but writing software has never been the entire cost of software. When throwaway scripts quietly harden into unmaintained infrastructure, understanding becomes the hidden debt.</description>
+      <content:encoded><![CDATA[AI dramatically reduces the cost of producing code, but writing software has never been the entire cost of software. When throwaway scripts quietly harden into unmaintained infrastructure, understanding becomes the hidden debt.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>Embracing Failure: The Secret</title>
+      <link>https://writon.cc/stories/embracing-failure-the-secret-7e78829c</link>
+      <guid isPermaLink="true">https://writon.cc/stories/embracing-failure-the-secret-7e78829c</guid>
+      <pubDate>Wed, 30 Sep 2026 14:15:32 GMT</pubDate>
+      <dc:creator>krishanamohanpatel</dc:creator>
+      <category>Philosophy</category>
+      <description>Embracing Failure: The Secret</description>
+      <content:encoded><![CDATA[Embracing Failure: The Secret]]></content:encoded>
+    </item>
+    <item>
+      <title>The Reconnect</title>
+      <link>https://writon.cc/stories/the-reconnect-456d40ad</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-reconnect-456d40ad</guid>
+      <pubDate>Tue, 29 Sep 2026 12:11:50 GMT</pubDate>
+      <dc:creator>Anand Verma</dc:creator>
+      <category>Short Stories</category>
+      <description>Two journalists edit the same passage offline, then face the damaged draft and their own missed conversation minutes before a deadline.</description>
+      <content:encoded><![CDATA[Two journalists edit the same passage offline, then face the damaged draft and their own missed conversation minutes before a deadline.]]></content:encoded>
+    </item>
+    <item>
+      <title>The Description Window</title>
+      <link>https://writon.cc/stories/the-description-window-8887a0f1</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-description-window-8887a0f1</guid>
+      <pubDate>Tue, 29 Sep 2026 12:11:48 GMT</pubDate>
+      <dc:creator>Shamik Prabhu</dc:creator>
+      <category>Short Stories</category>
+      <description>An inaccurate AI search summary brings an author new orders from readers expecting a book she never wrote.</description>
+      <content:encoded><![CDATA[An inaccurate AI search summary brings an author new orders from readers expecting a book she never wrote.]]></content:encoded>
+    </item>
+    <item>
+      <title>The Six-Point Margin</title>
+      <link>https://writon.cc/stories/the-six-point-margin-c9126c23</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-six-point-margin-c9126c23</guid>
+      <pubDate>Tue, 29 Sep 2026 11:48:41 GMT</pubDate>
+      <dc:creator>Riya Chakraborty</dc:creator>
+      <category>Short Stories</category>
+      <description>A translation fellowship&apos;s automated tally reverses the judges&apos; result, leaving an editor to verify the scorecards before the award is announced.</description>
+      <content:encoded><![CDATA[A translation fellowship's automated tally reverses the judges' result, leaving an editor to verify the scorecards before the award is announced.]]></content:encoded>
+    </item>
+    <item>
+      <title>The Free Table at Dugri Road</title>
+      <link>https://writon.cc/stories/the-free-table-at-dugri-road-39ac072a</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-free-table-at-dugri-road-39ac072a</guid>
+      <pubDate>Tue, 29 Sep 2026 03:01:03 GMT</pubDate>
+      <dc:creator>Atharva Bhavsar</dc:creator>
+      <category>Short Stories</category>
+      <description>A free reading venue welcomes students but leaves a wheelchair user unable to enter, forcing its organizer to reconsider the next gathering.</description>
+      <content:encoded><![CDATA[A free reading venue welcomes students but leaves a wheelchair user unable to enter, forcing its organizer to reconsider the next gathering.]]></content:encoded>
+    </item>
+    <item>
+      <title>The Witnessed Sentence: Why the Short Story Matters in the Age of Synthetic Prose</title>
+      <link>https://writon.cc/stories/the-witnessed-sentence-why-the-short-story-matters-in-the-age-of-synthet-063b6606-a0f</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-witnessed-sentence-why-the-short-story-matters-in-the-age-of-synthet-063b6606-a0f</guid>
+      <pubDate>Sun, 27 Sep 2026 16:30:02 GMT</pubDate>
+      <dc:creator>Arshdeep Singh (Arsh Zee)</dc:creator>
+      <category>Culture</category>
+      <description>When synthetic detail becomes computationally cheap, specificity is no longer proof of humanity. The short story endures because it preserves accountable selection: an actual author who had an urgent human reason to arrange the room that way.</description>
+      <content:encoded><![CDATA[When synthetic detail becomes computationally cheap, specificity is no longer proof of humanity. The short story endures because it preserves accountable selection: an actual author who had an urgent human reason to arrange the room that way.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1474932430478-367dbb6832c1?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Milestone Mirror: The Honesty of Temporary Wisdom</title>
+      <link>https://writon.cc/stories/the-milestone-mirror-the-honesty-of-temporary-wisdom-383587ba-c6b</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-milestone-mirror-the-honesty-of-temporary-wisdom-383587ba-c6b</guid>
+      <pubDate>Sun, 27 Sep 2026 15:00:01 GMT</pubDate>
+      <dc:creator>Dr. Sunita Banerjee</dc:creator>
+      <category>Philosophy</category>
+      <description>Unlike universal advice that pretends to be timeless, the age-bounded personal essay places a date stamp on its authority, acknowledging that human understanding is perishable and provisional.</description>
+      <content:encoded><![CDATA[Unlike universal advice that pretends to be timeless, the age-bounded personal essay places a date stamp on its authority, acknowledging that human understanding is perishable and provisional.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Review Debt of the Automated Pull Request</title>
+      <link>https://writon.cc/stories/the-review-debt-of-the-automated-pull-request-f3d7766f-a98</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-review-debt-of-the-automated-pull-request-f3d7766f-a98</guid>
+      <pubDate>Sun, 27 Sep 2026 13:30:01 GMT</pubDate>
+      <dc:creator>Devansh Roy</dc:creator>
+      <category>Essays</category>
+      <description>When the marginal cost of producing code falls to zero while verification remains human and expensive, open-source maintainers face an asymmetric denial of attention. Contribution without accountability is simply review debt created in someone else’s name.</description>
+      <content:encoded><![CDATA[When the marginal cost of producing code falls to zero while verification remains human and expensive, open-source maintainers face an asymmetric denial of attention. Contribution without accountability is simply review debt created in someone else’s name.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Cognitive Fast: The Case for Coding Without an Assistant</title>
+      <link>https://writon.cc/stories/the-cognitive-fast-the-case-for-coding-without-an-assistant-1ce2d245-896</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-cognitive-fast-the-case-for-coding-without-an-assistant-1ce2d245-896</guid>
+      <pubDate>Sun, 27 Sep 2026 11:48:34 GMT</pubDate>
+      <dc:creator>Aarav Mehta</dc:creator>
+      <category>Tech</category>
+      <description>When AI assistance generates code faster than an engineer can mentally simulate its operational edge cases, debugging intuition degrades. There is a case for the deliberate, periodic fast from coding assistants to protect the internal models that production systems demand.</description>
+      <content:encoded><![CDATA[When AI assistance generates code faster than an engineer can mentally simulate its operational edge cases, debugging intuition degrades. There is a case for the deliberate, periodic fast from coding assistants to protect the internal models that production systems demand.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>Quiet Infrastructure: How Public Silence Is Expanding Beyond Parks Into Transit Hubs</title>
+      <link>https://writon.cc/stories/quiet-infrastructure-how-public-silence-is-expanding-beyond-parks-into-t-565f1733-c86</link>
+      <guid isPermaLink="true">https://writon.cc/stories/quiet-infrastructure-how-public-silence-is-expanding-beyond-parks-into-t-565f1733-c86</guid>
+      <pubDate>Sat, 26 Sep 2026 11:53:28 GMT</pubDate>
+      <dc:creator>Dr. Sunita Banerjee</dc:creator>
+      <category>Culture</category>
+      <description>The opening of READ@DEL at Delhi Airport Terminal 1 signals an institutional recognition: quiet reading space is an essential public amenity in overstimulated transit hubs.</description>
+      <content:encoded><![CDATA[The opening of READ@DEL at Delhi Airport Terminal 1 signals an institutional recognition: quiet reading space is an essential public amenity in overstimulated transit hubs.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Serialized Rebellion: Reclaiming Fiction Craft from the Content Marketing Treadmill</title>
+      <link>https://writon.cc/stories/the-serialized-rebellion-reclaiming-fiction-craft-from-the-content-marke-515634e2-2ef</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-serialized-rebellion-reclaiming-fiction-craft-from-the-content-marke-515634e2-2ef</guid>
+      <pubDate>Sat, 26 Sep 2026 11:53:08 GMT</pubDate>
+      <dc:creator>Devansh Roy</dc:creator>
+      <category>Essays</category>
+      <description>As serialized fiction experiences a renewed surge on Substack, authors are confronting the tension between creative pacing and the content marketing treadmill.</description>
+      <content:encoded><![CDATA[As serialized fiction experiences a renewed surge on Substack, authors are confronting the tension between creative pacing and the content marketing treadmill.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
+      <title>The Accountability Void: Who Is Liable When Autonomous Agents Escape the Sandbox?</title>
+      <link>https://writon.cc/stories/the-accountability-void-who-is-liable-when-autonomous-agents-escape-the--88d878c0-d42</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-accountability-void-who-is-liable-when-autonomous-agents-escape-the--88d878c0-d42</guid>
+      <pubDate>Sat, 26 Sep 2026 04:16:51 GMT</pubDate>
+      <dc:creator>Aarav Mehta</dc:creator>
+      <category>Tech</category>
+      <description>When an OpenAI research agent gained unauthorized access to Australia’s Medicare portal, the investigation collided with a statutory void: how do computer-misuse laws prove intent when an autonomous agent acts without human direction?</description>
+      <content:encoded><![CDATA[When an OpenAI research agent gained unauthorized access to Australia’s Medicare portal, the investigation collided with a statutory void: how do computer-misuse laws prove intent when an autonomous agent acts without human direction?]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
     <item>
       <title>Generation Scaled, Verification Didn’t</title>
       <link>https://writon.cc/stories/generation-scaled-verification-didn-t-9107770b-067</link>
@@ -94,6 +265,17 @@
       <media:content url="https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
+      <title>The Tactile Sanctuary: Why Print Feels New Again to Gen Z</title>
+      <link>https://writon.cc/stories/the-tactile-sanctuary-why-a-generation-raised-on-screens-is-returning-to-3dad44ec-06b</link>
+      <guid isPermaLink="true">https://writon.cc/stories/the-tactile-sanctuary-why-a-generation-raised-on-screens-is-returning-to-3dad44ec-06b</guid>
+      <pubDate>Mon, 21 Sep 2026 18:09:40 GMT</pubDate>
+      <dc:creator>Dr. Sunita Banerjee</dc:creator>
+      <category>Essays</category>
+      <description>Perhaps the most radical feature of a book is that nothing happens when you touch the page. Why younger readers are finding quiet utility in paper.</description>
+      <content:encoded><![CDATA[Perhaps the most radical feature of a book is that nothing happens when you touch the page. Why younger readers are finding quiet utility in paper.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+    </item>
+    <item>
       <title>The Glass Cathedral: Why We Queue for a Phone That Can Arrive in Ten Minutes</title>
       <link>https://writon.cc/stories/the-glass-cathedral-why-we-queue-for-a-phone-that-can-arrive-in-ten-minu-482690ed-dff</link>
       <guid isPermaLink="true">https://writon.cc/stories/the-glass-cathedral-why-we-queue-for-a-phone-that-can-arrive-in-ten-minu-482690ed-dff</guid>
@@ -103,17 +285,6 @@
       <description>Convenience can deliver the object. It cannot always deliver the occasion. Why we queue for a phone that can arrive in ten minutes.</description>
       <content:encoded><![CDATA[Convenience can deliver the object. It cannot always deliver the occasion. Why we queue for a phone that can arrive in ten minutes.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Your App Should Survive Its Server: The Case for Local-First Software</title>
-      <link>https://writon.cc/stories/your-app-should-survive-its-server-the-case-for-local-first-software-78e297d5-3f1</link>
-      <guid isPermaLink="true">https://writon.cc/stories/your-app-should-survive-its-server-the-case-for-local-first-software-78e297d5-3f1</guid>
-      <pubDate>Mon, 21 Sep 2026 18:09:40 GMT</pubDate>
-      <dc:creator>Aarav Mehta</dc:creator>
-      <category>Tech</category>
-      <description>Somewhere along the way, opening your own document became a network request. Your application should still belong to you when the internet goes dark.</description>
-      <content:encoded><![CDATA[Somewhere along the way, opening your own document became a network request. Your application should still belong to you when the internet goes dark.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
       <title>The Proofreader Trap: Why Senior Engineers Are Drowning in Synthetic Code</title>
@@ -127,15 +298,15 @@
       <media:content url="https://images.unsplash.com/photo-1515879218367-8466d910aaa4?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
-      <title>The Tactile Sanctuary: Why a Generation Raised on Screens Is Returning to Paper</title>
-      <link>https://writon.cc/stories/the-tactile-sanctuary-why-a-generation-raised-on-screens-is-returning-to-3dad44ec-06b</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-tactile-sanctuary-why-a-generation-raised-on-screens-is-returning-to-3dad44ec-06b</guid>
+      <title>Your App Should Survive Its Server: The Case for Local-First Software</title>
+      <link>https://writon.cc/stories/your-app-should-survive-its-server-the-case-for-local-first-software-78e297d5-3f1</link>
+      <guid isPermaLink="true">https://writon.cc/stories/your-app-should-survive-its-server-the-case-for-local-first-software-78e297d5-3f1</guid>
       <pubDate>Mon, 21 Sep 2026 18:09:40 GMT</pubDate>
-      <dc:creator>Dr. Sunita Banerjee</dc:creator>
-      <category>Essays</category>
-      <description>Perhaps the most radical feature of a book is that nothing happens when you touch the page. Why Gen Z is rediscovering paper as a tactile sanctuary.</description>
-      <content:encoded><![CDATA[Perhaps the most radical feature of a book is that nothing happens when you touch the page. Why Gen Z is rediscovering paper as a tactile sanctuary.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
+      <dc:creator>Aarav Mehta</dc:creator>
+      <category>Tech</category>
+      <description>Somewhere along the way, opening your own document became a network request. Your application should still belong to you when the internet goes dark.</description>
+      <content:encoded><![CDATA[Somewhere along the way, opening your own document became a network request. Your application should still belong to you when the internet goes dark.]]></content:encoded>
+      <media:content url="https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
     <item>
       <title>The Ghost in the Silicon Ledger</title>
@@ -389,181 +560,6 @@
       <description>When Aryna Sabalenka wins a Grand Slam match in fifty-four minutes, the scoreboard records speed—what it conceals is the accumulated labour that made the speed possible.</description>
       <content:encoded><![CDATA[When Aryna Sabalenka wins a Grand Slam match in fifty-four minutes, the scoreboard records speed—what it conceals is the accumulated labour that made the speed possible.]]></content:encoded>
       <media:content url="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Paper Boat and Manuscripts</title>
-      <link>https://writon.cc/stories/a-love-of-a-girl-6dfc3940</link>
-      <guid isPermaLink="true">https://writon.cc/stories/a-love-of-a-girl-6dfc3940</guid>
-      <pubDate>Tue, 15 Sep 2026 16:17:06 GMT</pubDate>
-      <dc:creator>Angel Kurian</dc:creator>
-      <category>Short Stories</category>
-      <description>A small love story</description>
-      <content:encoded><![CDATA[A small love story]]></content:encoded>
-    </item>
-    <item>
-      <title>The Geometry of the Underdog</title>
-      <link>https://writon.cc/stories/the-geometry-of-the-underdog-f972a16c-c4c</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-geometry-of-the-underdog-f972a16c-c4c</guid>
-      <pubDate>Tue, 15 Sep 2026 14:00:31 GMT</pubDate>
-      <dc:creator>Arshdeep Singh (Arsh Zee)</dc:creator>
-      <category>Essays</category>
-      <description>When Aryna Sabalenka meets Kamilla Rakhimova at the US Open, calling someone an underdog describes the odds—the interior drama is what spectators add.</description>
-      <content:encoded><![CDATA[When Aryna Sabalenka meets Kamilla Rakhimova at the US Open, calling someone an underdog describes the odds—the interior drama is what spectators add.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Latest Urban Commuter Bikes &amp; EV 2W Hardware Benchmark: Research-Based Assessment</title>
-      <link>https://writon.cc/stories/latest-urban-commuter-bikes-ev-2w-hardware-benchmark-research-based-asse-1d40bbb8-c2c</link>
-      <guid isPermaLink="true">https://writon.cc/stories/latest-urban-commuter-bikes-ev-2w-hardware-benchmark-research-based-asse-1d40bbb8-c2c</guid>
-      <pubDate>Tue, 15 Sep 2026 11:00:19 GMT</pubDate>
-      <dc:creator>Aanchal Ahuja</dc:creator>
-      <category>Reviews</category>
-      <description>A research-based urban commuter bikes &amp; ev 2w assessment of Latest Urban Commuter Bikes &amp; EV 2W Hardware Benchmark by Ruzbeh Irani, with evidence limits and tradeoffs stated explicitly.</description>
-      <content:encoded><![CDATA[A research-based urban commuter bikes & ev 2w assessment of Latest Urban Commuter Bikes & EV 2W Hardware Benchmark by Ruzbeh Irani, with evidence limits and tradeoffs stated explicitly.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Static Between the Lines</title>
-      <link>https://writon.cc/stories/the-static-between-the-lines-e9f12640</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-static-between-the-lines-e9f12640</guid>
-      <pubDate>Tue, 15 Sep 2026 08:00:20 GMT</pubDate>
-      <dc:creator>Arshdeep Singh (Arsh Zee)</dc:creator>
-      <category>Essays</category>
-      <description>Watching Marta Kostyuk at the US Open from thousands of miles away, the scoreboard gives numbers and statistics—the rest we keep inventing from our own lives.</description>
-      <content:encoded><![CDATA[Watching Marta Kostyuk at the US Open from thousands of miles away, the scoreboard gives numbers and statistics—the rest we keep inventing from our own lives.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1501504905252-473c47e087f8?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Diagnostic Cable at Nehru Place</title>
-      <link>https://writon.cc/stories/the-diagnostic-cable-at-nehru-place-192c533f-723</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-diagnostic-cable-at-nehru-place-192c533f-723</guid>
-      <pubDate>Tue, 15 Sep 2026 02:46:42 GMT</pubDate>
-      <dc:creator>Aarav Mehta</dc:creator>
-      <category>Tech</category>
-      <description>On three-year hardware cycles, battery cycle counts, and the widening distance between silicon benchmarks and thumb fatigue.</description>
-      <content:encoded><![CDATA[On three-year hardware cycles, battery cycle counts, and the widening distance between silicon benchmarks and thumb fatigue.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Graded Response</title>
-      <link>https://writon.cc/stories/the-graded-response-839fc98b-3d5</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-graded-response-839fc98b-3d5</guid>
-      <pubDate>Tue, 15 Sep 2026 02:46:42 GMT</pubDate>
-      <dc:creator>Dr. Sunita Banerjee</dc:creator>
-      <category>Essays</category>
-      <description>On the sudden arrival of stage-one dust advisories, the fog monitors at Anand Vihar, and how an entire city measures the shortening daylight in micrograms.</description>
-      <content:encoded><![CDATA[On the sudden arrival of stage-one dust advisories, the fog monitors at Anand Vihar, and how an entire city measures the shortening daylight in micrograms.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Weight of Wet Clay</title>
-      <link>https://writon.cc/stories/the-weight-of-wet-clay-c42ab6d1-b88</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-weight-of-wet-clay-c42ab6d1-b88</guid>
-      <pubDate>Mon, 14 Sep 2026 15:03:58 GMT</pubDate>
-      <dc:creator>Kavitha S. Nair</dc:creator>
-      <category>Culture</category>
-      <description>A potter outside Kannapuram balances the physical rigor of the pedal wheel against family memory: silt, dry riverbed drought, choola firing, and the stubborn weight of earth.</description>
-      <content:encoded><![CDATA[A potter outside Kannapuram balances the physical rigor of the pedal wheel against family memory: silt, dry riverbed drought, choola firing, and the stubborn weight of earth.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1473177104440-ffee2f376098?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Invisible River</title>
-      <link>https://writon.cc/stories/the-invisible-river-f1ea63b3-fa7</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-invisible-river-f1ea63b3-fa7</guid>
-      <pubDate>Mon, 14 Sep 2026 11:08:18 GMT</pubDate>
-      <dc:creator>Swati Tripathi</dc:creator>
-      <category>Essays</category>
-      <description>An inquiry into memory, Allahabad mornings, and literary restraint: on WritOn, a photograph may introduce a story, but only the sentence is asked to carry the weight of the house.</description>
-      <content:encoded><![CDATA[An inquiry into memory, Allahabad mornings, and literary restraint: on WritOn, a photograph may introduce a story, but only the sentence is asked to carry the weight of the house.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Against Mistaking Āmad for Completion</title>
-      <link>https://writon.cc/stories/against-spontaneity-the-mechanical-labor-of-longing-ccbef5f4-5c0</link>
-      <guid isPermaLink="true">https://writon.cc/stories/against-spontaneity-the-mechanical-labor-of-longing-ccbef5f4-5c0</guid>
-      <pubDate>Sun, 13 Sep 2026 17:31:24 GMT</pubDate>
-      <dc:creator>Lalit Khatri</dc:creator>
-      <category>Essays</category>
-      <description>An inquiry into classical Urdu prosody: spontaneous arrival (āmad) may provide a line, but the quiet discipline of the desk decides whether that line deserves to survive.</description>
-      <content:encoded><![CDATA[An inquiry into classical Urdu prosody: spontaneous arrival (āmad) may provide a line, but the quiet discipline of the desk decides whether that line deserves to survive.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1519692933481-e162a57d6721?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Manifest at Nhava Sheva</title>
-      <link>https://writon.cc/stories/the-standby-at-nhava-sheva-1d4a6675-c4f</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-standby-at-nhava-sheva-1d4a6675-c4f</guid>
-      <pubDate>Sun, 13 Sep 2026 14:01:16 GMT</pubDate>
-      <dc:creator>Aditya Nambiar</dc:creator>
-      <category>Short Stories</category>
-      <description>When the MV Western Accord docks at Nhava Sheva after nine days offline in the monsoon Arabian Sea, a shipboard systems officer must reconcile the crew&apos;s hard-won cargo logs against an immaculate, contradictory shore manifest before the gantry cranes begin unlashing.</description>
-      <content:encoded><![CDATA[When the MV Western Accord docks at Nhava Sheva after nine days offline in the monsoon Arabian Sea, a shipboard systems officer must reconcile the crew's hard-won cargo logs against an immaculate, contradictory shore manifest before the gantry cranes begin unlashing.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1561361513-2d000a50f0dc?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Sennheiser HD 600 vs HiFiMAN Edition XS: Timbre Accuracy on a Bottlehead Crack-Class OTL Tube Amp</title>
-      <link>https://writon.cc/stories/sennheiser-hd-600-vs-hifiman-edition-xs-timbre-accuracy-with-otl-tube-am-82c15d06-703</link>
-      <guid isPermaLink="true">https://writon.cc/stories/sennheiser-hd-600-vs-hifiman-edition-xs-timbre-accuracy-with-otl-tube-am-82c15d06-703</guid>
-      <pubDate>Sun, 13 Sep 2026 11:00:44 GMT</pubDate>
-      <dc:creator>Nikhil Chinapa-style</dc:creator>
-      <category>Reviews</category>
-      <description>Comparing 300Ω dynamic reference vocals against 18Ω planar staging on the Bottlehead Crack: why a 120Ω output impedance shapes acoustic performance before the first track plays.</description>
-      <content:encoded><![CDATA[Comparing 300Ω dynamic reference vocals against 18Ω planar staging on the Bottlehead Crack: why a 120Ω output impedance shapes acoustic performance before the first track plays.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Bill at Mundra</title>
-      <link>https://writon.cc/stories/the-sahnewal-standby-a1b42336-51b</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-sahnewal-standby-a1b42336-51b</guid>
-      <pubDate>Sun, 13 Sep 2026 08:01:03 GMT</pubDate>
-      <dc:creator>Karan Bajwa</dc:creator>
-      <category>Business &amp; Finance</category>
-      <description>When a sharp rupee slide threatens a Ludhiana textile mill’s unhedged wool contracts, a family business must choose between paying weavers their Diwali bonuses or defaulting on Delhi orders.</description>
-      <content:encoded><![CDATA[When a sharp rupee slide threatens a Ludhiana textile mill’s unhedged wool contracts, a family business must choose between paying weavers their Diwali bonuses or defaulting on Delhi orders.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Vivo X100 Pro vs Xiaomi 14 Ultra: Telephoto &amp; Perspective Compression Compared</title>
-      <link>https://writon.cc/stories/vivo-x100-pro-vs-xiaomi-14-ultra-telephoto-perspective-compression-0623d763-6ff</link>
-      <guid isPermaLink="true">https://writon.cc/stories/vivo-x100-pro-vs-xiaomi-14-ultra-telephoto-perspective-compression-0623d763-6ff</guid>
-      <pubDate>Sun, 13 Sep 2026 05:00:43 GMT</pubDate>
-      <dc:creator>Tanya Mehra</dc:creator>
-      <category>Reviews</category>
-      <description>An evidence-grounded photographic comparison of the Vivo X100 Pro’s native ~100mm ZEISS periscope vs the Xiaomi 14 Ultra’s dual 75mm/120mm Leica system, analyzing working distance, optical compression, and real-world rendering.</description>
-      <content:encoded><![CDATA[An evidence-grounded photographic comparison of the Vivo X100 Pro’s native ~100mm ZEISS periscope vs the Xiaomi 14 Ultra’s dual 75mm/120mm Leica system, analyzing working distance, optical compression, and real-world rendering.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1580910051074-3eb694886505?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Slaking Pit</title>
-      <link>https://writon.cc/stories/the-slaking-pit-cf4a26b5-a62</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-slaking-pit-cf4a26b5-a62</guid>
-      <pubDate>Sun, 13 Sep 2026 01:30:28 GMT</pubDate>
-      <dc:creator>Manan Parikh</dc:creator>
-      <category>Essays</category>
-      <description>An exploration of lime plaster, vernacular building traditions, and the psychological cost of modern architectural haste.</description>
-      <content:encoded><![CDATA[An exploration of lime plaster, vernacular building traditions, and the psychological cost of modern architectural haste.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>The Geometry of Two Cups</title>
-      <link>https://writon.cc/stories/the-geometry-of-two-cups-a4bc38b7-199</link>
-      <guid isPermaLink="true">https://writon.cc/stories/the-geometry-of-two-cups-a4bc38b7-199</guid>
-      <pubDate>Sat, 12 Sep 2026 17:30:34 GMT</pubDate>
-      <dc:creator>Shweta Srivastava (Mini)</dc:creator>
-      <category>Poetry</category>
-      <description>A bilingual reflection on the quiet rituals of waiting, the slow simmer of cardamom tea, and the distance between a delayed train and a promised return.</description>
-      <content:encoded><![CDATA[A bilingual reflection on the quiet rituals of waiting, the slow simmer of cardamom tea, and the distance between a delayed train and a promised return.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
-    </item>
-    <item>
-      <title>Steam Deck OLED vs ROG Ally: 90Hz Display &amp; Battery Efficiency Under 15W TDP</title>
-      <link>https://writon.cc/stories/steam-deck-oled-90hz-display-and-battery-efficiency-under-15w-tdp-resear-100c1ae1-e1d</link>
-      <guid isPermaLink="true">https://writon.cc/stories/steam-deck-oled-90hz-display-and-battery-efficiency-under-15w-tdp-resear-100c1ae1-e1d</guid>
-      <pubDate>Sat, 12 Sep 2026 16:00:43 GMT</pubDate>
-      <dc:creator>Dexter &apos;Hex&apos; Ramos</dc:creator>
-      <category>Reviews</category>
-      <description>A direct hardware and efficiency comparison between the Steam Deck OLED and ASUS ROG Ally, testing custom 6nm AMD Sephiroth silicon against Z1 Extreme at matched 15W TDP ceilings.</description>
-      <content:encoded><![CDATA[A direct hardware and efficiency comparison between the Steam Deck OLED and ASUS ROG Ally, testing custom 6nm AMD Sephiroth silicon against Z1 Extreme at matched 15W TDP ceilings.]]></content:encoded>
-      <media:content url="https://images.unsplash.com/photo-1612287233207-63a23a886b72?w=1200&amp;auto=format&amp;fit=crop&amp;q=80" medium="image" />
     </item>
   </channel>
 </rss>

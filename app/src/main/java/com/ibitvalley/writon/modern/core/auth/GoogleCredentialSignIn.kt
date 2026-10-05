@@ -15,6 +15,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 sealed interface GoogleCredentialResult {
     data class Success(val idToken: String) : GoogleCredentialResult
@@ -32,19 +33,17 @@ object GoogleCredentialSignIn {
         }
         val manager = CredentialManager.create(activity)
         return try {
-            requestCredential(manager, activity, serverClientId, authorizedOnly = true)
-        } catch (_: NoCredentialException) {
             try {
+                requestCredential(manager, activity, serverClientId, authorizedOnly = true)
+            } catch (_: NoCredentialException) {
                 requestCredential(manager, activity, serverClientId, authorizedOnly = false)
-            } catch (_: GetCredentialCancellationException) {
-                GoogleCredentialResult.Cancelled
-            } catch (error: GetCredentialException) {
-                GoogleCredentialResult.Failure(safeMessage(error))
             }
         } catch (_: GetCredentialCancellationException) {
             GoogleCredentialResult.Cancelled
         } catch (error: GetCredentialException) {
             GoogleCredentialResult.Failure(safeMessage(error))
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (error: Exception) {
             GoogleCredentialResult.Failure(error.localizedMessage ?: "Google Sign-In failed.")
         }

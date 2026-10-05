@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Header } from './components/Header';
 import { FeedView } from './components/FeedView';
@@ -6,9 +6,9 @@ import { StoryReader } from './components/StoryReader';
 import { StoryEditor } from './components/StoryEditor';
 import { AuthorProfile } from './components/AuthorProfile';
 import { AuthModal } from './components/AuthModal';
-import { BotControlCenter } from './components/admin/BotControlCenter';
+const BotControlCenter = lazy(() => import('./components/admin/BotControlCenter').then(m => ({ default: m.BotControlCenter })));
 import { Story, Category } from './types';
-import { fetchStories, toggleLike, toggleBookmark } from './lib/api';
+import { fetchStories, fetchStory, toggleLike, toggleBookmark } from './lib/api';
 
 const CATEGORIES: Category[] = [
   'All',
@@ -60,6 +60,44 @@ function MainApp() {
   // Bot Control Center modal
   const [isBotControlOpen, setIsBotControlOpen] = useState(false);
 
+  // Handle URL path on initial load and browser back/forward (popstate)
+  useEffect(() => {
+    const handleLocationChange = async () => {
+      const path = window.location.pathname;
+      if (path.startsWith('/stories/')) {
+        const slug = decodeURIComponent(path.slice('/stories/'.length).replace(/\/$/, ''));
+        if (slug) {
+          try {
+            const story = await fetchStory(slug);
+            setSelectedStory(story);
+            setCurrentView('reader');
+            return;
+          } catch (e) {
+            console.warn('Could not load story from URL slug:', slug, e);
+          }
+        }
+      } else if (path.startsWith('/author/')) {
+        const penName = decodeURIComponent(path.slice('/author/'.length).replace(/\/$/, ''));
+        if (penName) {
+          setSelectedAuthorPenName(penName);
+          setCurrentView('profile');
+          return;
+        }
+      } else if (path === '/write') {
+        setCurrentView('editor');
+        return;
+      }
+      // Default to feed
+      setCurrentView('feed');
+      setSelectedStory(null);
+      setSelectedAuthorPenName(null);
+    };
+
+    handleLocationChange();
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
   // Load feed stories
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -88,12 +126,14 @@ function MainApp() {
   const handleSelectStory = (story: Story) => {
     setSelectedStory(story);
     setCurrentView('reader');
+    window.history.pushState({ view: 'reader', slug: story.slug }, '', `/stories/${encodeURIComponent(story.slug || story.id)}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectAuthor = (penName: string) => {
     setSelectedAuthorPenName(penName);
     setCurrentView('profile');
+    window.history.pushState({ view: 'profile', penName }, '', `/author/${encodeURIComponent(penName)}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -210,12 +250,16 @@ function MainApp() {
         )}
       </main>
 
-      {/* Bot Control Center Modal */}
-      <BotControlCenter
-        isOpen={isBotControlOpen}
-        onClose={() => setIsBotControlOpen(false)}
-        onStoryPublished={loadFeed}
-      />
+      {/* Bot Control Center Modal (Lazy-loaded operator tooling) */}
+      {isBotControlOpen && (
+        <Suspense fallback={null}>
+          <BotControlCenter
+            isOpen={isBotControlOpen}
+            onClose={() => setIsBotControlOpen(false)}
+            onStoryPublished={loadFeed}
+          />
+        </Suspense>
+      )}
 
       {/* Global Auth Modal */}
       <AuthModal

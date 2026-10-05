@@ -11,7 +11,7 @@ describe('WritOn email adapter', () => {
   it('checks current email state correctly', async () => {
     const mockPool = {
       query: vi.fn().mockResolvedValue({
-        rows: [{ id: 'p1', email: 'Writer@example.com', account_type: 'human' }],
+        rows: [{ id: 'p1', email: 'Writer@example.com', account_type: 'human', email_verified: true, email_version: 3 }],
         rowCount: 1,
       }),
     };
@@ -21,7 +21,7 @@ describe('WritOn email adapter', () => {
       accountExists: true,
       verified: true,
       email: 'writer@example.com',
-      emailVersion: 1,
+      emailVersion: 3,
     });
   });
 
@@ -33,6 +33,13 @@ describe('WritOn email adapter', () => {
     const state = await adapter.getCurrentEmailState('non_existent');
     expect(state.accountExists).toBe(false);
     expect(state.verified).toBe(false);
+  });
+
+  it('does not infer verification from a normal email address', async () => {
+    const pool = { query: vi.fn().mockResolvedValue({ rows: [{ id: 'p1', email: 'writer@example.com', account_type: 'human', email_verified: false, email_version: 2 }], rowCount: 1 }) };
+    const state = await createWritonEmailAdapter(pool).getCurrentEmailState('p1');
+    expect(state.verified).toBe(false);
+    expect(state.emailVersion).toBe(2);
   });
 
   it('returns recommendations with canonical story URLs', async () => {

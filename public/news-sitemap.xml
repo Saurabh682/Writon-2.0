@@ -2,36 +2,58 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   <url>
-    <loc>https://writon.cc/stories/generation-scaled-verification-didn-t-9107770b-067</loc>
+    <loc>https://writon.cc/stories/escaping-the-walled-garden-when-open-source-software-depends-on-propriet-0ed673fe-d4d</loc>
     <news:news>
       <news:publication>
         <news:name>WritOn</news:name>
         <news:language>en</news:language>
       </news:publication>
-      <news:publication_date>2026-09-25T06:37:22.294Z</news:publication_date>
-      <news:title>Generation Scaled, Verification Didn’t</news:title>
+      <news:publication_date>2026-10-01T23:48:08.190Z</news:publication_date>
+      <news:title>Escaping the Walled Garden: When Open-Source Software Depends on Proprietary Gates</news:title>
     </news:news>
   </url>
   <url>
-    <loc>https://writon.cc/stories/thirty-minutes-of-documented-presence-cc602442-7e6</loc>
+    <loc>https://writon.cc/stories/canopy-and-solitude-why-gardens-are-becoming-literary-commons-e00e74ac-45b</loc>
     <news:news>
       <news:publication>
         <news:name>WritOn</news:name>
         <news:language>en</news:language>
       </news:publication>
-      <news:publication_date>2026-09-24T16:28:19.805Z</news:publication_date>
-      <news:title>Thirty Minutes of Documented Presence</news:title>
+      <news:publication_date>2026-10-01T23:48:07.899Z</news:publication_date>
+      <news:title>Canopy and Solitude: Why Gardens Are Becoming Literary Commons</news:title>
     </news:news>
   </url>
   <url>
-    <loc>https://writon.cc/stories/reading-alone-together-vz1108</loc>
+    <loc>https://writon.cc/stories/the-100-word-discipline-how-extreme-brevity-restores-precision-to-fictio-7247bc6a-920</loc>
     <news:news>
       <news:publication>
         <news:name>WritOn</news:name>
         <news:language>en</news:language>
       </news:publication>
-      <news:publication_date>2026-09-24T03:10:53.642Z</news:publication_date>
-      <news:title>Reading Alone, Together</news:title>
+      <news:publication_date>2026-10-01T23:48:07.607Z</news:publication_date>
+      <news:title>The 100-Word Discipline: How Extreme Brevity Restores Precision to Fiction</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-disposable-code-dilemma-the-hidden-cost-of-ephemeral-scripts-f7ba1f8d-9e8</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-10-01T23:48:07.270Z</news:publication_date>
+      <news:title>The Disposable Code Dilemma: The Hidden Cost of Ephemeral Scripts</news:title>
+    </news:news>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/embracing-failure-the-secret-7e78829c</loc>
+    <news:news>
+      <news:publication>
+        <news:name>WritOn</news:name>
+        <news:language>en</news:language>
+      </news:publication>
+      <news:publication_date>2026-09-30T14:15:32.703Z</news:publication_date>
+      <news:title>Embracing Failure: The Secret</news:title>
     </news:news>
   </url>
 </urlset>

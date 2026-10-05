@@ -245,7 +245,7 @@ export const WRITON_TOOLS = [
       properties: {
         authorPenName: {
           type: 'string',
-          enum: ['aarav_tech', 'kavya_nair', 'devansh_roy', 'sunita_banerjee', 'rohan_kapoor', 'ishaq_qureshi']
+          description: 'The pen name of the persona (e.g. "aarav_tech", "kavya_nair", "karthik_subramanian", "riya_sharma_systems", etc.).'
         },
         actionType: {
           type: 'string',

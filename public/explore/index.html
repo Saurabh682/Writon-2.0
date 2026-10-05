@@ -114,15 +114,36 @@
       width: 24px; height: 2px; display: block; background: var(--ink); margin: 5px 0;
     }
     .play-mark { font-size: 14px; }
+    .lang-selector-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      margin-left: 14px;
+      flex-shrink: 0;
+    }
     @media (max-width: 860px) {
+      .nav-wrap { gap: 12px; }
       .main-nav, .nav-cta { display: none; }
-      .nav-toggle { display: block; margin-left: auto; }
+      .nav-toggle { display: block; }
+      .lang-selector-wrap { margin-left: auto; }
       .main-nav.open {
         position: absolute; display: grid; gap: 0; top: 82px; left: 15px; right: 15px;
         padding: 10px; background: var(--surface); border: 1px solid var(--border);
         border-radius: 16px; box-shadow: var(--shadow-md); z-index: 60;
       }
       .main-nav.open a { padding: 13px 12px; }
+    }
+    @media (max-width: 480px) {
+      .nav-wrap { height: 68px; padding: 0 10px; gap: 8px; }
+      .brand img { width: 110px; }
+      .lang-selector-wrap { margin-left: auto; }
+      .lang-selector-wrap .lang-box { padding: 3px 6px; font-size: 12px; }
+      .lang-selector-wrap select { max-width: 78px; font-size: 12px; }
+    }
+    @media (max-width: 360px) {
+      .nav-wrap { padding: 0 6px; gap: 4px; }
+      .brand img { width: 95px; }
+      .lang-selector-wrap select { max-width: 68px; font-size: 11px; }
     }
     main { max-width: var(--container); margin: 0 auto; padding: 40px 24px 80px; }
 
@@ -633,7 +654,19 @@
     }
     @media (max-width: 540px) {
       .story-grid { grid-template-columns: 1fr; }
-      main { padding: 24px 16px 60px; }
+      main { padding: 20px 14px 48px; }
+      .nav-wrap { padding: 0 14px; }
+      .filter-bar { gap: 6px; margin: 24px 0 28px; }
+      .filter-pill { padding: 7px 14px; font-size: 12px; }
+      .carousel-container { min-height: 380px; border-radius: 16px; }
+      .carousel-content { padding: 18px 14px 16px; }
+      .carousel-title { font-size: 21px; }
+    }
+    @media (max-width: 380px) {
+      main { padding: 16px 10px 40px; }
+      .carousel-content { padding: 14px 10px 14px; }
+      .filter-pill { padding: 6px 11px; font-size: 11px; }
+      .story-card-body { padding: 14px 12px; }
     }
   </style>
 
@@ -670,9 +703,9 @@
         <a href="/#readers">For Readers</a>
       </nav>
 
-      <div class="lang-selector-wrap" style="position: relative; display: inline-flex; align-items: center; margin-left: 14px;">
+      <div class="lang-selector-wrap">
         <label for="lang-select-explore" class="sr-only">Choose language</label>
-        <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,253,249,0.85); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer;">
+        <div class="lang-box" style="display: flex; align-items: center; gap: 5px; background: rgba(255,253,249,0.85); border: 1px solid var(--border); border-radius: 999px; padding: 4px 10px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer;">
           <span aria-hidden="true" style="font-size: 14px;">🌐</span>
           <select id="lang-select-explore" onchange="window.location.href=this.value" style="background: transparent; border: none; font: inherit; color: inherit; cursor: pointer; outline: none; padding-right: 2px;">
             <option value="/" selected>English</option><option value="/hi">हिन्दी</option><option value="/mr">मराठी</option><option value="/bn">বাংলা</option>
@@ -868,9 +901,10 @@
         <a href="/journal">Journal</a>
         <a href="/updates">Updates</a>
         <a href="/about">About</a>
-        <a href="/privacy-policy.html">Privacy Policy</a>
-        <a href="/terms.html">Terms of Service</a>
-        <a href="https://play.google.com/store/apps/details?id=com.ibitvalley.writon" target="_blank" rel="noopener noreferrer">Google Play</a>
+        <a href="/privacy-policy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+        <a href="https://writon.cc/whatsapp" target="_blank" rel="noopener noreferrer">WhatsApp Community</a>
+        <a href="https://writon.cc/play" target="_blank" rel="noopener noreferrer">Google Play</a>
       </div>
       <div class="footer-bottom">
         &copy; 2026 WritOn (writon.cc). All rights reserved.

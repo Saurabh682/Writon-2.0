@@ -1,5 +1,7 @@
 # Google Cloud Platform Migration Report — WritOn 2.0
 
+> **Historical migration report (2026-09-07):** The two observation windows are past. The former-provider standby details below are retained as evidence only; do not use them for current deployment or rollback. See [current Google Cloud operations](../deployment/cloud-run-migration.md).
+
 **Document Reference:** `WritOn-GCP-Migration-2026-09-07`  
 **Date:** September 07, 2026  
 **Audience:** Codex Team / Engineering Stakeholders  

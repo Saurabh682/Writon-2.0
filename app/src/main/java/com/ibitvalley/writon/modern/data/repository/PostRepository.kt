@@ -58,6 +58,10 @@ enum class PostDetailRefreshOutcome {
     FAILED_NO_CACHE
 }
 
+enum class FeedAudience(val path: String) { COMMUNITY("community"), EDITORIAL("editorial") }
+
+data class SourceFeedPage(val items: List<PostEntity>, val hasMore: Boolean)
+
 class PostRepository(
     private val apiService: WritOnApiService,
     private val postDao: PostDao,
@@ -66,6 +70,24 @@ class PostRepository(
     private val gson: Gson = Gson(),
     private val userPreferences: UserPreferences? = null
 ) {
+    fun cachedSourceFeedIds(audience: FeedAudience): List<String> =
+        userPreferences?.sourceFeedIds(audience.path).orEmpty()
+
+    fun saveSourceFeedIds(audience: FeedAudience, ids: List<String>) {
+        userPreferences?.saveSourceFeedIds(audience.path, ids)
+    }
+    suspend fun loadSourceFeed(
+        audience: FeedAudience, category: String, query: String, page: Int
+    ): SourceFeedPage = withContext(Dispatchers.IO) {
+        val response = apiService.getSourcePosts(audience.path, category.takeUnless { it == "All" }, query, page)
+        check(response.isSuccessful) { "Feed unavailable (${response.code()})" }
+        val payload = requireNotNull(response.body())
+        // Fail closed: an older/misconfigured server must never mix sources on Home.
+        check(payload.posts.all { it.contentSource == audience.path }) { "Unclassified feed response" }
+        val items = payload.posts.map { it.toEntity() }
+        postDao.mergeFeedPosts(items)
+        SourceFeedPage(items, payload.pagination.hasMore)
+    }
     private var activeFeedSessionId: String? = null
     private var activeRankingVersion: String? = null
     private fun utcNowIso(): String = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
@@ -120,6 +142,8 @@ class PostRepository(
                 commentDao.deleteCommentsByPostId(postId)
                 return@withContext PostDetailRefreshOutcome.NOT_FOUND
             }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
         } catch (e: Exception) {
             e.printStackTrace()
         }

@@ -408,11 +408,12 @@ export async function validateAntiRepetition(pool, { title = '', summary = '', c
   let sanitizedSummary = summary || '';
 
   for (const rule of activeRules) {
-    const patternLower = rule.pattern.toLowerCase().trim();
+    const patternType = rule.patternType || rule.pattern_type;
+    const patternLower = (rule.pattern || '').toLowerCase().trim();
     if (!patternLower) continue;
 
     // Check cliché phrases across title, summary, content
-    if (rule.patternType === 'cliche_phrase') {
+    if (patternType === 'cliche_phrase') {
       const inTitle = sanitizedTitle.toLowerCase().includes(patternLower);
       const inSummary = sanitizedSummary.toLowerCase().includes(patternLower);
       const inContent = sanitizedContent.toLowerCase().includes(patternLower);
@@ -420,7 +421,7 @@ export async function validateAntiRepetition(pool, { title = '', summary = '', c
       if (inTitle || inSummary || inContent) {
         violations.push({
           pattern: rule.pattern,
-          patternType: rule.patternType,
+          patternType,
           reason: rule.reason,
           location: inTitle ? 'title' : (inSummary ? 'summary' : 'content')
         });
@@ -433,12 +434,12 @@ export async function validateAntiRepetition(pool, { title = '', summary = '', c
     }
 
     // Check banned opening phrases in first 250 characters of content
-    if (rule.patternType === 'opening_phrase') {
+    if (patternType === 'opening_phrase') {
       const openingSlice = sanitizedContent.slice(0, 250).toLowerCase();
       if (openingSlice.includes(patternLower)) {
         violations.push({
           pattern: rule.pattern,
-          patternType: rule.patternType,
+          patternType,
           reason: rule.reason,
           location: 'opening'
         });
@@ -446,11 +447,11 @@ export async function validateAntiRepetition(pool, { title = '', summary = '', c
     }
 
     // Check title formulas
-    if (rule.patternType === 'title_formula') {
+    if (patternType === 'title_formula') {
       if (sanitizedTitle.toLowerCase().includes(patternLower)) {
         violations.push({
           pattern: rule.pattern,
-          patternType: rule.patternType,
+          patternType,
           reason: rule.reason,
           location: 'title'
         });

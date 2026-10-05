@@ -80,7 +80,7 @@ export async function reserveSend(pool, job, dailyCapacity) {
     if (!pref) return { ok: false, reason: 'no_preferences' };
     if (Number(pref.email_version) !== Number(job.recipient_email_version)) return { ok: false, reason: 'stale_email_version' };
     const column = consentColumn(job.category);
-    if (!pref[column]) return { ok: false, reason: 'consent_disabled' };
+    if (!pref[column] || !pref.consented_at || pref.withdrawn_at) return { ok: false, reason: 'consent_disabled' };
 
     const suppression = await client.query(
       `SELECT 1 FROM email_suppressions WHERE recipient_fingerprint=$1`,
@@ -186,27 +186,29 @@ export async function markAmbiguous(pool, job, error) {
 export async function enqueueWelcomeEmail(pool, config, { profileId, recipientEmail, fullName } = {}) {
   if (!profileId) return null;
 
-  // 1. Seed or ensure user_email_preferences for the new user with lifecycle_enabled = true
+  const cleanEmail = typeof recipientEmail === 'string' ? recipientEmail.trim().toLowerCase() : null;
+  if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail) || cleanEmail.endsWith('@legacy.writon.io')) return null;
+
+  // Seed the existing new-joiner default, but never overwrite a withdrawal or opt-out.
   await pool.query(
     `INSERT INTO public.user_email_preferences (
       profile_id, reading_enabled, activity_enabled, lifecycle_enabled, writer_tips_enabled,
       locale, timezone, email_version, created_at, updated_at
     ) VALUES ($1, false, false, true, false, 'en', 'Asia/Kolkata', 1, NOW(), NOW())
-    ON CONFLICT (profile_id) DO UPDATE
-      SET lifecycle_enabled = true, updated_at = NOW()`,
+    ON CONFLICT (profile_id) DO NOTHING`,
     [profileId],
   );
 
-  const cleanEmail = typeof recipientEmail === 'string' ? recipientEmail.trim().toLowerCase() : null;
-  if (!cleanEmail || !cleanEmail.includes('@') || cleanEmail.endsWith('@legacy.writon.io')) {
-    return null;
-  }
+  const preferences = await pool.query(
+    `SELECT email_version, lifecycle_enabled, withdrawn_at FROM public.user_email_preferences WHERE profile_id=$1`,
+    [profileId],
+  );
+  const preference = preferences.rows[0];
+  if (!preference?.lifecycle_enabled || preference.withdrawn_at) return null;
 
   // 2. Generate signed unsubscribe URL
   const keyring = config?.email?.unsubscribeKeys || [];
-  const token = keyring.length > 0
-    ? createUnsubscribeToken({ profileId, scope: 'lifecycle' }, keyring)
-    : 'onboarding_token';
+  const token = createUnsubscribeToken({ profileId, scope: 'lifecycle' }, keyring);
   const unsubscribeBase = String(config?.email?.unsubscribeBaseUrl || 'https://writon.cc/email/unsubscribe').replace(/\/$/, '');
   const unsubscribeUrl = `${unsubscribeBase}/${encodeURIComponent(token)}`;
 
@@ -222,7 +224,7 @@ export async function enqueueWelcomeEmail(pool, config, { profileId, recipientEm
   return enqueueEmail(pool, {
     profileId,
     recipientEmail: cleanEmail,
-    recipientEmailVersion: 1,
+    recipientEmailVersion: preference.email_version,
     category: 'lifecycle',
     templateKey: 'welcome',
     templateVersion: '1',
@@ -230,5 +232,31 @@ export async function enqueueWelcomeEmail(pool, config, { profileId, recipientEm
     payload,
     dueAt: new Date(),
   });
+}
+
+/** Bounded repair for recent verified signups with recorded lifecycle consent; never sends. */
+export async function reconcileWelcomeEmails(pool, config, { days = 7, limit = 25, dryRun = true } = {}) {
+  if (!Number.isInteger(days) || days < 1 || days > 30 || !Number.isInteger(limit) || limit < 1 || limit > 100 || typeof dryRun !== 'boolean') {
+    throw new Error('Invalid welcome reconciliation bounds');
+  }
+  const candidates = await pool.query(
+    `SELECT p.id, p.email, p.full_name
+       FROM public.profiles p JOIN public.user_email_preferences pref ON pref.profile_id=p.id
+      WHERE p.account_type='human' AND p.email_verified=true
+        AND p.created_at >= NOW() - ($1 * interval '1 day')
+        AND pref.lifecycle_enabled=true AND pref.consented_at IS NOT NULL AND pref.withdrawn_at IS NULL
+        AND p.email IS NOT NULL AND p.email NOT LIKE '%@legacy.writon.io'
+        AND NOT EXISTS (SELECT 1 FROM public.email_jobs j WHERE j.profile_id=p.id
+          AND j.event_key='signup_welcome' AND j.template_key='welcome' AND j.template_version='1')
+      ORDER BY p.created_at, p.id LIMIT $2`,
+    [days, limit],
+  );
+  let enqueued = 0;
+  if (!dryRun) {
+    for (const profile of candidates.rows) {
+      if (await enqueueWelcomeEmail(pool, config, { profileId: profile.id, recipientEmail: profile.email, fullName: profile.full_name })) enqueued++;
+    }
+  }
+  return { evaluated: candidates.rows.length, enqueued, dryRun };
 }
 

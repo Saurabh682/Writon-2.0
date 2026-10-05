@@ -38,7 +38,14 @@ export function createEmailWorker({ pool, resend, config, writonAdapter }) {
             }
             if (state) {
               if (!state.accountExists) { await cancelJob(pool, job, 'account_deleted'); result.cancelled++; continue; }
-              if (!state.verified) { await cancelJob(pool, job, 'email_not_verified'); result.cancelled++; continue; }
+              if (!state.verified) {
+                if (job.template_key === 'welcome' && Date.now() - new Date(job.created_at).getTime() < 30 * 86400_000) {
+                  await deferJob(pool, job, new Date(Date.now() + 30 * 60_000), 'awaiting_email_verification'); result.deferred++;
+                } else {
+                  await cancelJob(pool, job, 'email_not_verified'); result.cancelled++;
+                }
+                continue;
+              }
               if (Number(state.emailVersion) !== Number(job.recipient_email_version) || String(state.email).toLowerCase() !== String(job.recipient_email).toLowerCase()) {
                 await cancelJob(pool, job, 'recipient_changed'); result.cancelled++; continue;
               }

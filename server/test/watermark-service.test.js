@@ -92,5 +92,61 @@ describe('Watermark & Hashtag Service', () => {
     expect(enhanced).toContain(INVISIBLE_WATERMARK);
     expect(hasWritonWatermark(enhanced)).toBe(true);
   });
+
+  it('HASHTAG_SEMANTIC_GATE: blocks internal diagnostic vocabulary from published hashtags', async () => {
+    const { INTERNAL_VOCABULARY_BLOCKLIST, isHashtagSemanticallyRelevant, sanitizeHashtags } = await import('../src/bot-engine/watermark-service.js');
+    expect(INTERNAL_VOCABULARY_BLOCKLIST.has('modelmisalignment')).toBe(true);
+    expect(INTERNAL_VOCABULARY_BLOCKLIST.has('syntheticcliches')).toBe(true);
+    expect(INTERNAL_VOCABULARY_BLOCKLIST.has('reportingframework')).toBe(true);
+    expect(INTERNAL_VOCABULARY_BLOCKLIST.has('newsletterfatigue')).toBe(true);
+
+    expect(isHashtagSemanticallyRelevant('modelmisalignment', 'Essays', 'The Twelve-Foot Plaster Compromise')).toBe(false);
+    expect(isHashtagSemanticallyRelevant('syntheticcliches', 'Short Stories', 'Clay art')).toBe(false);
+
+    // Verify sanitizeHashtags strips them from existing text
+    const textWithLeak = 'Some story content\n\n#modelmisalignment #reportingframework #ganeshotsav #pune';
+    const cleaned = sanitizeHashtags(textWithLeak);
+    expect(cleaned).not.toContain('#modelmisalignment');
+    expect(cleaned).not.toContain('#reportingframework');
+    expect(cleaned).toContain('#ganeshotsav');
+    expect(cleaned).toContain('#pune');
+  });
+
+  it('HASHTAG_SEMANTIC_GATE: prevents cross-topic trending keyword contamination', () => {
+    // Culture story should reject newsletter / Substack creator fatigue keywords
+    const tags = generateCategoryHashtags('Culture', 'Sanjhi on the Highway', 'clay', [
+      'newsletter fatigue',
+      'substack vs medium',
+      'where to publish essays',
+      'creator monetization burnout'
+    ]);
+
+    expect(tags).not.toContain('#newsletterfatigue');
+    expect(tags).not.toContain('#substackvsmedium');
+    expect(tags).not.toContain('#wheretopublishessays');
+    expect(tags).not.toContain('#creatormonetizationburnout');
+    expect(tags).toContain('#culture');
+    expect(tags).toContain('#heritage');
+  });
+
+  it('HASHTAG_SEMANTIC_GATE: blocks social campaign tags (fallreadinglist, microscenes) from craft stories', async () => {
+    const { INTERNAL_VOCABULARY_BLOCKLIST, isHashtagSemanticallyRelevant, sanitizeHashtags } = await import('../src/bot-engine/watermark-service.js');
+    expect(INTERNAL_VOCABULARY_BLOCKLIST.has('fallreadinglist')).toBe(true);
+    expect(INTERNAL_VOCABULARY_BLOCKLIST.has('microscenes')).toBe(true);
+    expect(INTERNAL_VOCABULARY_BLOCKLIST.has('bookaestheticreels')).toBe(true);
+
+    expect(isHashtagSemanticallyRelevant('fallreadinglist', 'Short Stories', 'The Skin of the Brass')).toBe(false);
+    expect(isHashtagSemanticallyRelevant('microscenes', 'Short Stories', 'Dhamrai metalwork')).toBe(false);
+
+    // Verify sanitizeHashtags strips them
+    const leaked = 'Story\n\n#microscenes #bookaestheticreels #fallreadinglist #dhamrai #metalcraft';
+    const cleaned = sanitizeHashtags(leaked);
+    expect(cleaned).not.toContain('#fallreadinglist');
+    expect(cleaned).not.toContain('#microscenes');
+    expect(cleaned).not.toContain('#bookaestheticreels');
+    expect(cleaned).toContain('#dhamrai');
+    expect(cleaned).toContain('#metalcraft');
+  });
 });
+
 

@@ -33,8 +33,11 @@ import {
 import {
   buildEditorialBrief,
   normalizeTrendTopic,
-  reevaluateAutomaticEditorialBrief
+  reevaluateAutomaticEditorialBrief,
+  verifyResearchDossier
 } from './editorial-intelligence-service.js';
+import { evaluateEditorialAngleDistinctiveness } from './trend-orchestrator.js';
+import { recordLedgerEntry } from './editorial-ledger-service.js';
 
 // Domain-specific product candidates for specialist reviews
 export const DOMAIN_PRODUCT_CANDIDATES = {
@@ -242,10 +245,12 @@ export async function runMasterSchedulerTick(pool, {
       // Classify outcome into semantic arrays (never overlap with failed/skipped)
       if (result?.postId) {
         outcome.published.push({ slotId: slot.id, postId: result.postId });
-      } else if (result?.action?.includes('held') || result?.action === 'review_quality_rejected') {
+      } else if (result?.action?.includes('held')) {
         outcome.held.push(slot.id);
       } else if (result?.action?.includes('queued') || result?.action?.includes('commission')) {
         outcome.queued.push(slot.id);
+      } else if (result?.action?.includes('skip') || result?.skipped || result?.decision === 'SKIP' || result?.action === 'review_quality_rejected') {
+        outcome.skipped.push(slot.id);
       }
     } catch (error) {
       await pool.query(`
@@ -313,10 +318,12 @@ export async function executeScheduledSlot(pool, slot, {
       if (claimedBrief) {
         try {
           let canPublish = true;
+          let holdReason = null;
           if (claimedBrief.approval_mode === 'automatic_low_risk') {
             const reevaluation = reevaluateAutomaticEditorialBrief(claimedBrief);
             if (reevaluation.approval.status !== 'approved') {
-              await holdBrief(pool, claimedBrief.id, reevaluation.approval.reasons.join('; '));
+              holdReason = reevaluation.approval.reasons.join('; ');
+              await holdBrief(pool, claimedBrief.id, holdReason);
               canPublish = false;
             }
           }
@@ -336,18 +343,60 @@ export async function executeScheduledSlot(pool, slot, {
               researchBriefId: claimedBrief.id
             });
             if (!result?.error && result?.postId) {
-              return { ...result, researchBriefId: claimedBrief.id };
+              return { ...result, action: 'published_story', researchBriefId: claimedBrief.id };
             }
             if (result?.action === 'pulse_skipped' || result?.skipped) {
               console.log(`[Master Scheduler] Brief ${claimedBrief.id} skipped cleanly by editorial gate: ${result.reason}`);
-              await holdBrief(pool, claimedBrief.id, `Editorial Gate SKIP: ${result.reason || 'No distinctive persona angle'}`);
-              return { action: 'brief_skipped', researchBriefId: claimedBrief.id, reason: result.reason };
+              await holdBrief(pool, claimedBrief.id, `Editorial Gate SKIP: ${result.reason || 'Quality gate rejected draft'}`);
+              return {
+                action: 'slot_skipped',
+                decision: 'SKIP',
+                skipped: true,
+                researchBriefId: claimedBrief.id,
+                reason: result.reason,
+                gate: result.gate
+              };
             }
-            await holdBrief(pool, claimedBrief.id, result?.error || 'Publishing did not return a post ID');
+            if (result?.error) {
+              console.error(`[Master Scheduler] Brief ${claimedBrief.id} failed with technical error: ${result.error}`);
+              await releaseBriefClaim(pool, claimedBrief.id, `Scheduled publication failed: ${result.error}`);
+              return {
+                action: 'slot_failed',
+                error: result.error,
+                isTechnicalFailure: true,
+                retryable: true,
+                slotId: slot.id,
+                researchBriefId: claimedBrief.id
+              };
+            }
+            await holdBrief(pool, claimedBrief.id, 'Publishing did not return a post ID');
+            return {
+              action: 'slot_skipped',
+              decision: 'SKIP',
+              skipped: true,
+              researchBriefId: claimedBrief.id,
+              reason: 'Publishing did not return a post ID'
+            };
+          } else {
+            return {
+              action: 'slot_skipped',
+              decision: 'SKIP',
+              skipped: true,
+              researchBriefId: claimedBrief.id,
+              reason: holdReason || 'Brief reevaluation failed'
+            };
           }
         } catch (error) {
-          console.warn(`[Master Scheduler] Publication for brief ${claimedBrief.id} failed: ${error.message}. Proceeding to topic pivot.`);
+          console.error(`[Master Scheduler] Publication for brief ${claimedBrief.id} failed: ${error.message}`);
           await releaseBriefClaim(pool, claimedBrief.id, `Scheduled publication failed: ${error.message}`);
+          return {
+            action: 'slot_failed',
+            error: error.message,
+            isTechnicalFailure: true,
+            retryable: true,
+            slotId: slot.id,
+            researchBriefId: claimedBrief.id
+          };
         }
       }
     }
@@ -376,6 +425,26 @@ export async function executeScheduledSlot(pool, slot, {
       for (let i = 0; i < angles.length; i++) {
         const candidateAngle = angles[(startIndex + i) % angles.length];
         if (!candidateAngle?.researchBrief) continue;
+
+        // Decision Gate 1: Research Verification Gate (Weak, old, duplicate, or unsupported -> SKIP candidate)
+        const candidateDossier = candidateAngle.researchBrief?.research_dossier || candidateAngle.researchDossier;
+        const verification = verifyResearchDossier(candidateDossier);
+        if (!verification.corroborated) {
+          console.log(`[Master Scheduler] Candidate "${candidateAngle.trendingTopic || candidateAngle.researchBrief?.topic}" skipped at research gate: ${verification.reasons.join('; ')}`);
+          continue;
+        }
+
+        // Decision Gate 2: Distinct Angle Evaluation Gate (No distinct angle -> SKIP candidate)
+        const angleCheck = evaluateEditorialAngleDistinctiveness({
+          topic: candidateAngle.trendingTopic || candidateAngle.researchBrief?.topic,
+          headline: candidateAngle.headline || '',
+          editorialAngle: candidateAngle.editorialAngle,
+          category: candidateAngle.category || candidateAngle.genre || fallbackCategory
+        });
+        if (!angleCheck.distinct) {
+          console.log(`[Master Scheduler] Candidate "${candidateAngle.trendingTopic || candidateAngle.researchBrief?.topic}" skipped at angle gate: ${angleCheck.reason}`);
+          continue;
+        }
 
         const queued = await queueBrief(pool, {
           ...candidateAngle.researchBrief,
@@ -413,44 +482,91 @@ export async function executeScheduledSlot(pool, slot, {
               researchBriefId: claimedBrief.id
             });
             if (!result?.error && result?.postId) {
-              return { ...result, researchBriefId: claimedBrief.id };
+              return { ...result, action: 'published_story', researchBriefId: claimedBrief.id };
+            }
+            if (result?.action === 'pulse_skipped' || result?.skipped) {
+              await holdBrief(pool, claimedBrief.id, `Editorial Gate SKIP: ${result.reason}`);
+              return {
+                action: 'slot_skipped',
+                decision: 'SKIP',
+                skipped: true,
+                researchBriefId: claimedBrief.id,
+                reason: result.reason,
+                gate: result.gate
+              };
+            }
+            if (result?.error) {
+              console.error(`[Master Scheduler] Brief ${claimedBrief.id} failed with technical error: ${result.error}`);
+              await releaseBriefClaim(pool, claimedBrief.id, `Scheduled publication failed: ${result.error}`);
+              return {
+                action: 'slot_failed',
+                error: result.error,
+                isTechnicalFailure: true,
+                retryable: true,
+                slotId: slot.id,
+                researchBriefId: claimedBrief.id
+              };
             }
           } else {
             await holdBrief(pool, claimedBrief.id, reevaluation.approval.reasons.join('; '));
+            return {
+              action: 'slot_skipped',
+              decision: 'SKIP',
+              skipped: true,
+              researchBriefId: claimedBrief.id,
+              reason: reevaluation.approval.reasons.join('; ')
+            };
           }
         } catch (error) {
+          console.error(`[Master Scheduler] Publication for brief ${claimedBrief.id} failed: ${error.message}`);
           await releaseBriefClaim(pool, claimedBrief.id, `Scheduled publication failed: ${error.message}`);
+          return {
+            action: 'slot_failed',
+            error: error.message,
+            isTechnicalFailure: true,
+            retryable: true,
+            slotId: slot.id,
+            researchBriefId: claimedBrief.id
+          };
         }
       }
     }
 
-    // TOPIC PIVOT & REWRITE:
-    // When no trend angle qualified or the brief encountered an issue, pivot to a fresh topic & title
-    // in the target category and rewrite a new story rather than stalling the schedule or forcing flawed premises.
-    const chosenCategory = fallbackCategory || 'Essays';
-    let fallbackResult = null;
+    // When no trend angle qualified or research/angle gates failed:
+    // SKIP the slot per user policy: "Weak, old, duplicate, or unsupported -> SKIP",
+    // "No distinct angle -> SKIP", "Failed gate -> REVISE or SKIP; never force a slot".
+    const skipReason = angles.length === 0
+      ? 'NO_TRENDS_FOUND: Trend discovery returned zero viable trends'
+      : selectedQueuedBrief
+        ? `EDITORIAL_GATE_SKIP: Brief ${selectedQueuedBrief.id} held during re-evaluation`
+        : 'UNSUPPORTED_RESEARCH_OR_NO_DISTINCT_ANGLE: Discovered trends had unsupported research (<3 sources, stale) or lacked a distinct WritOn angle';
+
+    console.log(`[Master Scheduler] Editorial slot ${slot.id} SKIPPED per editorial policy: ${skipReason}`);
+
     try {
-      fallbackResult = await runPulse(pool, {
-        category: chosenCategory,
-        forcePublication: true,
-        automaticPublication: true
+      await recordLedgerEntry(pool, {
+        status: 'avoid',
+        entryType: 'publication',
+        genre: fallbackCategory,
+        avoidReason: skipReason,
+        details: {
+          slotId: slot.id,
+          decision: 'SKIP',
+          candidatesEvaluatedCount: angles.length,
+          reason: skipReason
+        }
       });
-    } catch (err) {
-      console.warn(`[Master Scheduler] Fallback pulse failed for ${chosenCategory}: ${err.message}. Retrying with Essays.`);
-      fallbackResult = await runPulse(pool, {
-        category: 'Essays',
-        forcePublication: true,
-        automaticPublication: true
-      }).catch(e => ({ error: e.message }));
+    } catch (ledgerErr) {
+      console.warn('[Master Scheduler] Failed to record skip in ledger:', ledgerErr.message);
     }
 
     return {
-      ...fallbackResult,
-      action: fallbackResult?.postId ? 'published_story' : 'held_for_review',
-      fallback: true,
-      topicPivoted: true,
-      category: chosenCategory,
-      reason: selectedQueuedBrief ? 'Trend brief was held or re-evaluated; pivoted to fresh category story rewrite' : 'No source-backed trend angle qualified; pivoted topic and executed fresh category story'
+      action: 'slot_skipped',
+      decision: 'SKIP',
+      skipped: true,
+      slotId: slot.id,
+      category: fallbackCategory,
+      reason: skipReason
     };
   }
 
@@ -479,7 +595,14 @@ export async function executeScheduledSlot(pool, slot, {
         });
         if (!reviewData) {
           await releaseBriefClaim(pool, claimedReview.id, 'Review quality gates rejected the generated output');
-          return { action: 'review_quality_rejected', researchBriefId: claimedReview.id, reviewer: reviewer.penName };
+          return {
+            action: 'review_quality_rejected',
+            decision: 'SKIP',
+            skipped: true,
+            researchBriefId: claimedReview.id,
+            reviewer: reviewer.penName,
+            reason: 'Review quality gates rejected generated review draft'
+          };
         }
         const outcome = await publishBatch(pool, { stories: [{
           authorPenName: reviewer.penName,
@@ -553,7 +676,13 @@ export async function executeScheduledSlot(pool, slot, {
       productName: sampleTopic, reviewer, researchDossier: dossier, generateArticle
     });
     if (!reviewData) {
-      return { action: 'review_quality_rejected', reviewer: reviewer.penName };
+      return {
+        action: 'review_quality_rejected',
+        decision: 'SKIP',
+        skipped: true,
+        reviewer: reviewer.penName,
+        reason: 'Review quality gates rejected generated review draft'
+      };
     }
     reviewBrief.approval = {
       status: 'approved', mode: 'automatic_quality_gates',

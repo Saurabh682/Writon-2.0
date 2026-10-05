@@ -38,6 +38,16 @@ class NotificationNavigationTest {
         }
     }
 
+    @Test fun linkedReaderSurvivesActivityRecreation() {
+        val intent = Intent(ApplicationProvider.getApplicationContext(), WritOnModernActivity::class.java)
+            .putExtra("storyId", "notification-navigation-test")
+        ActivityScenario.launch<WritOnModernActivity>(intent).use { scenario ->
+            assertReaderVisible()
+            scenario.recreate()
+            assertReaderVisible()
+        }
+    }
+
     private fun assertReaderVisible() {
         composeRule.waitUntil(30_000) {
             composeRule.onAllNodesWithText("Aa").fetchSemanticsNodes().isNotEmpty()

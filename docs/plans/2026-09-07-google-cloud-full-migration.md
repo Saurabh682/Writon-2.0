@@ -1,5 +1,7 @@
 # WritOn Full Google Cloud Migration Implementation Plan
 
+> **Historical plan:** Migration work is complete. Do not execute the former-provider rollout/rollback steps below. Current operating guidance is in [Google Cloud production API](../deployment/cloud-run-migration.md).
+
 > **For agentic workers:** Use the host's available task-by-task implementation workflow. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Move every remaining WritOn API, notification, scheduler, and automation runtime responsibility from Render to Google Cloud without changing public app APIs, interrupting the Play Store app, duplicating notifications, or exposing secrets.

@@ -3,7 +3,7 @@
 **App Name:** WritOn  
 **Developer:** iBitValley (Saurabh Kumar)  
 **Safety Contact:** deamonizerr@gmail.com / saurabh.682@gmail.com  
-**Public Policy URL:** https://writon-powerup.onrender.com/child-safety  
+**Public Policy URL:** https://writon.cc/child-safety.html
 
 At **WritOn**, we maintain a zero-tolerance policy against Child Sexual Abuse Material (CSAM) and Child Sexual Exploitation and Abuse (CSAE).
 

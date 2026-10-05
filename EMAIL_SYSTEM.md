@@ -1,7 +1,7 @@
 # WritOn Email & Writer Engagement Subsystem — Architecture & AI Operations Guide
 
 > **Target Audience**: AI Agents (Antigravity, Copilot, Gemini Spark), Backend Engineers, and System Operators.  
-> **Status**: Live in Production (`rrxaitxeirykmiihgiqj`), Migration Applied, Automated Welcome Pipeline Active.  
+> **Status (checked 2026-10-01)**: Email tables exist in production, but hosted welcome delivery is not verified or reliably configured. Local repair is awaiting deployment; the configured Resend key returned HTTP 401. Do not equate seeded records or provider acceptance with inbox receipt.
 > **Core Principle**: Zero tracking pixels, Warm Parchment (`#FAF5EE`) editorial aesthetic, strict legal privacy compliance (GDPR / CAN-SPAM / DPDP), atomic PostgreSQL deduplication (`FOR UPDATE SKIP LOCKED`).
 
 ---
@@ -89,7 +89,9 @@ sequenceDiagram
 ```
 
 ### Key Implementation Details:
-* **Hook Location**: `ensureProfileForId` in [`server/src/server.js`](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js).
+* **Hook Location**: `ensureProfileForId` in [`server/src/server.js`](file:///d:/VibeCode/WritOn-PowerUp/server/src/server.js). Local repair awaits queueing before returning rather than abandoning an unawaited promise; queue failures are logged without rejecting registration.
+* **Consent gate**: Existing opt-outs and withdrawals are preserved. Signup's historical lifecycle default is not consent evidence; optional delivery requires `consented_at` and no withdrawal. Do not backfill consent timestamps for these new users.
+* **Repair route (local, not deployed)**: Admin-only `POST /api/v1/internal/jobs/reconcile-welcome-emails`, bounded to 1–30 days and 1–100 profiles, defaults to `dryRun=true`. Selects recent verified human profiles with recorded lifecycle consent and no existing welcome job. It does not send or revive cancelled/ambiguous jobs.
 * **Helper**: `enqueueWelcomeEmail(pool, config, { profileId, recipientEmail, fullName })` in [`server/src/email/queue.js`](file:///d:/VibeCode/WritOn-PowerUp/server/src/email/queue.js).
 * **Welcome Template Model**:
   - **Subject**: `"Welcome to WritOn"`

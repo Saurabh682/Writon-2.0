@@ -1,0 +1,96 @@
+{
+  "ok": true,
+  "strict": true,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "filesScanned": 1
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "duration": 19.233333333333334,
+    "samples": [
+      0,
+      4,
+      7,
+      10,
+      13,
+      16,
+      19
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 0,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "specPath": "D:\\VibeCode\\WritOn-PowerUp\\campaign\\shorts-rendered\\short21_action_contradicts_dialogue_codex_v2\\index.motion.json",
+    "samples": 300
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      0,
+      4,
+      10,
+      13,
+      19
+    ],
+    "checked": 16,
+    "passed": 16
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": true,
+    "files": [
+      "snapshots\\frame-00-at-0.0s.png",
+      "snapshots\\frame-01-at-4.0s.png",
+      "snapshots\\frame-02-at-10.0s.png",
+      "snapshots\\frame-03-at-13.0s.png",
+      "snapshots\\frame-04-at-19.0s.png"
+    ],
+    "times": [
+      0,
+      4,
+      10,
+      13,
+      19
+    ],
+    "findingFiles": []
+  },
+  "_meta": {
+    "version": "0.8.123",
+    "latestVersion": "0.8.123",
+    "updateAvailable": false
+  }
+}

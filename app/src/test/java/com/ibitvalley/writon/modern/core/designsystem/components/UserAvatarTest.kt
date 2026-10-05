@@ -31,6 +31,7 @@ class UserAvatarTest {
         assertFalse(shouldLoadRemoteAvatar("http://api.writon.cc/api/v1/media/profile.webp"))
         assertFalse(shouldLoadRemoteAvatar("http://lh3.googleusercontent.com/a/ACg8oc"))
         assertFalse(shouldLoadRemoteAvatar("https://tracker.example/avatar.png"))
+        assertFalse(shouldLoadRemoteAvatar("https://example.com/avatar.webp"))
         assertFalse(shouldLoadRemoteAvatar("file:///data/user/0/private-avatar.png"))
         assertFalse(shouldLoadRemoteAvatar("content://media/external/images/1"))
         assertFalse(shouldLoadRemoteAvatar("javascript:alert('avatar')"))

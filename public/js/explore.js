@@ -105,28 +105,19 @@
     }
   }
 
+  // Carousel manual navigation by default (quiet reading identity)
   if (prevBtn) {
     prevBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      stopCarouselAutoPlay();
       goToSlide(currentSlideIndex - 1);
-      startCarouselAutoPlay();
     });
   }
 
   if (nextBtn) {
     nextBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      stopCarouselAutoPlay();
       goToSlide(currentSlideIndex + 1);
-      startCarouselAutoPlay();
     });
-  }
-
-  const carouselContainer = document.getElementById('top-carousel');
-  if (carouselContainer) {
-    carouselContainer.addEventListener('mouseenter', stopCarouselAutoPlay);
-    carouselContainer.addEventListener('mouseleave', startCarouselAutoPlay);
   }
 
   async function loadTopStoriesForCarousel() {
@@ -151,15 +142,12 @@
         dot.type = 'button';
         dot.setAttribute('aria-label', 'Slide ' + (idx + 1));
         dot.addEventListener('click', () => {
-          stopCarouselAutoPlay();
           goToSlide(idx);
-          startCarouselAutoPlay();
         });
         carouselDots.appendChild(dot);
       });
 
       currentSlideIndex = 0;
-      startCarouselAutoPlay();
     } catch (err) {
       console.warn('Carousel fetch note:', err.message);
     }
@@ -222,7 +210,15 @@
     return card;
   }
 
+  let activeFetchController = null;
+
   async function loadGridStories(reset = false) {
+    if (reset && activeFetchController) {
+      activeFetchController.abort();
+      activeFetchController = null;
+      isLoading = false;
+    }
+
     if (isLoading || (!hasMore && !reset)) return;
 
     isLoading = true;
@@ -234,13 +230,16 @@
       if (endMsg) endMsg.style.display = 'none';
     }
 
+    const controller = new AbortController();
+    activeFetchController = controller;
+
     try {
       let url = API_BASE_URL + '/api/v1/posts?page=' + currentPage + '&limit=20';
       if (currentCategory) {
         url += '&category=' + encodeURIComponent(currentCategory);
       }
 
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: controller.signal });
       if (!res.ok) throw new Error('API returned status ' + res.status);
       const data = await res.json();
       const posts = data.posts || [];
@@ -271,10 +270,14 @@
         }
       }
     } catch (err) {
+      if (err.name === 'AbortError') return;
       console.warn('Grid stories fetch fallback:', err.message);
       if (loadMoreBtn) loadMoreBtn.style.display = 'inline-flex';
     } finally {
-      isLoading = false;
+      if (activeFetchController === controller) {
+        activeFetchController = null;
+        isLoading = false;
+      }
     }
   }
 

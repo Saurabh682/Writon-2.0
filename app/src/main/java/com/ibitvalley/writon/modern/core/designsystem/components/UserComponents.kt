@@ -48,7 +48,6 @@ fun extractInitials(name: String): String {
 private val trustedAvatarHosts = setOf(
     "api.writon.cc",
     "cdn.writon.cc",
-    "writon-powerup.onrender.com",
     "writon-api-rfusi3iwbq-el.a.run.app",
     "writon-api-802112841589.asia-south1.run.app",
     "writon-app-api-canary-rfusi3iwbq-el.a.run.app",

@@ -137,11 +137,28 @@ export class LinkedInValidatorService {
       },
     });
 
-    // LI11: VISUAL_TEXT_OVERLOAD
+    // LI11: VISUAL_TEXT_CONTAINMENT & BOUNDS (Zero text spill invariant)
+    // Ensures text never collides, overlaps, or spills outside cards, viewports, or safe margins
+    let visualSpillDetected = false;
+    let visualSpillDetails = null;
+
+    if (mediaAssets && mediaAssets.length > 0) {
+      for (const asset of mediaAssets) {
+        if (asset.layoutValidation && asset.layoutValidation.valid === false) {
+          visualSpillDetected = true;
+          visualSpillDetails = asset.layoutValidation.violations;
+          break;
+        }
+      }
+    }
+
     results.push({
-      gateCode: 'LI11_VISUAL_TEXT_OVERLOAD',
-      passed: true,
-      metadata: { verifiedSlideAssets: mediaAssets.length },
+      gateCode: 'LI11_VISUAL_TEXT_CONTAINMENT',
+      passed: !visualSpillDetected,
+      failureReason: visualSpillDetected
+        ? `Visual containment failure: Text spills outside container bounds or overlaps lines (${JSON.stringify(visualSpillDetails)}).`
+        : null,
+      metadata: { verifiedSlideAssets: mediaAssets.length, visualSpillDetails },
     });
 
     // LI12: MEDIA_CAPABILITY_FAILURE

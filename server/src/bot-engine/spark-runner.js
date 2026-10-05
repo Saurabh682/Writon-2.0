@@ -576,7 +576,7 @@ export async function getBotById(pool, botId) {
   return result.rows[0] ?? null;
 }
 
-export async function executePostAction(pool, { botId, category, topicHint, customTitle, customContent, researchDossier, trendingKeywords = [] }) {
+export async function executePostAction(pool, { botId, category, topicHint, customTitle, customContent, researchDossier, trendingKeywords = [], researchBriefId = null }) {
   const bot = await getBotById(pool, botId);
   if (!bot) throw new Error(`Bot persona ${botId} not found`);
 
@@ -686,7 +686,15 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     const violationSummary = integrityCheck.reasons.join('; ');
     console.warn(`[Spark Runner] Article Integrity & Zero-AI-Slop gate FAILED for "${articleData.title}": ${violationSummary}`);
     await registerFailurePattern(pool, null, bot.id, 'ZERO_AI_SLOP_INTEGRITY_FAIL', violationSummary, articleData.title).catch(() => {});
-    throw new Error(`Zero-AI-Slop Integrity gate rejected publication: ${violationSummary}`);
+    return {
+      skipped: true,
+      decision: 'SKIP',
+      botId: bot.id,
+      penName: bot.penName,
+      category: targetCategory,
+      gate: 'ZERO_AI_SLOP_INTEGRITY',
+      reason: `Zero-AI-Slop Integrity gate rejected publication: ${violationSummary}`
+    };
   }
 
   // Server-Side Zero-Slop & Anti-Repetition Governance Check
@@ -700,7 +708,15 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     const violationSummary = govCheck.violations?.map(v => `"${v.pattern}" (${v.reason})`).join(', ');
     console.warn(`[Spark Runner] Anti-Repetition gate FAILED for "${articleData.title}": ${violationSummary}`);
     await registerFailurePattern(pool, null, bot.id, 'ANTI_REPETITION_FAIL', violationSummary, articleData.title).catch(() => {});
-    throw new Error(`Anti-Repetition gate rejected publication: ${violationSummary}`);
+    return {
+      skipped: true,
+      decision: 'SKIP',
+      botId: bot.id,
+      penName: bot.penName,
+      category: targetCategory,
+      gate: 'ANTI_REPETITION',
+      reason: `Anti-Repetition gate rejected publication: ${violationSummary}`
+    };
   }
 
   // Mandatory Pre-Publication Approval Gate via Local LM Studio Critic
@@ -715,13 +731,27 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
     if (lmReview.skipped) {
       console.warn(`[Spark Runner] Pre-publication critic skipped: ${lmReview.error}`);
     } else {
-      throw new Error(`Pre-publication critic check failed: ${lmReview.error}`);
+      // TECHNICAL / SERVICE OUTAGE: Critic required but unreachable (network/connection error)
+      // Retain an explicit failure/retry outcome instead of an editorial skip!
+      console.error(`[Spark Runner] Critic service unavailable (technical failure): ${lmReview.error}`);
+      const techErr = new Error(`Critic service failure: ${lmReview.error}`);
+      techErr.isTechnicalFailure = true;
+      techErr.retryable = true;
+      throw techErr;
     }
   } else if (lmReview.verdict !== 'APPROVE') {
     const rejectionReason = `LM Studio rejected draft with score ${lmReview.score ?? 'N/A'}/100 (${lmReview.reason || 'Rejected'}). Critique: ${lmReview.critique?.slice(0, 200)}...`;
     console.warn(`[Spark Runner] Pre-publication LM Studio gate REJECTED for "${articleData.title}": ${rejectionReason}`);
     await registerFailurePattern(pool, null, bot.id, 'LM_STUDIO_CRITIC_REJECT', rejectionReason, articleData.title).catch(() => {});
-    throw new Error(`Publication rejected by LM Studio: ${rejectionReason}`);
+    return {
+      skipped: true,
+      decision: 'SKIP',
+      botId: bot.id,
+      penName: bot.penName,
+      category: targetCategory,
+      gate: 'LM_STUDIO_CRITIC',
+      reason: `Publication rejected by LM Studio: ${rejectionReason}`
+    };
   } else {
     console.log(`[Spark Runner] Pre-publication LM Studio gate APPROVED for "${articleData.title}" (Score: ${lmReview.score ?? 'N/A'}/100)`);
   }
@@ -855,7 +885,7 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       category: targetCategory
     }).catch(err => console.warn('[Spark Runner] Memory record warning:', err.message));
 
-    // Record in Editorial Ledger
+    // Record in Editorial Ledger enriched with research provenance (single canonical entry)
     recordLedgerEntry(pool, {
       status: 'executed',
       entryType: 'publication',
@@ -866,7 +896,20 @@ export async function executePostAction(pool, { botId, category, topicHint, cust
       theme: articleData.themeKeyword || targetCategory,
       approxWordCount: readingTime * 200,
       targetPostId: createdPost.id,
-      details: { slug: createdPost.slug, readingTimeMin: readingTime }
+      details: {
+        decision: 'PUBLISHED',
+        slug: createdPost.slug,
+        readingTimeMin: readingTime,
+        keywords: trendingKeywords,
+        researchBriefId,
+        sourceCount: researchDossier?.newsReports?.length || 0,
+        sources: (researchDossier?.newsReports || []).slice(0, 5).map(r => ({
+          headline: r.headline || r.title,
+          source: r.source,
+          url: r.url,
+          publishedAt: r.publishedAt || r.pubDate
+        }))
+      }
     }).catch(err => console.warn('[Spark Runner] Ledger record warning:', err.message));
 
     // Extract and store narrative fingerprint + active cooldowns
@@ -1831,16 +1874,40 @@ export async function runSparkPulse(pool, options = {}) {
         category: targetCategory,
         topicHint: resolvedTopicHint,
         researchDossier,
-        trendingKeywords: activeBacklogKeywords
+        trendingKeywords: activeBacklogKeywords,
+        researchBriefId
       });
 
       if (createdPost?.skipped) {
         await client.query('commit');
+        try {
+          await recordLedgerEntry(pool, {
+            status: 'avoid',
+            entryType: 'publication',
+            authorId: targetBot.id,
+            authorPenName: targetBot.penName,
+            genre: targetCategory,
+            theme: resolvedTopicHint,
+            avoidReason: createdPost.reason,
+            details: {
+              decision: 'SKIP',
+              gate: createdPost.gate || 'PREMISE_ORIGINALITY',
+              topicHint: resolvedTopicHint,
+              category: targetCategory,
+              researchBriefId
+            }
+          });
+        } catch (ledgerErr) {
+          console.warn('[Spark Pulse] Failed to record skip in ledger:', ledgerErr.message);
+        }
+
         return {
           action: 'pulse_skipped',
+          skipped: true,
+          decision: 'SKIP',
           botId: targetBot.id,
           reason: createdPost.reason,
-          decision: createdPost.decision || 'SKIP',
+          gate: createdPost.gate,
           executedDelayedCount: executedDelayed.length
         };
       }
@@ -1855,6 +1922,7 @@ export async function runSparkPulse(pool, options = {}) {
       }
 
       await client.query('commit');
+
       return {
         action: 'published_story',
         botId: targetBot.id,
@@ -2571,7 +2639,17 @@ export async function ingestSparkBatch(pool, rawPayload) {
       }
 
       const penName = (story.authorPenName || story.author || story.penName || '').toLowerCase().trim();
-      const botId = botMap.get(penName) || defaultBotId;
+      let botId = botMap.get(penName);
+      if (!botId) {
+        // Find best matching writer persona for the resolved category, prioritized by least recently posted
+        const categoryBots = bots.filter(b => b.categories && b.categories.includes(resolvedCategory));
+        if (categoryBots.length > 0) {
+          categoryBots.sort((a, b) => new Date(a.lastPostedAt || 0) - new Date(b.lastPostedAt || 0));
+          botId = categoryBots[0].id;
+        } else {
+          botId = defaultBotId;
+        }
+      }
       const category = resolvedCategory;
 
       // Mandatory Pre-Publication Approval Gate via Local LM Studio Critic

@@ -158,9 +158,10 @@ export function createWritonEmailAdapter(pool, { siteBaseUrl = 'https://writon.c
 
     async getCurrentEmailState(profileId) {
       const result = await pool.query(
-        `select id, email, account_type
-         from public.profiles
-         where id = $1`,
+        `select p.id, p.email, p.account_type, p.email_verified, pref.email_version
+         from public.profiles p
+         left join public.user_email_preferences pref on pref.profile_id=p.id
+         where p.id = $1`,
         [profileId],
       );
 
@@ -172,9 +173,9 @@ export function createWritonEmailAdapter(pool, { siteBaseUrl = 'https://writon.c
       const email = row.email ? String(row.email).trim().toLowerCase() : null;
       return {
         accountExists: true,
-        verified: Boolean(email && !email.endsWith('@legacy.writon.io')),
+        verified: Boolean(row.email_verified === true && row.account_type === 'human' && email && !email.endsWith('@legacy.writon.io')),
         email,
-        emailVersion: 1,
+        emailVersion: Number(row.email_version ?? 0),
       };
     },
 

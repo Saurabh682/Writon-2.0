@@ -44,6 +44,25 @@ class PostRepositoryMutationTest {
     }
 
     @Test
+    fun `source feed never falls back to mixed legacy feed`() = runTest {
+        whenever(api.getSourcePosts("community", null, "", 1))
+            .thenReturn(Response.error(404, "not deployed".toResponseBody()))
+        val result = runCatching { repository.loadSourceFeed(FeedAudience.COMMUNITY, "All", "", 1) }
+        assertTrue(result.isFailure)
+        verify(api, never()).getPosts(any(), any(), any(), any(), any(), any(), any())
+        verify(posts, never()).mergeFeedPosts(any())
+    }
+
+    @Test
+    fun `source feed rejects wrong or absent source metadata`() = runTest {
+        whenever(api.getSourcePosts("community", null, "", 1)).thenReturn(Response.success(
+            PostsResponseDto(listOf(com.ibitvalley.writon.modern.core.network.model.PostDto(
+                id = "bot", contentSource = "editorial")), PaginationDto(1, 20, false))))
+        assertTrue(runCatching { repository.loadSourceFeed(FeedAudience.COMMUNITY, "All", "", 1) }.isFailure)
+        verify(posts, never()).mergeFeedPosts(any())
+    }
+
+    @Test
     fun `failed like keeps the desired enabled state in one latest mutation`() = runTest {
         whenever(api.setLike("post-1", RelationStateRequestDto(true)))
             .thenReturn(Response.error(503, "offline".toResponseBody()))
@@ -144,6 +163,23 @@ class PostRepositoryMutationTest {
 
         assertEquals(PostDetailRefreshOutcome.FAILED_NO_CACHE, outcome)
         verify(posts, never()).deletePostById("uncached-story")
+    }
+
+    @Test
+    fun `cancelled story load propagates cancellation without evicting cache`() = runTest {
+        whenever(api.getPostDetail("cancelled-story"))
+            .thenThrow(kotlinx.coroutines.CancellationException("Reader closed"))
+
+        var cancelled = false
+        try {
+            repository.refreshPostDetail("cancelled-story")
+        } catch (_: kotlinx.coroutines.CancellationException) {
+            cancelled = true
+        }
+
+        assertTrue(cancelled)
+        verify(posts, never()).deletePostById("cancelled-story")
+        verify(posts, never()).getPostSnapshot("cancelled-story")
     }
 
     @Test

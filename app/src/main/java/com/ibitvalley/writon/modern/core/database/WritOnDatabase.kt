@@ -11,6 +11,8 @@ import com.ibitvalley.writon.modern.core.database.dao.DraftDao
 import com.ibitvalley.writon.modern.core.database.dao.OutboxDao
 import com.ibitvalley.writon.modern.core.database.dao.PostDao
 import com.ibitvalley.writon.modern.core.database.dao.UserDao
+import com.ibitvalley.writon.modern.core.database.dao.IncomingStoryDao
+import com.ibitvalley.writon.modern.core.database.dao.IncomingStoryEntity
 import com.ibitvalley.writon.modern.core.database.model.CommentEntity
 import com.ibitvalley.writon.modern.core.database.model.DraftEntity
 import com.ibitvalley.writon.modern.core.database.model.OutboxMutationEntity
@@ -18,8 +20,8 @@ import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.core.database.model.UserEntity
 
 @Database(
-    entities = [PostEntity::class, UserEntity::class, OutboxMutationEntity::class, CommentEntity::class, DraftEntity::class],
-    version = 6,
+    entities = [PostEntity::class, UserEntity::class, OutboxMutationEntity::class, CommentEntity::class, DraftEntity::class, IncomingStoryEntity::class],
+    version = 7,
     exportSchema = true
 )
 abstract class WritOnDatabase : RoomDatabase() {
@@ -29,6 +31,7 @@ abstract class WritOnDatabase : RoomDatabase() {
     abstract fun outboxDao(): OutboxDao
     abstract fun commentDao(): CommentDao
     abstract fun draftDao(): DraftDao
+    abstract fun incomingStoryDao(): IncomingStoryDao
 
     companion object {
         @Volatile
@@ -41,7 +44,7 @@ abstract class WritOnDatabase : RoomDatabase() {
                     WritOnDatabase::class.java,
                     "writon_modern.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .fallbackToDestructiveMigrationOnDowngrade()
                     .build()
                 INSTANCE = instance
@@ -95,6 +98,12 @@ abstract class WritOnDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE posts ADD COLUMN contentUpdatedAt TEXT")
                 database.execSQL("ALTER TABLE comments ADD COLUMN updatedAt TEXT")
                 database.execSQL("ALTER TABLE comments ADD COLUMN isMine INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+        internal val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS incoming_stories (ownerKey TEXT NOT NULL, storyKey TEXT NOT NULL, slug TEXT, title TEXT, source TEXT NOT NULL, receivedAt INTEGER NOT NULL, readAt INTEGER, PRIMARY KEY(ownerKey, storyKey))")
             }
         }
 

@@ -39,7 +39,10 @@ export async function runWeeklyDigestScheduler(pool, writonAdapter, config, { da
       ]);
 
       const keyring = config.email?.unsubscribeKeys || [];
-      const token = keyring.length > 0 ? createUnsubscribeToken({ profileId, scope: 'all' }, keyring) : 'preview_token';
+      if (!Array.isArray(keyring) || keyring.length === 0) {
+        throw new Error('Unsubscribe signing keys are not configured; failing closed');
+      }
+      const token = createUnsubscribeToken({ profileId, scope: 'all' }, keyring);
 
       const model = buildWriterDigestModel({
         profileId,

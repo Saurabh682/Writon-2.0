@@ -1,5 +1,9 @@
 # Changelog & Update History — WritOn 2.0
 
+## Unreleased — Short #21 Thumbnail — 2026-10-05
+
+- Created a separate portrait thumbnail with the “I’M FINE” / “BUT HER ACTIONS SAY OTHERWISE” hook, matching the video's wiping scene and warm parchment styling. Saved the asset and generation prompt alongside the editable Short project.
+
 ## 2.0.85 (184) — Clear Home & Explore — 2026-10-05
 
 - Package the Redmi-verified Explore drawer clipping fix and navigation regression checks in a new signed Android bundle; increment both Android release identifiers without reusing version code 183.
@@ -10,13 +14,22 @@
 
 - **End-to-End Pipeline Decision Integration & Probe Hardening**: Connected all missing decision points across the scheduled bot publishing pipeline (`master-scheduler.js`, `trend-orchestrator.js`, `spark-runner.js`, `editorial-ledger-service.js`, `content-relevance-service.js`, `trend-scout-service.js`):
   - **Decision 1 (Research Verification Gate)**: Wired `verifyResearchDossier` into editorial slot scheduling. Candidacies with weak evidence (<3 sources, missing timestamps, or older than 48 hours) are cleanly skipped rather than drafted.
-  - **Decision 2 (Meaningful Angle Evaluation vs Keyword Stuffing)**: Replaced arbitrary keyword lists (`latency`, `tactile`) with evaluation of substantive inquiries (concrete questions `how`/`why`/`?`), causal mechanisms, and reader benefits/trade-offs. Hollow generic filler ("This is a generic story with latency.") is rejected, while genuine conceptual questions ("Explain how bringing different books removes the pressure to finish an assigned novel.") pass.
-  - **Decision 3 (Category & Format Lock for Hardware/Audio)**: Resolved review/guide format and device subjects before cultural routing. Audio gear ("Bose headphones music listening guide", "Sony speaker music quality") and electronics route strictly to `Reviews` or `Tech`, preventing inadvertent swallowing into `Culture`.
+  - **Decision 2 (Meaningful Angle Evaluation vs Keyword Stuffing)**: Replaced arbitrary keyword lists with evaluation of substantive inquiries (concrete questions `how`/`why`/`?`), causal mechanisms, and reader benefits/trade-offs (`removes the pressure`, `trade-offs`, `tensions`, `consequences`). Hardened against formulaic boilerplates (`"Explain the details of..."`, `"A complete guide to everything you need to know about..."`, `"This is a generic story with latency."`), requiring genuine conceptual questions or systems tensions before proceeding.
+  - **Decision 3 (Category & Format Lock for Hardware/Audio)**: Resolved review/guide format and device subjects (headphones, speakers, soundbars, turntables, microphones, cameras, GPUs, EVs) before cultural routing across `trend-orchestrator.js`, `trend-scout-service.js`, and `content-relevance-service.js`. Topics like `"Bose headphones music listening guide"`, `"Sony speaker music quality"`, `"Audio-Technica turntable vinyl listening guide"`, and `"Shure microphone vocal recording test"` route strictly to `Reviews`, never `Culture`.
   - **Decision 4 (Quality Gate vs Technical Failure Differentiation)**: Differentiated editorial rejections from infrastructure failures. Editorial quality gates (`ZERO_AI_SLOP_INTEGRITY`, `ANTI_REPETITION`, `LM_STUDIO_CRITIC` rejection) return structured `{ skipped: true, decision: 'SKIP' }` without forcing filler. Temporary service/network outages (critic down, database timeouts) retain explicit retryable errors (`isTechnicalFailure: true`, `slot_failed`), preventing silent slot loss.
   - **Decision 5 (Automatic Low-Risk Publishing)**: Preserved unattended zero-human-touch publication for eligible low-risk briefs (`automatic_low_risk`) while respecting gate rejections.
   - **Decision 6 (Contextual Comments Enforced)**: Enforced comment relevance requiring grounding in real details or questions from the story content.
   - **Decision 7 (Single Enriched Ledger Entry)**: Eliminated duplicate ledger records on pulse publication. Exactly one entry is written per published story in `executePostAction`, enriched with research provenance (`researchBriefId`, `sourceCount`, `sources` array with headline, publisher, URL, and date). Updated `runMasterSchedulerTick` to classify skips into `outcome.skipped` and technical failures into `outcome.failed`.
-- **Test Coverage**: Added comprehensive test suite `server/test/scheduled-pipeline-decisions.test.js` validating all 7 decision gates and regressions end-to-end (19/19 passing), and verified passing status across `master-scheduler-resilience.test.js` (12/12), `trend-scout.test.js` (11/11), `trend-orchestrator.test.js` (14/14), `spark-bot-engine.test.js` (63/63), and `scheduler-tick-status.test.js` (5/5).
+- **Test Coverage**: Added comprehensive test suite `server/test/scheduled-pipeline-decisions.test.js` validating all 7 decision gates and regressions end-to-end (24/24 passing), and verified passing status across all 6 test suites (129/129 tests passing):
+  - `scheduled-pipeline-decisions.test.js` (24/24)
+  - `master-scheduler-resilience.test.js` (12/12)
+  - `trend-scout.test.js` (11/11)
+  - `trend-orchestrator.test.js` (14/14)
+  - `spark-bot-engine.test.js` (63/63)
+  - `scheduler-tick-status.test.js` (5/5)
+- **Live Staging Verification**: Verified end-to-end publication and retrieval against the live Cloud Run staging API (`https://writon-app-api-staging-rfusi3iwbq-el.a.run.app`):
+  - Successfully published authentic test story by Anand Verma (`@anand_verma_dev`) in `Tech` via `POST /api/v1/spark/publish` (HTTP 201, ID: `a56c0454-d1d2-42e2-b617-39de16474c88`).
+  - Successfully retrieved and verified saved story payload via public `GET /api/v1/posts/:slugOrId` (HTTP 200, slug: `the-unseen-cost-of-ephemeral-test-runners-4768-160deb5b-645`).
 
 ## Unreleased — Calmer Short #21 Reading Holds, YouTube & Instagram Publication — 2026-10-05
 

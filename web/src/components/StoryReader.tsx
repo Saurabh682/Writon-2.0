@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify';
 import React, { useState, useEffect } from 'react';
 import { Story, Comment, AIAnalysis } from '../types';
 import {
@@ -596,7 +597,17 @@ export const StoryReader: React.FC<StoryReaderProps> = ({
                 flushList();
               }
 
-              return outputBlocks.join('\n');
+              const renderedHtml = outputBlocks.join('\n');
+              return DOMPurify.sanitize(renderedHtml, {
+                ALLOWED_TAGS: [
+                  'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr',
+                  'strong', 'b', 'em', 'i', 'code', 'pre', 'blockquote',
+                  'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+                  'div', 'span', 'a'
+                ],
+                ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'style', 'class'],
+                ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
+              });
             })()
           }}
         />

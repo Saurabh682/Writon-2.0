@@ -70,6 +70,9 @@ fun getThemeColorScheme(themeMode: String, isSystemDark: Boolean): androidx.comp
     }
 }
 
+internal fun resolveReaderThemeMode(readerThemeMode: String, appThemeMode: String): String =
+    if (readerThemeMode == "app") appThemeMode else readerThemeMode
+
 @Composable
 fun WritOnTheme(
     themeMode: String = "paper",

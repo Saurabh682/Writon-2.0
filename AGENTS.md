@@ -257,6 +257,17 @@ This repository is dual-indexed with **graft** (`graft/`) and **graphify** (`gra
     * **False Chronological Inevitability**: Do not invent tidy historical binaries (*"For generations, advice was vertical; now it is horizontal"*). Human reflection (letters, diaries, memoirs) has always contained uncertainty. Contrast forms directly rather than manufacturing neat epochal shifts.
     * **Date Stamp as Authority Limit**: Frame chronological bounds as an epistemic constraint (*"its date stamp places a limit on its authority"*, *"it admits what I knew then rather than claiming universal truth"*), never as an absolute shield against performative vanity.
     * **Prohibit Arbitrary Timetables**: Do not hallucinate external social schedules (e.g. *"society decrees age 28 is for consolidation"*). Ground the contrast in general institutional benchmarks (promotions, financial metrics, mortgages) and private emotional reality.
+- **Think Brain Rules 183–184: Selection vs. Imitation & Specificity Without Provenance**:
+  - **Rule 183 (`SELECTION_OVER_IMITATION_DEFENSE`)**:
+    * **Governing Mandate**: *Never defend human creativity by claiming machines are incapable of something they can demonstrably imitate.*
+    * Autoregressive models with sampling strategies (temperature, top-k, top-p) can easily generate unexpected, idiosyncratic, or hyper-specific images (e.g. jammed blister packs, specific street corners, cut thumbs).
+    * Defend the part imitation cannot settle: **why this detail, from this situated consciousness, survived into this work**. The human mark is not raw unpredictability; it is **accountable selection**—an author who chose this word, discarded fifty others, wrestled with shame, memory, or taste, and can answer for why the detail remains.
+  - **Rule 185 (`VISUAL_CONTAINMENT_INVARIANT`) & (`ZERO_TEXT_SPILL_GATE`)**:
+    * **Governing Mandate**: **Zero text spill, zero element collisions, and zero unmeasured static boxes.**
+    * **Root Cause Prevention**: Text spilling occurs when designers guess heights or use static rectangular frames. All cards, quote blocks, contrast boxes, and carousels across all social channels (LinkedIn, Pinterest, X, Instagram) must compute container heights dynamically (`boxHeight = contentHeight + (paddingY * 2)`).
+    * **Pixel-Based Wrapping**: Prohibit naive character-based line wrapping (`splitByWords(N chars)`). Must use font-metric pixel estimation (`wrapTextToWidth`) mapped to actual inner container dimensions.
+    * **Explicit Baseline Clearance**: Every text element must have explicit baseline-to-baseline clearance (`lineHeight >= fontSize * 1.35`) and mandatory separation (`>= 32px`) between headings and following descriptive copy to eliminate font collision.
+    * **Pre-Flight Containment Validation**: Automated pipelines must run `validateVisualContainment()` before finalizing assets. Any detected horizontal overflow beyond margins or vertical overflow beyond parent containers triggers immediate hard failure.
 
 - **HyperFrames Video Rendering Pipeline**:
   - Use HyperFrames (`npx hyperframes render` / skills under `.agents/skills`) to generate animated 9:16 vertical video Reels/Stories (`.mp4`) for high-impact social releases, craft prompts, or product teasers.

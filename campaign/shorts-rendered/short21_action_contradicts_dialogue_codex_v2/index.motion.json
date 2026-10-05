@@ -1,0 +1,15 @@
+{
+  "duration": 19.233333333333334,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "#caption0",
+      "bySec": 0.1
+    },
+    {
+      "kind": "appearsBy",
+      "selector": "#caption4",
+      "bySec": 11.837583333333335
+    }
+  ]
+}

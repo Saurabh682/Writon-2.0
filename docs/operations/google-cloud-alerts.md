@@ -101,9 +101,9 @@ If a regression occurs on `writon-app-api`:
    ```bash
    npx --yes firebase-tools@latest deploy --only hosting:writon-api-gateway --config firebase.api.json --project writon-app-2020
    ```
-2. **Option 2 (Rollback to Render Standby)**:
-   Pause Google Cloud Scheduler workers to prevent double processing:
+2. **Option 2 (Rollback to a verified Cloud Run revision)**:
+   Route traffic to the previous known-good revision of the active API service:
    ```bash
-   gcloud scheduler jobs pause writon-notification-outbox-drain --location=asia-south1 --project=writon-app-2020
+   gcloud run services update-traffic writon-app-api --to-revisions=<PREVIOUS_REVISION>=100 --region=asia-south1 --project=writon-app-2020
    ```
-   Update DNS or reverse-proxy rewrite to point `api.writon.cc` to `https://writon-powerup.onrender.com`.
+   Keep `api.writon.cc` on the Firebase Hosting gateway; rollback does not require DNS changes or a second provider.

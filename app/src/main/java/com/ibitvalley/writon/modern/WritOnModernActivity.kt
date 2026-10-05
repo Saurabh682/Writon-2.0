@@ -16,6 +16,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -80,13 +83,14 @@ class WritOnModernActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         applyInitialEdgeToEdgeAppearance()
         super.onCreate(savedInstanceState)
-        handleIncomingIntent(intent)
         WritOnTelemetry.appLaunched(applicationContext)
 
         WritOnNotificationManager.createNotificationChannels(this)
 
         val appContainer = AppContainer(applicationContext)
         database = appContainer.database
+        if (savedInstanceState == null) handleIncomingIntent(intent)
+        else pendingNotificationRoute = savedInstanceState.getString("pendingNotificationRoute")
         userPreferences = appContainer.userPreferences
         val savedLang = userPreferences.appLanguage
         if (savedLang.isNotBlank() && savedLang != "system") {
@@ -210,9 +214,29 @@ class WritOnModernActivity : AppCompatActivity() {
         handleIncomingIntent(intent)
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString("pendingNotificationRoute", pendingNotificationRoute)
+        super.onSaveInstanceState(outState)
+    }
+
     private fun handleIncomingIntent(incoming: Intent?) {
         val destination = extractNotificationTargetRoute(incoming)
         val externalTarget = incoming?.getStringExtra("targetRoute")
+        if (destination?.startsWith("reader/") == true) {
+            lifecycleScope.launch {
+                try {
+                    val owner = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: "device"
+                    database.incomingStoryDao().capture(owner, destination.removePrefix("reader/"),
+                        if (incoming?.data?.scheme in listOf("http", "https")) "shared" else "push")
+                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    Log.w("WritOnInbox", "Could not retain incoming story link", error)
+                }
+                pendingNotificationRoute = destination
+            }
+            return
+        }
         if (destination?.startsWith("reader/") == true || !handleExternalOrMarketRoute(externalTarget)) {
             pendingNotificationRoute = destination
         }

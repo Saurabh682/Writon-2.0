@@ -37,6 +37,9 @@ internal fun resolveRemoteConfigFetchStatus(succeeded: Boolean, activated: Boole
 
 internal fun normalizeExploreTrendingLimit(value: Long): Int = value.coerceIn(1L, 20L).toInt()
 
+internal fun resolveRemoteConfigBoolean(source: Int, value: Boolean, default: Boolean): Boolean =
+    if (source == FirebaseRemoteConfig.VALUE_SOURCE_STATIC) default else value
+
 /**
  * Singleton managing Firebase Remote Config for dynamic feature toggles and UI parameters.
  *
@@ -114,7 +117,9 @@ object WritOnRemoteConfig {
 
     private fun getBoolean(key: String, default: Boolean): Boolean {
         return try {
-            remoteConfig?.getBoolean(key) ?: default
+            val config = remoteConfig ?: return default
+            val value = config.getValue(key)
+            resolveRemoteConfigBoolean(value.source, value.asBoolean(), default)
         } catch (_: Exception) {
             default
         }

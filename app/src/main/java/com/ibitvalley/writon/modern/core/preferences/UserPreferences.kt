@@ -39,6 +39,18 @@ internal fun EngagementPreferences.normalized(): EngagementPreferences {
 }
 
 class UserPreferences(context: Context) {
+    fun sourceFeedIds(audience: String): List<String> {
+        require(audience in setOf("community", "editorial"))
+        return sharedPreferences.getString("source_feed_$audience", "").orEmpty()
+            .lineSequence().filter { it.isNotBlank() }.take(200).toList()
+    }
+
+    fun saveSourceFeedIds(audience: String, ids: List<String>) {
+        require(audience in setOf("community", "editorial"))
+        require(ids.all { it.isNotBlank() && it.length <= 128 && !it.contains('\n') && !it.contains('\r') })
+        // ponytail: keep 200 source-verified cards offline; Room retains their story bodies.
+        sharedPreferences.edit().putString("source_feed_$audience", ids.distinct().take(200).joinToString("\n")).apply()
+    }
     private val applicationContext = context.applicationContext
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("writon_prefs", Context.MODE_PRIVATE)
@@ -181,12 +193,22 @@ class UserPreferences(context: Context) {
         get() = sharedPreferences.getString("reader_font_family", "serif") ?: "serif"
         set(value) = sharedPreferences.edit().putString("reader_font_family", value).apply()
 
-    /** Reader-only color theme: "paper", "sepia", or "dark". */
+    /** Reader color theme; "app" follows Appearance until a reader-specific choice is saved. */
     var readerThemeMode: String
-        get() = sharedPreferences.getString("reader_theme_mode", "paper") ?: "paper"
-        set(value) = sharedPreferences.edit()
-            .putString("reader_theme_mode", value.takeIf { it in setOf("paper", "sepia", "dark") } ?: "paper")
-            .apply()
+        get() {
+            val saved = sharedPreferences.getString("reader_theme_mode", null)
+            if (sharedPreferences.getBoolean("reader_theme_explicit", false)) return saved ?: "app"
+            // Older releases saved "paper" even when only typography changed; only retain
+            // unmistakable legacy reader overrides and let the old default inherit Appearance.
+            return saved?.takeIf { it == "sepia" || it == "dark" } ?: "app"
+        }
+        set(value) {
+            val mode = value.takeIf { it in setOf("app", "paper", "sepia", "dark") } ?: "app"
+            sharedPreferences.edit()
+                .putString("reader_theme_mode", mode)
+                .putBoolean("reader_theme_explicit", mode != "app")
+                .apply()
+        }
 
     val readerPreferences: ReaderPreferences
         get() = ReaderPreferences(

@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>WritOn — The One-Page Print Book Drill for Better Verbs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;0,900;1,600;1,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background-color: #FAF5EE;
+        font-family: 'Playfair Display', Georgia, serif;
+        color: #1A1412;
+        -webkit-font-smoothing: antialiased;
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background-color: #FAF5EE;
+      }
+
+      /* Subtle Desk Background with warm tactile paper overlay */
+      .desk-photo {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+        background-image: url('assets/open_book_phone_desk.jpg');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.22;
+        filter: saturate(0.85);
+        z-index: 1;
+      }
+
+      /* Watercolor Corner Blooms */
+      .bloom-top-left {
+        position: absolute;
+        top: -120px;
+        left: -120px;
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, rgba(231, 90, 42, 0.16) 0%, rgba(250, 245, 238, 0) 70%);
+        filter: blur(60px);
+        border-radius: 50%;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      .bloom-bottom-right {
+        position: absolute;
+        bottom: -150px;
+        right: -150px;
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, rgba(212, 82, 38, 0.14) 0%, rgba(250, 245, 238, 0) 70%);
+        filter: blur(70px);
+        border-radius: 50%;
+        z-index: 2;
+        pointer-events: none;
+      }
+
+      /* Fine paper fiber texture */
+      .paper-texture {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(#d3c6b4 0.25px, transparent 0.25px);
+        background-size: 32px 32px;
+        opacity: 0.35;
+        z-index: 3;
+        pointer-events: none;
+      }
+
+      /* Central Parchment Editorial Frame */
+      .card-frame {
+        position: absolute;
+        top: 140px;
+        left: 80px;
+        width: 920px;
+        height: 1640px;
+        border: 2px solid #E8DFD3;
+        border-radius: 44px;
+        background: rgba(255, 253, 249, 0.94);
+        backdrop-filter: blur(24px);
+        box-shadow: 0 30px 80px rgba(84, 58, 38, 0.08), 0 4px 16px rgba(84, 58, 38, 0.04);
+        padding: 90px 75px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        z-index: 5;
+        overflow: hidden;
+      }
+
+      .inner-dashed {
+        position: absolute;
+        inset: 20px;
+        border: 1.5px dashed rgba(212, 192, 175, 0.65);
+        border-radius: 28px;
+        pointer-events: none;
+      }
+
+      /* Brand Watermark Centered */
+      .watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: 'Playfair Display', serif;
+        font-size: 420px;
+        font-weight: 900;
+        color: #E8DFD3;
+        opacity: 0.12;
+        pointer-events: none;
+        user-select: none;
+        z-index: 1;
+      }
+
+      /* Header Row */
+      .header-row {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 10;
+      }
+
+      .category-pill {
+        background-color: #FAEDE7;
+        color: #D45226;
+        border: 1px solid rgba(212, 82, 38, 0.25);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: 2.5px;
+        padding: 9px 24px;
+        border-radius: 24px;
+        text-transform: uppercase;
+      }
+
+      .brand-mark {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 38px;
+        font-weight: 800;
+        color: #1A1412;
+        letter-spacing: -0.5px;
+      }
+      .brand-mark span {
+        color: #E75A2A;
+      }
+
+      /* Content Area Layers */
+      .content-stage {
+        position: relative;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        margin: 40px 0;
+      }
+
+      /* --- BEAT 1: FRAME-ZERO HOOK (0:00 - 3:00) --- */
+      .stage-layer {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      #layerHook {
+        opacity: 1;
+      }
+
+      .hook-tag {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: #8C4020;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        margin-bottom: 24px;
+      }
+
+      .hook-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 80px;
+        line-height: 1.05;
+        font-weight: 900;
+        color: #1A1412;
+        letter-spacing: -1.5px;
+        margin-bottom: 36px;
+      }
+      .hook-title em {
+        color: #D45226;
+        font-style: italic;
+      }
+
+      .hook-rule {
+        width: 140px;
+        height: 4px;
+        background-color: #D45226;
+        border-radius: 2px;
+        margin-bottom: 38px;
+      }
+
+      .hook-instruction {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 40px;
+        line-height: 1.35;
+        color: #4A3E37;
+        font-style: italic;
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      /* Mini Tactile Icon Strip */
+      .hook-badges {
+        margin-top: 48px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+      }
+
+      .mini-badge {
+        background: #F4EFE6;
+        border: 1px solid #E2D7C8;
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 17px;
+        font-weight: 700;
+        color: #6A5B52;
+      }
+
+      /* --- BEAT 2: EXAMPLE 1 (0:03 - 0:06) --- */
+      #layerEx1 {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      .step-badge {
+        display: inline-block;
+        background: #FAEDE7;
+        color: #D45226;
+        border: 1px solid rgba(212, 82, 38, 0.3);
+        padding: 7px 20px;
+        border-radius: 16px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        margin-bottom: 32px;
+        text-transform: uppercase;
+      }
+
+      .example-label {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 21px;
+        font-weight: 700;
+        color: #8C786A;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+
+      .sentence-box {
+        position: relative;
+        width: 100%;
+        background: #FAF7F2;
+        border: 1.5px solid #E8DFD3;
+        border-radius: 24px;
+        padding: 44px 38px;
+        margin-bottom: 30px;
+      }
+
+      .sentence-text {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 56px;
+        line-height: 1.25;
+        font-weight: 700;
+        color: #261F1C;
+      }
+
+      .verb-flawed {
+        color: #7A695E;
+        text-decoration: none;
+        display: inline-block;
+        position: relative;
+        transition: color 0.2s ease;
+      }
+
+      .verb-flawed.struck {
+        text-decoration: line-through;
+        text-decoration-color: #D45226;
+        text-decoration-thickness: 5px;
+        color: #A39284;
+      }
+
+      .verb-sharp {
+        color: #D45226;
+        font-weight: 800;
+        display: inline-block;
+        background: #FAEDE7;
+        padding: 2px 14px;
+        border-radius: 10px;
+        border-bottom: 3px solid #D45226;
+      }
+
+      .craft-tip {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 23px;
+        font-weight: 700;
+        color: #6A5B52;
+        margin-top: 14px;
+      }
+      .craft-tip-arrow {
+        color: #D45226;
+        font-weight: 900;
+        font-size: 26px;
+      }
+
+      /* --- BEAT 3: EXAMPLE 2 (0:06 - 0:09) --- */
+      #layerEx2 {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      /* --- BEAT 4: END-CARD (0:09 - 0:13) --- */
+      #layerEndCard {
+        opacity: 0;
+        transform: scale(0.96);
+        align-items: center;
+        text-align: center;
+      }
+
+      .endcard-badge {
+        background-color: #D45226;
+        color: #FFFFFF;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 3px;
+        padding: 10px 28px;
+        border-radius: 30px;
+        text-transform: uppercase;
+        margin-bottom: 40px;
+        box-shadow: 0 8px 24px rgba(212, 82, 38, 0.25);
+      }
+
+      .endcard-main-title {
+        font-family: 'Playfair Display', Georgia, serif;
+        font-size: 64px;
+        line-height: 1.15;
+        font-weight: 900;
+        color: #1A1412;
+        letter-spacing: -0.5px;
+        margin-bottom: 24px;
+      }
+
+      .endcard-handle {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 38px;
+        font-weight: 800;
+        color: #D45226;
+        letter-spacing: 0.5px;
+        margin-bottom: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+      }
+
+      .bell-icon {
+        width: 38px;
+        height: 38px;
+        display: inline-block;
+        vertical-align: middle;
+      }
+
+      .endcard-subtext {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 34px;
+        line-height: 1.4;
+        color: #5A4E46;
+        font-style: italic;
+        max-width: 680px;
+        margin-bottom: 48px;
+      }
+
+      .endcard-footer-pill {
+        background: #FAF7F2;
+        border: 2px solid #E8DFD3;
+        border-radius: 40px;
+        padding: 14px 34px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: #7A695E;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      /* Footer Row */
+      .card-footer {
+        position: relative;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px solid #E8DFD3;
+        padding-top: 36px;
+        z-index: 10;
+      }
+
+      .footer-sub {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #8C786A;
+      }
+
+      .footer-tagline {
+        font-family: 'Newsreader', Georgia, serif;
+        font-size: 23px;
+        font-style: italic;
+        color: #A39284;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <!-- Background photograph of open book + phone face down -->
+      <div class="desk-photo"></div>
+
+      <!-- Warm corner blooms -->
+      <div class="bloom-top-left"></div>
+      <div class="bloom-bottom-right"></div>
+      <div class="paper-texture"></div>
+
+      <!-- Main Inset Card -->
+      <div class="card-frame">
+        <div class="inner-dashed"></div>
+        <div class="watermark">W</div>
+
+        <!-- Header -->
+        <div class="header-row">
+          <div class="category-pill">Slow Craft Drill</div>
+          <div class="brand-mark">Writ<span>On</span></div>
+        </div>
+
+        <!-- Content Stage (Swapping Layers) -->
+        <div class="content-stage">
+
+          <!-- BEAT 1: FRAME-ZERO HOOK (0:00 - 3:00) -->
+          <div class="stage-layer" id="layerHook">
+            <div class="hook-tag">Tactile Print Habit</div>
+            <h1 class="hook-title">
+              ONE PAGE.<br>
+              <em>ONE SHARPER VERB.</em>
+            </h1>
+            <div class="hook-rule"></div>
+            <div class="hook-instruction" id="hookInstruction">
+              “Read one page on paper.<br>Then sharpen one verb.”
+            </div>
+            <div class="hook-badges">
+              <div class="mini-badge">📖 Physical Page</div>
+              <div class="mini-badge">📵 Phone Face Down</div>
+              <div class="mini-badge">⚡ 13-Sec Drill</div>
+            </div>
+          </div>
+
+          <!-- BEAT 2: EXAMPLE 1 (0:03 - 0:06) -->
+          <div class="stage-layer" id="layerEx1">
+            <div class="step-badge">Drill 01 • Sound</div>
+            <div class="sentence-box">
+              <div class="example-label">Before</div>
+              <div class="sentence-text">
+                “He <span class="verb-flawed" id="v1Flawed">made a sound</span>.”
+              </div>
+            </div>
+            <div class="sentence-box" id="box1After" style="opacity: 0; transform: translateY(12px);">
+              <div class="example-label" style="color: #D45226;">Sharper Rewrite</div>
+              <div class="sentence-text">
+                “He <span class="verb-sharp">coughed</span>.”
+              </div>
+            </div>
+            <div class="craft-tip" id="tip1" style="opacity: 0;">
+              <span class="craft-tip-arrow">→</span> Make the generic noise an exact physical event.
+            </div>
+          </div>
+
+          <!-- BEAT 3: EXAMPLE 2 (0:06 - 0:09) -->
+          <div class="stage-layer" id="layerEx2">
+            <div class="step-badge">Drill 02 • Motion</div>
+            <div class="sentence-box">
+              <div class="example-label">Before</div>
+              <div class="sentence-text">
+                “She <span class="verb-flawed" id="v2Flawed">looked at him</span>.”
+              </div>
+            </div>
+            <div class="sentence-box" id="box2After" style="opacity: 0; transform: translateY(12px);">
+              <div class="example-label" style="color: #D45226;">Sharper Rewrite</div>
+              <div class="sentence-text">
+                “She <span class="verb-sharp">glanced at him</span>.”
+              </div>
+            </div>
+            <div class="craft-tip" id="tip2" style="opacity: 0;">
+              <span class="craft-tip-arrow">→</span> Capture speed, intent, and duration in the verb itself.
+            </div>
+          </div>
+
+          <!-- BEAT 4: SUBSCRIPTION END-CARD (0:09 - 0:13) -->
+          <div class="stage-layer" id="layerEndCard">
+            <div class="endcard-badge">Daily Craft Fixes</div>
+            <h2 class="endcard-main-title">
+              SUBSCRIBE FOR DAILY CRAFT FIXES
+            </h2>
+            <div class="endcard-handle">
+              <svg class="bell-icon" viewBox="0 0 24 24" fill="none" stroke="#D45226" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              @writon_socialapp
+            </div>
+            <div class="endcard-subtext">
+              “Turn the page. Find one more.”<br>
+              One quiet craft truth every day.
+            </div>
+            <div class="endcard-footer-pill">
+              <span>Read slow. Write clean.</span>
+              <span style="color: #D45226;">•</span>
+              <span style="color: #1A1412;">writon.cc/youtube</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer">
+          <div class="footer-sub">The Tactile Sanctuary Drill</div>
+          <div class="footer-tagline">writon.cc/youtube ↗</div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      // Frame 0 setup: Hook is 100% visible from frame zero without delay
+      gsap.set("#layerHook", { opacity: 1 });
+      gsap.set("#layerEx1", { opacity: 0, y: 30 });
+      gsap.set("#layerEx2", { opacity: 0, y: 30 });
+      gsap.set("#layerEndCard", { opacity: 0, scale: 0.95 });
+
+      // 1.10s: Subtitle instruction drops in smoothly
+      tl.to("#hookInstruction", { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 1.10);
+
+      // 2.80s: Hook layer transitions out
+      tl.to("#layerHook", { opacity: 0, y: -20, duration: 0.25, ease: "power2.in" }, 2.80);
+
+      // 3.05s: Beat 2 enters — "He made a sound."
+      tl.to("#layerEx1", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 3.05);
+
+      // 4.25s: Click hit! Flawed verb strikes out, sharper rewrite snaps in!
+      tl.to("#v1Flawed", { className: "verb-flawed struck", duration: 0.15 }, 4.25)
+        .to("#box1After", { opacity: 1, y: 0, duration: 0.25, ease: "back.out(1.3)" }, 4.25)
+        .to("#tip1", { opacity: 1, duration: 0.25 }, 4.45);
+
+      // 5.80s: Example 1 exits cleanly
+      tl.to("#layerEx1", { opacity: 0, y: -20, duration: 0.20, ease: "power2.in" }, 5.80);
+
+      // 6.00s sharp: Beat 3 enters — "She looked at him." (Begins right at 6.00s per mandate)
+      tl.to("#layerEx2", { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 6.00);
+
+      // 7.15s: Click hit! Flawed verb strikes out, sharper rewrite snaps in!
+      tl.to("#v2Flawed", { className: "verb-flawed struck", duration: 0.15 }, 7.15)
+        .to("#box2After", { opacity: 1, y: 0, duration: 0.25, ease: "back.out(1.3)" }, 7.15)
+        .to("#tip2", { opacity: 1, duration: 0.25 }, 7.35);
+
+      // 8.80s: Example 2 exits with page-turn slide
+      tl.to("#layerEx2", { opacity: 0, x: -40, duration: 0.25, ease: "power2.in" }, 8.80);
+
+      // 9.00s: Clean WritOn Subscription End-Card enters and holds for 4 full seconds until 13.00s!
+      tl.to("#layerEndCard", { opacity: 1, scale: 1.0, duration: 0.35, ease: "power3.out" }, 9.00);
+
+      // Subtle slow zoom breathing room throughout timeline
+      tl.fromTo("#root", { scale: 1.0 }, { scale: 1.015, duration: 13.0, ease: "sine.inOut" }, 0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

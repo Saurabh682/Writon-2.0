@@ -7,6 +7,15 @@ import okhttp3.MultipartBody
 
 interface WritOnApiService {
 
+    @GET("api/v1/{audience}/posts")
+    suspend fun getSourcePosts(
+        @Path("audience") audience: String,
+        @Query("category") category: String? = null,
+        @Query("q") searchQuery: String? = null,
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<PostsResponseDto>
+
     @GET("api/v1/app/version")
     suspend fun getAppVersion(): Response<AppVersionResponseDto>
 

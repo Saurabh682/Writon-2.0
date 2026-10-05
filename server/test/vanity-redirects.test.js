@@ -62,6 +62,11 @@ describe('Vanity Redirect Routes', () => {
       { slug: 'linkedin', expected: BUILTIN_VANITY_LINKS.linkedin },
       { slug: 'reddit', expected: BUILTIN_VANITY_LINKS.reddit },
       { slug: 'medium', expected: BUILTIN_VANITY_LINKS.medium },
+      { slug: 'play', expected: BUILTIN_VANITY_LINKS.play },
+      { slug: 'app', expected: BUILTIN_VANITY_LINKS.app },
+      { slug: 'android', expected: BUILTIN_VANITY_LINKS.android },
+      { slug: 'whatsapp', expected: BUILTIN_VANITY_LINKS.whatsapp },
+      { slug: 'wa', expected: BUILTIN_VANITY_LINKS.wa },
     ];
 
     for (const check of checks) {

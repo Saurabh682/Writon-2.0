@@ -1,0 +1,4 @@
+0.00|2.01|Six minutes versus ninety minutes.
+2.26|9.27|An AI coding agent finishes in six minutes. The CI pipeline takes an hour and a half.
+9.62|12.70|We accelerated the writer. Not the factory.
+13.05|14.39|The infrastructure choke.

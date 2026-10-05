@@ -51,6 +51,14 @@
 ### 3.3 Hashtags Standard
 - Exactly **around 3 relevant lowercase tags placed at the end** of the post commentary (e.g. `#writing #storytelling #craft` or `#tech #engineering #software`). Never stuff excessive hashtags.
 
+### 3.4 Hard Visual Containment & Zero Text Spill Invariant (Gate `LI11`)
+- **Strict Prohibition on Text Overflow**: Text must NEVER spill outside canvas edges, bleed beyond container bounds, or collide across lines.
+- **Dynamic Box Sizing**: All inner cards, quote boxes, and contrast containers must be dynamically sized to their content + padding, never hardcoded with arbitrary static heights.
+- **Pixel-Accurate Line Wrapping**: Text must be wrapped using font-metric pixel width calculation (`wrapTextToWidth`), never naive character length approximations.
+- **Explicit Vertical Spacing**: Line heights and y-coordinates must reserve explicit vertical clearance (minimum `lineHeight >= fontSize * 1.35`, and at least 32px between titles and body text) to prevent text-on-text overlap.
+- **Pre-Render Validation**: Any SVG/Canvas rendering script must execute `validateVisualContainment()` before PNG generation; any horizontal or vertical overflow triggers immediate build failure.
+
+
 ---
 
 ## 4. Multi-Surface Analytics & Scopes

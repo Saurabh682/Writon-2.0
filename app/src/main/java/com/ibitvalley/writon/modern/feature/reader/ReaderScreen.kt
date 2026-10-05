@@ -58,6 +58,7 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnElevation
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 import com.ibitvalley.writon.modern.core.designsystem.theme.getThemeColorScheme
+import com.ibitvalley.writon.modern.core.designsystem.theme.resolveReaderThemeMode
 import com.ibitvalley.writon.modern.core.config.WritOnRemoteConfig
 import com.ibitvalley.writon.modern.feature.reader.card.StoryCardSheet
 import com.ibitvalley.writon.modern.feature.reader.card.ExcerptSuggester
@@ -92,6 +93,9 @@ fun ReaderScreen(
     onBookmarkValueMoment: () -> Unit = {}
 ) {
     val post by viewModel.post.collectAsState()
+    val isLoadingStory by viewModel.isLoadingStory.collectAsState()
+    val isUnavailable by viewModel.isUnavailable.collectAsState()
+    val loadFailed by viewModel.loadFailed.collectAsState()
     val nextStory by viewModel.nextStory.collectAsState()
     val comments by viewModel.comments.collectAsState()
     val context = LocalContext.current
@@ -202,7 +206,7 @@ fun ReaderScreen(
     var readerFontSizeSp by remember(savedReaderPreferences) { mutableFloatStateOf(savedReaderPreferences?.fontSizeSp ?: 20f) }
     var readerLineMultiplier by remember(savedReaderPreferences) { mutableFloatStateOf(savedReaderPreferences?.lineHeightMultiplier ?: 1.6f) }
     var readerFontFamilyChoice by remember(savedReaderPreferences) { mutableStateOf(savedReaderPreferences?.fontFamily ?: "serif") }
-    var readerThemeChoice by remember(userPreferences) { mutableStateOf(userPreferences?.readerThemeMode ?: "paper") }
+    var readerThemeChoice by remember(userPreferences) { mutableStateOf(userPreferences?.readerThemeMode ?: "app") }
     fun saveReaderOptions() {
         userPreferences?.saveReaderPreferences(
             com.ibitvalley.writon.modern.core.preferences.ReaderPreferences(
@@ -215,7 +219,14 @@ fun ReaderScreen(
     }
 
     val isSystemDark = androidx.compose.foundation.isSystemInDarkTheme()
-    MaterialTheme(colorScheme = getThemeColorScheme(readerThemeChoice, isSystemDark)) {
+    val effectiveReaderTheme = resolveReaderThemeMode(readerThemeChoice, userPreferences?.themeMode ?: "paper")
+    val effectiveReaderPalette = when (effectiveReaderTheme) {
+        "obsidian", "dark" -> "dark"
+        "light" -> "paper"
+        "system" -> if (isSystemDark) "dark" else "paper"
+        else -> effectiveReaderTheme
+    }
+    MaterialTheme(colorScheme = getThemeColorScheme(effectiveReaderTheme, isSystemDark)) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -345,7 +356,16 @@ fun ReaderScreen(
                 ReaderAuthorMetadata(story, onClick = { onAuthorClick(story.authorId) })
                 HorizontalDivider(Modifier.padding(vertical = WritOnSpacing.xl), color = MaterialTheme.colorScheme.outlineVariant)
                 if (contentBlocks.isEmpty()) {
-                    Text("This story has no text yet.", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        if (isLoadingStory) CircularProgressIndicator(color = BrandRed)
+                        Text(
+                            stringResource(if (isLoadingStory) R.string.reader_loading_story else R.string.reader_text_load_failed),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        if (!isLoadingStory) TextButton(onClick = viewModel::refreshPost) {
+                            Text(stringResource(R.string.common_retry))
+                        }
+                    }
                 } else {
                     ReaderBody(
                         blocks = contentBlocks,
@@ -417,6 +437,24 @@ fun ReaderScreen(
                     }
                 }
             }
+        } ?: Column(
+            modifier = Modifier.fillMaxSize().padding(innerPadding).padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            if (isLoadingStory || (!isUnavailable && !loadFailed)) {
+                CircularProgressIndicator(color = BrandRed)
+                Spacer(Modifier.height(16.dp))
+                Text(stringResource(R.string.reader_loading_story))
+            } else {
+                Text(stringResource(if (isUnavailable) R.string.reader_story_unavailable_title else R.string.reader_load_failed_title))
+                Spacer(Modifier.height(12.dp))
+                Text(stringResource(if (isUnavailable) R.string.reader_story_unavailable_message else R.string.reader_text_load_failed))
+                if (!isUnavailable) Button(onClick = viewModel::refreshPost) {
+                    Text(stringResource(R.string.common_retry))
+                }
+                TextButton(onClick = onBackClick) { Text(stringResource(R.string.common_back)) }
+            }
         }
     }
 
@@ -452,7 +490,7 @@ fun ReaderScreen(
                         "sepia" to R.string.reader_theme_sepia,
                         "dark" to R.string.reader_theme_dark
                     ).forEach { (theme, labelRes) ->
-                        val selected = readerThemeChoice == theme
+                        val selected = effectiveReaderPalette == theme
                         Button(
                             onClick = {
                                 readerThemeChoice = theme

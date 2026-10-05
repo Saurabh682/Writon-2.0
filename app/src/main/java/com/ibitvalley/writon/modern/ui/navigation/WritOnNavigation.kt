@@ -8,6 +8,7 @@ import android.net.NetworkRequest
 import android.os.Build
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
@@ -17,10 +18,12 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -30,6 +33,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -96,6 +102,7 @@ sealed class WritOnRoute(val route: String) {
     }
     object Home : WritOnRoute("home")
     object Explore : WritOnRoute("explore")
+    object Editorial : WritOnRoute("editorial")
     object Search : WritOnRoute("search")
     object Write : WritOnRoute("write")
     object Publish : WritOnRoute("publish")
@@ -131,11 +138,12 @@ private data class BottomNavItem(
 
 private val bottomNavItems = listOf(
     BottomNavItem(WritOnRoute.Home.route, R.string.nav_home, R.drawable.ic_home_muted, R.drawable.ic_home_orange),
-    BottomNavItem(WritOnRoute.Explore.route, R.string.nav_explore, R.drawable.ic_explore_muted, R.drawable.ic_explore_orange),
+    BottomNavItem(WritOnRoute.Editorial.route, R.string.nav_editorial, R.drawable.ic_explore_muted, R.drawable.ic_explore_orange),
     BottomNavItem(WritOnRoute.Library.route, R.string.nav_library, R.drawable.ic_library_muted, R.drawable.ic_library_orange),
     BottomNavItem(WritOnRoute.Profile.route, R.string.nav_profile, R.drawable.ic_profile_muted, R.drawable.ic_profile_orange)
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WritOnNavigation(
     navController: NavHostController,
@@ -159,6 +167,7 @@ fun WritOnNavigation(
     onThemeChanged: (String) -> Unit = {}
 ) {
     val feedViewModel = remember { FeedViewModel(repository) }
+    val editorialViewModel = remember { FeedViewModel(repository, com.ibitvalley.writon.modern.data.repository.FeedAudience.EDITORIAL) }
     LaunchedEffect(personalizedHomeFeedEnabled) {
         feedViewModel.setPersonalizedFeedEnabled(personalizedHomeFeedEnabled)
     }
@@ -169,6 +178,12 @@ fun WritOnNavigation(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     var firebaseUser by remember { mutableStateOf(FirebaseAuth.getInstance().currentUser) }
+    val inboxOwner = firebaseUser?.uid ?: "device"
+    val incomingStoryDao = remember(database) { database.incomingStoryDao() }
+    val incomingStories = key(inboxOwner) {
+        remember(inboxOwner) { incomingStoryDao.observe(inboxOwner) }
+            .collectAsState(initial = emptyList()).value
+    }
     var preferencesPendingSync by remember(firebaseUser?.uid) {
         mutableStateOf(firebaseUser?.uid?.let { uid ->
             userPreferences.hasPendingInterestSync(uid) || userPreferences.hasPendingEngagementSync(uid)
@@ -389,6 +404,36 @@ fun WritOnNavigation(
         onNotificationRouteConsumed()
     }
 
+    val exploreDrawer = rememberDrawerState(DrawerValue.Closed)
+    val drawerEntry by navController.currentBackStackEntryAsState()
+    val drawerRoute = drawerEntry?.destination?.route
+    val openExplore: () -> Unit = { coroutineScope.launch { exploreDrawer.open() } }
+    LaunchedEffect(drawerRoute) { exploreDrawer.close() }
+    ModalNavigationDrawer(
+        drawerState = exploreDrawer,
+        gesturesEnabled = drawerRoute in setOf(WritOnRoute.Home.route, WritOnRoute.Editorial.route),
+        drawerContent = {
+            ModalDrawerSheet(
+                modifier = Modifier
+                    .widthIn(max = DrawerDefaults.MaximumDrawerWidth)
+                    .fillMaxWidth()
+                    .clipToBounds()
+                    .testTag("explore_drawer")
+            ) {
+                TextButton(onClick = { coroutineScope.launch { exploreDrawer.close() } }) {
+                    Text(stringResource(R.string.explore_close))
+                }
+                ExploreScreen(
+                    viewModel = exploreViewModel,
+                    onStoryClick = { navController.navigate(WritOnRoute.Reader.createRoute(it)) },
+                    onSearchClick = { navController.navigate(WritOnRoute.Search.route) },
+                    onReadingPreferencesClick = { navController.navigate(WritOnRoute.Interests.createRoute()) },
+                    showCuratedBanner = showExploreCuratedBanner,
+                    trendingStoriesLimit = exploreTrendingStoriesLimit
+                )
+            }
+        }
+    ) {
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -607,6 +652,8 @@ fun WritOnNavigation(
                 }.collectAsState(initial = null)
                 val followedWriterReturnEntry = collectionsViewModel.followedWriterReturnEntry
                 FeedScreen(
+                    onExploreClick = openExplore,
+                    onEditorialClick = { navController.navigate(WritOnRoute.Editorial.route) { launchSingleTop = true } },
                     continuationTitle = continuationPost?.title,
                     onContinueReading = { continuation?.let { navController.navigate(WritOnRoute.Reader.createRoute(it.storyId)) } },
                     onDismissContinuation = {
@@ -645,11 +692,9 @@ fun WritOnNavigation(
                     },
                     onSearchClick = { navController.navigate(WritOnRoute.Search.route) },
                     onNotificationsClick = {
-                        navController.navigate(
-                            if (signedIn) WritOnRoute.Notifications.route else WritOnRoute.NotificationSettings.route
-                        )
+                        navController.navigate(WritOnRoute.Notifications.route) { launchSingleTop = true }
                     },
-                    hasUnreadNotifications = collectionsViewModel.hasUnreadNotifications,
+                    hasUnreadNotifications = (signedIn && collectionsViewModel.hasUnreadNotifications) || incomingStories.any { it.readAt == null },
                     onProfileClick = {
                         if (signedIn) {
                             navController.navigate(WritOnRoute.Profile.route) {
@@ -682,6 +727,25 @@ fun WritOnNavigation(
                     }
                 )
             }
+            composable(WritOnRoute.Editorial.route) {
+                FeedScreen(
+                    viewModel = editorialViewModel,
+                    onExploreClick = openExplore,
+                    onStoryClick = { navController.navigate(WritOnRoute.Reader.createRoute(it)) },
+                    onWriteClick = { if (signedIn) navController.navigate(WritOnRoute.Write.route)
+                        else requestAuthentication(WritOnRoute.Write.route, false) },
+                    onSearchClick = { navController.navigate(WritOnRoute.Search.route) },
+                    onNotificationsClick = { navController.navigate(WritOnRoute.Notifications.route) },
+                    hasUnreadNotifications = (signedIn && collectionsViewModel.hasUnreadNotifications) || incomingStories.any { it.readAt == null },
+                    onLibraryClick = { if (signedIn) navController.navigate(WritOnRoute.Library.route)
+                        else requestAuthentication(WritOnRoute.Library.route, false) },
+                    onProfileClick = { if (signedIn) navController.navigate(WritOnRoute.Profile.route)
+                        else requestAuthentication(WritOnRoute.Profile.route, false) },
+                    onAuthorClick = { navController.navigate(WritOnRoute.AuthorProfile.createRoute(it)) },
+                    isAuthenticated = signedIn,
+                    onLoginRequired = { requestAuthentication(WritOnRoute.Editorial.route, true) }
+                )
+            }
             composable(WritOnRoute.Explore.route) {
                 ExploreScreen(
                     viewModel = exploreViewModel,
@@ -700,10 +764,9 @@ fun WritOnNavigation(
                     onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) },
                     onExploreClick = { navController.navigate(WritOnRoute.Explore.route) },
                     onNotificationsClick = {
-                        if (signedIn) navController.navigate(WritOnRoute.Notifications.route)
-                        else requestAuthentication(WritOnRoute.Notifications.route, false)
+                        navController.navigate(WritOnRoute.Notifications.route) { launchSingleTop = true }
                     },
-                    hasUnreadNotifications = collectionsViewModel.hasUnreadNotifications,
+                    hasUnreadNotifications = (signedIn && collectionsViewModel.hasUnreadNotifications) || incomingStories.any { it.readAt == null },
                     onAuthorClick = { authorId -> navController.navigate(WritOnRoute.AuthorProfile.createRoute(authorId)) },
                     onLogoClick = {
                         if (!navController.popBackStack(WritOnRoute.Home.route, false)) {
@@ -757,9 +820,34 @@ fun WritOnNavigation(
                 } else LaunchedEffect(Unit) { requestAuthentication(WritOnRoute.ReadingHistory.route, false) }
             }
             composable(WritOnRoute.Notifications.route) {
-                if (signedIn) {
                     NotificationsScreen(
                         viewModel = collectionsViewModel,
+                        showServerActivities = signedIn,
+                        incomingStories = incomingStories,
+                        onIncomingStoryClick = { entry ->
+                            coroutineScope.launch {
+                                try {
+                                    incomingStoryDao.markRead(entry.ownerKey, entry.storyKey)
+                                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                                    throw cancelled
+                                } catch (error: Exception) {
+                                    Log.w("WritOnInbox", "Could not mark story link read", error)
+                                }
+                                navController.navigate(WritOnRoute.Reader.createRoute(entry.storyKey))
+                            }
+                        },
+                        onDismissIncomingStory = { entry ->
+                            coroutineScope.launch {
+                                try {
+                                    incomingStoryDao.dismiss(entry.ownerKey, entry.storyKey)
+                                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                                    throw cancelled
+                                } catch (error: Exception) {
+                                    Log.w("WritOnInbox", "Could not dismiss story link", error)
+                                    snackbarHostState.showSnackbar(context.getString(R.string.notifications_load_error))
+                                }
+                            }
+                        },
                         onSearchClick = { navController.navigate(WritOnRoute.Search.route) },
                         onSettingsClick = { navController.navigate(WritOnRoute.NotificationSettings.route) },
                         onStoryClick = { id -> navController.navigate(WritOnRoute.Reader.createRoute(id)) },
@@ -770,7 +858,6 @@ fun WritOnNavigation(
                             }
                         },
                     )
-                } else LaunchedEffect(Unit) { requestAuthentication(WritOnRoute.Notifications.route, false) }
             }
             composable(WritOnRoute.NotificationSettings.route) {
                 NotificationSettingsScreen(
@@ -895,8 +982,21 @@ fun WritOnNavigation(
             }
             composable(WritOnRoute.Reader.route) { backStackEntry ->
                 val storyId = backStackEntry.arguments?.getString("storyId") ?: ""
-                val readerViewModel = remember(storyId) {
-                    ReaderViewModel(storyId, repository)
+                val readerViewModel: ReaderViewModel = viewModel(
+                    viewModelStoreOwner = backStackEntry,
+                    factory = viewModelFactory { initializer { ReaderViewModel(storyId, repository) } }
+                )
+                val linkedPost by readerViewModel.post.collectAsState()
+                LaunchedEffect(linkedPost?.id, inboxOwner) {
+                    linkedPost?.let { post ->
+                        try {
+                            incomingStoryDao.resolve(inboxOwner, storyId, post.id, post.slug, post.title)
+                        } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                            throw cancelled
+                        } catch (error: Exception) {
+                            Log.w("WritOnInbox", "Could not reconcile saved story link", error)
+                        }
+                    }
                 }
                 ReaderScreen(
                     viewModel = readerViewModel,
@@ -938,9 +1038,10 @@ fun WritOnNavigation(
             }
             composable(WritOnRoute.Comments.route) { backStackEntry ->
                 val storyId = backStackEntry.arguments?.getString("storyId") ?: ""
-                val readerViewModel = remember(storyId) {
-                    ReaderViewModel(storyId, repository)
-                }
+                val readerViewModel: ReaderViewModel = viewModel(
+                    viewModelStoreOwner = backStackEntry,
+                    factory = viewModelFactory { initializer { ReaderViewModel(storyId, repository) } }
+                )
                 val comments by readerViewModel.comments.collectAsState()
                 val post by readerViewModel.post.collectAsState()
                 val commentMutationError by readerViewModel.commentMutationError.collectAsState()
@@ -966,6 +1067,11 @@ fun WritOnNavigation(
                 )
             }
         }
+    }
+}
+    // Register when opened, after the active NavHost entry has installed its Back callback.
+    if (exploreDrawer.isOpen) {
+        BackHandler { coroutineScope.launch { exploreDrawer.close() } }
     }
 }
 

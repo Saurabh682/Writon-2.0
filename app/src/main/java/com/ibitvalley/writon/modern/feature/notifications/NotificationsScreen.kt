@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,6 +45,7 @@ import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnRadius
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnSpacing
 import com.ibitvalley.writon.modern.core.network.model.NotificationDto
 import com.ibitvalley.writon.modern.feature.collections.CollectionsViewModel
+import com.ibitvalley.writon.modern.core.database.dao.IncomingStoryEntity
 
 private val NotificationEditorialFamily = FontFamily(
     Font(R.font.source_serif_4_regular, FontWeight.Normal),
@@ -131,12 +134,17 @@ fun NotificationsScreen(
     onStoryClick: (String) -> Unit = {},
     onAuthorClick: (String) -> Unit = {},
     onLogoClick: () -> Unit = {},
+    showServerActivities: Boolean = true,
+    incomingStories: List<IncomingStoryEntity> = emptyList(),
+    onIncomingStoryClick: (IncomingStoryEntity) -> Unit = {},
+    onDismissIncomingStory: (IncomingStoryEntity) -> Unit = {},
 ) {
     var selectedFilter by rememberSaveable { mutableStateOf(NotificationFilter.ALL) }
-    LaunchedEffect(Unit) {
-        viewModel.loadNotifications(notificationApiKind(selectedFilter))
+    LaunchedEffect(showServerActivities) {
+        if (showServerActivities) viewModel.loadNotifications(notificationApiKind(selectedFilter))
     }
-    val activities = viewModel.notifications.map { it.asActivityNotification() }
+    val activities = if (showServerActivities) viewModel.notifications.map { it.asActivityNotification() } else emptyList()
+    val visibleLinks = if (selectedFilter in setOf(NotificationFilter.ALL, NotificationFilter.STORIES)) incomingStories else emptyList()
     val filteredNew = activities.filter { it.unread && it.matches(selectedFilter) }
     val filteredEarlier = activities.filter { !it.unread && it.matches(selectedFilter) }
 
@@ -147,13 +155,19 @@ fun NotificationsScreen(
     ) {
         item { NotificationHeader(onSearchClick = onSearchClick, onSettingsClick = onSettingsClick, onLogoClick = onLogoClick) }
         item { NotificationFilters(selectedFilter = selectedFilter, onSelected = { selectedFilter = it }) }
-        if (viewModel.isLoading && activities.isEmpty()) {
+        if (visibleLinks.isNotEmpty()) {
+            item { SectionLabel(stringResource(R.string.notifications_saved_links)) }
+            items(visibleLinks, key = { "link:${it.ownerKey}:${it.storyKey}" }) { entry ->
+                IncomingStoryCard(entry, onOpen = { onIncomingStoryClick(entry) }, onDismiss = { onDismissIncomingStory(entry) })
+            }
+        }
+        if (showServerActivities && viewModel.isLoading && activities.isEmpty()) {
             item {
                 Box(Modifier.fillMaxWidth().padding(vertical = 32.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
-        } else if (viewModel.errorMessage != null && activities.isEmpty()) {
+        } else if (showServerActivities && viewModel.errorMessage != null && activities.isEmpty()) {
             item {
                 NotificationLoadError(onRetry = { viewModel.loadNotifications() })
             }
@@ -164,15 +178,42 @@ fun NotificationsScreen(
                 openNotificationDestination(notification, onStoryClick, onAuthorClick)
             }) }
         }
-        if (!viewModel.isLoading && viewModel.errorMessage == null && filteredEarlier.isNotEmpty()) {
+        if (filteredEarlier.isNotEmpty()) {
             item { SectionLabel(stringResource(R.string.notifications_section_earlier)) }
             item { NotificationGroup(filteredEarlier, onNotificationClick = { notification ->
                 viewModel.markNotificationRead(notification.id)
                 openNotificationDestination(notification, onStoryClick, onAuthorClick)
             }) }
         }
-        if (!viewModel.isLoading && viewModel.errorMessage == null && filteredNew.isEmpty() && filteredEarlier.isEmpty()) {
+        if ((!showServerActivities || (!viewModel.isLoading && viewModel.errorMessage == null)) && filteredNew.isEmpty() && filteredEarlier.isEmpty() && visibleLinks.isEmpty()) {
             item { EmptyNotifications() }
+        }
+    }
+}
+
+@Composable
+private fun IncomingStoryCard(entry: IncomingStoryEntity, onOpen: () -> Unit, onDismiss: () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(WritOnRadius.card),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text(
+                stringResource(if (entry.source == "shared") R.string.notifications_shared_link else R.string.notifications_push_link),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(entry.title ?: stringResource(R.string.notifications_saved_story),
+                style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 3, overflow = TextOverflow.Ellipsis)
+            Text(stringResource(if (entry.readAt == null) R.string.notifications_link_unread else R.string.notifications_link_read),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                TextButton(onClick = onOpen) { Text(stringResource(R.string.notifications_open_link)) }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.notifications_dismiss_link)) }
+            }
         }
     }
 }
@@ -300,7 +341,7 @@ private fun NotificationFilters(selectedFilter: NotificationFilter, onSelected: 
             Surface(
                 modifier = Modifier.semantics { this.selected = selected },
                 onClick = { onSelected(filter) },
-                color = if (selected) Color(0xFFE9E1D7) else Color.Transparent,
+                color = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
                 shape = RoundedCornerShape(WritOnRadius.pill)
             ) {
                 Row(
@@ -308,12 +349,12 @@ private fun NotificationFilters(selectedFilter: NotificationFilter, onSelected: 
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     when (filter) {
-                        NotificationFilter.STORIES -> Image(painterResource(R.drawable.ic_book), contentDescription = null, modifier = Modifier.size(22.dp))
-                        NotificationFilter.APPLAUDS -> Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = null, modifier = Modifier.size(23.dp))
-                        else -> icon?.let { Image(painterResource(if (selected) when (it) { R.drawable.ic_bullet_list -> R.drawable.ic_bullet_list_orange; R.drawable.ic_comment -> R.drawable.ic_comment_orange; else -> R.drawable.ic_follow_orange } else it), contentDescription = null, modifier = Modifier.size(22.dp)) }
+                        NotificationFilter.STORIES -> Image(painterResource(R.drawable.ic_book), contentDescription = null, modifier = Modifier.size(22.dp), colorFilter = ColorFilter.tint(if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant))
+                        NotificationFilter.APPLAUDS -> Image(painterResource(R.drawable.ic_applaud_orange), contentDescription = null, modifier = Modifier.size(23.dp), colorFilter = ColorFilter.tint(if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant))
+                        else -> icon?.let { Image(painterResource(it), contentDescription = null, modifier = Modifier.size(22.dp), colorFilter = ColorFilter.tint(if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant)) }
                     }
                     Spacer(Modifier.width(8.dp))
-                    Text(stringResource(labelResource), fontSize = 15.sp, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal)
+                    Text(stringResource(labelResource), fontSize = 15.sp, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal, color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -332,7 +373,7 @@ private fun NotificationGroup(
 ) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color(0xFFFFFDF9),
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(WritOnRadius.card),
         shadowElevation = WritOnElevation.raised
     ) {
@@ -340,7 +381,7 @@ private fun NotificationGroup(
             notifications.forEachIndexed { index, notification ->
                 NotificationRow(notification, onClick = { onNotificationClick(notification) })
                 if (index < notifications.lastIndex) {
-                    androidx.compose.material3.HorizontalDivider(color = Color(0xFFE9E1D7), modifier = Modifier.padding(start = 18.dp))
+                    androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant, modifier = Modifier.padding(start = 18.dp))
                 }
             }
         }
@@ -372,12 +413,12 @@ private fun NotificationRow(notification: ActivityNotification, onClick: () -> U
                 notification.detail,
                 modifier = Modifier.padding(top = 3.dp),
                 style = MaterialTheme.typography.bodyMedium.copy(fontSize = 14.sp),
-                color = Color(0xFF6D6963),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
-        Text(notification.time, style = MaterialTheme.typography.bodySmall, color = Color(0xFF6D6963), maxLines = 1)
+        Text(notification.time, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
         Spacer(Modifier.width(8.dp))
         when {
             notification.hasStory -> StoryThumb(notification.tone)
@@ -398,11 +439,7 @@ private fun ActivityAvatar(notification: ActivityNotification) {
         Surface(
             modifier = Modifier.size(48.dp),
             shape = CircleShape,
-            color = when (notification.kind) {
-                NotificationKind.FOLLOW -> Color(0xFFE9E1D7)
-                NotificationKind.BOOKMARK, NotificationKind.REMINDER, NotificationKind.BADGE -> Color(0xFFE9E1D7)
-                else -> Color(0xFFE9E1D7)
-            }
+            color = MaterialTheme.colorScheme.surfaceVariant
         ) {
             Box(contentAlignment = Alignment.Center) {
                 val initial = notification.name.split(" ").filter { it.isNotBlank() }.take(2).joinToString("") { it.first().uppercase() }
@@ -413,8 +450,8 @@ private fun ActivityAvatar(notification: ActivityNotification) {
                         NotificationKind.BADGE -> R.drawable.ic_achievement
                         else -> R.drawable.ic_notification
                     }
-                    Image(painterResource(icon), contentDescription = null, modifier = Modifier.size(24.dp))
-                } else Text(initial, fontWeight = FontWeight.SemiBold)
+                    Image(painterResource(icon), contentDescription = null, modifier = Modifier.size(24.dp), colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant))
+                } else Text(initial, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         when (notification.kind) {
@@ -428,7 +465,7 @@ private fun ActivityAvatar(notification: ActivityNotification) {
 
 @Composable
 private fun ActivityBadge(icon: Int, modifier: Modifier) {
-    Surface(modifier = modifier.size(27.dp), shape = CircleShape, color = Color(0xFFFFFDF9)) {
+    Surface(modifier = modifier.size(27.dp), shape = CircleShape, color = MaterialTheme.colorScheme.surface) {
         Image(painterResource(icon), contentDescription = null, modifier = Modifier.padding(5.dp))
     }
 }
@@ -437,7 +474,7 @@ private fun ActivityBadge(icon: Int, modifier: Modifier) {
 private fun StoryThumb(tone: Color) {
     Surface(modifier = Modifier.size(48.dp), color = tone, shape = RoundedCornerShape(7.dp)) {
         Box(contentAlignment = Alignment.Center) {
-            Surface(shape = CircleShape, color = Color(0xFFFFFDF9).copy(alpha = 0.28f), modifier = Modifier.size(19.dp)) {}
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f), modifier = Modifier.size(19.dp)) {}
         }
     }
 }

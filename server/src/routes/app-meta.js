@@ -2,7 +2,10 @@ export async function appMetaRoutes(fastify, { config, database }) {
   fastify.get('/.well-known/assetlinks.json', async (_request, reply) => {
     reply.header('content-type', 'application/json');
     return [{
-      relation: ['delegate_permission/common.handle_all_urls'],
+      relation: [
+        'delegate_permission/common.handle_all_urls',
+        'delegate_permission/common.get_login_creds',
+      ],
       target: {
         namespace: 'android_app',
         package_name: 'com.ibitvalley.writon',

@@ -7,6 +7,16 @@ import org.junit.Test
 import org.mockito.kotlin.*
 
 class InterestPreferencesTest {
+    @Test fun `source verified offline decks stay separate and ordered`() {
+        val prefs = preferences()
+        prefs.saveSourceFeedIds("community", listOf("human-b", "human-a", "human-b"))
+        prefs.saveSourceFeedIds("editorial", listOf("bot-a"))
+        assertEquals(listOf("human-b", "human-a"), prefs.sourceFeedIds("community"))
+        assertEquals(listOf("bot-a"), prefs.sourceFeedIds("editorial"))
+        prefs.saveSourceFeedIds("community", emptyList())
+        assertTrue(prefs.sourceFeedIds("community").isEmpty())
+        assertEquals(listOf("bot-a"), prefs.sourceFeedIds("editorial"))
+    }
     private val data = mutableMapOf<String, Any?>()
     private val storage: SharedPreferences = mock()
     private val editor: SharedPreferences.Editor = mock()
@@ -41,6 +51,22 @@ class InterestPreferencesTest {
         assertEquals(setOf("essays"), prefs.interestChoices("b"))
         assertTrue(prefs.hasPendingInterestSync("a"))
         assertFalse(prefs.hasPendingInterestSync("b"))
+    }
+
+    @Test fun `reader theme inherits app unless explicitly changed`() {
+        val prefs = preferences()
+        assertEquals("app", prefs.readerThemeMode)
+        prefs.readerThemeMode = "sepia"
+        assertEquals("sepia", prefs.readerThemeMode)
+        prefs.readerThemeMode = "app"
+        assertEquals("app", prefs.readerThemeMode)
+    }
+
+    @Test fun `legacy reader paper default inherits app while sepia override survives`() {
+        data["reader_theme_mode"] = "paper"
+        assertEquals("app", preferences().readerThemeMode)
+        data["reader_theme_mode"] = "sepia"
+        assertEquals("sepia", preferences().readerThemeMode)
     }
 
     @Test fun `cache distinguishes never fetched from successful empty`() {

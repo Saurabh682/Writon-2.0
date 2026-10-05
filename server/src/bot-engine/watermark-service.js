@@ -58,6 +58,88 @@ const STOP_WORDS = new Set([
 ]);
 
 /**
+ * HASHTAG_SEMANTIC_GATE — Internal Vocabulary Blocklist
+ * Editorial diagnostic terms, prompt language, quality gates, AI evaluation vocabulary,
+ * pipeline state markers, and research instructions that must NEVER appear as published hashtags.
+ */
+export const INTERNAL_VOCABULARY_BLOCKLIST = new Set([
+  'modelmisalignment', 'syntheticcliches', 'reportingframework', 'truthboundary',
+  'aislop', 'promptlanguage', 'qualitygate', 'pipelinestate', 'editorialdiagnostic',
+  'thinkbrain', 'validationgate', 'gatecheck', 'antivcgatire', 'zeroaislop',
+  'genreconsistency', 'structuraloriginality', 'sourceprovenance', 'feedstructural',
+  'causalitygraph', 'humanvoicelinter', 'humanityscore', 'burstiness',
+  'newsletterfatigue', 'substackvsmedium', 'wheretopublishessays',
+  'creatormonetizationburnout', 'contentcreatoreconomy', 'emaillistbuilding',
+  'platformmigration', 'contentmonetization', 'audiencegrowth',
+  'anthropicclaudesonnet', 'geminiflash', 'llmevaluation', 'promptengineering',
+  'chainofthought', 'fewshotprompt', 'tokenbudget', 'contextwindow',
+  'microscenes', 'bookaestheticreels', 'fallreadinglist', 'bookaesthetic',
+  'booktok', 'bookstagram', 'readinglist', 'cozyreading', 'darkacademia',
+]);
+
+/**
+ * Category domain keyword sets for semantic relevance filtering.
+ * A trending keyword must share at least one domain signal with the story category
+ * to be considered relevant. This prevents cross-topic contamination.
+ */
+const CATEGORY_DOMAIN_SIGNALS = {
+  'Culture':       ['culture', 'heritage', 'tradition', 'ritual', 'festival', 'folk', 'village', 'artisan', 'craft', 'temple', 'region', 'custom', 'ceremony', 'ancestor', 'tribe', 'indigenous', 'textile', 'pottery', 'dance', 'music', 'language', 'dialect', 'mythology', 'legend', 'oral', 'history', 'museum', 'archaeology', 'clay', 'idol', 'mandir', 'bengal', 'maharashtra', 'braj', 'metal', 'brass', 'kansa', 'lostwax', 'casting', 'dhamrai'],
+  'Tech':          ['tech', 'software', 'code', 'algorithm', 'system', 'cloud', 'api', 'data', 'machine', 'learning', 'engineer', 'developer', 'architecture', 'design', 'hardware', 'chip', 'processor', 'network', 'security', 'devops', 'startup', 'silicon', 'computing', 'platform', 'framework', 'agent', 'workflow', 'ai', 'model', 'cognitive', 'tax', 'synthetic', 'scale', 'infra', 'dev', 'stack', 'prompt', 'automation', 'tool', 'runtime', 'pipeline', 'server', 'database', 'backend', 'frontend', 'fatigue', 'load'],
+  'Poetry':        ['poetry', 'poem', 'verse', 'stanza', 'meter', 'rhyme', 'lyric', 'sonnet', 'haiku', 'ghazal', 'couplet', 'ballad', 'elegy', 'ode', 'imagery', 'metaphor', 'word', 'silence', 'voice', 'language', 'rhyme'],
+  'Shayari':       ['shayari', 'urdu', 'ghazal', 'nazm', 'sher', 'rekhta', 'sukhan', 'mushaira', 'mehfil', 'ishq', 'dard', 'intezar', 'alfaaz'],
+  'Short Stories': ['fiction', 'story', 'narrative', 'character', 'plot', 'conflict', 'dialogue', 'scene', 'protagonist', 'ending', 'twist', 'literary', 'prose', 'realism', 'fable', 'urban', 'village', 'family', 'memory', 'loss', 'childhood', 'city', 'night', 'craft', 'artisan', 'workshop', 'metal', 'lostwax', 'tradition', 'heritage', 'bangladesh', 'dhamrai', 'bengal'],
+  'Essays':        ['essay', 'argument', 'thesis', 'reflection', 'observation', 'analysis', 'critique', 'opinion', 'thought', 'meditation', 'inquiry', 'perspective', 'society', 'culture', 'history', 'philosophy', 'education', 'reading', 'writing', 'craft', 'idea', 'slow', 'kushti', 'wrestling', 'akhada', 'talim', 'kolhapur', 'material', 'practice', 'discipline', 'body'],
+  'Philosophy':    ['philosophy', 'ethics', 'moral', 'existence', 'consciousness', 'meaning', 'truth', 'knowledge', 'wisdom', 'mind', 'being', 'reality', 'freedom', 'justice', 'virtue', 'stoic', 'zen', 'tao', 'dharma', 'vedanta', 'epistemology', 'logic'],
+  'Humour':        ['humour', 'humor', 'satire', 'comedy', 'joke', 'irony', 'absurd', 'parody', 'wit', 'sarcasm', 'funny', 'workplace', 'office', 'daily', 'life', 'observation'],
+  'Business & Finance': ['business', 'finance', 'economy', 'market', 'stock', 'invest', 'startup', 'revenue', 'profit', 'trade', 'banking', 'growth', 'inflation', 'gdp', 'tax', 'wealth', 'corporate', 'venture'],
+  'Sports':        ['sports', 'cricket', 'football', 'tennis', 'athlete', 'match', 'tournament', 'team', 'player', 'coach', 'fitness', 'olympic', 'race', 'league', 'score', 'championship'],
+  'Entertainment': ['entertainment', 'film', 'cinema', 'movie', 'series', 'actor', 'director', 'music', 'album', 'concert', 'celebrity', 'streaming', 'bollywood', 'hollywood', 'theatre', 'drama', 'pop'],
+  'Journalism':    ['journalism', 'report', 'investigation', 'source', 'press', 'media', 'news', 'correspondent', 'editor', 'interview', 'fact', 'accountability', 'transparency', 'whistleblower'],
+  'Reviews':       ['review', 'rating', 'verdict', 'test', 'benchmark', 'comparison', 'buyer', 'consumer', 'product', 'hardware', 'gadget', 'experience', 'quality', 'value'],
+  'Trending':      ['trending', 'viral', 'current', 'breaking', 'latest', 'today', 'debate', 'controversy', 'discussion'],
+};
+
+/**
+ * Check if a hashtag (cleaned, without #) is semantically relevant to the given category and topic.
+ * Returns false if the tag is in the internal vocabulary blocklist or belongs to a completely
+ * different domain than the story's category.
+ */
+export function isHashtagSemanticallyRelevant(tagWithoutHash, category = '', topic = '', themeKeyword = '') {
+  const lower = (tagWithoutHash || '').toLowerCase().replace(/^#/, '');
+  if (!lower || lower.length < 2) return false;
+
+  // Hard block: internal vocabulary must never pass
+  if (INTERNAL_VOCABULARY_BLOCKLIST.has(lower)) return false;
+
+  // Check if the tag contains any domain-relevant signal word for this category
+  const normalizedCat = Object.keys(CATEGORY_DOMAIN_SIGNALS).find(
+    k => k.toLowerCase() === (category || '').toLowerCase()
+  );
+  if (!normalizedCat) return true; // Unknown category — allow through
+
+  const signals = CATEGORY_DOMAIN_SIGNALS[normalizedCat] || [];
+  const contextCombined = `${topic || ''} ${themeKeyword || ''}`.toLowerCase();
+
+  // If the tag appears in the topic/headline/theme itself, it's relevant regardless of domain
+  const compactContext = contextCombined.replace(/[^a-z0-9]/g, '');
+  if (contextCombined.includes(lower) || (compactContext && compactContext.includes(lower))) return true;
+
+  // Check if tag overlaps with ANY signal word for this category (substring match)
+  for (const signal of signals) {
+    if (lower.includes(signal) || signal.includes(lower)) return true;
+  }
+
+  // Check if tag overlaps with ANY word in the topic or theme
+  const contextWords = contextCombined.split(/[^a-z0-9]+/).filter(w => w.length > 2);
+  for (const word of contextWords) {
+    if (lower.includes(word) || word.includes(lower)) return true;
+  }
+
+  // Tag doesn't match category domain or topic — filter it out
+  return false;
+}
+
+/**
  * Clean and format a keyword or phrase into a valid lowercase hashtag
  * (e.g., "supervisory tax" -> "#supervisorytax", "#ai_agents" -> "#ai_agents")
  */
@@ -139,7 +221,9 @@ export function generateCategoryHashtags(category = 'Essays', topic = '', themeK
     : (typeof trendingKeywords === 'string' && trendingKeywords.trim() ? [trendingKeywords] : []);
   const trendTags = rawTrendingList
     .map(kw => formatKeywordToHashtag(kw))
-    .filter(tag => tag && tag.length > 2);
+    .filter(tag => tag && tag.length > 2)
+    // HASHTAG_SEMANTIC_GATE: filter out blocklisted and cross-domain trending tags
+    .filter(tag => isHashtagSemanticallyRelevant(tag, category, topic, themeKeyword));
 
   // Combine trend tags first (high priority for SEO), then topic tags, then genre tags, capped strictly at max 6 total
   const combined = [];
@@ -239,6 +323,10 @@ export function sanitizeHashtags(text = '') {
       }
       if (cleanTag === '#stories' && rawTags.some(t => t.toLowerCase() === '#shortstories')) {
         continue; // drop fragmented #stories if #shortstories is present
+      }
+      const rawWord = cleanTag.replace(/^#/, '');
+      if (INTERNAL_VOCABULARY_BLOCKLIST.has(rawWord)) {
+        continue; // HASHTAG_SEMANTIC_GATE: hard block internal vocabulary
       }
       if (cleanTag.length > 2 && !seen.has(cleanTag)) {
         seen.add(cleanTag);

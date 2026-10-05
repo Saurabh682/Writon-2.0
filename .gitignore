@@ -84,4 +84,6 @@ ckpts/
 # Video Render Output Cache & Local Backups
 renders/
 .reconciliation-backups/
+.codex-ui-check.*
+scratch_trend_report.json
 

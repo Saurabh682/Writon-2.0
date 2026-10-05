@@ -1,5 +1,7 @@
 # Antigravity handover: isolated staging recovery
 
+> **Archived 2026-09-26:** This handover records the completed 2026-09-06 recovery and its former hosting setup. Do not use its Render service or URL; current deployment guidance is in [Google Cloud production API](deployment/cloud-run-migration.md).
+
 Prepared 2026-09-06. Objective: finish the hosted engagement-preferences staging gate without affecting the current Play Store app or production backend. This handover supersedes earlier claims that Supabase support is definitely required.
 
 ## Scope and locations

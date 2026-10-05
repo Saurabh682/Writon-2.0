@@ -463,9 +463,7 @@ ${gridHtml}
 fs.writeFileSync(path.resolve('public/journal/index.html'), cleanJournalIndexHtml, 'utf8');
 console.log('Successfully wrote pristine public/journal/index.html with pre-baked cards.');
 
-// 3. Pure Clean public/journal/article.html
-const postsJsonSafe = JSON.stringify(posts).replace(/</g, '\\u003c');
-
+// 3. Pure Clean public/journal/article.html (fetching articles on demand without catalog bloat)
 const cleanArticleHtml = `<!doctype html>
 <html lang="en">
 <head>
@@ -699,8 +697,6 @@ const cleanArticleHtml = `<!doctype html>
   </footer>
 
   <script>
-    const PRE_RENDERED_POSTS = ${postsJsonSafe};
-
     (async function initReader() {
       const pathParts = window.location.pathname.split('/').filter(Boolean);
       // pathParts might be ['journal', 'slug']
@@ -771,14 +767,7 @@ const cleanArticleHtml = `<!doctype html>
         document.getElementById('article-container').style.display = 'block';
       }
 
-      // 1. Check local pre-baked cache first for instantaneous rendering
-      const localMatch = PRE_RENDERED_POSTS.find(p => p.slug === slug);
-      if (localMatch) {
-        renderPost(localMatch);
-        return;
-      }
-
-      // 2. Fetch from API for dynamically generated/newer posts
+      // Fetch from API for dynamically requested articles
       try {
         const res = await fetch(\`/api/v1/journal/\${encodeURIComponent(slug)}\`);
         if (!res.ok) throw new Error('Article not found');

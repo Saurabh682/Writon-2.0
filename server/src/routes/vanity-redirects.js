@@ -9,6 +9,11 @@ export const BUILTIN_VANITY_LINKS = {
   linkedin: 'https://www.linkedin.com/in/writon-story-writing-and-reads',
   reddit: 'https://www.reddit.com/r/writon/',
   medium: 'https://medium.com/@saurabh.682',
+  play: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+  app: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+  android: 'https://play.google.com/store/apps/details?id=com.ibitvalley.writon',
+  whatsapp: 'https://chat.whatsapp.com/G94rXIgROzA0mxSK8O1XBQ',
+  wa: 'https://chat.whatsapp.com/G94rXIgROzA0mxSK8O1XBQ',
 };
 
 export const RESERVED_SLUGS = new Set([

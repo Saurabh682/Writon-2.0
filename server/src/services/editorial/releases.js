@@ -192,9 +192,9 @@ export async function ingestReleaseEvent(pool, {
 }
 
 /**
- * Query recent updates
+ * Query recent updates from releases
  */
-export async function getRecentUpdates(pool, { limit = 20 } = {}) {
+export async function getRecentReleaseUpdates(pool, { limit = 20 } = {}) {
   const res = await pool.query(`
     SELECT
       id, slug, title, subtitle, type, category, status,

@@ -1,8 +1,7 @@
 package com.ibitvalley.writon.modern.feature.auth
 
 import android.app.Activity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.LocalActivityResultRegistryOwner
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -33,14 +32,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.ibitvalley.writon.R
 import com.ibitvalley.writon.modern.core.auth.FirebaseAuthManager
-import com.ibitvalley.writon.modern.core.auth.GoogleSignInErrorMapper
+import com.ibitvalley.writon.modern.core.auth.GoogleCredentialSignIn
+import com.ibitvalley.writon.modern.core.auth.GoogleCredentialResult
 import com.ibitvalley.writon.modern.core.auth.ProfileSyncManager
 import com.ibitvalley.writon.modern.core.network.model.UpsertMyProfileRequestDto
 import com.ibitvalley.writon.modern.core.designsystem.theme.WritOnTheme
@@ -57,6 +54,7 @@ fun SignupScreen(
     onCreateAccountClick: () -> Unit
 ) {
     val context = LocalContext.current
+    val activity = LocalActivityResultRegistryOwner.current as? Activity ?: context as? Activity
     var fullName by rememberSaveable { mutableStateOf("") }
     var email by rememberSaveable { mutableStateOf("") }
     var username by rememberSaveable { mutableStateOf("") }
@@ -66,6 +64,7 @@ fun SignupScreen(
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     var agreeToTerms by rememberSaveable { mutableStateOf(false) }
     var isSubmitting by remember { mutableStateOf(false) }
+    var googleStage by remember { mutableIntStateOf(0) }
     var authError by remember { mutableStateOf<String?>(null) }
     var pendingProfileKind by rememberSaveable {
         mutableStateOf(
@@ -116,54 +115,52 @@ fun SignupScreen(
     }
 
     val webClientId = stringResource(R.string.default_web_client_id)
-    val googleSignInClient = remember(webClientId) {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(webClientId)
-            .requestEmail()
-            .build()
-        GoogleSignIn.getClient(context, gso)
-    }
-
-    val googleLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                val idToken = account?.idToken
-                if (idToken != null) {
-                    isSubmitting = true
-                    authError = null
+    fun startGoogleSignIn() {
+        if (isSubmitting) return
+        if (activity == null) {
+            authError = googleUnavailable
+            return
+        }
+        isSubmitting = true
+        googleStage = 1
+        authError = null
+        coroutineScope.launch {
+            when (val result = GoogleCredentialSignIn.request(activity, webClientId)) {
+                GoogleCredentialResult.Cancelled -> {
+                    googleStage = 0
+                    isSubmitting = false
+                }
+                is GoogleCredentialResult.Failure -> {
+                    googleStage = 0
+                    isSubmitting = false
+                    authError = result.message
+                }
+                is GoogleCredentialResult.Success -> {
+                    googleStage = 2
                     FirebaseAuthManager.signInWithGoogle(
-                        idToken = idToken,
-                        onSuccess = { user ->
+                        idToken = result.idToken,
+                        onSuccess = {
                             FirebaseAuthManager.syncNetworkAuthToken { hasToken ->
                                 if (!hasToken) {
+                                    googleStage = 0
                                     isSubmitting = false
                                     authError = sessionVerificationFailed
-                                    return@syncNetworkAuthToken
-                                }
-                                coroutineScope.launch {
+                                } else coroutineScope.launch {
                                     val profileError = ProfileSyncManager.syncGoogleProfile()
+                                    googleStage = 0
                                     isSubmitting = false
                                     if (profileError == null) onCreateAccountClick()
                                     else authError = googleProfileFailed.format(profileError)
                                 }
                             }
                         },
-                        onError = { msg ->
+                        onError = {
+                            googleStage = 0
                             isSubmitting = false
-                            authError = msg
+                            authError = it
                         }
                     )
-                } else {
-                    authError = googleUnavailable
                 }
-            } catch (e: ApiException) {
-                authError = GoogleSignInErrorMapper.messageFor(e.statusCode, e.localizedMessage)
-            } catch (e: Exception) {
-                authError = e.localizedMessage ?: googleUnavailable
             }
         }
     }
@@ -186,7 +183,7 @@ fun SignupScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onBackClick) {
+                IconButton(onClick = onBackClick, enabled = !isSubmitting) {
                     Image(
                         painterResource(R.drawable.ic_back),
                         contentDescription = stringResource(R.string.common_back),
@@ -401,14 +398,16 @@ fun SignupScreen(
 
             // Social Button
             SocialSignupButton(
-                text = stringResource(R.string.auth_google_sign_in),
+                text = stringResource(when (googleStage) {
+                    1 -> R.string.auth_google_opening
+                    2 -> R.string.auth_signing_in
+                    else -> R.string.auth_google_sign_in
+                }),
                 icon = R.drawable.googleicon,
                 modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    googleSignInClient.signOut().addOnCompleteListener {
-                        googleLauncher.launch(googleSignInClient.signInIntent)
-                    }
-                }
+                enabled = !isSubmitting,
+                isLoading = googleStage != 0,
+                onClick = ::startGoogleSignIn
             )
 
             Spacer(modifier = Modifier.height(48.dp))
@@ -527,17 +526,21 @@ fun SocialSignupButton(
     text: String,
     icon: Int,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    isLoading: Boolean = false,
     onClick: () -> Unit
 ) {
     OutlinedButton(
         onClick = onClick,
+        enabled = enabled,
         modifier = modifier.height(56.dp),
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, Color(0xFFE9E1D7)),
         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF151718))
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Image(
+            if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = BrandRedColor, strokeWidth = 2.dp)
+            else Image(
                 painter = painterResource(id = icon),
                 contentDescription = null,
                 modifier = Modifier.size(20.dp)

@@ -1,5 +1,7 @@
 # Google Cloud Cutover Evidence & Rollback Baseline
 
+> **Historical snapshot (2026-09-07):** Provider standby and rollback values below describe the cutover at that date, not current operations. Use [Google Cloud production API](../deployment/cloud-run-migration.md) and [current alert runbooks](google-cloud-alerts.md).
+
 **Recorded Date:** 2026-09-07T10:28:30+05:30 (04:58:30 UTC)  
 **Project:** `writon-app-2020`  
 **Active Working Branch:** `codex/staging-engagement-preferences`  

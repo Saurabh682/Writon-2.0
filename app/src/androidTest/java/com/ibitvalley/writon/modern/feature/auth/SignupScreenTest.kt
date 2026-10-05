@@ -25,8 +25,8 @@ class SignupScreenTest {
         rule.onNodeWithText("Username").assertExists()
         rule.onNodeWithText("Password").assertExists()
         rule.onNodeWithText("Confirm password").assertExists()
-        rule.onNodeWithText("Terms of Service").performScrollTo().assertIsDisplayed()
-        rule.onNodeWithText("Privacy Policy").assertIsDisplayed()
+        rule.onNodeWithText("Terms of Service", substring = true).performScrollTo().assertIsDisplayed()
+        rule.onNodeWithText("Privacy Policy", substring = true).assertIsDisplayed()
         rule.onAllNodesWithContentDescription("Show password").assertCountEquals(2)
     }
 }

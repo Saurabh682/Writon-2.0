@@ -29,7 +29,21 @@
   <link rel="shortcut icon" href="/favicon.ico?v=20260913_thicker" />
 
   <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-  <link id="canonical-link" rel="canonical" href="https://writon.cc/stories" />
+  <link id="canonical-link" rel="canonical" href="https://writon.cc/explore" />
+  <!-- Canonical determined synchronously by pathname to prevent indexing confusion -->
+  <script>
+    (function() {
+      var parts = window.location.pathname.split('/').filter(Boolean);
+      var slug = parts[parts.length - 1];
+      var canonicalUrl = (slug && slug !== 'stories' && slug !== 'post') 
+        ? ('https://writon.cc/stories/' + slug) 
+        : 'https://writon.cc/explore';
+      var link = document.getElementById('canonical-link');
+      if (link) {
+        link.href = canonicalUrl;
+      }
+    })();
+  </script>
   <link rel="alternate" hreflang="en" href="https://writon.cc/" />
   <link rel="alternate" hreflang="x-default" href="https://writon.cc/" />
   <link rel="alternate" type="application/rss+xml" title="WritOn — Stories &amp; Essays" href="https://writon.cc/feed.xml" />
@@ -58,6 +72,7 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap"></noscript>
   <link rel="stylesheet" href="/stories/share.css?v=20260920_reader_parity" />
   <script src="/assets/marked.min.js"></script>
+  <script src="/assets/purify.min.js"></script>
 
   <!-- Schema.org FAQPage Structured Data for Generative AI & Google Search Rich Snippets -->
   <script type="application/ld+json">
@@ -148,7 +163,7 @@
 
   <script>
     const API_BASE = "https://api.writon.cc";
-    const FALLBACK_API_BASE = "https://writon-powerup.onrender.com";
+    const FALLBACK_API_BASE = "https://api.writon.cc";
     const urlParams = new URLSearchParams(window.location.search);
     const storyReferrer = `utm_source=${encodeURIComponent(urlParams.get('utm_source') || 'website')}&utm_medium=${encodeURIComponent(urlParams.get('utm_medium') || 'story_reader')}&utm_campaign=writon_growth_2026_09&utm_content=${encodeURIComponent(window.location.pathname.split('/').filter(Boolean).pop() || 'story')}`;
     const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=com.ibitvalley.writon&referrer=${encodeURIComponent(storyReferrer)}`;
@@ -343,28 +358,43 @@
         return '';
       }).trim();
 
+      let parsedHtml = '';
       if (window.marked && typeof window.marked.parse === 'function') {
         try {
           window.marked.setOptions({
             gfm: true,
             breaks: false
           });
-          let html = window.marked.parse(clean);
+          parsedHtml = window.marked.parse(clean);
 
           // Wrap <table> in responsive scrolling container
-          html = html.replace(/<table>([\s\S]*?)<\/table>/gi, '<div class="story-table-wrap"><table>$1</table></div>');
+          parsedHtml = parsedHtml.replace(/<table>([\s\S]*?)<\/table>/gi, '<div class="story-table-wrap"><table>$1</table></div>');
 
           // Ensure external links open safely in new tab
-          html = html.replace(/<a\s+href="(https?:\/\/[^"]+)"(?![^>]*target=)/gi, '<a href="$1" target="_blank" rel="noopener"');
-
-          return html + hashtagsHtml;
+          parsedHtml = parsedHtml.replace(/<a\s+href="(https?:\/\/[^"]+)"(?![^>]*target=)/gi, '<a href="$1" target="_blank" rel="noopener noreferrer"');
         } catch (e) {
           console.warn('marked parsing error, falling back to built-in parser', e);
+          parsedHtml = parseMarkdownFallback(clean);
         }
+      } else {
+        parsedHtml = parseMarkdownFallback(clean);
       }
 
-      // Robust Built-In Fallback Parser
-      return parseMarkdownFallback(clean) + hashtagsHtml;
+      const totalHtml = parsedHtml + hashtagsHtml;
+      if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+        return window.DOMPurify.sanitize(totalHtml, {
+          ALLOWED_TAGS: [
+            'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr',
+            'strong', 'b', 'em', 'i', 'code', 'pre', 'blockquote',
+            'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+            'div', 'span', 'a'
+          ],
+          ALLOWED_ATTR: ['href', 'title', 'target', 'rel', 'style', 'class', 'aria-hidden'],
+          ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
+        });
+      }
+      console.warn('DOMPurify not found; failing closed to escaped text');
+      return `<p>${escapeHtml(clean)}</p>`;
     }
 
     async function loadStory() {
@@ -477,21 +507,54 @@
           console.warn('Could not inject JSON-LD schema:', schemaErr);
         }
 
+        function safeImageUrl(candidate) {
+          if (!candidate || typeof candidate !== 'string') return null;
+          try {
+            const u = new URL(candidate, window.location.origin);
+            if (u.protocol === 'https:' || u.protocol === 'http:') return u.href;
+          } catch {}
+          return null;
+        }
+
         // Avatar
         const avatarWrap = document.getElementById('author-avatar-wrap');
-        if (authorAvatarUrl) {
-          avatarWrap.innerHTML = `<img class="author-avatar" src="${authorAvatarUrl}" alt="Portrait of ${authorName}" loading="lazy" decoding="async">`;
-          avatarWrap.querySelector('img').addEventListener('error', () => {
-            avatarWrap.innerHTML = `<div class="author-avatar-fallback">${initial}</div>`;
+        avatarWrap.textContent = '';
+        const initial = (authorName || 'W')[0].toUpperCase();
+        const validAvatarUrl = safeImageUrl(authorAvatarUrl);
+        if (validAvatarUrl) {
+          const avatarImg = document.createElement('img');
+          avatarImg.className = 'author-avatar';
+          avatarImg.src = validAvatarUrl;
+          avatarImg.alt = `Portrait of ${authorName}`;
+          avatarImg.loading = 'lazy';
+          avatarImg.decoding = 'async';
+          avatarImg.addEventListener('error', () => {
+            avatarWrap.textContent = '';
+            const fallback = document.createElement('div');
+            fallback.className = 'author-avatar-fallback';
+            fallback.textContent = initial;
+            avatarWrap.appendChild(fallback);
           }, { once: true });
+          avatarWrap.appendChild(avatarImg);
         } else {
-          const initial = (authorName || 'W')[0].toUpperCase();
-          avatarWrap.innerHTML = `<div class="author-avatar-fallback">${initial}</div>`;
+          const fallback = document.createElement('div');
+          fallback.className = 'author-avatar-fallback';
+          fallback.textContent = initial;
+          avatarWrap.appendChild(fallback);
         }
 
         // Cover
-        if (coverImg) {
-          document.getElementById('cover-wrap').innerHTML = `<img class="cover-img" src="${coverImg}" alt="Cover artwork for ${post.title}" loading="lazy" decoding="async">`;
+        const coverWrap = document.getElementById('cover-wrap');
+        coverWrap.textContent = '';
+        const validCoverImg = safeImageUrl(coverImg);
+        if (validCoverImg) {
+          const coverImgEl = document.createElement('img');
+          coverImgEl.className = 'cover-img';
+          coverImgEl.src = validCoverImg;
+          coverImgEl.alt = `Cover artwork for ${post.title || 'Story'}`;
+          coverImgEl.loading = 'lazy';
+          coverImgEl.decoding = 'async';
+          coverWrap.appendChild(coverImgEl);
         }
 
         // Rich Formatted Content

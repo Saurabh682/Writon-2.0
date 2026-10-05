@@ -48,10 +48,10 @@ describe('Trend Scout Service & Classification', () => {
 
   it('maps recommended author personas with distinct literary angles', () => {
     const techAuthor = getRecommendedAuthorForTrend('Tech');
-    expect(['aarav_tech', 'maya_lin_craft', 'tanya_mehra_dev']).toContain(techAuthor.penName);
+    expect(['aarav_tech', 'karthik_subramanian', 'riya_sharma_systems', 'anand_verma_dev', 'maya_lin_craft', 'aiden_cross', 'vikas_singhal']).toContain(techAuthor.penName);
 
     const financeAuthor = getRecommendedAuthorForTrend('Business & Finance');
-    expect(['karan_bajwa', 'mohit_agarwal', 'sameer_wadhwa_witty']).toContain(financeAuthor.penName);
+    expect(['karan_bajwa', 'mohit_agarwal', 'sameer_wadhwa_witty', 'rajesh_rana']).toContain(financeAuthor.penName);
 
     const sportsAuthor = getRecommendedAuthorForTrend('Sports');
     expect(['sameer_deshpande', 'rohit_kulkarni']).toContain(sportsAuthor.penName);
@@ -60,19 +60,19 @@ describe('Trend Scout Service & Classification', () => {
     expect(['pravin_piku', 'mona_sen', 'devansh_roy']).toContain(entAuthor.penName);
 
     const journalismAuthor = getRecommendedAuthorForTrend('Journalism');
-    expect(['riya_chakraborty', 'sunita_banerjee', 'sourabh_das']).toContain(journalismAuthor.penName);
+    expect(['riya_chakraborty', 'sunita_banerjee', 'sourabh_das', 'swati_tripathi']).toContain(journalismAuthor.penName);
 
     const reviewsAuthor = getRecommendedAuthorForTrend('Reviews');
     expect(['pravin_piku', 'jeanne_faith']).toContain(reviewsAuthor.penName);
 
     const humourAuthor = getRecommendedAuthorForTrend('Humour');
-    expect(['rohan_kapoor', 'chirag_churan', 'gopal_krishnan_jokes']).toContain(humourAuthor.penName);
+    expect(['rohan_kapoor', 'chirag_churan', 'gopal_krishnan_jokes', 'kavita_chawla_fun', 'amal_sri_batman']).toContain(humourAuthor.penName);
 
     const poetryAuthor = getRecommendedAuthorForTrend('Poetry');
-    expect(['kavya_nair', 'siddharth_menon', 'ananya_deshmukh']).toContain(poetryAuthor.penName);
+    expect(['kavya_nair', 'siddharth_menon', 'ananya_deshmukh', 'shreya_ghosh_rhyme', 'kavitha_nair_lines']).toContain(poetryAuthor.penName);
 
     const essayAuthor = getRecommendedAuthorForTrend('Essays');
-    expect(['sunita_banerjee', 'priyanka_mishra']).toContain(essayAuthor.penName);
+    expect(['sunita_banerjee', 'priyanka_mishra', 'gurpreet_sandhu', 'meera_varma', 'devashish_s_somani', 'arjun_mehra_stoic']).toContain(essayAuthor.penName);
   });
 
   it('extracts valid URLs, sources, headlines, and timestamps via parseGoogleNewsRss', async () => {

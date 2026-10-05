@@ -16,6 +16,7 @@ data class AuthorDto(
 )
 
 data class PostDto(
+    @SerializedName("contentSource") val contentSource: String? = null,
     @SerializedName("id") val id: String = "",
     @SerializedName("title") val title: String = "",
     @SerializedName("slug") val slug: String = "",

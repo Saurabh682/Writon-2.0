@@ -1,0 +1,7 @@
+0.15|1.41|Read one page on paper.
+1.55|2.68|Then sharpen one verb.
+3.10|3.97|He made a sound.
+4.30|5.05|He coughed.
+6.05|6.95|She looked at him.
+7.20|8.25|She glanced at him.
+9.15|11.41|Turn the page. Find one more.

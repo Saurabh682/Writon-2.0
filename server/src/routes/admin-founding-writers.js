@@ -2,7 +2,7 @@ import { timingSafeEqual } from 'node:crypto';
 import { z } from 'zod';
 
 const assignmentSchema = z.object({
-  profileId: z.string().uuid(),
+  profileId: z.string().trim().regex(/^[A-Za-z0-9_-]{1,128}$/),
   foundingWriterNumber: z.coerce.number().int().min(1).max(250),
   reason: z.string().trim().min(3).max(500),
 });

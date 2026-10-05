@@ -17,7 +17,7 @@ class StoryDeepLinkTest {
     }
 
     @Test
-    fun `maps writon cc and render story links to the matching reader`() {
+    fun `maps active owned and google cloud story links to the matching reader`() {
         assertEquals(
             "reader/the-extraordinary-protocol",
             resolveStoryDeepLink("https://writon.cc/stories/the-extraordinary-protocol")
@@ -25,10 +25,6 @@ class StoryDeepLinkTest {
         assertEquals(
             "reader/the-extraordinary-protocol",
             resolveStoryDeepLink("https://www.writon.cc/stories/the-extraordinary-protocol")
-        )
-        assertEquals(
-            "reader/story-1010-1010",
-            resolveStoryDeepLink("https://writon-powerup.onrender.com/stories/story-1010-1010")
         )
         assertEquals(
             "reader/story-1010-1010",
@@ -49,7 +45,8 @@ class StoryDeepLinkTest {
     @Test
     fun `rejects foreign hosts and malformed story paths`() {
         assertNull(resolveStoryDeepLink("https://example.com/stories/monsoon-letters"))
-        assertNull(resolveStoryDeepLink("https://writon-powerup.onrender.com/stories/../../admin"))
+        assertNull(resolveStoryDeepLink("https://example.com/stories/story-1010-1010"))
+        assertNull(resolveStoryDeepLink("https://writon.cc/stories/../../admin"))
         assertNull(resolveStoryDeepLink("javascript:alert(1)"))
     }
 

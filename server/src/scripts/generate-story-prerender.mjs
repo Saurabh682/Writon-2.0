@@ -1,3 +1,4 @@
+import sanitizeHtml from 'sanitize-html';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -17,6 +18,37 @@ const vmContext = { globalThis: {} };
 vm.createContext(vmContext);
 vm.runInContext(markedCode, vmContext);
 const marked = vmContext.marked || vmContext.globalThis.marked;
+
+const LITERARY_HTML_SANITIZE_OPTIONS = {
+  allowedTags: [
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr',
+    'strong', 'b', 'em', 'i', 'code', 'pre', 'blockquote',
+    'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    'div', 'span', 'a'
+  ],
+  allowedAttributes: {
+    a: ['href', 'title', 'target', 'rel'],
+    th: ['style'],
+    td: ['style'],
+    div: ['class'],
+    span: ['class', 'style', 'aria-hidden'],
+    pre: ['class'],
+    code: ['class'],
+    hr: ['class']
+  },
+  allowedClasses: {
+    div: ['story-table-wrap', 'story-hashtags'],
+    span: ['hashtag', 'writon-watermark'],
+    hr: ['story-divider'],
+    pre: [/^language-[a-zA-Z0-9_-]+$/],
+    code: [/^language-[a-zA-Z0-9_-]+$/]
+  },
+  allowedSchemes: ['http', 'https', 'mailto'],
+};
+
+function sanitizePrerenderHtml(dirty) {
+  return sanitizeHtml(dirty, LITERARY_HTML_SANITIZE_OPTIONS);
+}
 
 function escapeHtml(str) {
   return String(str ?? '')
@@ -79,7 +111,7 @@ export async function prerenderStories(limit = 50) {
 
     // Render markdown content to semantic HTML
     const rawMarkdown = fullPost.content || fullPost.summary || '';
-    const contentHtml = marked.parse(rawMarkdown);
+    const contentHtml = sanitizePrerenderHtml(marked.parse(rawMarkdown));
 
     // Initial for fallback avatar
     const initial = (authorName || 'W')[0].toUpperCase();
@@ -152,7 +184,7 @@ export async function prerenderStories(limit = 50) {
     }
 
     // Inject JSON-LD Schema
-    html = html.replace('</head>', `  <script id="story-jsonld" type="application/ld+json">${schemaJson}</script>\n</head>`);
+    html = html.replace('</head>', `  <script id="story-jsonld" type="application/ld+json">${schemaJson.replace(/</g, '\\u003c')}</script>\n</head>`);
 
     // Replace main body: remove loading spinner, make story-article visible and fully rendered
     const preRenderedMain = `  <main>

@@ -154,12 +154,25 @@ export function aggregateTrendBundle(harvestedItems = [], { antiRepetitionList =
     // 4. Classify category and determine slot routing
     const routing = routeTopicToEditorialSlot(item.topic, item.headline || item.snippet || '');
 
+    // Angle distinctiveness gate: verify the angle provides distinct craft perspective beyond repeating the headline
+    const angleEvaluation = evaluateEditorialAngleDistinctiveness({
+      topic: item.topic,
+      headline: item.headline || '',
+      editorialAngle: routing.editorialAngle,
+      category: routing.category
+    });
+
+    if (!angleEvaluation.distinct) {
+      continue;
+    }
+
     activeCandidates.push({
       ...item,
       category: routing.category,
       slotId: routing.slotId,
       recommendedAuthor: routing.recommendedAuthor,
-      editorialAngle: routing.editorialAngle
+      editorialAngle: routing.editorialAngle,
+      angleEvaluation
     });
 
     if (activeCandidates.length >= maxItems) break;
@@ -180,23 +193,24 @@ export function aggregateTrendBundle(harvestedItems = [], { antiRepetitionList =
 export function routeTopicToEditorialSlot(topic = '', contextText = '') {
   const text = `${topic} ${contextText}`.toLowerCase();
 
-  // 0. Strict negative guard against cynical startup tropes / VC cynicism
-  if (BANNED_EDITORIAL_TOPIC_PATTERN.test(text)) {
-    const journalismPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Journalism'));
-    const author = journalismPersonas[0] || {
-      penName: 'riya_chakraborty',
-      fullName: 'Dr. Riya Chakraborty'
-    };
-    return {
-      category: 'Journalism',
-      slotId: 'morning_tech',
-      recommendedAuthor: {
-        penName: author.penName,
-        fullName: author.fullName
-      },
-      editorialAngle: `Examine the tangible ground realities, public records, and civic accountability around ${topic}. Avoid all startup jargon and focus on verifiable human facts.`
-    };
-  }
+  const resolve = () => {
+    // 0. Strict negative guard against cynical startup tropes / VC cynicism
+    if (BANNED_EDITORIAL_TOPIC_PATTERN.test(text)) {
+      const journalismPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Journalism'));
+      const author = journalismPersonas[0] || {
+        penName: 'riya_chakraborty',
+        fullName: 'Dr. Riya Chakraborty'
+      };
+      return {
+        category: 'Journalism',
+        slotId: 'morning_tech',
+        recommendedAuthor: {
+          penName: author.penName,
+          fullName: author.fullName
+        },
+        editorialAngle: `Examine the tangible ground realities, public records, and civic accountability around ${topic}. Avoid all startup jargon and focus on verifiable human facts.`
+      };
+    }
 
   // 1. Journalism & Public Affairs (Ground reporting, investigative inquiries, civic reality)
   if (/\b(investigation|expose|scam|court verdict|supreme court|high court|parliament|bill passed|election commission|probe|inquiry|whistleblower|custody|bail|police raid|arrested|cbi|ed raid|policy reform|public report|audit|municipal|civic|infrastructure|sanitation|hospital|healthcare|pollution|ground report|rti)\b/i.test(text)) {
@@ -219,7 +233,7 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
   // 2. Business & Finance (Real economy, markets, commodity prices, wholesale trade, fiscal balance sheets)
   if (/\b(market|markets|share price|shares|sensex|nifty|ipo|stocks|stock|economy|economic|inflation|bank|banking|rupee|invest|investing|finance|financial|gdp|fiscal|rbi|sebi|earnings|revenue|quarterly profit|mutual fund|gold price|silver price|crude oil|trade deficit|commodity|wholesale|supply chain|manufacturing|msme|gst)\b/i.test(text)) {
     const bizPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Business & Finance') || p.categories.includes('Essays'));
-    const author = bizPersonas.find(p => p.penName === 'karan_bajwa') || {
+    const author = bizPersonas.find(p => p.penName === 'karan_bajwa') || bizPersonas[0] || {
       penName: 'karan_bajwa',
       fullName: 'Karan Bajwa'
     };
@@ -237,7 +251,7 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
   // 3. Sports & Athletic Craft
   if (/\b(cricket|tennis|olympics|football|soccer|match|cup|winner|sport|sports|tournament|ipl|bcci|fifa|wimbledon|wicket|badminton|hockey|wrestling|akhada|athletics|f1|formula 1|grand prix|marathon|chess|grandmaster|test match|century|bowler|batsman)\b/i.test(text)) {
     const sportsPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Sports'));
-    const author = sportsPersonas[0] || {
+    const author = sportsPersonas.find(p => p.penName === 'sameer_deshpande') || sportsPersonas[0] || {
       penName: 'sameer_deshpande',
       fullName: 'Sameer Deshpande'
     };
@@ -252,27 +266,14 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
     };
   }
 
-  // 4. Entertainment, Cinema & Dramatic Craft
-  if (/\b(movie|movies|film|films|trailer|teaser|box office|actor|actress|director|cinema|bollywood|hollywood|kollywood|tollywood|ott|netflix|prime video|hotstar|album|song|soundtrack|concert|grammy|oscar|emmy|cannes|celebrity|series|theatre|screenplay|cinematography|sound design)\b/i.test(text)) {
-    const entPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Entertainment') || p.categories.includes('Short Stories'));
-    const author = entPersonas.find(p => p.penName === 'pravin_piku') || {
-      penName: 'pravin_piku',
-      fullName: 'Pravin Kumar (Piku)'
-    };
-    return {
-      category: 'Entertainment',
-      slotId: 'prime_screens',
-      recommendedAuthor: {
-        penName: author.penName,
-        fullName: author.fullName
-      },
-      editorialAngle: `Analyze dramatic pacing, performance subtext, cinematic staging, and screenwriting craft in ${topic}.`
-    };
-  }
+  // 4. Early Hardware, Audio & Product Reviews / Guides detection
+  // Resolves subject and format together BEFORE Culture, Entertainment, or Poetry.
+  // Guarantees audio products (headphones, speakers, turntables, mics) and gadget reviews/guides NEVER route to Culture.
+  const isHardwareOrAudioSubject = /\b(headphone|headphones|earbud|earbuds|iem|iems|earphone|earphones|headset|headsets|speaker|speakers|soundbar|soundbars|audio gear|audio system|turntable|turntables|dac|dacs|amp|amps|amplifier|amplifiers|microphone|microphones|mic|mics|audio interface|phone|phones|smartphone|smartphones|mobile|laptop|laptops|notebook|notebooks|macbook|desktop|pc|tablet|tablets|ipad|display|displays|monitor|monitors|tv|tvs|television|console|playstation|xbox|switch|steam deck|gpu|gpus|cpu|cpus|chip|chips|processor|processors|silicon|graphics card|camera|cameras|lens|lenses|sensor|optics|ev|evs|electric vehicle|vehicle|battery|keyboard|keyboards|mouse|gadget|gadgets|hardware|device|devices|wearable|wearables|smartwatch|bose|sony|sennheiser|apple|airpods|samsung|pixel|oneplus|asus|rog|lenovo|dell|hp|nothing|jabra|sonos|jbl|audio-technica|beyerdynamic|boat|shure|dji|canon|nikon|fujifilm|nvidia|amd|intel|qualcomm|snapdragon)\b/i.test(text);
 
-  // 5. Reviews detection (Hardware benchmarks, comparative tests, buyer guides)
-  if (/\b(review|reviewed|buyer guide|buying guide|hands-on review|camera test|range test|drop test|unboxing|teardown)\b/i.test(text) ||
-      (/\b(vs|comparison|benchmark|specs|verdict)\b/i.test(text) && /\b(phone|laptop|headphone|earbud|car|bike|suv|camera|keyboard|gpu|gadget|console|pixel|iphone|samsung|sony|bose)\b/i.test(text))) {
+  const isReviewOrGuideIntent = /\b(review|reviews|reviewed|guide|guides|buyer guide|buying guide|listening guide|setup guide|user guide|sound quality|audio quality|music quality|build quality|camera test|range test|drop test|battery test|battery life|benchmark|benchmarks|specs|specifications?|teardown|unboxing|hands-on|vs|versus|comparison|comparative|verdict|impressions|tested|testing|test|tests|sound test|audio test|listening test|sound profile|acoustics)\b/i.test(text);
+
+  if (isHardwareOrAudioSubject && isReviewOrGuideIntent) {
     const reviewer = REVIEW_PERSONAS[Math.floor(Math.random() * REVIEW_PERSONAS.length)] || {
       penName: 'vikram_auto_tech',
       fullName: 'Vikramaditya Chauhan',
@@ -287,6 +288,24 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
         domain: reviewer.domain
       },
       editorialAngle: `Measure empirical trade-offs, ergonomic realities, and hardware performance of ${topic}. Avoid promotional hype and state measured findings directly.`
+    };
+  }
+
+  // 5. Entertainment, Cinema & Dramatic Craft (Only if not a hardware review/test)
+  if (!isHardwareOrAudioSubject && /\b(movie|movies|film|films|trailer|teaser|box office|actor|actress|director|cinema|bollywood|hollywood|kollywood|tollywood|ott|netflix|prime video|hotstar|album|song|soundtrack|concert|grammy|oscar|emmy|cannes|celebrity|series|theatre|screenplay|cinematography|sound design)\b/i.test(text)) {
+    const entPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Entertainment') || p.categories.includes('Short Stories'));
+    const author = entPersonas.find(p => p.penName === 'pravin_piku') || entPersonas[0] || {
+      penName: 'pravin_piku',
+      fullName: 'Pravin Kumar (Piku)'
+    };
+    return {
+      category: 'Entertainment',
+      slotId: 'prime_screens',
+      recommendedAuthor: {
+        penName: author.penName,
+        fullName: author.fullName
+      },
+      editorialAngle: `Analyze dramatic pacing, performance subtext, cinematic staging, and screenwriting craft in ${topic}.`
     };
   }
 
@@ -326,8 +345,10 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
     };
   }
 
-  // 8. Culture, Heritage & Craft
-  if (/\b(history|heritage|book|books|author|festival|music|tradition|traditions|temple|museum|art|craft|dance|ghat|folk|classical|vernacular|monument|culinary|recipe|spice|architecture|weaving|handloom|pottery)\b/i.test(text)) {
+  // 8. Culture, Heritage & Craft (Strictly non-hardware, non-audio, non-tech human traditions, arts, literature)
+  if (!isHardwareOrAudioSubject &&
+      !/\b(gpu|nvidia|chip|ai|llm|software|hardware|computing|database|postgres|kernel|compiler|server|tensor|processor|phone|laptop|code|programming|semiconductor)\b/i.test(text) &&
+      /\b(history|heritage|book|books|author|festival|music|tradition|traditions|temple|museum|art|craft|dance|ghat|folk|classical|vernacular|monument|culinary|recipe|spice|architecture|weaving|handloom|pottery)\b/i.test(text)) {
     const culturePersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Culture'));
     const author = culturePersonas[Math.floor(Math.random() * culturePersonas.length)] || {
       penName: 'kelly_miracle_art',
@@ -363,11 +384,80 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
   }
 
   // 10. Tech Systems Craft & Frontier AI (Pure architecture / engineering / AI frontier, zero VC cynicism, ZERO code blocks)
-  if (/\b(gpu|nvidia|chip|chips|ai|llm|transformer|latency|claude|gemini|openai|gpt|astra|frontier model|context window|prompting|postgres|postgresql|database|kernel|linux|concurrency|distributed systems|architecture|wal\b|lsn\b|memory leak|cache invalidation)\b/i.test(text)) {
+  if (/\b(gpu|nvidia|chip|chips|ai|llm|transformer|latency|claude|gemini|openai|gpt|astra|frontier model|context window|prompting|postgres|postgresql|database|kernel|linux|concurrency|distributed systems|architecture|wal\b|lsn\b|memory leak|cache invalidation|compiler|rust|golang|debugger|interface|ui|ux)\b/i.test(text)) {
+    const TEMPORARY_COOLDOWN_PEN_NAMES = new Set(['aarav_tech', 'devansh_roy', 'sunita_banerjee', 'gurpreet_sandhu']);
+    const techPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Tech') && !TEMPORARY_COOLDOWN_PEN_NAMES.has(p.penName));
+    let author = null;
+    let angleDetail = 'Analyze technical constraints, trade-offs, and systems reality behind ' + topic + '.';
+
+    if (/\b(distributed systems|architecture|concurrency|latency|throughput|gpu|nvidia|transformer|inference|scaling law)\b/i.test(text)) {
+      author = techPersonas.find(p => p.penName === 'karthik_subramanian') || techPersonas[0];
+      angleDetail = `Analyze frontier architecture, mechanical sympathy, latency bottlenecks, and systems engineering trade-offs behind ${topic}.`;
+    } else if (/\b(database|postgres|postgresql|wal\b|lsn\b|query|index|consensus|raft|paxos|storage engine)\b/i.test(text)) {
+      author = techPersonas.find(p => p.penName === 'karthik_subramanian') || techPersonas[0];
+      angleDetail = `Investigate database internals, write-ahead logging, indexing physics, or storage engine guarantees behind ${topic}.`;
+    } else if (/\b(kernel|linux|ebpf|buffer|zero-copy|memory leak|cache|socket|packet|driver)\b/i.test(text)) {
+      author = techPersonas.find(p => p.penName === 'riya_sharma_systems') || techPersonas[0];
+      angleDetail = `Examine Linux kernel mechanics, memory boundaries, zero-copy buffers, and low-level constraints around ${topic}.`;
+    } else if (/\b(compiler|diagnostic|error message|build|tooling|cli|terminal|ide|developer experience|linter)\b/i.test(text)) {
+      author = techPersonas.find(p => p.penName === 'anand_verma_dev') || techPersonas[0];
+      angleDetail = `Explore developer ergonomics, compiler feedback loops, build latency, and terminal tooling trade-offs in ${topic}.`;
+    } else if (/\b(interface|ui|ux|interaction|design system|typography|touch|haptic)\b/i.test(text)) {
+      author = techPersonas.find(p => p.penName === 'maya_lin_craft') || techPersonas[0];
+      angleDetail = `Reflect on tactile software craft, human-computer interaction principles, and interface responsiveness in ${topic}.`;
+    } else if (/\b(ethics|longevity|cybernetics|human role|automation|dignity|philosophical)\b/i.test(text)) {
+      author = techPersonas.find(p => p.penName === 'aiden_cross') || techPersonas[0];
+      angleDetail = `Interrogate the human and philosophical consequences, cybernetic feedback loops, and software longevity surrounding ${topic}.`;
+    } else if (/\b(hardware|circuit|retro|salvage|chip|semiconductor|repair|delhi|nehru place|component)\b/i.test(text)) {
+      author = techPersonas.find(p => p.penName === 'vikas_singhal') || techPersonas[0];
+      angleDetail = `Examine hardware physical realities, component-level diagnostics, electronics salvage, and computing history in ${topic}.`;
+    }
+
+    if (!author) {
+      // Rotate across available non-cooldown tech writers
+      author = techPersonas[Math.floor(Math.random() * techPersonas.length)] || {
+        penName: 'karthik_subramanian',
+        fullName: 'Karthik Subramanian'
+      };
+      angleDetail = `Analyze systems architecture, mechanical sympathy, latent space dynamics, or engineering craftsmanship behind ${topic}.`;
+    }
+
+    return {
+      category: 'Tech',
+      slotId: 'morning_tech',
+      recommendedAuthor: {
+        penName: author.penName,
+        fullName: author.fullName
+      },
+      editorialAngle: `${angleDetail} Strictly avoid code blocks and startup/VC satire; explain concepts purely in lucid, engaging narrative prose.`
+    };
+  }
+
+  // 11. Tech & Hardware Reviews Guard (Never route tech or hardware devices into Culture)
+  const TECH_HARDWARE_INDICATORS = /\b(phone|smartphone|mobile|laptop|pc|desktop|tablet|camera|lens|optics|gpu|cpu|chip|processor|silicon|headphone|earbud|iem|audio|speaker|ev|electric vehicle|battery|gadget|console|teardown|benchmark|unboxing|hands-on|specs|hardware|keyboard|display|screen|monitor|software|app|framework|library|server|database|kernel|linux)\b/i;
+  if (TECH_HARDWARE_INDICATORS.test(text)) {
+    if (/\b(review|reviewed|buyer guide|buying guide|comparison|vs|specs|verdict|benchmark|tested|testing|hands-on)\b/i.test(text)) {
+      const reviewer = REVIEW_PERSONAS[Math.floor(Math.random() * REVIEW_PERSONAS.length)] || {
+        penName: 'vikram_auto_tech',
+        fullName: 'Vikramaditya Chauhan',
+        domain: 'EVs & Battery Tech'
+      };
+      return {
+        category: 'Reviews',
+        slotId: 'morning_tech',
+        recommendedAuthor: {
+          penName: reviewer.penName,
+          fullName: reviewer.fullName,
+          domain: reviewer.domain
+        },
+        editorialAngle: `Measure empirical trade-offs, ergonomic realities, and hardware performance of ${topic}. Avoid promotional hype and state measured findings directly.`
+      };
+    }
+
     const techPersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Tech'));
-    const author = techPersonas.find(p => p.penName === 'aarav_tech') || techPersonas[0] || {
-      penName: 'aarav_tech',
-      fullName: 'Aarav Mehta'
+    const author = techPersonas[Math.floor(Math.random() * techPersonas.length)] || {
+      penName: 'karthik_subramanian',
+      fullName: 'Karthik Subramanian'
     };
     return {
       category: 'Tech',
@@ -376,11 +466,11 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
         penName: author.penName,
         fullName: author.fullName
       },
-      editorialAngle: `Analyze frontier model architecture, continuous multimodal attention, mechanical sympathy, latent space dynamics, or systems craft behind ${topic}. Strictly avoid code blocks and startup/VC satire; explain concepts purely in lucid, engaging narrative prose.`
+      editorialAngle: `Analyze technical constraints, systems architecture, and engineering trade-offs behind ${topic}. Explain concepts purely in lucid narrative prose without code blocks.`
     };
   }
 
-  // 11. Culture / Short Stories Fallback (Default)
+  // 12. Culture / Short Stories Fallback (Default for non-tech human/arts themes)
   const culturePersonas = LEGACY_WRITER_PERSONAS.filter(p => p.categories.includes('Culture'));
   const author = culturePersonas[0] || {
     penName: 'priyanka_mishra',
@@ -394,6 +484,119 @@ export function routeTopicToEditorialSlot(topic = '', contextText = '') {
       fullName: author.fullName
     },
     editorialAngle: `Explore the human dimensions, generational memory, and cultural continuity evoked by ${topic}.`
+  };
+};
+
+  const res = resolve();
+  const angleEvaluation = evaluateEditorialAngleDistinctiveness({
+    topic,
+    headline: contextText,
+    editorialAngle: res.editorialAngle,
+    category: res.category
+  });
+  return { ...res, angleEvaluation };
+}
+
+/**
+ * Pillar 2: Distinct Angle Evaluation Gate
+ * Evaluates whether a proposed editorial angle offers a distinct craft/analytical
+ * perspective beyond merely repeating or summarizing the headline.
+ *
+ * Distinct angle requirements:
+ * 1. Must not simply rephrase or repeat the headline/topic.
+ * 2. Must not be generic boilerplate (e.g. "report on X", "summary of X").
+ * 3. Must introduce craft depth, technical trade-offs, institutional friction,
+ *    balance-sheet mechanics, or narrative stakes.
+ */
+export function evaluateEditorialAngleDistinctiveness({
+  topic = '',
+  headline = '',
+  editorialAngle = '',
+  category = 'Essays'
+} = {}) {
+  const cleanAngle = String(editorialAngle || '').trim();
+  const cleanTopic = String(topic || '').trim();
+  const cleanHeadline = String(headline || '').trim();
+
+  if (!cleanAngle || cleanAngle.length < 25) {
+    return {
+      distinct: false,
+      decision: 'SKIP',
+      reason: 'NO_DISTINCT_WRITON_ANGLE: Angle is empty or insufficiently specified (< 25 characters)'
+    };
+  }
+
+  // 1. Check if angle uses generic boilerplate or placeholder phrasing
+  const GENERIC_FILLER_PATTERNS = [
+    /^(?:news update on|summary of|what happened with|breaking report on|headline covering|covering the news about|report on|discussion about|talking about|a look at|overview of|a complete guide to|everything you need to know about|what readers need to know about|all about)\s+/i,
+    /\b(?:this is a generic|a generic (?:story|article|post|angle|writeup|piece)|just a (?:generic|simple) (?:story|post)|some thoughts on|some random thoughts|general thoughts|a basic overview)\b/i,
+    /^(?:write|draft|generate) (?:a|an) (?:story|article|post|essay) (?:about|on)\s+/i,
+    /^(?:explain|analyze|discuss|explore|examine)\s+(?:the\s+)?(?:topic|details|news|importance|basics|developments)\s+of\s+/i,
+    /^(?:this\s+is\s+a\s+story\s+about|an\s+article\s+about|a\s+piece\s+about)\s+/i
+  ];
+
+  for (const pattern of GENERIC_FILLER_PATTERNS) {
+    if (pattern.test(cleanAngle)) {
+      return {
+        distinct: false,
+        decision: 'SKIP',
+        reason: 'NO_DISTINCT_WRITON_ANGLE: Angle uses generic placeholder or boilerplate phrasing'
+      };
+    }
+  }
+
+  // 2. Check similarity between angle and headline/topic:
+  const normAngle = cleanAngle.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const normHeadline = cleanHeadline.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+  const normTopic = cleanTopic.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+  if (normHeadline && (normAngle === normHeadline || (normAngle.startsWith(normHeadline) && normAngle.length < normHeadline.length + 15))) {
+    return {
+      distinct: false,
+      decision: 'SKIP',
+      reason: 'NO_DISTINCT_WRITON_ANGLE: Angle is identical or trivial variation of headline'
+    };
+  }
+
+  if (normTopic && (normAngle === normTopic || normAngle === `on ${normTopic}`)) {
+    return {
+      distinct: false,
+      decision: 'SKIP',
+      reason: 'NO_DISTINCT_WRITON_ANGLE: Angle merely repeats the raw topic title'
+    };
+  }
+
+  // 3. Meaningful Editorial Idea Evaluation:
+  // Must articulate a concrete question, causal inquiry, or tangible reader benefit/mechanism,
+  // rather than checking for isolated buzzwords or allowing arbitrary length to pass.
+  const words = cleanAngle.split(/\s+/).filter(Boolean);
+  if (words.length < 5) {
+    return {
+      distinct: false,
+      decision: 'SKIP',
+      reason: 'NO_DISTINCT_WRITON_ANGLE: Angle is too short to articulate a meaningful idea'
+    };
+  }
+
+  const HAS_QUESTION_OR_INQUIRY = /\b(how\b|why\b|what happens when\b|whether\b|when\b|does\b|can\b|who pays for\b|who benefits from\b|what is lost when\b|\?)/i.test(cleanAngle);
+  const HAS_EXPLANATORY_OR_CAUSAL_VERB = /\b(explain\b|examine\b|explore\b|investigate\b|analyze\b|unravel\b|uncover\b|interrogate\b|contrast\b|trace\b|measure\b|diagnose\b|unpack\b|demonstrate\b|reveals?\b|illustrate\b|ground\b|observe\b|craft\b)/i.test(cleanAngle);
+  const HAS_READER_BENEFIT_OR_MECHANISM = /\b(removes the pressure\b|helps readers\b|allows readers\b|challenges\b|shifts\b|shows why\b|replaces\b|solves\b|fails to\b|costs\b|leads to\b|creates\b|forces\b|enables\b|prevents\b|exposes\b|reclaims\b|consequence|trade-?offs?|benefits?|tensions?|dilemmas?|choice|distinction|difference|meaning|continuity|traditions?|craftsmanship|absurdities|absurdity|ironies|irony|rituals?|subtext|ergonomics?|bottlenecks?|mechanics?|sensory|physicality|balance sheet|accountability|perseverance|pressures?|longing|memory|craft|human dimensions|architecture|internals|latency|throughput|concurrency|guarantees?|benchmarks?|indexing|constraints?)\b/i.test(cleanAngle);
+
+  // Must have a concrete inquiry (e.g. how, why, whether, ?) OR an explanatory verb coupled with a concrete mechanism/reader benefit
+  const hasSubstantiveIdea = HAS_QUESTION_OR_INQUIRY || (HAS_EXPLANATORY_OR_CAUSAL_VERB && HAS_READER_BENEFIT_OR_MECHANISM);
+
+  if (!hasSubstantiveIdea) {
+    return {
+      distinct: false,
+      decision: 'SKIP',
+      reason: 'NO_DISTINCT_WRITON_ANGLE: Angle lacks a concrete inquiry, causal mechanism, or reader benefit'
+    };
+  }
+
+  return {
+    distinct: true,
+    decision: 'PROCEED',
+    reason: 'Angle articulates a concrete question, inquiry, or reader benefit'
   };
 }
 

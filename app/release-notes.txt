@@ -1,41 +1,21 @@
-177 (2.0.78) - Story Card Offscreen Rendering & Export Fix
+2.0.85 — Clear Home & Explore
 
 <en-US>
-• Turn story passages into elegant quote cards directly from the reader.
-• 4 social aspect ratios (9:16 Stories, 4:5 Portrait, 1:1 Square, 16:9 Landscape).
-• Warm Paper and Midnight Obsidian palettes with literary typography.
-• Save to photos or share to Instagram, X, WhatsApp, and Threads.
-• Recipients open the full story with zero login required.
+Fixed an Explore drawer overlap that could cover the left side of Home or Editorial. Explore remains available by swiping right or using its button. Closing Explore or pressing Back returns to the current feed. Added regression checks for screen recreation and drawer navigation.
 </en-US>
 
 <en-IN>
-• Turn story passages into elegant quote cards directly from the reader.
-• 4 social aspect ratios (9:16 Stories, 4:5 Portrait, 1:1 Square, 16:9 Landscape).
-• Warm Paper and Midnight Obsidian palettes with literary typography.
-• Save to photos or share to Instagram, X, WhatsApp, and Threads.
-• Recipients open the full story with zero login required.
+Fixed an Explore drawer overlap that could cover the left side of Home or Editorial. Explore remains available by swiping right or using its button. Closing Explore or pressing Back returns to the current feed. Added regression checks for screen recreation and drawer navigation.
 </en-IN>
 
 <hi-IN>
-• पाठक स्क्रीन से सीधे सुंदर उद्धरण कार्ड (Quote Card) बनाएं।
-• 4 सोशल आकार (9:16 स्टोरीज़, 4:5 पोर्ट्रेट, 1:1 चौकोर, 16:9 लैंडस्केप)।
-• वॉर्म पेपर और मिडनाइट ओब्सीडियन रंग पैलेट।
-• फोटो गैलरी में सेव करें या इंस्टाग्राम, एक्स, व्हाट्सएप पर शेयर करें।
-• बिना लॉगिन सीधे पूरी कहानी पढ़ें।
+Explore पैनल के होम या Editorial के बाएँ हिस्से को ढकने की समस्या ठीक की गई। Explore खोलने के लिए दाईं ओर स्वाइप करें या उसका बटन दबाएँ। पैनल बंद करने या बैक दबाने पर मौजूदा फ़ीड दिखती है। स्क्रीन दोबारा बनने और पैनल नेविगेशन के लिए जाँच जोड़ी गई हैं।
 </hi-IN>
 
 <mr-IN>
-• वाचक स्क्रीनवरून थेट आवडत्या परिच्छेदांचे कोट कार्ड्स (Quote Cards) तयार करा.
-• 4 सोशल आकार (9:16 स्टोरीज, 4:5 पोर्ट्रेट, 1:1 स्क्वेअर, 16:9 लँडस्केप).
-• वॉर्म पेपर आणि मिडनाइट ऑब्सिडियन रंग पॅलेट.
-• गॅलरीत सेव्ह करा किंवा इंस्टाग्राम, एक्स, व्हॉट्सअॅपवर शेअर करा.
-• लॉगिनशिवाय थेट संपूर्ण कथा वाचा.
+Explore पॅनेलमुळे होम किंवा Editorial चा डावा भाग झाकला जाण्याची समस्या सुधारली. Explore उघडण्यासाठी उजवीकडे स्वाइप करा किंवा त्याचे बटण वापरा. पॅनेल बंद केल्यावर किंवा बॅक दाबल्यावर सध्याची फीड दिसते. स्क्रीन पुन्हा तयार होणे आणि पॅनेल नेव्हिगेशनसाठी चाचण्या जोडल्या आहेत.
 </mr-IN>
 
 <bn-BD>
-• পাঠক স্ক্রিন থেকে সরাসরি নান্দনিক কোট কার্ড (Quote Card) তৈরি করুন।
-• ৪টি সামাজিক আকার (৯:১৬ স্টোরিজ, ৪:৫ পোর্ট্রেট, ১:১ স্কয়ার, ১৬:৯ ল্যান্ডস্কেপ)।
-• ওয়ার্ম পেপার ও মিডনাইট অবসিডিয়ান রঙের থিম।
-• ফটো গ্যালারিতে সংরক্ষণ করুন বা ইনস্টাগ্রাম, এক্স, হোয়াটসঅ্যাপে শেয়ার করুন।
-• কোনো লগইন ছাড়াই সরাসরি পুরো গল্পটি পড়ুন।
+Explore প্যানেল হোম বা Editorial-এর বাঁ দিক ঢেকে দেওয়ার সমস্যা ঠিক করা হয়েছে। Explore খুলতে ডানদিকে সোয়াইপ করুন অথবা তার বোতাম ব্যবহার করুন। প্যানেল বন্ধ করলে বা ব্যাক চাপলে বর্তমান ফিড দেখা যায়। স্ক্রিন পুনরায় তৈরি হওয়া ও প্যানেল নেভিগেশনের জন্য পরীক্ষা যোগ করা হয়েছে।
 </bn-BD>

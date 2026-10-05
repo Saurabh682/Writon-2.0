@@ -19,7 +19,6 @@ const runtimeEnvironmentSchema = z.object({
   GEMINI_PRO_MODEL: z.string().trim().default('gemini-3.1-pro-preview'),
   ADMIN_SECRET_KEY: z.string().trim().optional(),
   TREND_INGEST_SECRET: z.string().trim().min(16).optional(),
-  RENDER: z.enum(['true', 'false']).optional(),
   SPARK_AUTOMATION_ENABLED: z.enum(['true', 'false']).optional(),
   LATEST_APP_VERSION_CODE: z.coerce.number().int().min(1).default(119),
   PUBLISHED_APP_VERSION_CODE: z.coerce.number().int().min(1).default(108),
@@ -141,9 +140,7 @@ export function loadRuntimeConfig(environment = process.env) {
       }
       return values.ADMIN_SECRET_KEY || null;
     })(),
-    sparkAutomationEnabled: values.SPARK_AUTOMATION_ENABLED
-      ? values.SPARK_AUTOMATION_ENABLED === 'true'
-      : values.RENDER !== 'true',
+    sparkAutomationEnabled: values.SPARK_AUTOMATION_ENABLED !== 'false',
     latestAppVersionCode: values.LATEST_APP_VERSION_CODE,
     publishedAppVersionCode: values.PUBLISHED_APP_VERSION_CODE,
     minSupportedAppVersionCode: values.MIN_SUPPORTED_APP_VERSION_CODE,

@@ -5,6 +5,10 @@ import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import com.ibitvalley.writon.modern.normalizeNotificationRoute
 import com.ibitvalley.writon.modern.core.telemetry.WritOnTelemetry
+import com.ibitvalley.writon.modern.core.database.WritOnDatabase
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 
 class WritOnFirebaseMessagingService : FirebaseMessagingService() {
 
@@ -32,6 +36,19 @@ class WritOnFirebaseMessagingService : FirebaseMessagingService() {
         val actorName = data["actorName"] ?: data["authorName"]
         val kind = data["kind"] ?: data["type"] ?: "interaction"
         val targetRoute = notificationTargetRoute(data)
+
+        if (!storyId.isNullOrBlank()) {
+            try {
+                // Persist before returning from the FCM callback; a detached coroutine can be killed.
+                runBlocking(Dispatchers.IO) {
+                    val owner = FirebaseAuth.getInstance().currentUser?.uid ?: "device"
+                    WritOnDatabase.getDatabase(applicationContext).incomingStoryDao()
+                        .capture(owner, storyId, "push", data["storyTitle"])
+                }
+            } catch (error: Exception) {
+                Log.w("WritOnInbox", "Could not retain received story link", error)
+            }
+        }
 
         WritOnTelemetry.pushReceived(applicationContext, kind, !storyId.isNullOrBlank())
 

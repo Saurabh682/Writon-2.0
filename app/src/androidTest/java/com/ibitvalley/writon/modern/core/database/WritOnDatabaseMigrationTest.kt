@@ -54,6 +54,7 @@ class WritOnDatabaseMigrationTest {
                 WritOnDatabase.MIGRATION_3_4,
                 WritOnDatabase.MIGRATION_4_5,
                 WritOnDatabase.MIGRATION_5_6,
+                WritOnDatabase.MIGRATION_6_7,
             )
             .allowMainThreadQueries()
             .build()
@@ -92,6 +93,10 @@ class WritOnDatabaseMigrationTest {
                     assertTrue("isMine" in columns)
                     assertTrue("authorFoundingWriterNumber" in columns)
                     assertTrue("authorEmailVerified" in columns)
+                }
+                migrated.openHelper.writableDatabase.query("SELECT COUNT(*) FROM incoming_stories").use { cursor ->
+                    assertTrue(cursor.moveToFirst())
+                    assertEquals(0, cursor.getInt(0))
                 }
         } finally {
             migrated.close()

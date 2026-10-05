@@ -14,7 +14,6 @@ async function test(name, url) {
 async function main() {
   await test('Custom Domain (api.writon.cc)', 'https://api.writon.cc/api/v1/posts?limit=3');
   await test('Google Cloud Run (run.app)', 'https://writon-api-802112841589.asia-south1.run.app/api/v1/posts?limit=3');
-  await test('Render (onrender.com)', 'https://writon-powerup.onrender.com/api/v1/posts?limit=3');
 }
 
 main();

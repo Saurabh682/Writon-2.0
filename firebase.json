@@ -9,369 +9,521 @@
         "**/.*",
         "**/node_modules/**"
       ],
-    "headers": [
-      {
-        "source": "/assets/**",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=31536000, immutable"
+      "headers": [
+        {
+          "source": "/assets/**",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "**/*.@(css|js)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/.well-known/assetlinks.json",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600"
+            }
+          ]
+        },
+        {
+          "source": "/manifest.webmanifest",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/manifest+json; charset=utf-8"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=604800"
+            }
+          ]
+        },
+        {
+          "source": "/",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate, max-age=0"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://api.writon.cc https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firebaseio.com https://*.google-analytics.com https://www.google-analytics.com; frame-ancestors 'none'; base-uri 'self'"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "strict-origin-when-cross-origin"
+            }
+          ]
+        },
+        {
+          "source": "**/*.html",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate, max-age=0"
+            },
+            {
+              "key": "Pragma",
+              "value": "no-cache"
+            },
+            {
+              "key": "Expires",
+              "value": "0"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://api.writon.cc https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firebaseio.com https://*.google-analytics.com https://www.google-analytics.com; frame-ancestors 'none'; base-uri 'self'"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "strict-origin-when-cross-origin"
+            }
+          ]
+        },
+        {
+          "source": "@(explore|about|journal|updates|terms|child-safety|delete-account|privacy-policy|canvas|linkedin-studio|founding-writer)",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate, max-age=0"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://api.writon.cc https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firebaseio.com https://*.google-analytics.com https://www.google-analytics.com; frame-ancestors 'none'; base-uri 'self'"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "DENY"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "strict-origin-when-cross-origin"
+            }
+          ]
+        },
+        {
+          "source": "/sitemap.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml; charset=utf-8"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600, stale-while-revalidate=86400"
+            }
+          ]
+        },
+        {
+          "source": "/news-sitemap.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml; charset=utf-8"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600, stale-while-revalidate=86400"
+            }
+          ]
+        },
+        {
+          "source": "/sitemap_index.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml; charset=utf-8"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600, stale-while-revalidate=86400"
+            }
+          ]
+        },
+        {
+          "source": "/sitemap-main.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml; charset=utf-8"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=3600, stale-while-revalidate=86400"
+            }
+          ]
+        },
+        {
+          "source": "/feed.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/rss+xml; charset=utf-8"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "public, max-age=1800, stale-while-revalidate=3600"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, follow"
+            }
+          ]
+        },
+        {
+          "source": "/pinterest-feed.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml; charset=utf-8"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, follow"
+            }
+          ]
+        },
+        {
+          "source": "/reddit-feed.xml",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/xml; charset=utf-8"
+            },
+            {
+              "key": "Access-Control-Allow-Origin",
+              "value": "*"
+            },
+            {
+              "key": "X-Robots-Tag",
+              "value": "noindex, follow"
+            }
+          ]
+        },
+        {
+          "source": "/robots.txt",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "text/plain; charset=utf-8"
+            }
+          ]
+        }
+      ],
+      "redirects": [
+        {
+          "source": "/dashboard",
+          "destination": "/",
+          "type": 301
+        },
+        {
+          "source": "/instagram",
+          "destination": "https://www.instagram.com/writon_socialapp/",
+          "type": 302
+        },
+        {
+          "source": "/ig",
+          "destination": "https://www.instagram.com/writon_socialapp/",
+          "type": 302
+        },
+        {
+          "source": "/x",
+          "destination": "https://x.com/WritOn_Social",
+          "type": 302
+        },
+        {
+          "source": "/twitter",
+          "destination": "https://x.com/WritOn_Social",
+          "type": 302
+        },
+        {
+          "source": "/threads",
+          "destination": "https://www.threads.net/@writon_socialapp",
+          "type": 302
+        },
+        {
+          "source": "/youtube",
+          "destination": "https://www.youtube.com/@writon_app",
+          "type": 302
+        },
+        {
+          "source": "/yt",
+          "destination": "https://www.youtube.com/@writon_app",
+          "type": 302
+        },
+        {
+          "source": "/linkedin",
+          "destination": "https://www.linkedin.com/in/writon-story-writing-and-reads",
+          "type": 302
+        },
+        {
+          "source": "/reddit",
+          "destination": "https://www.reddit.com/r/writon/",
+          "type": 302
+        },
+        {
+          "source": "/medium",
+          "destination": "https://medium.com/@saurabh.682",
+          "type": 302
+        },
+        {
+          "source": "/play",
+          "destination": "https://play.google.com/store/apps/details?id=com.ibitvalley.writon",
+          "type": 302
+        },
+        {
+          "source": "/app",
+          "destination": "https://play.google.com/store/apps/details?id=com.ibitvalley.writon",
+          "type": 302
+        },
+        {
+          "source": "/android",
+          "destination": "https://play.google.com/store/apps/details?id=com.ibitvalley.writon",
+          "type": 302
+        },
+        {
+          "source": "/whatsapp",
+          "destination": "https://chat.whatsapp.com/G94rXIgROzA0mxSK8O1XBQ",
+          "type": 302
+        },
+        {
+          "source": "/wa",
+          "destination": "https://chat.whatsapp.com/G94rXIgROzA0mxSK8O1XBQ",
+          "type": 302
+        },
+        {
+          "source": "/post/:slug*",
+          "destination": "/stories/:slug*",
+          "type": 301
+        },
+        {
+          "source": "/stories",
+          "destination": "/explore",
+          "type": 301
+        },
+        {
+          "source": "/privacy-policy.html",
+          "destination": "/privacy-policy",
+          "type": 301
+        },
+        {
+          "source": "/terms.html",
+          "destination": "/terms",
+          "type": 301
+        },
+        {
+          "source": "/child-safety.html",
+          "destination": "/child-safety",
+          "type": 301
+        },
+        {
+          "source": "/delete-account.html",
+          "destination": "/delete-account",
+          "type": 301
+        }
+      ],
+      "rewrites": [
+        {
+          "source": "/api/**",
+          "run": {
+            "serviceId": "writon-app-api",
+            "region": "asia-south1"
           }
-        ]
-      },
-      {
-        "source": "**/*.@(css|js)",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "source": "/explore",
+          "destination": "/explore/index.html"
+        },
+        {
+          "source": "/privacy-policy",
+          "destination": "/privacy-policy.html"
+        },
+        {
+          "source": "/canvas",
+          "destination": "/canvas.html"
+        },
+        {
+          "source": "/editorial-canvas",
+          "destination": "/canvas.html"
+        },
+        {
+          "source": "/linkedin-studio",
+          "destination": "/linkedin.html"
+        },
+        {
+          "source": "/founding-writer",
+          "destination": "/founding-writer.html"
+        },
+        {
+          "source": "/auth/verify",
+          "destination": "/auth/verify.html"
+        },
+        {
+          "source": "/auth/reset-password",
+          "destination": "/auth/reset-password.html"
+        },
+        {
+          "source": "/email/unsubscribe",
+          "destination": "/email/unsubscribe.html"
+        },
+        {
+          "source": "/terms",
+          "destination": "/terms.html"
+        },
+        {
+          "source": "/child-safety",
+          "destination": "/child-safety.html"
+        },
+        {
+          "source": "/delete-account",
+          "destination": "/delete-account.html"
+        },
+        {
+          "source": "/email/unsubscribe/**",
+          "run": {
+            "serviceId": "writon-app-api",
+            "region": "asia-south1"
           }
-        ]
-      },
-      {
-        "source": "/manifest.webmanifest",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/manifest+json; charset=utf-8"
-          },
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=604800"
+        },
+        {
+          "source": "/settings/email",
+          "destination": "/email/unsubscribe.html"
+        },
+        {
+          "source": "/settings/**",
+          "destination": "/email/unsubscribe.html"
+        },
+        {
+          "source": "/about",
+          "destination": "/about/index.html"
+        },
+        {
+          "source": "/journal",
+          "destination": "/journal/index.html"
+        },
+        {
+          "source": "/journal/**",
+          "destination": "/journal/article.html"
+        },
+        {
+          "source": "/updates",
+          "destination": "/updates/index.html"
+        },
+        {
+          "source": "/rss.xml",
+          "destination": "/feed.xml"
+        },
+        {
+          "source": "/go/**",
+          "destination": "/go/index.html"
+        },
+        {
+          "source": "/post/**",
+          "run": {
+            "serviceId": "writon-app-api",
+            "region": "asia-south1"
           }
-        ]
-      },
-      {
-        "source": "/",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate, max-age=0"
-          },
-          {
-            "key": "Pragma",
-            "value": "no-cache"
-          },
-          {
-            "key": "Expires",
-            "value": "0"
-          },
-          {
-            "key": "Clear-Site-Data",
-            "value": "\"cache\""
-          },
-          {
-            "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://api.writon.cc https://writon-powerup.onrender.com; frame-ancestors 'none'; base-uri 'self'"
-          },
-          {
-            "key": "X-Content-Type-Options",
-            "value": "nosniff"
-          },
-          {
-            "key": "X-Frame-Options",
-            "value": "DENY"
-          },
-          {
-            "key": "Referrer-Policy",
-            "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "source": "/stories/**",
+          "run": {
+            "serviceId": "writon-app-api",
+            "region": "asia-south1"
           }
-        ]
-      },
-      {
-        "source": "**/*.html",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate, max-age=0"
-          },
-          {
-            "key": "Pragma",
-            "value": "no-cache"
-          },
-          {
-            "key": "Expires",
-            "value": "0"
-          },
-          {
-            "key": "Clear-Site-Data",
-            "value": "\"cache\""
-          },
-          {
-            "key": "Content-Security-Policy",
-            "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; connect-src 'self' https://api.writon.cc https://writon-powerup.onrender.com; frame-ancestors 'none'; base-uri 'self'"
-          },
-          {
-            "key": "X-Content-Type-Options",
-            "value": "nosniff"
-          },
-          {
-            "key": "X-Frame-Options",
-            "value": "DENY"
-          },
-          {
-            "key": "Referrer-Policy",
-            "value": "strict-origin-when-cross-origin"
-          }
-        ]
-      },
-      {
-        "source": "/sitemap.xml",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/xml; charset=utf-8"
-          },
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          },
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600, stale-while-revalidate=86400"
-          },
-          {
-            "key": "X-Robots-Tag",
-            "value": "noindex, follow"
-          }
-        ]
-      },
-      {
-        "source": "/news-sitemap.xml",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/xml; charset=utf-8"
-          },
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          },
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600, stale-while-revalidate=86400"
-          },
-          {
-            "key": "X-Robots-Tag",
-            "value": "noindex, follow"
-          }
-        ]
-      },
-      {
-        "source": "/sitemap_index.xml",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/xml; charset=utf-8"
-          },
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          },
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600, stale-while-revalidate=86400"
-          }
-        ]
-      },
-      {
-        "source": "/sitemap-main.xml",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/xml; charset=utf-8"
-          },
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          },
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=3600, stale-while-revalidate=86400"
-          }
-        ]
-      },
-      {
-        "source": "/feed.xml",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/rss+xml; charset=utf-8"
-          },
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          },
-          {
-            "key": "Cache-Control",
-            "value": "public, max-age=1800, stale-while-revalidate=3600"
-          },
-          {
-            "key": "X-Robots-Tag",
-            "value": "noindex, follow"
-          }
-        ]
-      },
-      {
-        "source": "/pinterest-feed.xml",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/xml; charset=utf-8"
-          },
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          },
-          {
-            "key": "X-Robots-Tag",
-            "value": "noindex, follow"
-          }
-        ]
-      },
-      {
-        "source": "/reddit-feed.xml",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/xml; charset=utf-8"
-          },
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          },
-          {
-            "key": "X-Robots-Tag",
-            "value": "noindex, follow"
-          }
-        ]
-      },
-      {
-        "source": "/robots.txt",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "text/plain; charset=utf-8"
-          }
-        ]
-      }
-    ],
-    "redirects": [
-      { "source": "/dashboard", "destination": "/", "type": 301 },
-      { "source": "/instagram", "destination": "https://www.instagram.com/writon_socialapp/", "type": 302 },
-      { "source": "/ig", "destination": "https://www.instagram.com/writon_socialapp/", "type": 302 },
-      { "source": "/x", "destination": "https://x.com/WritOn_Social", "type": 302 },
-      { "source": "/twitter", "destination": "https://x.com/WritOn_Social", "type": 302 },
-      { "source": "/threads", "destination": "https://www.threads.net/@writon_socialapp", "type": 302 },
-      { "source": "/youtube", "destination": "https://www.youtube.com/@writon_app", "type": 302 },
-      { "source": "/yt", "destination": "https://www.youtube.com/@writon_app", "type": 302 },
-      { "source": "/linkedin", "destination": "https://www.linkedin.com/in/writon-story-writing-and-reads", "type": 302 },
-      { "source": "/reddit", "destination": "https://www.reddit.com/r/writon/", "type": 302 },
-      { "source": "/medium", "destination": "https://medium.com/@saurabh.682", "type": 302 },
-      { "source": "/post/:slug*", "destination": "/stories/:slug*", "type": 301 }
-    ],
-    "rewrites": [
-      {
-        "source": "/explore",
-        "destination": "/explore/index.html"
-      },
-      {
-        "source": "/privacy-policy",
-        "destination": "/privacy-policy.html"
-      },
-      {
-        "source": "/canvas",
-        "destination": "/canvas.html"
-      },
-      {
-        "source": "/editorial-canvas",
-        "destination": "/canvas.html"
-      },
-      {
-        "source": "/linkedin-studio",
-        "destination": "/linkedin.html"
-      },
-      {
-        "source": "/founding-writer",
-        "destination": "/founding-writer.html"
-      },
-      {
-        "source": "/auth/verify",
-        "destination": "/auth/verify.html"
-      },
-      {
-        "source": "/auth/reset-password",
-        "destination": "/auth/reset-password.html"
-      },
-      {
-        "source": "/email/unsubscribe",
-        "destination": "/email/unsubscribe.html"
-      },
-      {
-        "source": "/email/unsubscribe/**",
-        "destination": "/email/unsubscribe.html"
-      },
-      {
-        "source": "/settings/email",
-        "destination": "/email/unsubscribe.html"
-      },
-      {
-        "source": "/settings/**",
-        "destination": "/email/unsubscribe.html"
-      },
-      {
-        "source": "/about",
-        "destination": "/about/index.html"
-      },
-      {
-        "source": "/journal",
-        "destination": "/journal/index.html"
-      },
-      {
-        "source": "/journal/**",
-        "destination": "/journal/article.html"
-      },
-      {
-        "source": "/updates",
-        "destination": "/updates/index.html"
-      },
-      {
-        "source": "/rss.xml",
-        "destination": "/feed.xml"
-      },
-      {
-        "source": "/go/**",
-        "destination": "/go/index.html"
-      },
-      {
-        "source": "/post/**",
-        "destination": "/stories/index.html"
-      },
-      {
-        "source": "/stories/**",
-        "destination": "/stories/index.html"
-      }
-    ]
-  },
-  {
-    "target": "writon-canvas-staging",
-    "public": "public",
-    "trailingSlash": false,
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/canvas",
-        "destination": "/canvas.html"
-      },
-      {
-        "source": "/",
-        "destination": "/canvas.html"
-      }
-    ]
-  }
-]
+        }
+      ]
+    },
+    {
+      "target": "writon-canvas-staging",
+      "public": "public",
+      "trailingSlash": false,
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/canvas",
+          "destination": "/canvas.html"
+        },
+        {
+          "source": "/",
+          "destination": "/canvas.html"
+        }
+      ]
+    }
+  ]
 }

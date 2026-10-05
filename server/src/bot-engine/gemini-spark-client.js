@@ -789,6 +789,435 @@ export function validateGenreContentConsistency(content = '', category = '', tit
 }
 
 /**
+ * Hard Gate: Cultural Ethnography & Truth Boundary Gate (Rule: CULTURAL_ETHNOGRAPHY_GATE).
+ * When Culture / Heritage / Essay writing contains named lineage, hereditary rules,
+ * bureaucratic interventions, or village customs presented as reported memory without
+ * documented source attribution, it flags counterfeit ethnography.
+ * Narratives of invented experience must be categorized as "Short Stories" / Cultural Fiction.
+ */
+export function validateCulturalEthnographyGate(content = '', category = '', title = '') {
+  if (!content || !category) return { isValid: true, violations: [] };
+  const cleanCat = category.trim().toLowerCase();
+  if (cleanCat.includes('short stor') || cleanCat.includes('fiction')) {
+    return { isValid: true, violations: [] };
+  }
+
+  const violations = [];
+  const lineagePatterns = [
+    /\bmy father,?\s+[a-z]+/i,
+    /\bmy grandfather,?\s+[a-z]+/i,
+    /\bmy mother,?\s+[a-z]+/i,
+    /\bfor generations,?\s+the women of our house\b/i,
+    /\bin our ancestral courtyard\b/i
+  ];
+  const lineageHits = lineagePatterns.filter(p => p.test(content));
+
+  const bureaucraticPatterns = [
+    /\b(heritage|tourism|cultural)\s+(officers?|officials?|department|project)\b/i,
+    /\b(clipboards?|steel lunchboxes?|cash prize|mural competition)\b/i,
+    /\b(three young men with|officials arrived in a)\s+(jeep|car|cameras?)\b/i
+  ];
+  const bureaucraticHits = bureaucraticPatterns.filter(p => p.test(content));
+
+  const extinctionPatterns = [
+    /\b(ritual|tradition|custom)\s+(was dead|is gone|never returned|died that year|abandoned)\b/i,
+    /\bno one (makes|paints|sings|kneads) (it|them|sanjhi|clay) anymore\b/i
+  ];
+  const extinctionHits = extinctionPatterns.filter(p => p.test(content));
+
+  if (cleanCat === 'culture' || cleanCat === 'essays') {
+    if (lineageHits.length > 0 && bureaucraticHits.length > 0 && extinctionHits.length > 0) {
+      violations.push({
+        rule: 'counterfeit_ethnography_truth_boundary',
+        description: `TRUTH_BOUNDARY_FAIL: Nonfiction piece "${title}" in category "${category}" presents invented familial lineage, bureaucratic intervention, and ritual extinction as lived ethnographic fact. Either cite documented sources/reporting or reclassify as "Short Stories / Cultural Fiction".`
+      });
+    }
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Cultural Causality Gate (Rule: CULTURAL_CAUSALITY_CHECK).
+ * Flags simplistic "tradition healthy → modern intervention/phones → tradition instantly dies" narratives.
+ * Requires competing pressures, younger agency, or material trade-offs.
+ */
+export function validateCulturalCausalityGate(content = '', category = '', title = '') {
+  if (!content) return { isValid: true, violations: [] };
+  const violations = [];
+  const lower = content.toLowerCase();
+
+  const phoneZombieTrope = (
+    (lower.includes('glued to') || lower.includes('staring at') || lower.includes('eyes on')) &&
+    (lower.includes('phone') || lower.includes('screen')) &&
+    (lower.includes('who has time') || lower.includes('nobody has time') || lower.includes('who cares about')) &&
+    (lower.includes('clay') || lower.includes('mud') || lower.includes('tradition') || lower.includes('ritual'))
+  );
+
+  if (phoneZombieTrope) {
+    violations.push({
+      rule: 'cultural_causality_phone_shortcut',
+      description: `CULTURAL_CAUSALITY_FAIL: Draft "${title}" uses the lazy "smartphone killed ancient tradition" trope. Give younger characters genuine agency, competing priorities (coaching, architectural changes, labor), or complications to narrator's nostalgia.`
+    });
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Symbolic Side Assignment Gate (Rule: SYMBOLIC_SIDE_ASSIGNMENT_CHECK).
+ * If one side gets all positive symbolic values (craft, ecology, age, virtue)
+ * and the opposing side gets all negative values (cheapness, plastic, commercialism),
+ * the moral arithmetic is over-engineered. Requires legitimate material trade-offs on both sides.
+ */
+export function validateSymbolicSideAssignment(content = '', category = '', title = '') {
+  if (!content) return { isValid: true, violations: [] };
+  const violations = [];
+  const lower = content.toLowerCase();
+
+  const pureGoodOldSide = (lower.includes('respect the clay') || lower.includes('authenticity of the earth')) && lower.includes('forty-two');
+  const cartoonishCommercialSide = lower.includes('coaching classes') && lower.includes('smoke machine') && lower.includes('cheap plaster');
+
+  if (pureGoodOldSide && cartoonishCommercialSide && !lower.includes('unaffordable') && !lower.includes('maintain') && !lower.includes('logistics') && !lower.includes('compromise')) {
+    violations.push({
+      rule: 'symbolic_side_assignment_oversimplification',
+      description: `SYMBOLIC_SIDE_ASSIGNMENT_FAIL: Draft "${title}" assigns 100% virtue to tradition and 100% cynicism to modernity. Make the pragmatic side partly right with genuine material trade-offs (costs, maintenance, artisan availability, physical limits).`
+    });
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Craft Technical Integrity & Metaphor Gate (Rules: CRAFT_FICTION_TRUTH_BOUNDARY, TECHNICAL_METAPHOR_CHECK).
+ * In Short Stories, writers are free to invent characters, dialogue, workshops, and incidents.
+ * But when referencing real-world living artisan traditions (such as Dhamrai metalcraft),
+ * the material science and physical processes must be technically accurate:
+ * - Alloys: Kansa/kasha is copper-tin (bell metal); Brass (pitol) is copper-zinc. Don't conflate zinc with kansa.
+ * - Molten metal physics: Molten brass is glaring yellow-white/orange-white, not supernatural green fire.
+ * - Geographic fidelity: Real artisan clusters must be anchored to the correct watershed (e.g. Bangshi/Kakilajani for Dhamrai, not Dhaleshwari).
+ */
+export function validateCraftTechnicalIntegrityGate(content = '', category = '', title = '') {
+  if (!content) return { isValid: true, violations: [] };
+  const violations = [];
+  const lower = content.toLowerCase();
+
+  // Check 1: Kansa vs Brass alloy confusion
+  // If the text refers to kansa but argues about zinc (zinc belongs to brass/pitol)
+  if (lower.includes('kansa') && lower.includes('zinc') && (lower.includes('true kansa') || lower.includes('real kansa'))) {
+    violations.push({
+      rule: 'alloy_metallurgy_mismatch',
+      description: `TECHNICAL_METAPHOR_FAIL: Draft "${title}" confuses bell metal (kansa = copper + tin) with brass (pitol = copper + zinc). If the vessels are brass, discuss zinc vs copper; if kansa, discuss tin content.`
+    });
+  }
+
+  // Check 2: Supernatural molten metal coloration
+  if (lower.includes('molten') || lower.includes('crucible') || lower.includes('liquid metal')) {
+    if (lower.includes('blinding green') || lower.includes('green fire') || lower.includes('pale green metal')) {
+      violations.push({
+        rule: 'molten_metal_color_inaccuracy',
+        description: `TECHNICAL_METAPHOR_FAIL: Draft "${title}" describes molten brass/kansa as "green fire". Molten copper alloys glow glaring yellow-white or orange-white depending on temperature; green copper flame is vapor oxidation, not bulk molten metal.`
+      });
+    }
+  }
+
+  // Check 3: Dhamrai watershed error
+  if (lower.includes('dhamrai') && lower.includes('dhaleshwari')) {
+    violations.push({
+      rule: 'craft_geographic_watershed_mismatch',
+      description: `CRAFT_FICTION_TRUTH_BOUNDARY: Dhamrai artisan clusters gather clay from the Bangshi (Bongshi) or Kakilajani riverbanks, not the Dhaleshwari watershed. Update river attribution.`
+    });
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Craft Conflict Engine (Rule: CRAFT_CONFLICT_ENGINE).
+ * Prevents simplistic "old handmade virtuous vs modern industrial evil".
+ * Enforces examining: what each process preserves, what each process erases,
+ * and what each process makes economically possible.
+ */
+export function validateCraftConflictEngine(content = '', category = '', title = '') {
+  if (!content) return { isValid: true, violations: [] };
+  const violations = [];
+  const lower = content.toLowerCase();
+
+  // If the story features traditional vs industrial tool conflict
+  const hasToolConflict = (lower.includes('grinder') || lower.includes('sand mold') || lower.includes('factory')) &&
+                          (lower.includes('lost-wax') || lower.includes('lost wax') || lower.includes('clay mold') || lower.includes('scraper'));
+
+  if (hasToolConflict) {
+    // Both sides must have embodied skill or economic necessity
+    const hasIndustrialNecessity = lower.includes('buyer') || lower.includes('volume') || lower.includes('cost') || lower.includes('shipping') || lower.includes('order');
+    const hasCraftRecognition = lower.includes('balance') || lower.includes('skin') || lower.includes('taper') || lower.includes('touch') || lower.includes('ridge');
+
+    if (!hasIndustrialNecessity || !hasCraftRecognition) {
+      violations.push({
+        rule: 'craft_conflict_missing_bilateral_stakes',
+        description: `CRAFT_CONFLICT_FAIL: Craft tension in "${title}" lacks bilateral stakes. Ground what each process preserves, what each erases, and what each makes economically possible.`
+      });
+    }
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Material Fact & Pseudo-Technical Authority Gate
+ * (Rules: MATERIAL_FIRST_ESSAY, PSEUDO_TECHNICAL_AUTHORITY_GATE).
+ * If an essay's thesis is "physical fact before metaphor", the physical claims
+ * must meet a rigorous verification standard. Flags invented microbiological or structural mechanics
+ * that simulate scientific authority (e.g. "feeds bacteria that digest dead skin", "lead shims absorb lateral shock").
+ */
+export function validateMaterialFactGate(content = '', category = '', title = '') {
+  if (!content) return { isValid: true, violations: [] };
+  const violations = [];
+  const lower = content.toLowerCase();
+
+  // Pattern A: Invented microbiological/scientific mechanics in traditional craft/cultural practices
+  const pseudoBioSignals = [
+    /feeds?\s+bacteria\s+that\s+digest/i,
+    /digest\s+dead\s+skin\s+before\s+infection/i,
+    /balances?\s+the\s+soil\s+ph\s+to\s+neutralize/i,
+    /metabolizes?\s+epidermal\s+cells/i
+  ];
+  for (const pat of pseudoBioSignals) {
+    if (pat.test(content)) {
+      violations.push({
+        rule: 'pseudo_technical_authority_fail',
+        description: `PSEUDO_TECHNICAL_AUTHORITY_FAIL: Draft "${title}" invents speculative microbiology ("${content.match(pat)[0]}"). Describe traditional conditioning and inherited hygiene practice as observed functional reality rather than synthetic scientific mechanisms.`
+      });
+    }
+  }
+
+  // Pattern B: Unverified structural/artillery claims presented as forensic history
+  if (lower.includes('panhala') && lower.includes('lead') && lower.includes('lateral shock')) {
+    violations.push({
+      rule: 'unverified_structural_folklore',
+      description: `MATERIAL_FIRST_FAIL: Draft "${title}" asserts unverified engineering mechanics regarding lead shims absorbing cannonball lateral shock. Anchor to verifiable masonry joinery without forensic certainty.`
+    });
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Unsourced Precision & Realism Camouflage Gate
+ * (Rule: UNSOURCED_PRECISION_GATE).
+ * Detects hyper-specific inventories of quantities, measurements, or casualty lists
+ * used as synthetic texture to simulate reported authority in essays.
+ */
+export function validateUnsourcedPrecisionGate(content = '', category = '', title = '') {
+  if (!content || !/^Essays$/i.test(category)) return { isValid: true, violations: [] };
+  const violations = [];
+
+  // Flag clustered serial quantity inventories in essay openings (e.g., "Seven bags... four tins... two sacks... fifty liters")
+  const opening = content.slice(0, 400);
+  const numberCountPatterns = opening.match(/\b(seven|four|two|fifty|twelve|six)\s+(bags|tins|sacks|liters|inches|boys)\b/gi) || [];
+  if (numberCountPatterns.length >= 3) {
+    violations.push({
+      rule: 'unsourced_precision_cluster',
+      description: `UNSOURCED_PRECISION_FAIL: Essay "${title}" uses clustered exact numbers (${numberCountPatterns.join(', ')}) in opening prose. Unsourced hyper-precision functions as realism camouflage. Loosen quantities or cite observed records.`
+    });
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Micro-Poem Restraint Gate (Rule: MICRO_POEM_RESTRAINT).
+ * For short observational poetry:
+ * - Prefer: 1 physical setting, 1 sensory change, 1 human gesture, 1 unresolved final image.
+ * - Avoid: explaining the emotion, naming the lesson, turning weather into philosophy, or closing aphorisms.
+ * Notices without explaining.
+ */
+export function validateMicroPoemRestraintGate(content = '', category = '', title = '') {
+  if (!content || !/^(Poetry|Shayari)$/i.test(category)) return { isValid: true, violations: [] };
+  const violations = [];
+  const lower = content.toLowerCase();
+
+  // Flag abstract philosophical explanations tacked onto observational poems
+  const philosophicalEndingPhrases = [
+    /the city (was|is) breathing again/i,
+    /reminds us (that|how)/i,
+    /a metaphor for (life|love|solitude)/i,
+    /such is the nature of/i,
+    /and so we learn to/i
+  ];
+
+  for (const pat of philosophicalEndingPhrases) {
+    if (pat.test(content)) {
+      violations.push({
+        rule: 'poem_philosophical_preaching_fail',
+        description: `MICRO_POEM_RESTRAINT_FAIL: Observational poem "${title}" tacks on abstract philosophy or explains its emotional lesson ("${content.match(pat)[0]}"). Notice without explaining; leave the unresolved physical image standing.`
+      });
+    }
+  }
+
+  // Flag hyperbolic totalizing silence claims in urban settings
+  if (lower.includes('the city has no noise') || lower.includes('the whole city went silent') || lower.includes('every sound in the city stopped')) {
+    violations.push({
+      rule: 'totalizing_urban_silence_fail',
+      description: `MICRO_POEM_RESTRAINT_FAIL: Poem "${title}" uses totalizing urban silence ("the city has no noise"). Restrain to local acoustic shifts: "the terrace hears almost nothing" or "nearer sounds disappear".`
+    });
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Shared Prop Fatigue Gate (Rule: SHARED_PROP_FATIGUE).
+ * Tracks recurring literary furniture across personas: tea, rain, notebooks, fountain pens,
+ * old radios, wet windows, brass objects, cold cups.
+ * Prevents every persona from inheriting the identical sensory clutter.
+ */
+export function validateSharedPropFatigueGate(content = '', category = '', title = '') {
+  if (!content) return { isValid: true, violations: [] };
+  const violations = [];
+  const lower = content.toLowerCase();
+
+  // Common props
+  const fatigueProps = [
+    { name: 'tea/chai', patterns: [/\b(chai|ginger tea|cutting chai|steaming cup of tea|cold tea)\b/i] },
+    { name: 'notebook', patterns: [/\b(moleskine|pocket notebook|unopened notebook|dog-eared notebook)\b/i] },
+    { name: 'radio', patterns: [/\b(transistor radio|static on the radio|crackling radio)\b/i] },
+    { name: 'fountain pen', patterns: [/\b(fountain pen|bleeding ink|ink-stained thumb)\b/i] }
+  ];
+
+  let propHits = 0;
+  for (const prop of fatigueProps) {
+    if (prop.patterns.some(p => p.test(content))) {
+      propHits++;
+    }
+  }
+
+  // If a short piece stacks 3+ exhausted props simultaneously
+  if (propHits >= 3 && content.length < 1500) {
+    violations.push({
+      rule: 'shared_prop_fatigue_cluster',
+      description: `SHARED_PROP_FATIGUE: Draft "${title}" stacks ${propHits} exhausted literary props simultaneously (tea, notebook, transistor radio, fountain pen). Strip decorative furniture to maintain persona-specific sensory novelty.`
+    });
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Old vs New False Binary Gate (Rule: OLD_VS_NEW_FALSE_BINARY).
+ * Flags stories where:
+ * OLD = memory, craft, touch, truth, patience
+ * NEW = speed, screens, efficiency, forgetting, alienation
+ * Requires: one real advantage and one real failure on both sides.
+ */
+export function validateOldVsNewFalseBinaryGate(content = '', category = '', title = '') {
+  if (!content) return { isValid: true, violations: [] };
+  const violations = [];
+  const lower = content.toLowerCase();
+
+  // Check if story pits analog records/craft directly against screens/digital databases
+  const hasAnalogDigitalContrast = (lower.includes('ledger') || lower.includes('paper') || lower.includes('handwriting')) &&
+                                  (lower.includes('digit') || lower.includes('database') || lower.includes('spreadsheet') || lower.includes('cloud') || lower.includes('screen') || lower.includes('software'));
+
+  if (hasAnalogDigitalContrast) {
+    // Flag cartoonish moralizing aphorisms or simplistic amnesia tropes
+    if (lower.includes('efficiency is the brother of indifference') ||
+        lower.includes('a broken connection, and the harvest') ||
+        lower.includes('things that cannot be digitized') ||
+        lower.includes('digital record just vanishes')) {
+      violations.push({
+        rule: 'old_vs_new_false_binary',
+        description: `OLD_VS_NEW_FALSE_BINARY_FAIL: Story "${title}" stages analog as pure sacred memory and digital as pure amnesia/fragility. Give each side one uncomfortable truth: ground real digital utility (deduplication, searchable traceability, cross-comparison) and real analog tacit friction without debate-card aphorisms.`
+      });
+    }
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Information Loss & Schema Gate (Rule: INFORMATION_LOSS_TEST).
+ * When a story contrasts analog and digital systems, do not ask: "Which medium remembers better?"
+ * Ask: "What information did each system decide was worth recording?"
+ * Flags tired metaphors ("cloud was just the gray mist") and requires identifying
+ * the structural boundary of what the schema omits.
+ */
+export function validateInformationLossGate(content = '', category = '', title = '') {
+  if (!content) return { isValid: true, violations: [] };
+  const violations = [];
+  const lower = content.toLowerCase();
+
+  // Flag exhausted "cloud = weather mist, not server" cliché
+  if (lower.includes('the cloud was just the gray mist') || lower.includes('cloud was just mist')) {
+    violations.push({
+      rule: 'exhausted_cloud_metaphor_fail',
+      description: `INFORMATION_LOSS_FAIL: Story "${title}" uses the exhausted "to him the cloud was just mist" pun. Cut decorative metaphors; frame the tension around schema omission and what information counted as worth recording.`
+    });
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
+ * Hard Gate: Domain Term Relevance Gate (Rule: DOMAIN_TERM_RELEVANCE).
+ * If title or story uses specialist trade/craft terms (FTGFOP, first flush, oolong, invoice, lot number, auction grade),
+ * ensure the term materially affects the plot and conflict rather than serving as decorative seasoning.
+ * Also checks title-content alignment (e.g., titling a story "Oolong" while writing exclusively about orthodox FTGFOP black tea).
+ */
+export function validateDomainTermRelevanceGate(content = '', category = '', title = '') {
+  if (!content) return { isValid: true, violations: [] };
+  const violations = [];
+  const lowerTitle = (title || '').toLowerCase();
+  const lowerContent = content.toLowerCase();
+
+  // Title-to-body terminology mismatch: Oolong title vs FTGFOP body without oolong manufacturing reality
+  if (lowerTitle.includes('oolong') && lowerContent.includes('ftgfop') && !lowerContent.includes('semi-oxid') && !lowerContent.includes('wither')) {
+    violations.push({
+      rule: 'domain_term_mismatch_oolong_ftgfop',
+      description: `DOMAIN_TERM_RELEVANCE_FAIL: Title "${title}" specifies "Oolong" but body focuses on whole-leaf black tea grade "FTGFOP" without developing oolong processing. Either develop the semi-oxidized batch or align title with tea grade reality (e.g. "The Grade in Violet Ink").`
+    });
+  }
+
+  return {
+    isValid: violations.length === 0,
+    violations
+  };
+}
+
+/**
  * Hard Gate: Zero AI Slop Gate.
  * Enforces the 14 core pre-publication blockers against synthetic boilerplate:
  * - TRENDING_KEYWORD_AS_TITLE_FAIL
@@ -1241,6 +1670,78 @@ Return strictly valid JSON:
         console.warn(`[Gemini Spark Client] Genre Consistency Gate triggered on draft "${finalTitle}":`, genreGateResult.violations.map(v => v.description));
       }
 
+      // Hard Gate: Cultural Ethnography Gate (Prevents counterfeit ethnography & truth boundary breaches in nonfiction)
+      const culturalEthnographyResult = validateCulturalEthnographyGate(finalContent, category, finalTitle);
+      if (culturalEthnographyResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Cultural Ethnography Gate triggered on draft "${finalTitle}":`, culturalEthnographyResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Cultural Causality Gate (Prevents lazy smartphone-killed-tradition shortcuts)
+      const culturalCausalityResult = validateCulturalCausalityGate(finalContent, category, finalTitle);
+      if (culturalCausalityResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Cultural Causality Gate triggered on draft "${finalTitle}":`, culturalCausalityResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Symbolic Side Assignment Gate (Prevents 100% virtue vs 100% evil commercialism strawman)
+      const symbolicSideResult = validateSymbolicSideAssignment(finalContent, category, finalTitle);
+      if (symbolicSideResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Symbolic Side Gate triggered on draft "${finalTitle}":`, symbolicSideResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Craft Technical Integrity & Metaphor Gate (Ensures metallurgical and geographical accuracy)
+      const craftTechnicalResult = validateCraftTechnicalIntegrityGate(finalContent, category, finalTitle);
+      if (craftTechnicalResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Craft Technical Integrity Gate triggered on draft "${finalTitle}":`, craftTechnicalResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Craft Conflict Engine (Enforces bilateral stakes over cartoonish handmade vs machine tropes)
+      const craftConflictResult = validateCraftConflictEngine(finalContent, category, finalTitle);
+      if (craftConflictResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Craft Conflict Engine triggered on draft "${finalTitle}":`, craftConflictResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Material Fact & Pseudo-Technical Authority Gate
+      const materialFactResult = validateMaterialFactGate(finalContent, category, finalTitle);
+      if (materialFactResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Material Fact Gate triggered on draft "${finalTitle}":`, materialFactResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Unsourced Precision & Realism Camouflage Gate
+      const unsourcedPrecisionResult = validateUnsourcedPrecisionGate(finalContent, category, finalTitle);
+      if (unsourcedPrecisionResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Unsourced Precision Gate triggered on draft "${finalTitle}":`, unsourcedPrecisionResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Micro-Poem Restraint Gate
+      const microPoemResult = validateMicroPoemRestraintGate(finalContent, category, finalTitle);
+      if (microPoemResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Micro-Poem Restraint Gate triggered on draft "${finalTitle}":`, microPoemResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Shared Prop Fatigue Gate
+      const propFatigueResult = validateSharedPropFatigueGate(finalContent, category, finalTitle);
+      if (propFatigueResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Shared Prop Fatigue Gate triggered on draft "${finalTitle}":`, propFatigueResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Old vs New False Binary Gate (Rule: OLD_VS_NEW_FALSE_BINARY)
+      const falseBinaryResult = validateOldVsNewFalseBinaryGate(finalContent, category, finalTitle);
+      if (falseBinaryResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Old vs New False Binary Gate triggered on draft "${finalTitle}":`, falseBinaryResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Information Loss & Schema Gate (Rule: INFORMATION_LOSS_TEST)
+      const infoLossResult = validateInformationLossGate(finalContent, category, finalTitle);
+      if (infoLossResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Information Loss Gate triggered on draft "${finalTitle}":`, infoLossResult.violations.map(v => v.description));
+      }
+
+      // Hard Gate: Domain Term Relevance Gate (Rule: DOMAIN_TERM_RELEVANCE)
+      const domainTermResult = validateDomainTermRelevanceGate(finalContent, category, finalTitle);
+      if (domainTermResult.violations?.length > 0) {
+        console.warn(`[Gemini Spark Client] Domain Term Relevance Gate triggered on draft "${finalTitle}":`, domainTermResult.violations.map(v => v.description));
+      }
+
       // Hard Gate: Human Voice Quality (deterministic stylometric & trope evaluation)
       const voiceAudit = auditTextQuality(finalContent);
       if (!voiceAudit.passed) {
@@ -1267,6 +1768,18 @@ Return strictly valid JSON:
         (!voiceAudit.passed) ||
         (!zeroAISlopResult.isValid) ||
         (genreGateResult.violations?.length > 0) ||
+        (culturalEthnographyResult.violations?.length > 0) ||
+        (culturalCausalityResult.violations?.length > 0) ||
+        (symbolicSideResult.violations?.length > 0) ||
+        (craftTechnicalResult.violations?.length > 0) ||
+        (craftConflictResult.violations?.length > 0) ||
+        (materialFactResult.violations?.length > 0) ||
+        (unsourcedPrecisionResult.violations?.length > 0) ||
+        (microPoemResult.violations?.length > 0) ||
+        (propFatigueResult.violations?.length > 0) ||
+        (falseBinaryResult.violations?.length > 0) ||
+        (infoLossResult.violations?.length > 0) ||
+        (domainTermResult.violations?.length > 0) ||
         (hardGateResult.violations?.length >= 2) ||
         (entertainmentGateResult.violations?.length >= 2) ||
         (vcGateResult.violations?.length > 0) ||

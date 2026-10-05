@@ -283,6 +283,7 @@ To reinforce brand authority, maintain clean aesthetics, and accurately aggregat
 | **LinkedIn** | `https://writon.cc/linkedin` | — | `https://www.linkedin.com/in/writon-story-writing-and-reads` |
 | **Reddit** | `https://writon.cc/reddit` | — | `https://www.reddit.com/r/writon/` |
 | **Medium** | `https://writon.cc/medium` | — | `https://medium.com/@saurabh.682` |
+| **Google Play** | `https://writon.cc/play` | `https://writon.cc/app`, `https://writon.cc/android` | `https://play.google.com/store/apps/details?id=com.ibitvalley.writon` |
 
 ### The New Link Rule
 Whenever an AI agent, bot, or team member introduces any new public destination or campaign profile:

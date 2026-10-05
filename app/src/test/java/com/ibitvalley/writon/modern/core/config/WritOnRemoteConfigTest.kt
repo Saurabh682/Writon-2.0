@@ -1,5 +1,6 @@
 package com.ibitvalley.writon.modern.core.config
 
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -21,6 +22,31 @@ class WritOnRemoteConfigTest {
         assertEquals(RemoteConfigFetchStatus.Updated, resolveRemoteConfigFetchStatus(true, true))
         assertEquals(RemoteConfigFetchStatus.Cached, resolveRemoteConfigFetchStatus(true, false))
         assertEquals(RemoteConfigFetchStatus.Failure, resolveRemoteConfigFetchStatus(false, false))
+    }
+
+    @Test
+    fun booleanFlag_usesFallbackWhenRemoteConfigHasNoValue_butPreservesExplicitOverrides() {
+        assertTrue(
+            resolveRemoteConfigBoolean(
+                FirebaseRemoteConfig.VALUE_SOURCE_STATIC,
+                value = false,
+                default = true
+            )
+        )
+        assertFalse(
+            resolveRemoteConfigBoolean(
+                FirebaseRemoteConfig.VALUE_SOURCE_REMOTE,
+                value = false,
+                default = true
+            )
+        )
+        assertTrue(
+            resolveRemoteConfigBoolean(
+                FirebaseRemoteConfig.VALUE_SOURCE_DEFAULT,
+                value = true,
+                default = false
+            )
+        )
     }
 
     @Test

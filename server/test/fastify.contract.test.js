@@ -171,6 +171,32 @@ describe('Fastify API contract', () => {
     return app;
   }
 
+  it('separates community and editorial without modifying the compatibility feed', async () => {
+    const pool = createPool();
+    const query = vi.spyOn(pool, 'query');
+    const app = await buildServer({ runtimeConfig, pool, auth });
+    apps.push(app);
+    const community = await app.inject({ method: 'GET', url: '/api/v1/community/posts' });
+    expect(community.statusCode).toBe(200);
+    expect(community.json().posts[0].contentSource).toBe('community');
+    const communitySql = query.mock.calls.find(([sql]) => sql.includes('from public.posts p'))[0];
+    expect(communitySql).toContain("p.provenance = 'human_verified' and author.account_type = 'human' and not");
+    expect(communitySql).toContain('public.bot_configs bot where bot.id = p.author_id');
+    expect(communitySql).toContain("p.status = 'published' and p.is_public = true");
+    query.mockClear();
+    const editorial = await app.inject({ method: 'GET', url: '/api/v1/editorial/posts?page=2&limit=5' });
+    expect(editorial.statusCode).toBe(200);
+    expect(editorial.json().posts[0].contentSource).toBe('editorial');
+    const [editorialSql, parameters] = query.mock.calls.find(([sql]) => sql.includes('from public.posts p'));
+    expect(editorialSql).toContain("p.provenance = 'synthetic' or author.account_type = 'editorial_bot'");
+    expect(editorialSql).not.toContain("and not (p.provenance = 'synthetic'");
+    expect(parameters.slice(-2)).toEqual([6, 5]);
+    const legacy = await app.inject({ method: 'GET', url: '/api/v1/posts' });
+    expect(legacy.statusCode).toBe(200);
+    expect(legacy.json().posts[0].contentSource).toBeUndefined();
+    expect((await app.inject({ method: 'GET', url: '/api/v1/community/posts?page=0' })).statusCode).toBe(400);
+  });
+
   it('reports health from the configured database connection', async () => {
     const app = await createApp();
 
@@ -182,6 +208,24 @@ describe('Fastify API contract', () => {
       database: 'connected',
       databaseTime: '2026-08-21T00:00:00.000Z',
     });
+  });
+
+  it('publishes canonical Google Cloud API metadata without retired hostnames', async () => {
+    const app = await createApp();
+    const [openApiResponse, pluginResponse] = await Promise.all([
+      app.inject({ method: 'GET', url: '/openapi.json' }),
+      app.inject({ method: 'GET', url: '/.well-known/ai-plugin.json' }),
+    ]);
+
+    expect(openApiResponse.statusCode).toBe(200);
+    expect(openApiResponse.json().servers).toContainEqual(expect.objectContaining({ url: 'https://api.writon.cc' }));
+    expect(pluginResponse.statusCode).toBe(200);
+    expect(pluginResponse.json()).toMatchObject({
+      api: { url: 'https://api.writon.cc/openapi.json' },
+      logo_url: 'https://api.writon.cc/logo.png',
+      legal_info_url: 'https://writon.cc/privacy-policy.html',
+    });
+    expect(`${openApiResponse.body}\n${pluginResponse.body}`).not.toMatch(/onrender\.com|render\.com/i);
   });
 
   it('rejects an unauthenticated story creation request before querying the database', async () => {
@@ -262,16 +306,11 @@ describe('Fastify API contract', () => {
     });
   });
 
-  it('keeps bot automation off by default on Render and on elsewhere', () => {
+  it('allows bot automation by default and honors an explicit disable', () => {
     const baseEnvironment = { DATABASE_URL: runtimeConfig.databaseUrl };
 
-    expect(loadRuntimeConfig({ ...baseEnvironment, RENDER: 'true' }).sparkAutomationEnabled).toBe(false);
     expect(loadRuntimeConfig(baseEnvironment).sparkAutomationEnabled).toBe(true);
-    expect(loadRuntimeConfig({
-      ...baseEnvironment,
-      RENDER: 'true',
-      SPARK_AUTOMATION_ENABLED: 'true',
-    }).sparkAutomationEnabled).toBe(true);
+    expect(loadRuntimeConfig({ ...baseEnvironment, SPARK_AUTOMATION_ENABLED: 'false' }).sparkAutomationEnabled).toBe(false);
   });
 
   it('allows request-serving Cloud Run instances to leave push polling to the active worker', () => {
@@ -395,7 +434,10 @@ describe('Fastify API contract', () => {
     expect(response.statusCode).toBe(200);
     expect(response.headers['content-type']).toContain('application/json');
     expect(response.json()).toEqual([expect.objectContaining({
-      relation: ['delegate_permission/common.handle_all_urls'],
+      relation: [
+        'delegate_permission/common.handle_all_urls',
+        'delegate_permission/common.get_login_creds',
+      ],
       target: expect.objectContaining({
         namespace: 'android_app',
         package_name: 'com.ibitvalley.writon',

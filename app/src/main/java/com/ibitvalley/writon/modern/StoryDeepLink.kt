@@ -8,8 +8,7 @@ private val supportedStoryHosts = setOf(
     "writon.cc",
     "www.writon.cc",
     "api.writon.cc",
-    "writon-app-2020.web.app",
-    "writon-powerup.onrender.com"
+    "writon-app-2020.web.app"
 )
 
 private val safeStorySlug = Regex("^[A-Za-z0-9_-]+$")

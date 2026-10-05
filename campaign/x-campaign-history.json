@@ -57,5 +57,152 @@
     "text": "Stop describing your character in a mirror.\n\nNot this: She looked in the mirror. Brown eyes, long hair, a small scar on her chin.\nTry this: She pressed a thumb over the scar on her chin, the way she had since the fall.\n\nDescribe with a gesture, not a checklist.\n\n#writingcommunity",
     "reply_text": null,
     "note": "Replaced with #writingcommunity tag included"
+  },
+  {
+    "date": "2026-09-25T17:56:00.080Z",
+    "campaign": "custom-insight",
+    "tweet_id": "2103544026549174588",
+    "text": "Generation Scaled. CI Didn't.\n\nAI can generate the feature in minutes.\nThen:\nCI runs.\nTests multiply.\nStaging queues.\nAnother agent opens another PR.\n\nThe software bottleneck didn't disappear.\nIt moved downstream.\nGeneration scaled. CI didn't.\n\n#AI #DevOps #SoftwareEngineering",
+    "reply_text": null
+  },
+  {
+    "date": "2026-09-25T17:57:00.403Z",
+    "campaign": "ai-ci-bottleneck-thread",
+    "thread_root_id": "2103544245630255409",
+    "tweets": [
+      {
+        "index": 1,
+        "id": "2103544245630255409",
+        "text": "Why AI Coding Is Turning CI Into the New Bottleneck\n\n1/\nAI solved one software-development bottleneck and immediately exposed another.\n\nCode generation got dramatically faster.\nCI/CD didn't."
+      },
+      {
+        "index": 2,
+        "id": "2103544254001992178",
+        "text": "2/\nCoding agents can generate:\nfeatures\ntests\nrefactors\npull requests\nin minutes.\n\nEvery one of those changes still has to be validated."
+      },
+      {
+        "index": 3,
+        "id": "2103544262277439701",
+        "text": "3/\nSo higher code velocity creates:\nmore builds\nmore test runs\nmore staging environments\nmore queues\nmore infrastructure pressure"
+      },
+      {
+        "index": 4,
+        "id": "2103544270531760606",
+        "text": "4/\nThe strange result:\n\nAI may finish writing before the engineering system is ready to evaluate what it wrote."
+      },
+      {
+        "index": 5,
+        "id": "2103544278899380504",
+        "text": "5/\nCurrent engineering discussions are already reporting long CI turnaround times as synthetic code volume increases.\n\nhttps://drive.google.com/file/d/1k24QYbSVsp1tywMAICA2zL_wKAH9pHoT/view"
+      },
+      {
+        "index": 6,
+        "id": "2103544287334109361",
+        "text": "6/\nThat may force a rethink of the entire workflow:\n• What actually needs remote CI?\n• What can run locally?\n• What can be checked deterministically before entering the pipeline?"
+      },
+      {
+        "index": 7,
+        "id": "2103544295735353636",
+        "text": "7/\nThe AI coding race has mostly measured generation speed.\n\nThe next important metric may be:\ntime-to-confidence."
+      },
+      {
+        "index": 8,
+        "id": "2103544303968772531",
+        "text": "8/\nGeneration scaled.\nVerification and infrastructure didn't.\n\nThat's the new choke point.\n\n#AI #DevOps #SoftwareEngineering"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-26T03:30:10.693Z",
+    "campaign": "x-campaign-sep20",
+    "tweet_id": "2103688557156290679",
+    "text": "Writers: how to write silence without \"there was a pause.\"\n\nNot this: There was an awkward silence after he asked.\nTry this: The fridge hummed. A tap dripped. Neither of them reached for the tea.\n\nSilence is never empty. Name what fills it.\n\n#writingcommunity #amwriting",
+    "reply_text": null
+  },
+  {
+    "date": "2026-09-27T08:18:28.092Z",
+    "campaign": "x-campaign-sep20",
+    "tweet_id": "2104123491784241185",
+    "text": "New writers, stop hunting for synonyms for \"said.\"\n\nNot this: \"I'm fine,\" she exclaimed defensively.\nTry this: \"I'm fine.\" She wiped the clean counter again.\n\n\"Said\" disappears. A beat of action stays.\n\n#writingcommunity #newwriter #writingadvice",
+    "reply_text": null,
+    "note": "Dispatched catchup for Sunday AM"
+  },
+  {
+    "date": "2026-09-27T09:26:51.957Z",
+    "campaign": "custom-insight",
+    "tweet_id": "2104140704733937763",
+    "text": "The Cognitive Fast\n\nAI writes code faster. But it can quietly weaken what matters most: understanding the system in your head.\n\nSome developers are stepping back to rebuild deep comprehension.\n\nSpeed is useful.\nMental models are durable.\n\n#AI #SoftwareEngineering #Coding",
+    "reply_text": null
+  },
+  {
+    "date": "2026-09-27T09:57:19.084Z",
+    "campaign": "custom-insight",
+    "tweet_id": "2104148368310313329",
+    "text": "The FOSS Defiance\n\nOpen source maintainers never asked for infinite pull requests.\n\nAI generates contributions faster than humans can review or maintain them.\n\nMore PRs ≠ healthier software.\n\nThe real debate: protecting attention, not increasing output.\n\n#OpenSource #AI #FOSS",
+    "reply_text": null
+  },
+  {
+    "date": "2026-09-27T14:30:10.593Z",
+    "campaign": "x-campaign-sep20",
+    "tweet_id": "2104217038067785917",
+    "text": "Round-up: quote-post the best 1-2 replies of the week, one line each on why they work.\nIf there are none: Fix this line without a single adverb: \"I'm fine,\" she exclaimed defensively.\n\n#writingcommunity #amwriting #writerslife",
+    "reply_text": ""
+  },
+  {
+    "date": "2026-09-28T03:30:10.272Z",
+    "campaign": "x-campaign-sep20",
+    "tweet_id": "2104413329997570082",
+    "text": "Writers, stop writing \"As you know\" dialogue.\n\nNot this: \"As you know, Dad, since Mom died three years ago, we've run the shop alone.\"\nTry this: \"You still hang her apron there.\" \"It's where it goes.\"\n\nCharacters never explain what both already know.\n\n#writingcommunity",
+    "reply_text": null
+  },
+  {
+    "date": "2026-09-28T15:25:36.253Z",
+    "campaign": "x-campaign-sep20",
+    "tweet_id": null,
+    "status": "skipped",
+    "reason": "Monday PM numbers update deferred to next week per operator directive"
+  },
+  {
+    "date": "2026-09-29T03:18:42.715Z",
+    "campaign": "custom-insight-thread",
+    "thread_root_id": "2104772808370962860",
+    "tweets": [
+      {
+        "index": 1,
+        "id": "2104772808370962860",
+        "text": "A writer can rank in search and still never gain a reader.\n\nThe trend data around AI search for fiction authors highlights a critical shift: once someone discovers your story, what gives them a reason to return? (1/3)"
+      },
+      {
+        "index": 2,
+        "id": "2104772816688365927",
+        "text": "A search result can introduce the work. But discovery only buys a first impression.\n\nA memorable character, a consistent publishing rhythm, and a place to continue the conversation can build the relationship. (2/3)"
+      },
+      {
+        "index": 3,
+        "id": "2104772825026637931",
+        "text": "For fiction writers, the practical test is simple: after someone finishes one piece, is their next step clear?\n\nWhat has brought readers back to your writing?\n\n#fictionwriting #indieauthors #writingcommunity #storytelling #writon (3/3)"
+      }
+    ]
+  },
+  {
+    "date": "2026-09-29T03:30:06.798Z",
+    "campaign": "x-campaign-sep20",
+    "tweet_id": "2104775703178977688",
+    "text": "Writers: how to write exhaustion without \"tired.\"\n\nNot this: She was so tired she couldn't think straight.\nTry this: She read the same email three times and still couldn't say who sent it.\n\nExhaustion shrinks the world to one unfinished task.\n\n#writingcommunity #amwriting",
+    "reply_text": null
+  },
+  {
+    "date": "2026-09-29T14:30:12.612Z",
+    "campaign": "x-campaign-sep20",
+    "tweet_id": "2104941822124638576",
+    "text": "Exhaustion is a behavior, not a word. What do you actually do when you're too tired to think?\n- Reread the same line\n- Stare at the fridge\n- Scroll without reading\n- Make tea, forget it\n\n#writingcommunity #writerslife #authorlife #amwriting",
+    "reply_text": ""
+  },
+  {
+    "date": "2026-09-30T03:30:12.546Z",
+    "campaign": "x-campaign-sep20",
+    "tweet_id": "2105138115342172249",
+    "text": "Writers: how to write loneliness without \"alone.\"\n\nNot this: He felt alone in the big, empty flat.\nTry this: He took two cups down, then put one back.\n\nLoneliness is a habit built for two.\n\n#writingcommunity #writingtips #amwriting #flashfiction",
+    "reply_text": null
   }
 ]

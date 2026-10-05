@@ -3,7 +3,7 @@
 **App Name:** WritOn  
 **Developer:** iBitValley (Saurabh Kumar)  
 **Support Email:** saurabh.682@gmail.com  
-**Public Deletion URL:** https://writon-powerup.onrender.com/delete-account  
+**Public Deletion URL:** https://writon.cc/delete-account.html
 
 At **WritOn**, we respect your right to privacy and data autonomy. Users can permanently delete their account and all associated personal data at any time.
 

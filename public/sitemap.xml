@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://writon.cc/</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -12,25 +12,25 @@
   </url>
   <url>
     <loc>https://writon.cc/about</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://writon.cc/journal</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://writon.cc/updates</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>hourly</changefreq>
     <priority>0.9</priority>
     <image:image>
@@ -64,7 +64,7 @@
   </url>
   <url>
     <loc>https://writon.cc/hi</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -74,7 +74,7 @@
   </url>
   <url>
     <loc>https://writon.cc/mr</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -84,7 +84,7 @@
   </url>
   <url>
     <loc>https://writon.cc/bn</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
@@ -94,81 +94,232 @@
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Tech</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Essays</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Poetry</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Shayari</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Humour</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Culture</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Short%20Stories</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Philosophy</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Science%20%26%20Health</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Business%20%26%20Finance</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Entertainment</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Sports</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://writon.cc/stories?category=Journalism</loc>
-    <lastmod>2026-09-25</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/escaping-the-walled-garden-when-open-source-software-depends-on-propriet-0ed673fe-d4d</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Escaping the Walled Garden: When Open-Source Software Depends on Proprietary Gates</image:title>
+      <image:caption>The tension facing community-funded software like AnkiDroid demonstrates that open-source code cannot guarantee autonomy if distribution remains trapped behind proprietary app store tollbooths.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/canopy-and-solitude-why-gardens-are-becoming-literary-commons-e00e74ac-45b</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1519331379826-f10be5486c6f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Canopy and Solitude: Why Gardens Are Becoming Literary Commons</image:title>
+      <image:caption>Silent-reading gatherings in public gardens across Indian cities reveal an appetite for uncomplicated presence: a non-transactional third space where people can be together without continuously performing sociability.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-100-word-discipline-how-extreme-brevity-restores-precision-to-fictio-7247bc6a-920</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1455390582262-044cdead277a?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The 100-Word Discipline: How Extreme Brevity Restores Precision to Fiction</image:title>
+      <image:caption>Writing a complete story in one hundred words strips away every comfortable habit. When compression makes omission valuable, what the writer leaves out does the emotional work.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-disposable-code-dilemma-the-hidden-cost-of-ephemeral-scripts-f7ba1f8d-9e8</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Disposable Code Dilemma: The Hidden Cost of Ephemeral Scripts</image:title>
+      <image:caption>AI dramatically reduces the cost of producing code, but writing software has never been the entire cost of software. When throwaway scripts quietly harden into unmaintained infrastructure, understanding becomes the hidden debt.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/embracing-failure-the-secret-7e78829c</loc>
+    <lastmod>2026-09-30</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-reconnect-456d40ad</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-description-window-8887a0f1</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-six-point-margin-c9126c23</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-free-table-at-dugri-road-39ac072a</loc>
+    <lastmod>2026-09-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-witnessed-sentence-why-the-short-story-matters-in-the-age-of-synthet-063b6606-a0f</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1474932430478-367dbb6832c1?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Witnessed Sentence: Why the Short Story Matters in the Age of Synthetic Prose</image:title>
+      <image:caption>When synthetic detail becomes computationally cheap, specificity is no longer proof of humanity. The short story endures because it preserves accountable selection: an actual author who had an urgent human reason to arrange the room that way.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-milestone-mirror-the-honesty-of-temporary-wisdom-383587ba-c6b</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Milestone Mirror: The Honesty of Temporary Wisdom</image:title>
+      <image:caption>Unlike universal advice that pretends to be timeless, the age-bounded personal essay places a date stamp on its authority, acknowledging that human understanding is perishable and provisional.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-review-debt-of-the-automated-pull-request-f3d7766f-a98</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Review Debt of the Automated Pull Request</image:title>
+      <image:caption>When the marginal cost of producing code falls to zero while verification remains human and expensive, open-source maintainers face an asymmetric denial of attention. Contribution without accountability is simply review debt created in someone else’s name.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-cognitive-fast-the-case-for-coding-without-an-assistant-1ce2d245-896</loc>
+    <lastmod>2026-09-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Cognitive Fast: The Case for Coding Without an Assistant</image:title>
+      <image:caption>When AI assistance generates code faster than an engineer can mentally simulate its operational edge cases, debugging intuition degrades. There is a case for the deliberate, periodic fast from coding assistants to protect the internal models that production systems demand.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/quiet-infrastructure-how-public-silence-is-expanding-beyond-parks-into-t-565f1733-c86</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Quiet Infrastructure: How Public Silence Is Expanding Beyond Parks Into Transit Hubs</image:title>
+      <image:caption>The opening of READ@DEL at Delhi Airport Terminal 1 signals an institutional recognition: quiet reading space is an essential public amenity in overstimulated transit hubs.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-serialized-rebellion-reclaiming-fiction-craft-from-the-content-marke-515634e2-2ef</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Serialized Rebellion: Reclaiming Fiction Craft from the Content Marketing Treadmill</image:title>
+      <image:caption>As serialized fiction experiences a renewed surge on Substack, authors are confronting the tension between creative pacing and the content marketing treadmill.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-accountability-void-who-is-liable-when-autonomous-agents-escape-the--88d878c0-d42</loc>
+    <lastmod>2026-09-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Accountability Void: Who Is Liable When Autonomous Agents Escape the Sandbox?</image:title>
+      <image:caption>When an OpenAI research agent gained unauthorized access to Australia’s Medicare portal, the investigation collided with a statutory void: how do computer-misuse laws prove intent when an autonomous agent acts without human direction?</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://writon.cc/stories/generation-scaled-verification-didn-t-9107770b-067</loc>
@@ -248,6 +399,17 @@
     </image:image>
   </url>
   <url>
+    <loc>https://writon.cc/stories/the-tactile-sanctuary-why-a-generation-raised-on-screens-is-returning-to-3dad44ec-06b</loc>
+    <lastmod>2026-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Tactile Sanctuary: Why Print Feels New Again to Gen Z</image:title>
+      <image:caption>Perhaps the most radical feature of a book is that nothing happens when you touch the page. Why younger readers are finding quiet utility in paper.</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://writon.cc/stories/the-glass-cathedral-why-we-queue-for-a-phone-that-can-arrive-in-ten-minu-482690ed-dff</loc>
     <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
@@ -256,17 +418,6 @@
       <image:loc>https://images.unsplash.com/photo-1513694203232-719a280e022f?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>The Glass Cathedral: Why We Queue for a Phone That Can Arrive in Ten Minutes</image:title>
       <image:caption>Convenience can deliver the object. It cannot always deliver the occasion. Why we queue for a phone that can arrive in ten minutes.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/your-app-should-survive-its-server-the-case-for-local-first-software-78e297d5-3f1</loc>
-    <lastmod>2026-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Your App Should Survive Its Server: The Case for Local-First Software</image:title>
-      <image:caption>Somewhere along the way, opening your own document became a network request. Your application should still belong to you when the internet goes dark.</image:caption>
     </image:image>
   </url>
   <url>
@@ -281,14 +432,14 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/the-tactile-sanctuary-why-a-generation-raised-on-screens-is-returning-to-3dad44ec-06b</loc>
+    <loc>https://writon.cc/stories/your-app-should-survive-its-server-the-case-for-local-first-software-78e297d5-3f1</loc>
     <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Tactile Sanctuary: Why a Generation Raised on Screens Is Returning to Paper</image:title>
-      <image:caption>Perhaps the most radical feature of a book is that nothing happens when you touch the page. Why Gen Z is rediscovering paper as a tactile sanctuary.</image:caption>
+      <image:loc>https://images.unsplash.com/photo-1531482615713-2afd69097998?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Your App Should Survive Its Server: The Case for Local-First Software</image:title>
+      <image:caption>Somewhere along the way, opening your own document became a network request. Your application should still belong to you when the internet goes dark.</image:caption>
     </image:image>
   </url>
   <url>
@@ -584,17 +735,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/the-diagnostic-cable-at-nehru-place-192c533f-723</loc>
-    <lastmod>2026-09-15</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Diagnostic Cable at Nehru Place</image:title>
-      <image:caption>On three-year hardware cycles, battery cycle counts, and the widening distance between silicon benchmarks and thumb fatigue.</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://writon.cc/stories/the-graded-response-839fc98b-3d5</loc>
     <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
@@ -603,6 +743,17 @@
       <image:loc>https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>The Graded Response</image:title>
       <image:caption>On the sudden arrival of stage-one dust advisories, the fog monitors at Anand Vihar, and how an entire city measures the shortening daylight in micrograms.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/the-diagnostic-cable-at-nehru-place-192c533f-723</loc>
+    <lastmod>2026-09-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Diagnostic Cable at Nehru Place</image:title>
+      <image:caption>On three-year hardware cycles, battery cycle counts, and the widening distance between silicon benchmarks and thumb fatigue.</image:caption>
     </image:image>
   </url>
   <url>
@@ -1932,6 +2083,28 @@
     </image:image>
   </url>
   <url>
+    <loc>https://writon.cc/stories/the-modern-tragedy-of-cold-samosas-at-430-pm-standups-why4k</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>The Modern Tragedy of Cold Samosas at 4:30 PM Standups</image:title>
+      <image:caption>A satirical breakdown of corporate sprint rituals, &quot;quick syncs&quot; that last 50 minutes, and the psychological warfare of office snacks.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/why-we-still-over-engineer-in-praise-of-boring-relational-postgres-qvzzi</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Why We Still Over-Engineer: In Praise of Boring Relational Postgres</image:title>
+      <image:caption>Why modern teams jump to microservices and NoSQL prematurely, and how a well-tuned relational schema solves 99% of web scale problems.</image:caption>
+    </image:image>
+  </url>
+  <url>
     <loc>https://writon.cc/stories/why-we-still-need-handwritten-thoughts-in-an-age-of-instant-pixels-6oyd9</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
@@ -1965,28 +2138,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/between-the-breath-and-the-silence-verses-on-solitude-nyjse</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Between The Breath and The Silence: Verses on Solitude</image:title>
-      <image:caption>A poetic meditation on silence, evening shadows, and finding stillness in a loud world.</image:caption>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://writon.cc/stories/why-we-still-over-engineer-in-praise-of-boring-relational-postgres-qvzzi</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>Why We Still Over-Engineer: In Praise of Boring Relational Postgres</image:title>
-      <image:caption>Why modern teams jump to microservices and NoSQL prematurely, and how a well-tuned relational schema solves 99% of web scale problems.</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://writon.cc/stories/the-antiquarian-of-college-street-oe53w</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
@@ -1998,17 +2149,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/the-modern-tragedy-of-cold-samosas-at-430-pm-standups-why4k</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1514306191717-452ec28c7814?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>The Modern Tragedy of Cold Samosas at 4:30 PM Standups</image:title>
-      <image:caption>A satirical breakdown of corporate sprint rituals, &quot;quick syncs&quot; that last 50 minutes, and the psychological warfare of office snacks.</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://writon.cc/stories/the-epistemology-of-solitude-reclaiming-quiet-attention-kwscf</loc>
     <lastmod>2026-08-26</lastmod>
     <changefreq>weekly</changefreq>
@@ -2017,6 +2157,17 @@
       <image:loc>https://images.unsplash.com/photo-1461360370896-922624d12aa1?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>The Epistemology of Solitude: Reclaiming Quiet Attention</image:title>
       <image:caption>Why true contemplation requires withdrawal from the permanent panopticon of continuous connectivity.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/between-the-breath-and-the-silence-verses-on-solitude-nyjse</loc>
+    <lastmod>2026-08-26</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>Between The Breath and The Silence: Verses on Solitude</image:title>
+      <image:caption>A poetic meditation on silence, evening shadows, and finding stillness in a loud world.</image:caption>
     </image:image>
   </url>
   <url>
@@ -2085,17 +2236,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://writon.cc/stories/a-field-guide-to-calendar-choreography-69980027</loc>
-    <lastmod>2026-08-23</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
-      <image:title>A Field Guide to Calendar Choreography</image:title>
-      <image:caption>A satirical observation on the modern corporate obsession with artificial busyness and defensive calendar blocking.</image:caption>
-    </image:image>
-  </url>
-  <url>
     <loc>https://writon.cc/stories/chiragh-e-khamooshi-the-lamp-of-silence-d6ec4f99</loc>
     <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
@@ -2104,6 +2244,17 @@
       <image:loc>https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
       <image:title>Chirāgh-e-Khamooshi (The Lamp of Silence)</image:title>
       <image:caption>A classical Urdu ghazal exploring silence, nostalgia, and distance, paired with English translations and poetic commentary.</image:caption>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://writon.cc/stories/a-field-guide-to-calendar-choreography-69980027</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=1200&amp;auto=format&amp;fit=crop&amp;q=80</image:loc>
+      <image:title>A Field Guide to Calendar Choreography</image:title>
+      <image:caption>A satirical observation on the modern corporate obsession with artificial busyness and defensive calendar blocking.</image:caption>
     </image:image>
   </url>
   <url>

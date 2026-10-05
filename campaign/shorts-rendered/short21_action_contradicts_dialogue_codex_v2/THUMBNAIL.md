@@ -1,0 +1,9 @@
+# Short #21 thumbnail
+
+Asset: thumbnail_im_fine_v1.png
+
+Created with the built-in image-generation tool, using assets/wipe.png as the subject reference. Kept the thumbnail separate from the video.
+
+## Final prompt
+
+Create a finished 9:16 vertical YouTube Shorts cover for WritOn, a calm reading and writing brand. Use case: ads-marketing. Input reference is the actual video's wiping-hand illustration; preserve its flat palm-down right hand with exactly five anatomically correct fingers, cream knit sleeve entering from the right, and terracotta cloth. Create an elegant, striking literary cover, not a busy infographic. Warm ivory parchment #FAF5EE with fibrous paper, restrained terracotta watercolor blooms in diagonal corners, fine botanical stems bottom-left and a delicate quill bottom-right, faint central serif W watermark. Main exact text centered in upper middle, oversized book serif, very high contrast: “I’M FINE.” on one line in dark espresso, then beneath on two short lines: BUT HER ACTIONS / SAY OTHERWISE. Set the latter in bold deep burnt terracotta, large enough to read at small thumbnail size. No other explanation text. Keep all headline text within the central 60% width and between 22% and 47% height so it survives central square crops. Lower middle: the coherent reference hand presses the cloth onto a clean pale kitchen counter, quietly suggesting tension, no motion streaks or arrows. Hand should occupy lower quarter around 54%-76% height, not dominate the words. Generous negative space, restrained palette, polished watercolor editorial illustration with subtle realistic tactile detail. Tiny @writon_socialapp at bottom safe margin. No dark backgrounds, faces, borders, logos other than faint W, buttons, subscription badge or extra hands. Deliver one portrait image, exact 9:16 aspect ratio, target 1080x1920.

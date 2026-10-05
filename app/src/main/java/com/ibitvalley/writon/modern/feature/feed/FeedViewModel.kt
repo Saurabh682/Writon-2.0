@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ibitvalley.writon.modern.core.database.model.PostEntity
 import com.ibitvalley.writon.modern.data.repository.PostRepository
+import com.ibitvalley.writon.modern.data.repository.FeedAudience
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -21,8 +22,14 @@ internal fun feedEmptyState(isRefreshing: Boolean, refreshFailed: Boolean): Feed
 internal fun shouldUsePersonalizedHomeFeed(enabled: Boolean, category: String, query: String): Boolean =
     enabled && category == "All" && query.isBlank()
 
+internal fun sourceFeedPosts(cached: List<PostEntity>, ids: List<String>): List<PostEntity> {
+    val byId = cached.associateBy { it.id }
+    return ids.distinct().mapNotNull(byId::get)
+}
+
 class FeedViewModel(
-    private val repository: PostRepository
+    private val repository: PostRepository,
+    val audience: FeedAudience = FeedAudience.COMMUNITY
 ) : ViewModel() {
 
     val selectedCategory = MutableStateFlow("All")
@@ -40,6 +47,7 @@ class FeedViewModel(
     private var activePersonalizedFeed = false
     private var refreshPending = false
     private var activeFeedKey = feedKey()
+    private val feedIds = MutableStateFlow(repository.cachedSourceFeedIds(audience))
 
     // Preserve scroll state
     var scrollIndex = 0
@@ -49,10 +57,11 @@ class FeedViewModel(
     val posts: StateFlow<List<PostEntity>> = combine(
         selectedCategory, 
         _searchQuery
-    ) { category, query ->
-        Pair(category, query)
-    }.flatMapLatest { (category, query) ->
-        repository.getPostsFlow(category, query)
+    ) { category, query -> Pair(category, query) }.flatMapLatest { (category, query) ->
+        combine(repository.getPostsFlow(category, query), feedIds) { cached, ids ->
+            // Detail/search/Explore cache writes cannot add stories to either deck.
+            sourceFeedPosts(cached, ids)
+        }
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.Eagerly,
@@ -77,9 +86,8 @@ class FeedViewModel(
     }
 
     fun setPersonalizedFeedEnabled(enabled: Boolean) {
-        if (personalizedFeedEnabled == enabled) return
-        personalizedFeedEnabled = enabled
-        refreshFeed()
+        // Source-safe ranking must ship before re-enabling the mixed legacy fallback.
+        personalizedFeedEnabled = false
     }
 
     fun refreshFeed() {
@@ -102,30 +110,18 @@ class FeedViewModel(
         viewModelScope.launch {
             isRefreshing.value = true
             try {
-                if (wantsPersonalizedFeed) {
-                    val result = WritOnTelemetry.trace("feed_first_load") {
-                        repository.loadPersonalizedFeed(limit = 20)
-                    }
-                    if (activeFeedKey == requestKey) {
-                        activePersonalizedFeed = result.isPersonalized
-                        nextPersonalizedCursor = result.nextCursor.takeIf { result.isPersonalized }
-                        hasMore.value = result.nextCursor != null
-                        refreshFailed.value = !result.wasFetched
-                        if (result.wasFetched && !result.isPersonalized) {
-                            nextPage = result.nextCursor?.toIntOrNull() ?: 2
-                        }
-                    }
-                } else {
-                    val result = WritOnTelemetry.trace("feed_first_load") {
-                        repository.refreshPosts(category = category, query = query)
-                    }
-                    if (activeFeedKey == requestKey) {
-                        hasMore.value = result.hasMore
-                        refreshFailed.value = !result.wasFetched
-                        if (result.wasFetched) nextPage = 2
-                    }
+                val result = WritOnTelemetry.trace("feed_first_load") {
+                    repository.loadSourceFeed(audience, category, query, page = 1)
+                }
+                if (activeFeedKey == requestKey) {
+                    feedIds.value = result.items.map { it.id }
+                    if (category == "All" && query.isBlank()) repository.saveSourceFeedIds(audience, feedIds.value)
+                    hasMore.value = result.hasMore
+                    nextPage = 2
                 }
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                if (activeFeedKey == requestKey) refreshFailed.value = true
                 e.printStackTrace()
             } finally {
                 if (activeFeedKey == requestKey) {
@@ -156,28 +152,15 @@ class FeedViewModel(
 
         viewModelScope.launch {
             try {
-                if (activePersonalizedFeed) {
-                    val result = repository.loadPersonalizedFeed(cursor = nextPersonalizedCursor, limit = 20)
-                    if (activeFeedKey == requestKey && result.wasFetched) {
-                        nextPersonalizedCursor = result.nextCursor
-                        hasMore.value = result.nextCursor != null
-                    } else if (activeFeedKey == requestKey) {
-                        loadMoreFailed.value = true
-                    }
-                } else {
-                    val result = repository.loadPostsPage(
-                        category = category,
-                        query = query,
-                        page = pageToLoad
-                    )
-                    if (activeFeedKey == requestKey && result.wasFetched) {
-                        hasMore.value = result.hasMore
-                        nextPage = pageToLoad + 1
-                    } else if (activeFeedKey == requestKey) {
-                        loadMoreFailed.value = true
-                    }
+                val result = repository.loadSourceFeed(audience, category, query, pageToLoad)
+                if (activeFeedKey == requestKey) {
+                    feedIds.value = (feedIds.value + result.items.map { it.id }).distinct()
+                    if (category == "All" && query.isBlank()) repository.saveSourceFeedIds(audience, feedIds.value)
+                    hasMore.value = result.hasMore
+                    nextPage = pageToLoad + 1
                 }
             } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
                 e.printStackTrace()
                 if (activeFeedKey == requestKey) loadMoreFailed.value = true
             } finally {

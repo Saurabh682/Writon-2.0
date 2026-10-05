@@ -53,13 +53,13 @@ import { runFollowedWriterNotifications } from './jobs/followed-writer-notificat
 import { attachHashtagsAndWatermark, stripWatermark, fetchTrendingKeywordsForCategory } from './bot-engine/watermark-service.js';
 import { PUBLISHABLE_STORY_CATEGORIES } from './domain/story-categories.js';
 import fs from 'node:fs/promises';
+import sanitizeHtml from 'sanitize-html';
 
 const { Pool } = pg;
 
 const profileMediaKeyPattern = /^profiles\/[A-Za-z0-9:_-]+\/[a-f0-9-]+\.webp$/i;
 const trustedWritOnMediaHosts = new Set([
   'api.writon.cc',
-  'writon-powerup.onrender.com',
   'writon-api-rfusi3iwbq-el.a.run.app',
   'writon-api-802112841589.asia-south1.run.app',
   'writon-app-api-canary-rfusi3iwbq-el.a.run.app',
@@ -266,6 +266,53 @@ function toOgLocale(lang) {
   return OG_LOCALES[lang] || 'en_US';
 }
 
+export const LITERARY_HTML_SANITIZE_OPTIONS = {
+  allowedTags: [
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'br', 'hr',
+    'strong', 'b', 'em', 'i', 'code', 'pre', 'blockquote',
+    'ul', 'ol', 'li', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    'div', 'span', 'a'
+  ],
+  allowedAttributes: {
+    a: ['href', 'title', 'target', 'rel'],
+    th: ['style'],
+    td: ['style'],
+    div: ['class'],
+    span: ['class', 'style', 'aria-hidden'],
+    pre: ['class'],
+    code: ['class'],
+    hr: ['class']
+  },
+  allowedClasses: {
+    div: ['story-table-wrap', 'story-hashtags'],
+    span: ['hashtag', 'writon-watermark'],
+    hr: ['story-divider'],
+    pre: [/^language-[a-zA-Z0-9_-]+$/],
+    code: [/^language-[a-zA-Z0-9_-]+$/]
+  },
+  allowedSchemes: ['http', 'https', 'mailto'],
+  transformTags: {
+    a: (tagName, attribs) => {
+      const href = attribs.href || '';
+      if (/^https?:\/\//i.test(href)) {
+        return {
+          tagName: 'a',
+          attribs: {
+            ...attribs,
+            target: '_blank',
+            rel: 'noopener noreferrer'
+          }
+        };
+      }
+      return { tagName: 'a', attribs };
+    }
+  }
+};
+
+export function sanitizeStoryHtml(dirtyHtml) {
+  return sanitizeHtml(dirtyHtml, LITERARY_HTML_SANITIZE_OPTIONS);
+}
+
 function formatContentToHtml(rawContent) {
   if (!rawContent) return '';
   const normalized = String(rawContent)
@@ -404,9 +451,10 @@ function formatContentToHtml(rawContent) {
     .filter(Boolean)
     .join('\n');
 
-  return hasWatermark
+  const resultHtml = hasWatermark
     ? `${formatted}\n<span class="writon-watermark" style="opacity:0;position:absolute;pointer-events:none;font-size:0;width:0;height:0;overflow:hidden;user-select:none;display:inline-block;line-height:0;" aria-hidden="true">#writon</span>`
     : formatted;
+  return sanitizeStoryHtml(resultHtml);
 }
 
 function shareDescription(story) {
@@ -444,7 +492,7 @@ function requestOrigin(request, configuredBaseUrl) {
   return `${protocol}://${host}`;
 }
 
-function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
+export function renderStorySharePage({ story, canonicalUrl, playStoreUrl, origin }) {
   const title = `${story.title} — WritOn`;
   const description = shareDescription(story);
   const authorVisualUrl = safePublicImageUrl(story.authorAvatarUrl, story.coverImage);
@@ -635,7 +683,7 @@ const firebaseApp = auth
       : initializeApp({ projectId: 'writon-app-2020' })));
 const firebaseAuth = auth ?? (firebaseApp ? getAuth(firebaseApp) : null);
 // On Google Cloud, Firebase Admin uses Application Default Credentials from the
-// Cloud Run service identity. Render can continue supplying an explicit key.
+// Cloud Run service identity. Local development may supply an explicit key.
 const firebaseMessaging = messaging ?? (firebaseApp ? getMessaging(firebaseApp) : null);
 const googleCloudStorageBucket = storageBucket
   ?? (config.googleCloudStorageBucket && firebaseApp
@@ -664,6 +712,15 @@ await fastify.register(multipart, {
   limits: { files: 1, fileSize: 10 * 1024 * 1024 },
 });
 
+fastify.addContentTypeParser('application/x-www-form-urlencoded', { parseAs: 'string' }, (_req, body, done) => {
+  try {
+    const parsed = Object.fromEntries(new URLSearchParams(body));
+    done(null, parsed);
+  } catch (err) {
+    done(err, undefined);
+  }
+});
+
 
   // OpenAPI 3.1.0 Specification for ChatGPT Custom GPT Actions & External Cloud Integrations
   const openApiSpec = {
@@ -674,9 +731,7 @@ await fastify.register(multipart, {
       version: '2.0.0'
     },
     servers: [
-      { url: 'https://writon-api-802112841589.asia-south1.run.app', description: 'Google Cloud Run Production (Mumbai asia-south1)' },
-      { url: 'https://writon-ab.onrender.com', description: 'Alternative Cloud Server (writon-AB)' },
-      { url: 'https://writon-powerup.onrender.com', description: 'Alternative Server' },
+      { url: 'https://api.writon.cc', description: 'Google Cloud Run Production (asia-south1)' },
       { url: 'http://localhost:3001', description: 'Local Server' }
     ],
     paths: {
@@ -1112,11 +1167,11 @@ await fastify.register(multipart, {
     auth: { type: 'none' },
     api: {
       type: 'openapi',
-      url: 'https://writon-powerup.onrender.com/openapi.json'
+      url: 'https://api.writon.cc/openapi.json'
     },
-    logo_url: 'https://writon-powerup.onrender.com/logo.png',
+    logo_url: 'https://api.writon.cc/logo.png',
     contact_email: 'saurabh.682@gmail.com',
-    legal_info_url: 'https://writon-powerup.onrender.com/privacy-policy'
+    legal_info_url: 'https://writon.cc/privacy-policy.html'
   };
 
   fastify.get('/.well-known/ai-plugin.json', async (req, reply) => {
@@ -1173,7 +1228,7 @@ await fastify.register(multipart, {
       });
 
       return reply
-        .header('Cache-Control', 'public, max-age=300, stale-while-revalidate=3600')
+        .header('Cache-Control', 'public, max-age=60, must-revalidate')
         .type('text/html; charset=utf-8')
         .send(html);
     }
@@ -2346,7 +2401,7 @@ async function ensureProfileForId(decodedToken, profileId) {
 
   const row = result.rows[0];
   if (row?.is_new_profile) {
-    enqueueWelcomeEmail(database, config, {
+    await enqueueWelcomeEmail(database, config, {
       profileId,
       recipientEmail: decodedToken.email ?? null,
       fullName: fallbackFullName,
@@ -2429,6 +2484,36 @@ fastify.get('/api/v1/posts', async (request, reply) => {
     },
   };
 });
+
+// Separate surfaces without changing the compatibility feed used by older clients.
+for (const audience of ['community', 'editorial']) {
+  fastify.get(`/api/v1/${audience}/posts`, async (request, reply) => {
+    const parsed = postsQuerySchema.safeParse(request.query);
+    if (!parsed.success) return reply.code(400).send({ error: 'Invalid feed query' });
+    const { category, q, page, limit } = parsed.data;
+    const viewer = await optionalUser(request);
+    // Earlier seed runs marked some bot personas as human. The registry wins.
+    const editorial = `(p.provenance = 'synthetic' or author.account_type = 'editorial_bot'
+      or exists (select 1 from public.bot_configs bot where bot.id = p.author_id))`;
+    const sourcePredicate = audience === 'community'
+      ? `p.provenance = 'human_verified' and author.account_type = 'human' and not ${editorial}`
+      : editorial;
+    const result = await database.query(
+      `${postSelectSql(`where p.status = 'published' and p.is_public = true
+        and (${sourcePredicate})
+        and ($2::text is null or lower($2) = 'all' or lower(p.category) = lower($2))
+        and ($3::text is null or p.title ilike '%' || $3 || '%'
+          or coalesce(p.summary, '') ilike '%' || $3 || '%')`, '', false)}
+        order by p.published_at desc nulls last, p.created_at desc, p.id
+        limit $4 offset $5`,
+      [viewer?.profileId ?? null, category ?? null, q || null, limit + 1, (page - 1) * limit]
+    );
+    return {
+      posts: result.rows.slice(0, limit).map(row => ({ ...toReaderPost(row), contentSource: audience })),
+      pagination: { page, limit, hasMore: result.rows.length > limit },
+    };
+  });
+}
 
 fastify.get('/api/v1/tags', async (request) => {
   const q = request.query.q ? String(request.query.q).trim() : null;

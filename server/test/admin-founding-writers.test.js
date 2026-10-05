@@ -120,4 +120,17 @@ describe('founding writer administration', () => {
     expect(response.statusCode).toBe(409);
     expect(client.query).toHaveBeenCalledWith('rollback');
   });
+
+  it('accepts a Firebase UID and preserves the operator audit contract', async () => {
+    const profileId = 'QZL8vpt4HGOhUVkXhGj201bGXmw1';
+    client.query.mockImplementation(async sql => {
+      if (sql.includes('from public.profiles')) return { rows: [{ id: profileId, username: 'writer', display_name: 'Writer', account_type: 'human', founding_writer_number: null }] };
+      if (sql.includes('insert into public.founding_writer_assignments')) return { rows: [{ assigned_at: '2026-10-01T00:00:00Z' }] };
+      return { rows: [], rowCount: 1 };
+    });
+    const response = await app.inject({ method: 'POST', url: '/api/v1/admin/founding-writers/assign', headers: { 'x-admin-key': 'correct-secret', 'x-admin-actor': 'owner' }, payload: { profileId, foundingWriterNumber: 8, reason: 'Operator-selected new cohort' } });
+    expect(response.statusCode).toBe(201);
+    expect(response.json().profileId).toBe(profileId);
+    expect(client.query).toHaveBeenCalledWith('commit');
+  });
 });

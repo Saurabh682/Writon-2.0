@@ -29,6 +29,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap">
 
+  <!-- Firebase App & Auth SDK (v10 compat) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+
   <style>
     :root {
       --bg: #FAF5EE;
@@ -39,6 +43,9 @@
       --primary-dark: #823317;
       --border: #E8DFD3;
       --accent: #E75A2A;
+      --error-bg: #FDEDEC;
+      --error-border: #E0B4B4;
+      --error-text: #9F3A38;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -80,7 +87,16 @@
     p {
       color: var(--muted);
       font-size: 15px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
+    }
+    .user-info {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      padding: 8px 12px;
+      background: #F5EFEB;
+      border-radius: 8px;
+      display: inline-block;
     }
     .options-list {
       text-align: left;
@@ -140,6 +156,10 @@
     .btn-primary:hover {
       background: var(--primary-dark);
     }
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
     .btn-ghost {
       background: transparent;
       color: var(--muted);
@@ -158,6 +178,26 @@
       margin-bottom: 20px;
       border: 1px solid var(--border);
     }
+    .error-banner {
+      display: none;
+      background: var(--error-bg);
+      color: var(--error-text);
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      border: 1px solid var(--error-border);
+      text-align: left;
+    }
+    .guest-prompt {
+      display: none;
+      background: #FAF6F0;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
     .footer-note {
       margin-top: 28px;
       font-size: 13px;
@@ -169,60 +209,226 @@
   <div class="card">
     <div class="brand-mark">WritOn</div>
     <h1>Email Preferences</h1>
-    <p>Manage which optional emails you receive from WritOn. You can change these at any time.</p>
+    <p id="page-subtitle">Manage which optional emails you receive from WritOn. You can change these at any time.</p>
 
-    <div id="success-box" class="success-banner">
-      ✓ Preferences updated successfully.
+    <div id="user-pill" class="user-info" style="display:none;"></div>
+
+    <div id="success-box" class="success-banner"></div>
+    <div id="error-box" class="error-banner"></div>
+
+    <div id="guest-prompt" class="guest-prompt">
+      <p style="margin-bottom: 16px;">To view and update your personal email preferences, please open WritOn on your registered phone or sign in below.</p>
+      <form id="inline-auth-form" onsubmit="handleInlineSignIn(event)" style="display:flex; flex-direction:column; gap:10px; text-align:left;">
+        <div>
+          <label style="font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase;">Email address</label>
+          <input type="email" id="auth-email" required style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:#FFFDF9; font-size:14px; margin-top:4px;" />
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase;">Password</label>
+          <input type="password" id="auth-password" required style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:#FFFDF9; font-size:14px; margin-top:4px;" />
+        </div>
+        <button type="submit" class="btn btn-primary" id="signin-btn" style="margin-top:6px;">Sign In to Manage Preferences</button>
+      </form>
     </div>
 
-    <form id="prefs-form" onsubmit="handleSave(event)">
+    <form id="prefs-form" onsubmit="handleSave(event)" style="display:none;">
       <div class="options-list">
         <label class="option-item">
-          <input type="checkbox" id="pref-reading" checked>
+          <input type="checkbox" id="pref-reading">
           <div class="option-text">
             <strong>Weekly Reading Digest</strong>
             <span>Handpicked stories and essays from the community (at most 1 per week).</span>
           </div>
         </label>
         <label class="option-item">
-          <input type="checkbox" id="pref-activity" checked>
+          <input type="checkbox" id="pref-activity">
           <div class="option-text">
             <strong>Writing Activity &amp; Milestones</strong>
             <span>Updates on applauds, comments, and milestones on your published writing.</span>
           </div>
         </label>
         <label class="option-item">
-          <input type="checkbox" id="pref-tips" checked>
+          <input type="checkbox" id="pref-tips">
           <div class="option-text">
             <strong>Writer Tips &amp; Craft Principles</strong>
             <span>Quiet observations on sentence craft, pacing, and editing.</span>
           </div>
         </label>
+        <label class="option-item">
+          <input type="checkbox" id="pref-lifecycle">
+          <div class="option-text">
+            <strong>Account &amp; Onboarding Guides</strong>
+            <span>Welcome orientation and occasional guidance on features.</span>
+          </div>
+        </label>
       </div>
 
       <div class="actions">
-        <button type="submit" class="btn btn-primary">Save Preferences</button>
+        <button type="submit" class="btn btn-primary" id="save-btn">Save Preferences</button>
         <button type="button" class="btn btn-ghost" onclick="unsubscribeAll()">Unsubscribe from all optional emails</button>
       </div>
     </form>
 
     <div class="footer-note">
-      <a href="/#explore" style="color:var(--primary); text-decoration:none;">Explore Stories</a> &middot; <a href="/" style="color:var(--muted); text-decoration:none;">WritOn Home</a>
+      <a href="/explore" style="color:var(--primary); text-decoration:none;">Explore Stories</a> &middot; <a href="/" style="color:var(--muted); text-decoration:none;">WritOn Home</a>
     </div>
   </div>
 
   <script>
-    function handleSave(e) {
-      e.preventDefault();
-      document.getElementById('success-box').style.display = 'block';
-      document.getElementById('success-box').textContent = '✓ Your email preferences have been saved.';
+    const firebaseConfig = {
+      apiKey: "AIzaSyDXE2ZKVuYKMcX4Kvl7v7rQmhXZ3JMUcpo",
+      authDomain: "writon-app-2020.firebaseapp.com",
+      projectId: "writon-app-2020",
+      storageBucket: "writon-app-2020.firebasestorage.app"
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
     }
-    function unsubscribeAll() {
+    const auth = firebase.auth();
+
+    const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3000'
+      : 'https://api.writon.cc';
+
+    const successBox = document.getElementById('success-box');
+    const errorBox = document.getElementById('error-box');
+    const guestPrompt = document.getElementById('guest-prompt');
+    const prefsForm = document.getElementById('prefs-form');
+    const userPill = document.getElementById('user-pill');
+    const saveBtn = document.getElementById('save-btn');
+    const signinBtn = document.getElementById('signin-btn');
+
+    let currentUser = null;
+
+    function showBanner(type, msg) {
+      if (type === 'success') {
+        successBox.textContent = msg;
+        successBox.style.display = 'block';
+        errorBox.style.display = 'none';
+      } else {
+        errorBox.textContent = msg;
+        errorBox.style.display = 'block';
+        successBox.style.display = 'none';
+      }
+    }
+
+    function renderPreferences(prefs) {
+      document.getElementById('pref-reading').checked = Boolean(prefs.reading ?? prefs.reading_enabled ?? prefs.readingEnabled);
+      document.getElementById('pref-activity').checked = Boolean(prefs.activity ?? prefs.activity_enabled ?? prefs.activityEnabled);
+      document.getElementById('pref-tips').checked = Boolean(prefs.writerTips ?? prefs.writer_tips ?? prefs.craft_enabled ?? prefs.craftEnabled ?? prefs.tips_enabled ?? prefs.tipsEnabled);
+      document.getElementById('pref-lifecycle').checked = Boolean(prefs.lifecycle ?? prefs.lifecycle_enabled ?? prefs.lifecycleEnabled);
+    }
+
+    async function loadPreferences(user) {
+      try {
+        const idToken = await user.getIdToken();
+        const res = await fetch(`${API_BASE}/api/v1/me/email-preferences`, {
+          headers: {
+            'Authorization': `Bearer ${idToken}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to load email preferences.');
+        }
+
+        const data = await res.json();
+        const prefs = data.preferences || data;
+        renderPreferences(prefs);
+
+        guestPrompt.style.display = 'none';
+        prefsForm.style.display = 'block';
+      } catch (err) {
+        showBanner('error', err.message || 'Unable to retrieve settings.');
+      }
+    }
+
+    auth.onAuthStateChanged((user) => {
+      currentUser = user;
+      if (user) {
+        userPill.textContent = `Signed in as ${user.email}`;
+        userPill.style.display = 'inline-block';
+        loadPreferences(user);
+      } else {
+        userPill.style.display = 'none';
+        prefsForm.style.display = 'none';
+        guestPrompt.style.display = 'block';
+      }
+    });
+
+    async function handleInlineSignIn(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      signinBtn.disabled = true;
+      signinBtn.textContent = 'Signing in...';
+
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+        showBanner('success', 'Signed in successfully.');
+      } catch (err) {
+        showBanner('error', err.message || 'Invalid email or password.');
+      } finally {
+        signinBtn.disabled = false;
+        signinBtn.textContent = 'Sign In to Manage Preferences';
+      }
+    }
+
+    async function handleSave(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      if (!currentUser) {
+        showBanner('error', 'You must be signed in to save preferences.');
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Saving...';
+
+      const patch = {
+        reading: document.getElementById('pref-reading').checked,
+        activity: document.getElementById('pref-activity').checked,
+        writerTips: document.getElementById('pref-tips').checked,
+        lifecycle: document.getElementById('pref-lifecycle').checked
+      };
+
+      try {
+        const idToken = await currentUser.getIdToken();
+        const res = await fetch(`${API_BASE}/api/v1/me/email-preferences`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${idToken}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(patch)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || errData.message || 'Failed to update email preferences.');
+        }
+
+        const result = await res.json();
+        const updatedPrefs = result.preferences || result;
+        renderPreferences(updatedPrefs);
+
+        showBanner('success', '✓ Your email preferences have been saved.');
+      } catch (err) {
+        showBanner('error', err.message || 'Failed to save preferences.');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Preferences';
+      }
+    }
+
+    async function unsubscribeAll() {
       document.getElementById('pref-reading').checked = false;
       document.getElementById('pref-activity').checked = false;
       document.getElementById('pref-tips').checked = false;
-      document.getElementById('success-box').style.display = 'block';
-      document.getElementById('success-box').textContent = '✓ You have unsubscribed from all optional WritOn emails.';
+      document.getElementById('pref-lifecycle').checked = false;
+      await handleSave(new Event('submit'));
     }
   </script>
 </body>

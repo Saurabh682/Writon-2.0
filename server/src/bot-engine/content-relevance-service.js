@@ -48,9 +48,9 @@ export function normalizeCategoryName(cat) {
   return cat;
 }
 
-const TECH_REVIEW_PATTERN = /\b(evs?|battery tech|cars?|bikes?|suvs?|smartphones?|mobiles?|laptops?|silicon|chips?|headphones?|iems?|earbuds?|audio gear|wearables?|health hardware|gaming handhelds?|consoles?|cameras?|lenses?|optics|mechanical keyboards?|smart home|matter hardware|coffee gear|espresso tech|edc gear|rugged tools)\b/i;
+const TECH_REVIEW_PATTERN = /\b(evs?|battery tech|cars?|bikes?|suvs?|smartphones?|mobiles?|phones?|laptops?|silicon|chips?|headphones?|iems?|earbuds?|speakers?|soundbars?|turntables?|microphones?|mics?|audio gear|audio systems?|sound systems?|wearables?|smartwatches?|health hardware|gaming handhelds?|consoles?|cameras?|lenses?|optics|mechanical keyboards?|keyboards?|monitors?|displays?|tvs?|tablets?|ipads?|smart home|matter hardware|coffee gear|espresso tech|edc gear|rugged tools)\b/i;
 const CULTURE_REVIEW_PATTERN = /\b(anime|sakuga|seinen|prestige tv|streaming series|cinema|films?|blockbusters?)\b/i;
-const REVIEW_SIGNAL_PATTERN = /\b(review|guide|benchmark|comparison|assessment|tested|testing|performance|specifications?|buying|hardware|trade-?offs?)\b/i;
+const REVIEW_SIGNAL_PATTERN = /\b(review|guide|benchmark|comparison|assessment|tested|testing|test|tests|performance|specifications?|specs|buying|hardware|trade-?offs?|sound quality|audio quality|music quality|build quality|camera test|teardown|unboxing|hands-on|vs|versus)\b/i;
 const TECH_SUBJECT_PATTERN = /\b(typescript|javascript|programming|source code|software engineering|backend|frontend|database|postgres(?:ql)?|sqlite|redis|api|distributed systems?|consensus protocol|idempotency|compiler|devops|kubernetes)\b/i;
 const FENCED_TECH_CODE_PATTERN = /^```(?:ts|tsx|typescript|js|jsx|javascript|sql|python|java|kotlin|swift|go|rust|c|cpp|csharp|bash|shell)\s*$/im;
 const FINANCE_PATTERN = /\b(market|share price|sensex|nifty|ipo|stocks?|economy|inflation|bank|rupee|investing|finance|gdp)\b/i;
@@ -122,10 +122,12 @@ function containsAnchor(comment, anchor) {
     .some(token => normalizedComment.includes(token));
 }
 
-export function resolveReviewCategory(domain = '', fallbackCategory = 'Culture') {
+export function resolveReviewCategory(domain = '', fallbackCategory = 'Reviews') {
   const normalizedDomain = normalizeText(domain);
   if (normalizedDomain) return 'Reviews';
-  return PUBLICATION_CATEGORIES.has(fallbackCategory) ? fallbackCategory : 'Culture';
+  // Never default review contexts to Culture
+  const chosenFallback = (fallbackCategory === 'Culture' || !fallbackCategory) ? 'Reviews' : fallbackCategory;
+  return PUBLICATION_CATEGORIES.has(chosenFallback) ? chosenFallback : 'Reviews';
 }
 
 export function resolvePublicationCategory({
@@ -149,7 +151,7 @@ export function resolvePublicationCategory({
   if (REVIEW_SIGNAL_PATTERN.test(reviewContext)) {
     // Title, summary, and an explicit domain are stronger classification signals
     // than incidental examples in the body (for example, headphones used for films).
-    if (TECH_REVIEW_PATTERN.test(primaryContext)) return 'Tech';
+    if (TECH_REVIEW_PATTERN.test(primaryContext)) return declared === 'Culture' ? 'Reviews' : (declared === 'Reviews' ? 'Reviews' : 'Tech');
     if (CULTURE_REVIEW_PATTERN.test(primaryContext)) return 'Culture';
     if (declared === 'Reviews' && TECH_REVIEW_PATTERN.test(reviewContext)) return 'Tech';
     if (declared === 'Reviews' && CULTURE_REVIEW_PATTERN.test(reviewContext)) return 'Culture';
